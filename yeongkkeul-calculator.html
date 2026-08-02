@@ -8,7 +8,7 @@
 <title>영끌계산기 — 아파트 예산 계산기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" />
 <style>
   :root{
     --bg:#F7F8FA;
@@ -158,8 +158,8 @@
     border:1.5px solid transparent;
     border-radius:12px;
     background:var(--fill);
-    font-family:'Space Mono', monospace;
-    font-size:15px;
+    font-family:'Space Mono', 'Pretendard', monospace;
+    font-size:16px;
     font-weight:700;
     color:var(--ink);
     transition:background .15s, border-color .15s;
@@ -180,6 +180,8 @@
   }
   .row2{display:flex;flex-direction:column;gap:22px;}
   .row2 .field{margin-bottom:0;}
+  .amount-row{display:flex;gap:10px;}
+  .amount-row .input-suffix{flex:1;}
   .checkrow{
     display:flex;align-items:flex-start;gap:12px;
     font-size:13.5px;font-weight:600;
@@ -287,8 +289,8 @@
     letter-spacing:.02em;opacity:.85;margin-bottom:6px;
   }
   .result-hero .amount{
-    font-family:'Space Mono', monospace;
-    font-size:30px;
+    font-family:'Space Mono', 'Pretendard', monospace;
+    font-size:32px;
     font-weight:700;
     letter-spacing:-0.01em;
   }
@@ -303,14 +305,14 @@
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:20px;
-    font-family:'Space Mono', monospace;
+    font-family:'Space Mono', 'Pretendard', monospace;
     margin-bottom:16px;
     box-shadow:0 1px 3px rgba(20,26,36,0.04);
   }
   .receipt-title{
     font-family:'Pretendard', sans-serif;
     font-weight:800;
-    font-size:13px;
+    font-size:14px;
     color:var(--ink-faint);
     letter-spacing:.02em;
     padding-bottom:12px;
@@ -320,8 +322,8 @@
   .line-item{
     display:flex;
     justify-content:space-between;
-    font-size:13px;
-    padding:6px 0;
+    font-size:14.5px;
+    padding:7px 0;
     gap:8px;
   }
   .line-item .k{color:var(--ink-soft);font-family:'Pretendard', sans-serif;font-weight:500;}
@@ -330,20 +332,20 @@
   .line-item.total{
     border-top:1px dashed var(--border);
     margin-top:8px;
-    padding-top:10px;
-    font-size:14.5px;
+    padding-top:11px;
+    font-size:16px;
     font-weight:700;
   }
   .line-item.grand{
     background:var(--ink);
     color:#fff;
     margin:12px -20px -20px;
-    padding:14px 20px;
+    padding:16px 20px;
     border-radius:0 0 var(--radius) var(--radius);
-    font-size:15.5px;
+    font-size:17px;
   }
   .line-item.grand .k{color:#B8C0CC;}
-  .line-item.grand .v{color:var(--success);}
+  .line-item.grand .v{color:#fff;font-size:19px;}
   .fallback-note{
     font-family:'Pretendard', sans-serif;
     font-size:12px;
@@ -360,14 +362,31 @@
     padding-top:16px;
     border-top:1px dashed var(--border);
   }
-  .monthly-box .k{font-size:12px;color:var(--ink-soft);font-family:'Pretendard', sans-serif;}
+  .monthly-box .k{font-size:12.5px;color:var(--ink-soft);font-family:'Pretendard', sans-serif;}
   .monthly-box .v{
-    font-size:20px;font-weight:700;font-family:'Space Mono',monospace;
+    font-size:23px;font-weight:700;
+  }
+  .monthly-box .v .num{font-family:'Space Mono','Pretendard',monospace;}
+  .monthly-box .v .label{
+    font-family:'Pretendard', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-left:2px;
+  }
+  .receipt-watermark{
+    text-align:center;
+    font-family:'Pretendard', sans-serif;
+    font-size:10.5px;
+    color:var(--ink-faint);
+    opacity:.7;
+    margin-top:18px;
+    letter-spacing:.02em;
   }
 
   .disclaimer{
     margin-top:8px;
-    padding:14px 16px;
+    padding:16px 18px;
     border-radius:12px;
     background:var(--surface);
     border:1px solid var(--border);
@@ -376,12 +395,21 @@
     line-height:1.6;
   }
   .disclaimer b{color:var(--ink-soft);}
+  .disclaimer-item{margin-bottom:12px;}
 
   footer{
     text-align:center;
-    font-size:11px;
+    margin-top:28px;
+  }
+  .footer-title{
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .footer-copyright{
+    font-size:10.5px;
     color:var(--ink-faint);
-    margin-top:20px;
     line-height:1.7;
   }
 
@@ -518,16 +546,28 @@
       <h2 id="amountCardTitle">보유자금 / 평형</h2>
       <div class="field" id="fieldCash">
         <label>지금 가진 보유자금</label>
-        <div class="input-suffix">
-          <input type="number" id="cash" value="85500" step="100">
-          <span>만원</span>
+        <div class="amount-row">
+          <div class="input-suffix">
+            <input type="number" id="cashEok" value="8" step="1" min="0">
+            <span>억</span>
+          </div>
+          <div class="input-suffix">
+            <input type="number" id="cashMan" value="5500" step="100" min="0" max="9999">
+            <span>만원</span>
+          </div>
         </div>
       </div>
       <div class="field" id="fieldPrice" style="display:none">
         <label>아파트 매매가격</label>
-        <div class="input-suffix">
-          <input type="number" id="price" value="142500" step="100">
-          <span>만원</span>
+        <div class="amount-row">
+          <div class="input-suffix">
+            <input type="number" id="priceEok" value="14" step="1" min="0">
+            <span>억</span>
+          </div>
+          <div class="input-suffix">
+            <input type="number" id="priceMan" value="2500" step="100" min="0" max="9999">
+            <span>만원</span>
+          </div>
         </div>
       </div>
       <div class="field">
@@ -641,6 +681,7 @@
           <div class="k">월 원리금 상환액 (원리금균등)</div>
           <div class="v" id="monthlyPayment">0원</div>
         </div>
+        <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
       </div>
       <button class="calc-btn" id="shareBtn" onclick="shareResult()">🔗 결과 링크 공유하기</button>
 
@@ -661,10 +702,28 @@
     </div>
 
     <div class="disclaimer">
-      <b>안내:</b> 이 도구는 2026년 8월 기준 공개된 정책(10.15 대책, 디딤돌·보금자리론 등 정책대출 조건)을 참고해 만든 <b>참고용 개인 계산기</b>이며, 공식 금융 상담이나 세무 자문을 대체하지 않습니다. LTV·DSR·정책대출 자격·취득세·중개보수 등은 지역 지정 현황, 실제 소득(DSR), 은행·기금 정책에 따라 달라질 수 있으니 실제 매매·대출 진행 전에는 반드시 은행, 주택도시기금(기금e든든), 공인중개사, 세무사와 확인하세요. 디딤돌대출과 보금자리론은 원칙적으로 동시에 받을 수 없고 하나만 선택해야 하며, 실제로는 MCG 보증 등을 활용한 "복합대출" 같은 예외적 조합도 존재하지만 조건이 까다로워 이 계산기에서는 다루지 않습니다. 신용대출·사내대출·매도인 근저당(셀러파이낸싱) 금액은 사용자가 직접 입력한 가정치이며, 실제 실행 가능 여부·한도·조건은 개인 소득·회사 정책·상대방과의 협의에 따라 크게 달라집니다. 매매·대출 실행을 대신하지 않습니다.
+      <div class="disclaimer-item">
+        <b>참고용 계산기예요.</b> 2026년 8월 기준 공개된 정책(10.15 대책, 디딤돌·보금자리론 등)을 참고해 만들었고, 공식 금융 상담이나 세무 자문을 대체하지 않아요.
+      </div>
+      <div class="disclaimer-item">
+        <b>수치는 실제와 다를 수 있어요.</b> LTV·DSR·정책대출 자격·취득세·중개보수는 지역 지정 현황, 실제 소득(DSR), 은행·기금 정책에 따라 달라질 수 있으니, 실제 매매·대출 전에는 반드시 은행, 주택도시기금(기금e든든), 공인중개사, 세무사와 확인하세요.
+      </div>
+      <div class="disclaimer-item">
+        <b>정책대출은 중복 불가예요.</b> 디딤돌대출과 보금자리론은 원칙적으로 하나만 선택할 수 있어요. MCG 보증 등을 활용한 "복합대출" 같은 예외도 있지만 조건이 까다로워 이 계산기에서는 다루지 않아요.
+      </div>
+      <div class="disclaimer-item">
+        <b>추가 자금원은 가정치예요.</b> 신용대출·사내대출·매도인 근저당(셀러파이낸싱) 금액은 사용자가 직접 입력한 값이며, 실제 가능 여부·한도는 개인 소득·회사 정책·상대방과의 협의에 따라 달라져요.
+      </div>
+      <div class="disclaimer-item" style="margin-bottom:0;">
+        이 계산기는 매매·대출 실행을 대신하지 않아요.
+      </div>
     </div>
 
-    <footer>영끌계산기 · 개인용 아파트 예산 계산기<br>© 2026 노아초이(Noah Choi). All rights reserved. 무단 복제 및 재배포를 금합니다.</footer>
+    <footer>
+      <div class="footer-title">영끌계산기 · 개인용 아파트 예산 계산기</div>
+      <div class="footer-copyright">© 2026 노아초이(Noah Choi). All rights reserved.</div>
+      <div class="footer-copyright">무단 복제 및 재배포를 금합니다.</div>
+    </footer>
   </div>
 </div>
 
@@ -702,6 +761,18 @@ function setMode(m){
   document.getElementById('fieldCash').style.display = m==='A' ? 'block' : 'none';
   document.getElementById('fieldPrice').style.display = m==='B' ? 'block' : 'none';
   document.getElementById('amountCardTitle').textContent = m==='A' ? '보유자금 / 평형' : '아파트 매매가 / 평형';
+}
+
+function getAmountManwon(eokId, manId){
+  const eok = parseFloat(document.getElementById(eokId).value) || 0;
+  const man = parseFloat(document.getElementById(manId).value) || 0;
+  return eok*10000 + man;
+}
+
+function setAmountManwon(eokId, manId, totalMan){
+  totalMan = Math.max(0, Math.round(totalMan));
+  document.getElementById(eokId).value = Math.floor(totalMan/10000);
+  document.getElementById(manId).value = totalMan % 10000;
 }
 
 function formatWon(n){
@@ -970,7 +1041,7 @@ function calculate(){
   goToStep(7);
 
   if(mode === 'A'){
-    const cash = (parseFloat(document.getElementById('cash').value) || 0) * 10000;
+    const cash = getAmountManwon('cashEok','cashMan') * 10000;
     const fixedCosts = ctxBase.pyeong*ctxBase.interiorPerPyeong*10000 + ctxBase.etc*10000;
     if(fixedCosts >= cash){
       heroBox.classList.add('warn-box');
@@ -1006,7 +1077,7 @@ function calculate(){
       line('자기자본 투입액', formatWon(c.cashNeeded), 'total') +
       line('보유자금', formatWon(cash), 'grand');
 
-    document.getElementById('monthlyPayment').textContent = formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years)) + ' / 월 (' + loanTypeLabel(c.loanType) + ' 기준)';
+    document.getElementById('monthlyPayment').innerHTML = '<span class="num">' + formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years)) + '</span><span class="label"> / 월 · ' + loanTypeLabel(c.loanType) + ' 기준</span>';
 
     lastShareText =
 `🏠 영끌계산기 결과
@@ -1026,7 +1097,7 @@ function calculate(){
 * 2026.08 기준 참고용 계산, 실제와 다를 수 있음`;
 
   } else {
-    const price = (parseFloat(document.getElementById('price').value) || 0) * 10000;
+    const price = getAmountManwon('priceEok','priceMan') * 10000;
     const c = calcCosts({...ctxBase, price});
     renderFallbackNote(c);
 
@@ -1050,7 +1121,7 @@ function calculate(){
       extraLines2 +
       line('필요 자기자본', formatWon(c.cashNeeded), 'grand');
 
-    document.getElementById('monthlyPayment').textContent = formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years)) + ' / 월 (' + loanTypeLabel(c.loanType) + ' 기준)';
+    document.getElementById('monthlyPayment').innerHTML = '<span class="num">' + formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years)) + '</span><span class="label"> / 월 · ' + loanTypeLabel(c.loanType) + ' 기준</span>';
 
     lastShareText =
 `🏠 영끌계산기 결과
@@ -1089,8 +1160,8 @@ function buildShareUrl(){
   p.set('etc', document.getElementById('etc').value);
   p.set('rt', document.getElementById('rate').value);
   p.set('yr', document.getElementById('years').value);
-  p.set('cash', document.getElementById('cash').value);
-  p.set('price', document.getElementById('price').value);
+  p.set('cash', getAmountManwon('cashEok','cashMan'));
+  p.set('price', getAmountManwon('priceEok','priceMan'));
   p.set('cl', document.getElementById('creditLoan').value);
   p.set('col', document.getElementById('companyLoan').value);
   p.set('sf', document.getElementById('sellerFinancing').value);
@@ -1115,8 +1186,8 @@ function loadFromUrlIfPresent(){
   if(p.has('etc')) document.getElementById('etc').value = p.get('etc');
   if(p.has('rt')) document.getElementById('rate').value = p.get('rt');
   if(p.has('yr')) document.getElementById('years').value = p.get('yr');
-  if(p.has('cash')) document.getElementById('cash').value = p.get('cash');
-  if(p.has('price')) document.getElementById('price').value = p.get('price');
+  if(p.has('cash')) setAmountManwon('cashEok','cashMan', parseFloat(p.get('cash')) || 0);
+  if(p.has('price')) setAmountManwon('priceEok','priceMan', parseFloat(p.get('price')) || 0);
   if(p.has('cl')) document.getElementById('creditLoan').value = p.get('cl');
   if(p.has('col')) document.getElementById('companyLoan').value = p.get('col');
   if(p.has('sf')) document.getElementById('sellerFinancing').value = p.get('sf');
