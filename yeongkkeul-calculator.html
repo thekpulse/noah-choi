@@ -70,6 +70,7 @@
     color:var(--ink-soft);
     margin:0;
     max-width:46ch;
+    text-wrap:balance;
   }
 
   /* PROGRESS */
@@ -165,6 +166,7 @@
     transition:background .15s, border-color .15s;
   }
   select{font-family:'Pretendard', sans-serif;font-weight:600;font-size:14px;}
+  input::placeholder{color:var(--ink-faint);font-weight:500;opacity:1;}
   input:focus, select:focus{
     outline:none;
     background:#fff;
@@ -438,7 +440,7 @@
   <div class="wrap">
     <span class="hero-tag">영끌계산기 · 2026.08 기준</span>
     <h1>이 집,<br><span>나 살 수 있어?</span></h1>
-    <p>보유자금으로 살 수 있는 아파트, 혹은 원하는 아파트에 필요한 진짜 예산 — 대출한도·정책대출·취득세·복비·인테리어까지 한번에 계산.</p>
+    <p>보유자금으로 살 수 있는 집, 혹은 원하는 집에 필요한 예산을 대출한도·정책대출·취득세·복비·인테리어까지 한 번에 계산해요.</p>
   </div>
 </div>
 
@@ -511,7 +513,7 @@
       <div class="field">
         <label>부부합산 연소득</label>
         <div class="input-suffix">
-          <input type="number" id="income" value="6000" step="100" oninput="renderPolicyOptions()">
+          <input type="text" inputmode="numeric" id="income" placeholder="6,000" oninput="formatCommaInput(this); renderPolicyOptions();">
           <span>만원</span>
         </div>
       </div>
@@ -548,11 +550,11 @@
         <label>지금 가진 보유자금</label>
         <div class="amount-row">
           <div class="input-suffix">
-            <input type="number" id="cashEok" value="8" step="1" min="0">
+            <input type="number" id="cashEok" placeholder="8" step="1" min="0">
             <span>억</span>
           </div>
           <div class="input-suffix">
-            <input type="number" id="cashMan" value="5500" step="100" min="0" max="9999">
+            <input type="text" inputmode="numeric" id="cashMan" placeholder="5,500" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
         </div>
@@ -561,11 +563,11 @@
         <label>아파트 매매가격</label>
         <div class="amount-row">
           <div class="input-suffix">
-            <input type="number" id="priceEok" value="14" step="1" min="0">
+            <input type="number" id="priceEok" placeholder="14" step="1" min="0">
             <span>억</span>
           </div>
           <div class="input-suffix">
-            <input type="number" id="priceMan" value="2500" step="100" min="0" max="9999">
+            <input type="text" inputmode="numeric" id="priceMan" placeholder="2,500" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
         </div>
@@ -573,7 +575,7 @@
       <div class="field">
         <label>평형 (전용면적 기준, 인테리어비·정책대출 조건 계산용)</label>
         <div class="input-suffix">
-          <input type="number" id="pyeong" value="25" step="1">
+          <input type="number" id="pyeong" placeholder="25" step="1">
           <span>평</span>
         </div>
       </div>
@@ -593,28 +595,28 @@
         <div class="field">
           <label>인테리어 단가</label>
           <div class="input-suffix">
-            <input type="number" id="interiorPerPyeong" value="150" step="10">
+            <input type="text" inputmode="numeric" id="interiorPerPyeong" placeholder="150" oninput="formatCommaInput(this)">
             <span>만/평</span>
           </div>
         </div>
         <div class="field">
           <label>기타비용(이사·법무사 등)</label>
           <div class="input-suffix">
-            <input type="number" id="etc" value="300" step="10">
+            <input type="text" inputmode="numeric" id="etc" placeholder="300" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
         </div>
         <div class="field">
           <label>대출금리 (연)</label>
           <div class="input-suffix">
-            <input type="number" id="rate" value="4.12" step="0.01">
+            <input type="number" id="rate" placeholder="4.12" step="0.01">
             <span>%</span>
           </div>
         </div>
         <div class="field">
           <label>대출기간</label>
           <div class="input-suffix">
-            <input type="number" id="years" value="30" step="1">
+            <input type="number" id="years" placeholder="30" step="1">
             <span>년</span>
           </div>
         </div>
@@ -635,7 +637,7 @@
         <div class="field">
           <label>신용대출</label>
           <div class="input-suffix">
-            <input type="number" id="creditLoan" value="0" step="100">
+            <input type="text" inputmode="numeric" id="creditLoan" placeholder="0" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
           <div class="hint">DSR에 합산되어 주담대 한도를 줄일 수 있습니다.</div>
@@ -643,7 +645,7 @@
         <div class="field">
           <label>회사 사내대출</label>
           <div class="input-suffix">
-            <input type="number" id="companyLoan" value="0" step="100">
+            <input type="text" inputmode="numeric" id="companyLoan" placeholder="0" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
           <div class="hint">보통 LTV·DSR 규제 대상이 아니에요.</div>
@@ -652,7 +654,7 @@
       <div class="field">
         <label>매도인 근저당(셀러 파이낸싱)</label>
         <div class="input-suffix">
-          <input type="number" id="sellerFinancing" value="0" step="100">
+          <input type="text" inputmode="numeric" id="sellerFinancing" placeholder="0" oninput="formatCommaInput(this)">
           <span>만원</span>
         </div>
         <div class="hint">매도인과 개인 간 합의로 잔금 일부를 빌리고 근저당을 설정하는 방식. 은행 대출 규제 밖이라 최근 확산 중이지만, 매도인·매수인 모두 법적 리스크(잔금 미회수, 경매 등)를 감수하는 사적 거래입니다.</div>
@@ -733,6 +735,7 @@ let currentStep = 1;
 let mode = 'A';
 let loanChoice = 'bank';
 let lastShareText = '';
+let shareSummary = '';
 
 function renderProgress(){
   const el = document.getElementById('progressDots');
@@ -765,14 +768,27 @@ function setMode(m){
 
 function getAmountManwon(eokId, manId){
   const eok = parseFloat(document.getElementById(eokId).value) || 0;
-  const man = parseFloat(document.getElementById(manId).value) || 0;
+  const man = numVal(manId);
   return eok*10000 + man;
 }
 
 function setAmountManwon(eokId, manId, totalMan){
   totalMan = Math.max(0, Math.round(totalMan));
   document.getElementById(eokId).value = Math.floor(totalMan/10000);
-  document.getElementById(manId).value = totalMan % 10000;
+  document.getElementById(manId).value = (totalMan % 10000).toLocaleString();
+}
+
+function formatCommaInput(el){
+  const raw = el.value.replace(/[^0-9]/g, '');
+  if(raw === ''){ el.value = ''; return; }
+  el.value = parseInt(raw, 10).toLocaleString();
+}
+
+function numVal(id){
+  const el = document.getElementById(id);
+  if(!el) return 0;
+  const raw = (el.value || '').toString().replace(/,/g, '');
+  return parseFloat(raw) || 0;
 }
 
 function formatWon(n){
@@ -817,7 +833,7 @@ const POLICY_DEFS = {
 function getScreeningParams(){
   const houseStatus = document.getElementById('houseStatus').value;
   return {
-    income: (parseFloat(document.getElementById('income').value) || 0) * 10000,
+    income: numVal('income') * 10000,
     newlywed: document.getElementById('newlywed').checked,
     newborn: document.getElementById('newborn').checked,
     multiChild: document.getElementById('multiChild').checked,
@@ -987,7 +1003,7 @@ function solveMaxPrice(cashAvailable, ctxBase){
 function monthlyPaymentCalc(loan, ratePct, years){
   const r = (ratePct/100)/12;
   const n = years*12;
-  if(loan <= 0) return 0;
+  if(loan <= 0 || n <= 0) return 0;
   if(r === 0) return loan/n;
   return loan * r * Math.pow(1+r, n) / (Math.pow(1+r, n) - 1);
 }
@@ -1000,15 +1016,15 @@ function buildCtxBase(){
   const regulated = document.getElementById('regulated').value === 'true';
   const houseStatus = document.getElementById('houseStatus').value;
   const pyeong = parseFloat(document.getElementById('pyeong').value) || 0;
-  const interiorPerPyeong = parseFloat(document.getElementById('interiorPerPyeong').value) || 0;
-  const etc = parseFloat(document.getElementById('etc').value) || 0;
+  const interiorPerPyeong = numVal('interiorPerPyeong');
+  const etc = numVal('etc');
   const over85 = document.getElementById('over85').checked;
   const firstTimeTaxCut = document.getElementById('firstTimeTaxCut').checked;
-  const creditLoan = (parseFloat(document.getElementById('creditLoan').value) || 0) * 10000;
-  const companyLoan = (parseFloat(document.getElementById('companyLoan').value) || 0) * 10000;
-  const sellerFinancing = (parseFloat(document.getElementById('sellerFinancing').value) || 0) * 10000;
+  const creditLoan = numVal('creditLoan') * 10000;
+  const companyLoan = numVal('companyLoan') * 10000;
+  const sellerFinancing = numVal('sellerFinancing') * 10000;
   const extraFunding = creditLoan + companyLoan + sellerFinancing;
-  const income = (parseFloat(document.getElementById('income').value) || 0) * 10000;
+  const income = numVal('income') * 10000;
   const newlywed = document.getElementById('newlywed').checked;
   const newborn = document.getElementById('newborn').checked;
   const multiChild = document.getElementById('multiChild').checked;
@@ -1042,6 +1058,16 @@ function calculate(){
 
   if(mode === 'A'){
     const cash = getAmountManwon('cashEok','cashMan') * 10000;
+    if(cash <= 0){
+      heroBox.classList.add('warn-box');
+      document.getElementById('resultLabel').textContent = '입력이 필요해요';
+      document.getElementById('resultAmount').textContent = '보유자금을 입력해주세요';
+      document.getElementById('resultSub').textContent = '4단계로 돌아가서 보유자금을 입력해주세요.';
+      document.getElementById('receiptLines').innerHTML = '';
+      document.getElementById('fallbackNote').innerHTML = '';
+      document.getElementById('monthlyPayment').textContent = '-';
+      return;
+    }
     const fixedCosts = ctxBase.pyeong*ctxBase.interiorPerPyeong*10000 + ctxBase.etc*10000;
     if(fixedCosts >= cash){
       heroBox.classList.add('warn-box');
@@ -1096,8 +1122,20 @@ function calculate(){
 
 * 2026.08 기준 참고용 계산, 실제와 다를 수 있음`;
 
+    shareSummary = `최대 구매 가능 매매가 ${formatWon(maxPrice)} · 자기자본 ${formatWon(c.cashNeeded)} 필요`;
+
   } else {
     const price = getAmountManwon('priceEok','priceMan') * 10000;
+    if(price <= 0){
+      heroBox.classList.add('warn-box');
+      document.getElementById('resultLabel').textContent = '입력이 필요해요';
+      document.getElementById('resultAmount').textContent = '매매가격을 입력해주세요';
+      document.getElementById('resultSub').textContent = '4단계로 돌아가서 아파트 매매가격을 입력해주세요.';
+      document.getElementById('receiptLines').innerHTML = '';
+      document.getElementById('fallbackNote').innerHTML = '';
+      document.getElementById('monthlyPayment').textContent = '-';
+      return;
+    }
     const c = calcCosts({...ctxBase, price});
     renderFallbackNote(c);
 
@@ -1139,6 +1177,8 @@ function calculate(){
 월 상환액: ${formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years))}
 
 * 2026.08 기준 참고용 계산, 실제와 다를 수 있음`;
+
+    shareSummary = `필요한 자기자본 ${formatWon(c.cashNeeded)} · 매매가 ${formatWon(price)} 기준`;
   }
 }
 
@@ -1156,18 +1196,18 @@ function buildShareUrl(){
   p.set('r', document.getElementById('regulated').value === 'true' ? '1' : '0');
   p.set('h', document.getElementById('houseStatus').value);
   p.set('py', document.getElementById('pyeong').value);
-  p.set('ip', document.getElementById('interiorPerPyeong').value);
-  p.set('etc', document.getElementById('etc').value);
+  p.set('ip', numVal('interiorPerPyeong'));
+  p.set('etc', numVal('etc'));
   p.set('rt', document.getElementById('rate').value);
   p.set('yr', document.getElementById('years').value);
   p.set('cash', getAmountManwon('cashEok','cashMan'));
   p.set('price', getAmountManwon('priceEok','priceMan'));
-  p.set('cl', document.getElementById('creditLoan').value);
-  p.set('col', document.getElementById('companyLoan').value);
-  p.set('sf', document.getElementById('sellerFinancing').value);
+  p.set('cl', numVal('creditLoan'));
+  p.set('col', numVal('companyLoan'));
+  p.set('sf', numVal('sellerFinancing'));
   p.set('ftc', document.getElementById('firstTimeTaxCut').checked ? '1' : '0');
   p.set('o85', document.getElementById('over85').checked ? '1' : '0');
-  p.set('inc', document.getElementById('income').value);
+  p.set('inc', numVal('income'));
   p.set('nw', document.getElementById('newlywed').checked ? '1' : '0');
   p.set('nb', document.getElementById('newborn').checked ? '1' : '0');
   p.set('mc', document.getElementById('multiChild').checked ? '1' : '0');
@@ -1182,18 +1222,18 @@ function loadFromUrlIfPresent(){
   if(p.has('r')) document.getElementById('regulated').value = p.get('r') === '1' ? 'true' : 'false';
   if(p.has('h')) document.getElementById('houseStatus').value = p.get('h');
   if(p.has('py')) document.getElementById('pyeong').value = p.get('py');
-  if(p.has('ip')) document.getElementById('interiorPerPyeong').value = p.get('ip');
-  if(p.has('etc')) document.getElementById('etc').value = p.get('etc');
+  if(p.has('ip')) document.getElementById('interiorPerPyeong').value = (parseFloat(p.get('ip'))||0).toLocaleString();
+  if(p.has('etc')) document.getElementById('etc').value = (parseFloat(p.get('etc'))||0).toLocaleString();
   if(p.has('rt')) document.getElementById('rate').value = p.get('rt');
   if(p.has('yr')) document.getElementById('years').value = p.get('yr');
   if(p.has('cash')) setAmountManwon('cashEok','cashMan', parseFloat(p.get('cash')) || 0);
   if(p.has('price')) setAmountManwon('priceEok','priceMan', parseFloat(p.get('price')) || 0);
-  if(p.has('cl')) document.getElementById('creditLoan').value = p.get('cl');
-  if(p.has('col')) document.getElementById('companyLoan').value = p.get('col');
-  if(p.has('sf')) document.getElementById('sellerFinancing').value = p.get('sf');
+  if(p.has('cl')) document.getElementById('creditLoan').value = (parseFloat(p.get('cl'))||0).toLocaleString();
+  if(p.has('col')) document.getElementById('companyLoan').value = (parseFloat(p.get('col'))||0).toLocaleString();
+  if(p.has('sf')) document.getElementById('sellerFinancing').value = (parseFloat(p.get('sf'))||0).toLocaleString();
   if(p.has('ftc')) document.getElementById('firstTimeTaxCut').checked = p.get('ftc') === '1';
   if(p.has('o85')) document.getElementById('over85').checked = p.get('o85') === '1';
-  if(p.has('inc')) document.getElementById('income').value = p.get('inc');
+  if(p.has('inc')) document.getElementById('income').value = (parseFloat(p.get('inc'))||0).toLocaleString();
   if(p.has('nw')) document.getElementById('newlywed').checked = p.get('nw') === '1';
   if(p.has('nb')) document.getElementById('newborn').checked = p.get('nb') === '1';
   if(p.has('mc')) document.getElementById('multiChild').checked = p.get('mc') === '1';
@@ -1203,7 +1243,7 @@ function loadFromUrlIfPresent(){
 
 async function shareResult(){
   const url = buildShareUrl();
-  const summary = lastShareText ? lastShareText.split('\n').slice(0,3).join(' · ') : '영끌계산기 결과';
+  const summary = shareSummary || '영끌계산기 결과를 확인해보세요';
   if(navigator.share){
     try{
       await navigator.share({ title: '영끌계산기 결과', text: summary, url });
