@@ -16,10 +16,10 @@
     --ink:#191F28;
     --ink-soft:#6B7684;
     --ink-faint:#78828E;
-    --primary:#3182F6;
-    --primary-soft:#EEF4FF;
-    --primary-dark:#1B64DA;
-    --accent:#F7622A;
+    --primary:#F2542D;
+    --primary-soft:#FFF1EC;
+    --primary-dark:#C93F1E;
+    --accent:#B45309;
     --success:#0EA968;
     --danger:#F04452;
     --border:#E5E8EB;
@@ -454,6 +454,30 @@
   .chip:hover{border-color:var(--primary);color:var(--primary-dark);background:var(--primary-soft);}
   .chip:active{transform:scale(0.96);}
   .chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  .compare-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+    gap:10px;
+  }
+  .compare-row:last-child{border-bottom:none;}
+  .compare-row .name{font-size:13px;font-weight:600;color:var(--ink);}
+  .compare-row .name .badge-current{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    color:var(--primary-dark);
+    background:var(--primary-soft);
+    padding:2px 7px;
+    border-radius:10px;
+    margin-left:6px;
+  }
+  .compare-row .figures{text-align:right;}
+  .compare-row .figures .loan{font-family:'Space Mono','Pretendard',monospace;font-weight:700;font-size:14px;color:var(--ink);}
+  .compare-row .figures .cash{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
   .link-btn:active{transform:scale(0.97);}
 </style>
 </head>
@@ -722,6 +746,14 @@
         <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
       </div>
       <button class="calc-btn" id="shareBtn" onclick="shareResult()">🔗 결과 링크 공유하기</button>
+
+      <div class="hint" style="text-align:center;margin-bottom:20px;">📱 자주 쓰실 것 같으면 홈 화면에 추가해두세요 — 사파리는 공유 버튼 → "홈 화면에 추가", 크롬은 메뉴 → "홈 화면에 추가"예요.</div>
+
+      <div class="card" id="compareCard" style="display:none;">
+        <h2>주택 보유 상황이 다르면?</h2>
+        <div class="hint" style="margin-bottom:12px;">일반 시중은행 주담대 기준으로, 같은 가격일 때 대출한도가 어떻게 달라지는지 비교했어요.</div>
+        <div id="compareRows"></div>
+      </div>
 
       <div class="card">
         <h2>이 예산으로 매물 찾아보기</h2>
@@ -1091,6 +1123,27 @@ function renderFallbackNote(c){
   }
 }
 
+function renderCompare(ctxBase, price){
+  const scenarios = [
+    {key:'first', label:'생애최초 구입자'},
+    {key:'none', label:'무주택자 (생애최초 아님)'},
+    {key:'oneDisposing', label:'처분조건부 1주택 갈아타기'}
+  ];
+  const rows = scenarios.map(s=>{
+    const c = calcCosts({...ctxBase, price, houseStatus:s.key, loanChoice:'bank'});
+    const isCurrent = s.key === ctxBase.houseStatus;
+    return `<div class="compare-row">
+      <div class="name">${s.label}${isCurrent?'<span class="badge-current">현재 선택</span>':''}</div>
+      <div class="figures">
+        <div class="loan">대출 ${formatWon(c.mortgageLoan)}</div>
+        <div class="cash">자기자본 ${formatWon(c.cashNeeded)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('compareRows').innerHTML = rows;
+  document.getElementById('compareCard').style.display = 'block';
+}
+
 function calculate(){
   const ctxBase = buildCtxBase();
   const rate = parseFloat(document.getElementById('rate').value) || 0;
@@ -1100,6 +1153,7 @@ function calculate(){
   const heroBox = document.getElementById('resultHero');
   heroBox.classList.remove('warn-box');
   result.style.display = 'block';
+  document.getElementById('compareCard').style.display = 'none';
   goToStep(7);
 
   if(mode === 'A'){
@@ -1128,6 +1182,7 @@ function calculate(){
     const maxPrice = solveMaxPrice(cash, ctxBase);
     const c = calcCosts({...ctxBase, price: maxPrice});
     renderFallbackNote(c);
+    renderCompare(ctxBase, maxPrice);
 
     document.getElementById('resultLabel').textContent = '최대 구매 가능 매매가';
     document.getElementById('resultAmount').textContent = formatWon(maxPrice);
@@ -1184,7 +1239,7 @@ function calculate(){
     }
     const c = calcCosts({...ctxBase, price});
     renderFallbackNote(c);
-
+    renderCompare(ctxBase, price);
     document.getElementById('resultLabel').textContent = '필요한 자기자본(현금)';
     document.getElementById('resultAmount').textContent = formatWon(c.cashNeeded);
     document.getElementById('resultSub').textContent = `총 소요금액 ${formatWon(c.totalNeeded)} 중 조달자금 ${formatWon(c.totalFunding)} 제외`;
