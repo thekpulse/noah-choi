@@ -166,7 +166,7 @@
     transition:background .15s, border-color .15s;
   }
   select{font-family:'Pretendard', sans-serif;font-weight:600;font-size:14px;}
-  input::placeholder{color:var(--ink-faint);font-weight:500;opacity:1;}
+  input::placeholder{color:#B0B8C1;font-weight:400;font-style:italic;opacity:1;}
   input:focus, select:focus{
     outline:none;
     background:#fff;
@@ -358,6 +358,29 @@
     margin-bottom:12px;
     line-height:1.5;
   }
+  .success-note{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;
+    color:var(--success);
+    background:#E9FBF3;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:12px;
+    line-height:1.6;
+  }
+  #tradeUpCard{
+    margin-top:6px;
+    padding-top:18px;
+    border-top:1px dashed var(--border);
+  }
+  #tradeResultBox .amount-line{
+    text-align:center;
+    font-family:'Space Mono','Pretendard',monospace;
+    font-size:20px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:10px;
+  }
 
   .monthly-box{
     margin-top:16px;
@@ -487,7 +510,7 @@
   <div class="wrap">
     <span class="hero-tag">영끌계산기 · 2026.08 기준</span>
     <h1>이 집,<br><span>나 살 수 있어?</span></h1>
-    <p>보유자금으로 살 수 있는 집, 혹은 원하는 집에 필요한 예산을 대출한도·정책대출·취득세·복비·인테리어까지 한 번에 계산해요.</p>
+    <p>보유자금으로 살 수 있는 집, 원하는 집에 필요한 예산, 혹은 지금 집을 팔고 갈아타는 경우까지 — 대출한도·정책대출·취득세·복비·인테리어·양도세 비과세 여부까지 한 번에 계산해요.</p>
   </div>
 </div>
 
@@ -537,6 +560,12 @@
       </div>
       <div class="field">
         <div class="checkrow">
+          <input type="checkbox" id="isTradeUp" onchange="toggleTradeUp()">
+          <label for="isTradeUp">지금 사는 집을 팔고 새 집으로 갈아타는 거예요</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="checkrow">
           <input type="checkbox" id="firstTimeTaxCut">
           <label for="firstTimeTaxCut">생애최초 취득세 감면 적용 (12억 이하, 최대 200만원 한도)</label>
         </div>
@@ -544,6 +573,44 @@
           <input type="checkbox" id="over85">
           <label for="over85">전용면적 85㎡ 초과 (농어촌특별세 0.2% 추가)</label>
         </div>
+      </div>
+      <div id="tradeUpCard" style="display:none;">
+        <div class="hint" style="margin-bottom:14px;">종전주택을 팔 때 <b>양도소득세</b>가 발생할 수 있어요. 아래 정보를 넣으면 비과세 가능 여부와, 팔고 나서 실제로 손에 쥐는 돈(순매도자금)을 계산해드려요.</div>
+        <div class="field">
+          <label>종전주택 취득일</label>
+          <input type="date" id="prevAcqDate">
+        </div>
+        <div class="checkrow">
+          <input type="checkbox" id="prevRegulatedAcq">
+          <label for="prevRegulatedAcq">종전주택을 살 당시 조정대상지역/투기과열지구였어요</label>
+        </div>
+        <div class="checkrow">
+          <input type="checkbox" id="prevLived2y">
+          <label for="prevLived2y">종전주택에 2년 이상 실거주했어요</label>
+        </div>
+        <div class="field">
+          <label>종전주택 매도 예상가</label>
+          <div class="amount-row">
+            <div class="input-suffix">
+              <input type="number" id="prevSaleEok" placeholder="10" step="1" min="0">
+              <span>억</span>
+            </div>
+            <div class="input-suffix">
+              <input type="text" inputmode="numeric" id="prevSaleMan" placeholder="0" oninput="formatCommaInput(this)">
+              <span>만원</span>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>종전주택 기존 대출 잔액</label>
+          <div class="input-suffix">
+            <input type="text" inputmode="numeric" id="prevLoanBalance" placeholder="0" oninput="formatCommaInput(this)">
+            <span>만원</span>
+          </div>
+          <div class="hint">매도대금에서 먼저 갚아야 하는 금액이에요.</div>
+        </div>
+        <button type="button" class="link-btn" style="width:100%;margin-bottom:14px;" onclick="computeTradeProceeds()">순매도자금 계산하기</button>
+        <div id="tradeResultBox"></div>
       </div>
     </div>
     <div class="step-nav">
@@ -680,6 +747,14 @@
             <span>년</span>
           </div>
         </div>
+        <div class="field">
+          <label>은행 대출 한도 직접 입력 (선택)</label>
+          <div class="input-suffix">
+            <input type="text" inputmode="numeric" id="manualLoanCap" placeholder="모르면 비워두세요" oninput="formatCommaInput(this)">
+            <span>만원</span>
+          </div>
+          <div class="hint">정부 기준(LTV·구간별 한도)과 별개로, 개별 은행이 더 엄격한 자체 한도를 두는 경우가 있어요. 예: KB국민은행은 2026.07부터 지역과 무관하게 주택구입자금 대출을 3억원으로 자체 제한 중이에요(수시로 바뀔 수 있음). 상담받은 실제 한도를 알고 있다면 여기 입력해주세요 — 계산된 대출한도가 이 값보다 크면 이 값으로 대체돼요.</div>
+        </div>
       </div>
     </div>
     <div class="step-nav">
@@ -783,6 +858,9 @@
       </div>
       <div class="disclaimer-item">
         <b>추가 자금원은 가정치예요.</b> 신용대출·사내대출·매도인 근저당(셀러파이낸싱) 금액은 사용자가 직접 입력한 값이며, 실제 가능 여부·한도는 개인 소득·회사 정책·상대방과의 협의에 따라 달라져요.
+      </div>
+      <div class="disclaimer-item">
+        <b>갈아타기 양도세는 비과세 여부만 판단해요.</b> 1세대1주택·일시적 2주택(1-2-3 법칙) 비과세 요건 충족 여부만 확인해드리고, 실제 양도세액(12억 초과분 과세, 장기보유특별공제 등)은 계산하지 않아요. 비과세가 안 되는 경우 정확한 세액은 반드시 세무사와 확인하세요.
       </div>
       <div class="disclaimer-item" style="margin-bottom:0;">
         이 계산기는 매매·대출 실행을 대신하지 않아요.
@@ -912,6 +990,7 @@ function getScreeningParams(){
   const houseStatus = document.getElementById('houseStatus').value;
   return {
     income: numVal('income') * 10000,
+    incomeEntered: document.getElementById('income').value.trim() !== '',
     newlywed: document.getElementById('newlywed').checked,
     newborn: document.getElementById('newborn').checked,
     multiChild: document.getElementById('multiChild').checked,
@@ -923,7 +1002,8 @@ function getScreeningParams(){
 
 function householdEligible(id, p){
   // 가격·평형 조건 없이, 소득/가구 조건만으로 1차 판단
-  const full = {...p, price: 0, pyeongM2: 0};
+  // 연소득을 아직 입력 안 했으면, 무조건 "가능"으로 잘못 보여주지 않도록 미판정(불가) 처리
+  if(!p.incomeEntered) return false;
   if(id === 'didimdol') return p.noHouse && p.income <= (p.newlywed?85000000:60000000);
   if(id === 'didimdolBaby') return p.noHouse && p.newborn && p.income <= 200000000;
   if(id === 'bogeumjari'){ const limit = p.multiChild?100000000:(p.newlywed?85000000:70000000); return p.noHouse && p.income<=limit; }
@@ -946,10 +1026,11 @@ function renderPolicyOptions(){
   container.innerHTML = defs.map(d=>{
     const eligible = eligibilityMap[d.id];
     const checked = loanChoice === d.id;
+    const reasonText = eligible ? '' : (!p.incomeEntered && !d.alwaysEligible ? ' · 연소득 입력 필요' : ' · 소득/가구 조건 미충족');
     return `<label class="loan-option ${eligible?'':'disabled'}">
       <input type="radio" name="loanChoiceRadio" value="${d.id}" ${checked?'checked':''} ${eligible?'':'disabled'} onclick="selectLoan('${d.id}')">
       <div>
-        <div class="loan-option-name">${d.name}${eligible?'':' · 소득/가구 조건 미충족'}</div>
+        <div class="loan-option-name">${d.name}${reasonText}</div>
         <div class="loan-option-meta">${d.meta}</div>
       </div>
     </label>`;
@@ -959,6 +1040,73 @@ function renderPolicyOptions(){
 function selectLoan(id){
   loanChoice = id;
   renderPolicyOptions();
+}
+
+let lastTradeNetProceeds = 0;
+
+function toggleTradeUp(){
+  const checked = document.getElementById('isTradeUp').checked;
+  document.getElementById('tradeUpCard').style.display = checked ? 'block' : 'none';
+  if(checked){
+    document.getElementById('houseStatus').value = 'oneDisposing';
+    renderPolicyOptions();
+  }
+}
+
+function computeTradeProceeds(){
+  const acqDateStr = document.getElementById('prevAcqDate').value;
+  const box = document.getElementById('tradeResultBox');
+  if(!acqDateStr){
+    box.innerHTML = '<div class="fallback-note">⚠ 종전주택 취득일을 입력해주세요.</div>';
+    return;
+  }
+  const salePrice = getAmountManwon('prevSaleEok','prevSaleMan') * 10000;
+  if(salePrice <= 0){
+    box.innerHTML = '<div class="fallback-note">⚠ 종전주택 매도 예상가를 입력해주세요.</div>';
+    return;
+  }
+  const acqDate = new Date(acqDateStr);
+  const today = new Date();
+  const heldYears = (today - acqDate) / (1000*60*60*24*365.25);
+  const regulatedAcq = document.getElementById('prevRegulatedAcq').checked;
+  const lived2y = document.getElementById('prevLived2y').checked;
+  const loanBalance = numVal('prevLoanBalance') * 10000;
+
+  const meetsBasic = heldYears >= 2 && (!regulatedAcq || lived2y);
+  const meets123 = heldYears >= 1;
+  const taxExempt = meetsBasic && meets123;
+
+  const netProceeds = Math.max(0, salePrice - loanBalance);
+  lastTradeNetProceeds = netProceeds;
+
+  const deadline = new Date(today);
+  deadline.setFullYear(deadline.getFullYear() + 3);
+  const deadlineStr = `${deadline.getFullYear()}.${deadline.getMonth()+1}.${deadline.getDate()}`;
+
+  let notes = '';
+  if(!meets123){
+    notes += `<div class="fallback-note">⚠ 종전주택을 취득한 지 아직 1년이 안 됐어요. 오늘 새 집을 사면 "1-2-3 법칙"(일시적 2주택 비과세 특례)의 최소 보유기간 요건을 못 채워서, 비과세가 적용되지 않을 수 있어요. 양도소득세가 발생할 가능성이 높으니 세무사 상담이 필요해요.</div>`;
+  } else if(taxExempt){
+    notes += `<div class="success-note">✅ 종전주택은 1세대1주택 비과세 요건(보유 2년${regulatedAcq ? '·거주 2년 포함' : ''})을 충족하고, 오늘 새 집을 취득하면 일시적 2주택 비과세 특례도 적용될 수 있어요. <b>${deadlineStr}까지</b> 종전주택을 팔아야 비과세가 유지돼요. 이 날짜를 꼭 기억해두세요.</div>`;
+    if(salePrice > 1200000000){
+      notes += `<div class="fallback-note">ℹ️ 다만 매도가가 12억원을 초과해서, 12억 초과분에는 일부 과세될 수 있어요(장기보유특별공제로 최대 80%까지 공제 가능). 정확한 세액은 세무사 상담이 필요해요.</div>`;
+    }
+  } else {
+    notes += `<div class="fallback-note">⚠ 종전주택이 1세대1주택 비과세 요건(보유 2년${regulatedAcq ? ', 조정지역 취득이라 거주 2년도 필요' : ''})을 충족하지 못해요. 양도소득세가 발생할 수 있고, 정확한 세액은 세무사 상담이 필요해요. 아래 순매도자금은 양도세를 반영하지 않은 금액이에요.</div>`;
+  }
+
+  box.innerHTML = `
+    <div class="amount-line">${formatWon(netProceeds)}</div>
+    <div class="hint" style="text-align:center;margin-bottom:14px;">종전주택 매도가 − 기존 대출잔액 = 예상 순매도자금 (양도세 별도 반영 전)</div>
+    ${notes}
+    <button type="button" class="calc-btn" style="margin-bottom:0;" onclick="fillTradeProceeds()">이 금액을 보유자금에 채우기</button>
+  `;
+}
+
+function fillTradeProceeds(){
+  setAmountManwon('cashEok', 'cashMan', lastTradeNetProceeds / 10000);
+  setMode('A');
+  goToStep(4);
 }
 
 function getLTV(houseStatus, regulated){
@@ -977,21 +1125,28 @@ function loanTypeLabel(type){
 }
 
 function computeLoan(ctx){
-  // ctx: {price, houseStatus, regulated, loanChoice, income, newlywed, newborn, multiChild, pyeongM2}
+  // ctx: {price, houseStatus, regulated, loanChoice, income, newlywed, newborn, multiChild, pyeongM2, manualLoanCap}
   const noHouse = (ctx.houseStatus === 'first' || ctx.houseStatus === 'none');
   const firstTime = ctx.houseStatus === 'first';
+  const clamp = (result) => {
+    if(ctx.manualLoanCap > 0 && result.amount > ctx.manualLoanCap){
+      return {...result, amount: ctx.manualLoanCap, cappedByBank: true};
+    }
+    return {...result, cappedByBank: false};
+  };
 
   if(ctx.loanChoice && ctx.loanChoice !== 'bank'){
     const def = POLICY_DEFS[ctx.loanChoice];
+    const infoMissing = !ctx.incomeEntered || !ctx.pyeongEntered;
     const p = {
       price: ctx.price, income: ctx.income, newlywed: ctx.newlywed, newborn: ctx.newborn,
       multiChild: ctx.multiChild, noHouse, firstTime, regulated: ctx.regulated, pyeongM2: ctx.pyeongM2
     };
-    if(def && def.eligible(p)){
+    if(!infoMissing && def && def.eligible(p)){
       const amount = Math.min(p.price * def.ltv(p), def.cap(p));
-      return {amount: Math.max(0, amount), type: ctx.loanChoice, fellBack:false};
+      return clamp({amount: Math.max(0, amount), type: ctx.loanChoice, fellBack:false});
     }
-    // 이 매매가/평형에서는 자격 미충족 -> 일반 주담대로 대체
+    // 자격 미충족(또는 연소득·평형 미입력) -> 일반 주담대로 대체
     const ltv = getLTV(ctx.houseStatus, ctx.regulated);
     let loan = ctx.price * ltv;
     if(ctx.regulated){
@@ -1001,7 +1156,7 @@ function computeLoan(ctx){
       else cap = 200000000;
       loan = Math.min(loan, cap);
     }
-    return {amount: Math.max(0, loan), type:'bank', fellBack:true};
+    return clamp({amount: Math.max(0, loan), type:'bank', fellBack:true, fellBackReason: infoMissing ? 'missing' : 'ineligible'});
   }
 
   const ltv = getLTV(ctx.houseStatus, ctx.regulated);
@@ -1013,7 +1168,7 @@ function computeLoan(ctx){
     else cap = 200000000;
     loan = Math.min(loan, cap);
   }
-  return {amount: Math.max(0, loan), type:'bank', fellBack:false};
+  return clamp({amount: Math.max(0, loan), type:'bank', fellBack:false});
 }
 
 function acquisitionTaxRate(price, houseStatus, regulated){
@@ -1063,7 +1218,7 @@ function calcCosts(ctx){
 
   return {
     tax: totalTax, brokerFee, interiorCost, etcCost,
-    mortgageLoan, loanType: loanResult.type, fellBack: loanResult.fellBack,
+    mortgageLoan, loanType: loanResult.type, fellBack: loanResult.fellBack, fellBackReason: loanResult.fellBackReason, cappedByBank: loanResult.cappedByBank,
     totalFunding, totalNeeded, cashNeeded
   };
 }
@@ -1094,6 +1249,7 @@ function buildCtxBase(){
   const regulated = document.getElementById('regulated').value === 'true';
   const houseStatus = document.getElementById('houseStatus').value;
   const pyeong = parseFloat(document.getElementById('pyeong').value) || 0;
+  const pyeongEntered = document.getElementById('pyeong').value.trim() !== '';
   const interiorPerPyeong = numVal('interiorPerPyeong');
   const etc = numVal('etc');
   const over85 = document.getElementById('over85').checked;
@@ -1103,24 +1259,33 @@ function buildCtxBase(){
   const sellerFinancing = numVal('sellerFinancing') * 10000;
   const extraFunding = creditLoan + companyLoan + sellerFinancing;
   const income = numVal('income') * 10000;
+  const incomeEntered = document.getElementById('income').value.trim() !== '';
   const newlywed = document.getElementById('newlywed').checked;
   const newborn = document.getElementById('newborn').checked;
   const multiChild = document.getElementById('multiChild').checked;
+  const manualLoanCap = numVal('manualLoanCap') * 10000;
 
   return {
-    regulated, houseStatus, pyeong, interiorPerPyeong, etc, over85, firstTimeTaxCut,
-    extraFunding, loanChoice, income, newlywed, newborn, multiChild,
-    creditLoan, companyLoan, sellerFinancing
+    regulated, houseStatus, pyeong, pyeongEntered, interiorPerPyeong, etc, over85, firstTimeTaxCut,
+    extraFunding, loanChoice, income, incomeEntered, newlywed, newborn, multiChild,
+    creditLoan, companyLoan, sellerFinancing, manualLoanCap
   };
 }
 
 function renderFallbackNote(c){
   const el = document.getElementById('fallbackNote');
+  const notes = [];
   if(c.fellBack){
-    el.innerHTML = `<div class="fallback-note">⚠ 선택하신 ${loanTypeLabel(loanChoice)}은 이 매매가·평형 조건에서는 자격 요건을 초과해서, 일반 시중은행 주담대 기준으로 다시 계산했어요.</div>`;
-  } else {
-    el.innerHTML = '';
+    if(c.fellBackReason === 'missing'){
+      notes.push(`⚠ 선택하신 ${loanTypeLabel(loanChoice)}의 자격을 확인하려면 3단계에서 부부합산 연소득을, 4단계에서 평형을 입력해야 해요. 입력하지 않아서 일반 시중은행 주담대 기준으로 계산했어요.`);
+    } else {
+      notes.push(`⚠ 선택하신 ${loanTypeLabel(loanChoice)}은 이 매매가·평형 조건에서는 자격 요건을 초과해서, 일반 시중은행 주담대 기준으로 다시 계산했어요.`);
+    }
   }
+  if(c.cappedByBank){
+    notes.push(`ℹ️ 직접 입력하신 은행 대출 한도가 계산된 한도보다 낮아서, 입력하신 값으로 대출금액을 제한했어요.`);
+  }
+  el.innerHTML = notes.length ? notes.map(n => `<div class="fallback-note">${n}</div>`).join('') : '';
 }
 
 function renderCompare(ctxBase, price){
@@ -1146,7 +1311,8 @@ function renderCompare(ctxBase, price){
 
 function calculate(){
   const ctxBase = buildCtxBase();
-  const rate = parseFloat(document.getElementById('rate').value) || 0;
+  const rateRaw = document.getElementById('rate').value;
+  const rate = parseFloat(rateRaw) || 0;
   const years = parseFloat(document.getElementById('years').value) || 30;
 
   const result = document.getElementById('result');
@@ -1156,15 +1322,26 @@ function calculate(){
   document.getElementById('compareCard').style.display = 'none';
   goToStep(7);
 
+  if(rateRaw.trim() === '' || rate <= 0){
+    heroBox.classList.add('warn-box');
+    document.getElementById('resultLabel').textContent = '입력이 필요해요';
+    document.getElementById('resultAmount').textContent = '대출금리를 입력해주세요';
+    document.getElementById('resultSub').textContent = '금리를 비워두면 0%로 계산돼서 월 상환액이 실제보다 훨씬 적게 나와요. 5단계에서 금리를 채워주세요.';
+    document.getElementById('receiptLines').innerHTML = '';
+    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(5)">5단계로 바로 가기</button>';
+    document.getElementById('monthlyPayment').textContent = '-';
+    return;
+  }
+
   if(mode === 'A'){
     const cash = getAmountManwon('cashEok','cashMan') * 10000;
     if(cash <= 0){
       heroBox.classList.add('warn-box');
       document.getElementById('resultLabel').textContent = '입력이 필요해요';
       document.getElementById('resultAmount').textContent = '보유자금을 입력해주세요';
-      document.getElementById('resultSub').textContent = '4단계로 돌아가서 보유자금을 입력해주세요.';
+      document.getElementById('resultSub').textContent = '4단계에서 보유자금을 채워야 계산할 수 있어요.';
       document.getElementById('receiptLines').innerHTML = '';
-      document.getElementById('fallbackNote').innerHTML = '';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
       return;
     }
@@ -1175,7 +1352,7 @@ function calculate(){
       document.getElementById('resultAmount').textContent = '보유자금 부족';
       document.getElementById('resultSub').textContent = '인테리어비 + 기타비용이 이미 보유자금을 초과합니다. 입력값을 다시 확인해주세요.';
       document.getElementById('receiptLines').innerHTML = '';
-      document.getElementById('fallbackNote').innerHTML = '';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
       return;
     }
@@ -1231,9 +1408,9 @@ function calculate(){
       heroBox.classList.add('warn-box');
       document.getElementById('resultLabel').textContent = '입력이 필요해요';
       document.getElementById('resultAmount').textContent = '매매가격을 입력해주세요';
-      document.getElementById('resultSub').textContent = '4단계로 돌아가서 아파트 매매가격을 입력해주세요.';
+      document.getElementById('resultSub').textContent = '4단계에서 아파트 매매가격을 채워야 계산할 수 있어요.';
       document.getElementById('receiptLines').innerHTML = '';
-      document.getElementById('fallbackNote').innerHTML = '';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
       return;
     }
@@ -1313,6 +1490,7 @@ function buildShareUrl(){
   p.set('nb', document.getElementById('newborn').checked ? '1' : '0');
   p.set('mc', document.getElementById('multiChild').checked ? '1' : '0');
   p.set('lc', loanChoice);
+  p.set('mlc', numVal('manualLoanCap'));
   return location.origin + location.pathname + '?' + p.toString();
 }
 
@@ -1339,6 +1517,7 @@ function loadFromUrlIfPresent(){
   if(p.has('nb')) document.getElementById('newborn').checked = p.get('nb') === '1';
   if(p.has('mc')) document.getElementById('multiChild').checked = p.get('mc') === '1';
   if(p.has('lc')) loanChoice = p.get('lc');
+  if(p.has('mlc')) document.getElementById('manualLoanCap').value = (parseFloat(p.get('mlc'))||0) > 0 ? (parseFloat(p.get('mlc'))||0).toLocaleString() : '';
   return true;
 }
 
