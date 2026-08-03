@@ -40,6 +40,31 @@
   }
   .wrap{max-width:640px;margin:0 auto;padding:0 20px;}
 
+  .tool-tabs{
+    display:flex;
+    max-width:640px;
+    margin:0 auto;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+  }
+  .tool-tab{
+    flex:1;
+    padding:14px;
+    text-align:center;
+    font-family:'Pretendard', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    background:transparent;
+    border:none;
+    border-bottom:3px solid transparent;
+    color:var(--ink-faint);
+    cursor:pointer;
+  }
+  .tool-tab.active{
+    color:var(--primary-dark);
+    border-bottom-color:var(--primary);
+  }
+
   /* HERO */
   .hero{
     background:var(--surface);
@@ -486,6 +511,28 @@
     border-bottom:1px solid var(--border);
     gap:10px;
   }
+
+  .receipt-section-label{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;
+    font-weight:700;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin-bottom:6px;
+    padding-bottom:8px;
+    border-bottom:1px dashed var(--border);
+  }
+  .rent-summary{
+    background:var(--ink);
+    color:#fff;
+    margin:16px 0 0;
+    padding:14px 20px;
+    border-radius:var(--radius);
+  }
+  .rent-summary .line-item{padding:6px 0;border-bottom:none;}
+  .rent-summary .k{color:#B8C0CC;font-family:'Pretendard', sans-serif;font-weight:500;}
+  .rent-summary .v{color:#fff;font-weight:700;}
   .compare-row:last-child{border-bottom:none;}
   .compare-row .name{font-size:13px;font-weight:600;color:var(--ink);}
   .compare-row .name .badge-current{
@@ -506,6 +553,12 @@
 </head>
 <body>
 
+<div class="tool-tabs">
+  <button class="tool-tab active" id="tabBuy" onclick="showTool('buy')">🏠 매매 계산기</button>
+  <button class="tool-tab" id="tabRent" onclick="showTool('rent')">🔑 전세·월세 비교</button>
+</div>
+
+<div id="buyToolRoot">
 <div class="hero">
   <div class="wrap">
     <span class="hero-tag">영끌계산기 · 2026.08 기준</span>
@@ -874,6 +927,151 @@
     </footer>
   </div>
 </div>
+</div><!-- /buyToolRoot -->
+
+<div id="rentToolRoot" style="display:none;">
+  <div class="hero">
+    <div class="wrap">
+      <span class="hero-tag">전세·월세 비교 · 2026.08 기준</span>
+      <h1>전세로 살까,<br><span>월세로 살까?</span></h1>
+      <p>같은 집의 전세 조건과 월세(반전세) 조건을 넣으면, 실질 전환율과 초기 자금·월 부담까지 한눈에 비교해줘요.</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>전세 조건</h2>
+      <div class="field">
+        <label>전세보증금</label>
+        <div class="amount-row">
+          <div class="input-suffix">
+            <input type="number" id="jeonseEok" placeholder="3" step="1" min="0">
+            <span>억</span>
+          </div>
+          <div class="input-suffix">
+            <input type="text" inputmode="numeric" id="jeonseMan" placeholder="0" oninput="formatCommaInput(this)">
+            <span>만원</span>
+          </div>
+        </div>
+      </div>
+      <div class="field" style="padding-top:16px;border-top:1px dashed var(--border);">
+        <label style="margin-bottom:10px;">특수 상황 (해당하면 체크)</label>
+        <div class="checkrow">
+          <input type="checkbox" id="unregistered" onchange="toggleSpecialCaseWarning()">
+          <label for="unregistered" style="margin:0;font-weight:500;">아직 소유권 등기가 안 난 신축이에요 (미등기)</label>
+        </div>
+        <div id="unregisteredWarning"></div>
+        <div class="checkrow">
+          <input type="checkbox" id="trustOwned" onchange="toggleSpecialCaseWarning()">
+          <label for="trustOwned" style="margin:0;font-weight:500;">신탁회사 명의로 등기되어 있어요 (신탁등기)</label>
+        </div>
+        <div id="trustWarning"></div>
+      </div>
+      <div class="field" style="padding-top:16px;border-top:1px dashed var(--border);">
+        <div class="checkrow">
+          <input type="checkbox" id="useJeonseLoan" onchange="toggleJeonseLoan()">
+          <label for="useJeonseLoan">전세자금대출을 활용해요</label>
+        </div>
+      </div>
+      <div id="jeonseLoanFields" style="display:none;">
+        <div class="field">
+          <label>대출 종류</label>
+          <select id="jeonseLoanType">
+            <option value="policy">정책 전세대출(버팀목류) — 무주택·소득 요건 있음</option>
+            <option value="bank">일반 은행 전세자금대출</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>대출금리 (연)</label>
+          <div class="input-suffix">
+            <input type="number" id="jeonseLoanRate" placeholder="3.3" step="0.01">
+            <span>%</span>
+          </div>
+          <div class="hint">정책 전세대출은 대략 연 1.9~3.3%, 일반 은행은 대략 연 4%대예요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>월세(반전세) 조건</h2>
+      <div class="field">
+        <label>월세보증금</label>
+        <div class="amount-row">
+          <div class="input-suffix">
+            <input type="number" id="wolseEok" placeholder="1" step="1" min="0">
+            <span>억</span>
+          </div>
+          <div class="input-suffix">
+            <input type="text" inputmode="numeric" id="wolseMan" placeholder="0" oninput="formatCommaInput(this)">
+            <span>만원</span>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>월세</label>
+        <div class="input-suffix">
+          <input type="text" inputmode="numeric" id="wolseMonthly" placeholder="80" oninput="formatCommaInput(this)">
+          <span>만원/월</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>추가 정보 (선택)</h2>
+      <div class="field">
+        <label>이 집 매매시세</label>
+        <div class="amount-row">
+          <div class="input-suffix">
+            <input type="number" id="rentMarketEok" placeholder="0" step="1" min="0">
+            <span>억</span>
+          </div>
+          <div class="input-suffix">
+            <input type="text" inputmode="numeric" id="rentMarketMan" placeholder="0" oninput="formatCommaInput(this)">
+            <span>만원</span>
+          </div>
+        </div>
+        <div class="hint">입력하면 전세가율(전세보증금÷매매시세)을 계산해드려요.</div>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calculateRent()">비교하기</button>
+
+    <div id="rentResult" style="display:none;">
+      <div class="result-hero" id="rentResultHero">
+        <div class="label" id="rentResultLabel">비교 결과</div>
+        <div class="amount" id="rentResultAmount">-</div>
+        <div class="sub" id="rentResultSub"></div>
+      </div>
+      <div id="rentFallbackNote"></div>
+      <div class="receipt">
+        <div class="receipt-title">전세 vs 월세 상세 비교</div>
+        <div id="rentReceiptLines"></div>
+        <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
+      </div>
+
+      <div class="card" id="rentConsiderations" style="display:none;">
+        <h2>이 계산에 없는, 놓치기 쉬운 것들</h2>
+        <div class="field">
+          <div class="hint" style="margin-bottom:10px;"><b>월세 세액공제</b> — 무주택 세대주·총급여 조건을 충족하면 월세액의 15~17%를 연말정산에서 세액공제 받을 수 있어요(한도 있음). 이 계산기는 반영하지 않았으니, 실제 월 부담은 이보다 낮아질 수 있어요.</div>
+          <div class="hint" style="margin-bottom:10px;"><b>전세대출 이자 소득공제</b> — 무주택 세대주가 국민주택규모 이하 주택의 전세자금대출 원리금을 상환하면, 상환액의 40%를 소득공제 받을 수 있어요(한도 있음). 이것도 반영 안 된 금액이에요.</div>
+          <div class="hint" style="margin-bottom:10px;"><b>계약갱신청구권</b> — 2년 계약 후 1회 갱신 청구가 가능하고(총 4년), 갱신 시 임대료 인상은 통상 5% 이내로 제한돼요. 장기 거주 계획이라면 이 부분도 고려해보세요.</div>
+          <div class="hint" style="margin-bottom:0;"><b>보증금 반환 리스크</b> — 전세는 계약 종료 시 보증금을 한번에 돌려받아야 해서, 집주인의 상환 능력·시세 하락(역전세) 리스크가 있어요. 등기부등본·선순위 채권 확인, 전세보증보험 가입을 권장해요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <div class="disclaimer-item" style="margin-bottom:0;">
+        <b>참고용 계산이에요.</b> 전월세전환율 법정 상한(기준금리+2%p)은 2026.08 기준 한국은행 기준금리(연 2.75%)를 반영한 값이며, 실제 계약 시점 금리에 따라 달라질 수 있어요. 전세보증보험 가입 가능 여부는 전세가율 외에도 여러 조건이 있으니 HUG·HF·SGI 등에 직접 확인하세요. 이 계산기는 계약 체결이나 대출 실행을 대신하지 않아요.
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-title">영끌계산기 · 전세·월세 비교 도구</div>
+      <div class="footer-copyright">© 2026 노아초이(Noah Choi). All rights reserved.</div>
+    </footer>
+  </div>
+</div><!-- /rentToolRoot -->
 
 <script>
 const TOTAL_STEPS = 6;
@@ -1553,6 +1751,158 @@ async function shareResult(){
   }catch(e){
     prompt('아래 링크를 복사하세요:', url);
   }
+}
+
+function showTool(name){
+  const isBuy = name === 'buy';
+  document.getElementById('buyToolRoot').style.display = isBuy ? 'block' : 'none';
+  document.getElementById('rentToolRoot').style.display = isBuy ? 'none' : 'block';
+  document.getElementById('tabBuy').classList.toggle('active', isBuy);
+  document.getElementById('tabRent').classList.toggle('active', !isBuy);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function toggleJeonseLoan(){
+  document.getElementById('jeonseLoanFields').style.display =
+    document.getElementById('useJeonseLoan').checked ? 'block' : 'none';
+}
+
+function toggleSpecialCaseWarning(){
+  const unregistered = document.getElementById('unregistered').checked;
+  const trustOwned = document.getElementById('trustOwned').checked;
+  const loanCheckbox = document.getElementById('useJeonseLoan');
+
+  if(unregistered){
+    document.getElementById('unregisteredWarning').innerHTML =
+      '<div class="fallback-note">⚠ 미등기 상태에서는 전세자금대출과 전세보증보험 모두 원칙적으로 불가능해요 — 근저당이나 보증을 설정할 등기 자체가 없어서예요. 대신 30세대 이상 아파트라면 HUG 분양보증 가입이 원칙적으로 의무라 이미 되어있을 가능성이 높지만, 30세대 미만 소규모 단지·지역주택조합 물건은 예외일 수 있으니 분양보증서 여부를 확인하세요. 전입신고·확정일자는 잔금일 당일 최우선으로 챙기세요.</div>';
+    loanCheckbox.checked = false;
+    loanCheckbox.disabled = true;
+    toggleJeonseLoan();
+  } else {
+    document.getElementById('unregisteredWarning').innerHTML = '';
+    loanCheckbox.disabled = false;
+  }
+
+  if(trustOwned){
+    document.getElementById('trustWarning').innerHTML =
+      '<div class="fallback-note">⚠ 신탁등기 물건이에요. 등기부상 소유자가 아니라 신탁회사(수탁자)의 동의 없이 계약하면 무효가 될 수 있어요. 등기부등본의 "신탁원부"를 반드시 확인하고, 수탁자 동의서 없이는 계약하지 마세요. 실제 전세사기 사건에서 자주 나오는 유형이라 특히 주의가 필요해요.</div>';
+  } else {
+    document.getElementById('trustWarning').innerHTML = '';
+  }
+}
+
+function rentBrokerFee(baseAmount){
+  // 전월세 중개보수 상한 요율 (환산보증금 기준)
+  let rate, cap;
+  if(baseAmount < 50000000){ rate = 0.005; cap = 200000; }
+  else if(baseAmount < 100000000){ rate = 0.004; cap = 300000; }
+  else if(baseAmount < 600000000){ rate = 0.003; cap = null; }
+  else if(baseAmount < 1200000000){ rate = 0.004; cap = null; }
+  else if(baseAmount < 1500000000){ rate = 0.005; cap = null; }
+  else { rate = 0.006; cap = null; }
+  let fee = baseAmount * rate;
+  if(cap !== null) fee = Math.min(fee, cap);
+  return fee;
+}
+
+function calculateRent(){
+  const jeonseDeposit = getAmountManwon('jeonseEok','jeonseMan') * 10000;
+  const wolseDeposit = getAmountManwon('wolseEok','wolseMan') * 10000;
+  const wolseMonthly = numVal('wolseMonthly') * 10000;
+
+  const result = document.getElementById('rentResult');
+  const heroBox = document.getElementById('rentResultHero');
+  heroBox.classList.remove('warn-box');
+  result.style.display = 'block';
+  document.getElementById('rentConsiderations').style.display = 'none';
+
+  if(jeonseDeposit <= 0){
+    heroBox.classList.add('warn-box');
+    document.getElementById('rentResultLabel').textContent = '입력이 필요해요';
+    document.getElementById('rentResultAmount').textContent = '전세보증금을 입력해주세요';
+    document.getElementById('rentResultSub').textContent = '';
+    document.getElementById('rentReceiptLines').innerHTML = '';
+    return;
+  }
+  if(wolseMonthly <= 0){
+    heroBox.classList.add('warn-box');
+    document.getElementById('rentResultLabel').textContent = '입력이 필요해요';
+    document.getElementById('rentResultAmount').textContent = '월세를 입력해주세요';
+    document.getElementById('rentResultSub').textContent = '';
+    document.getElementById('rentReceiptLines').innerHTML = '';
+    return;
+  }
+  const diff = jeonseDeposit - wolseDeposit;
+  if(diff <= 0){
+    heroBox.classList.add('warn-box');
+    document.getElementById('rentResultLabel').textContent = '입력값을 확인해주세요';
+    document.getElementById('rentResultAmount').textContent = '월세보증금이 전세보증금 이상이에요';
+    document.getElementById('rentResultSub').textContent = '월세보증금은 전세보증금보다 작아야 비교할 수 있어요.';
+    document.getElementById('rentReceiptLines').innerHTML = '';
+    return;
+  }
+
+  const conversionRate = (wolseMonthly * 12) / diff * 100;
+  const baseRate = 2.75; // 2026.08 기준 한국은행 기준금리
+  const legalCap = baseRate + 2;
+
+  const isUnregistered = document.getElementById('unregistered').checked;
+  const useLoan = document.getElementById('useJeonseLoan').checked && !isUnregistered;
+  const loanType = document.getElementById('jeonseLoanType').value;
+  const loanRate = parseFloat(document.getElementById('jeonseLoanRate').value) || 0;
+  let jeonseLoanAmount = 0;
+  if(useLoan){
+    jeonseLoanAmount = jeonseDeposit * 0.8;
+    if(loanType === 'policy') jeonseLoanAmount = Math.min(jeonseLoanAmount, 200000000);
+  }
+  const jeonseMonthlyCost = (useLoan && loanRate > 0) ? (jeonseLoanAmount * loanRate / 100 / 12) : 0;
+
+  const jeonseBrokerFee = rentBrokerFee(jeonseDeposit);
+  const wolseConverted = wolseDeposit + wolseMonthly * 100;
+  const wolseBrokerFee = rentBrokerFee(wolseConverted);
+
+  const jeonseCashNeeded = jeonseDeposit - jeonseLoanAmount + jeonseBrokerFee;
+  const wolseCashNeeded = wolseDeposit + wolseBrokerFee;
+
+  const monthlyDiff = jeonseMonthlyCost - wolseMonthly;
+  const cashDiff = jeonseCashNeeded - wolseCashNeeded;
+
+  document.getElementById('rentResultLabel').textContent = '실질 전월세전환율';
+  document.getElementById('rentResultAmount').textContent = conversionRate.toFixed(2) + '%';
+  document.getElementById('rentResultSub').textContent =
+    `법정 상한 ${legalCap.toFixed(2)}%(기준금리+2%p) 대비 ${conversionRate > legalCap ? '높아요 — 월세 조건이 다소 불리할 수 있어요' : '이내예요 — 통상적인 범위예요'}`;
+
+  let fallback = '';
+  if(useLoan && loanRate <= 0){
+    fallback = '<div class="fallback-note">⚠ 전세자금대출 금리를 입력해야 월 이자 부담이 정확히 계산돼요.</div>';
+  }
+  const rentMarket = getAmountManwon('rentMarketEok','rentMarketMan') * 10000;
+  let jeonseRatio = null;
+  if(rentMarket > 0){
+    jeonseRatio = jeonseDeposit / rentMarket * 100;
+    if(!isUnregistered){
+      fallback += `<div class="${jeonseRatio > 80 ? 'fallback-note' : 'success-note'}">${jeonseRatio > 80 ? '⚠' : 'ℹ️'} 전세가율 ${jeonseRatio.toFixed(1)}% — 보증기관 심사 지표 중 하나예요. 80%를 ${jeonseRatio > 80 ? '초과해서 전세보증보험 가입 심사가 까다로워질 수 있어요' : '넘지 않아 이 지표만으로는 통상적인 범위예요'}. 가입 가능 여부는 이 비율만으로 결정되지 않으니, 정확한 조건은 보증기관(HUG·HF·SGI)에 확인하세요.</div>`;
+    }
+  }
+  document.getElementById('rentFallbackNote').innerHTML = fallback;
+
+  document.getElementById('rentReceiptLines').innerHTML =
+    `<div class="receipt-section-label">전세로 산다면</div>` +
+    `<div class="line-item"><span class="k">초기 필요자금</span><span class="v">${formatWon(jeonseCashNeeded)}</span></div>` +
+    (useLoan ? `<div class="line-item minus"><span class="k">전세자금대출</span><span class="v">-${formatWon(jeonseLoanAmount)}</span></div>` : '') +
+    `<div class="line-item"><span class="k">중개보수</span><span class="v">${formatWon(jeonseBrokerFee)}</span></div>` +
+    `<div class="line-item"><span class="k">월 부담(대출이자)</span><span class="v">${formatWon(jeonseMonthlyCost)}</span></div>` +
+    (jeonseRatio !== null ? `<div class="line-item ${jeonseRatio > 80 ? 'minus' : ''}"><span class="k">전세가율(÷매매시세)</span><span class="v">${jeonseRatio.toFixed(1)}%</span></div>` : '') +
+    `<div class="receipt-section-label" style="margin-top:16px;">월세로 산다면</div>` +
+    `<div class="line-item"><span class="k">초기 필요자금</span><span class="v">${formatWon(wolseCashNeeded)}</span></div>` +
+    `<div class="line-item"><span class="k">중개보수</span><span class="v">${formatWon(wolseBrokerFee)}</span></div>` +
+    `<div class="line-item"><span class="k">월 부담</span><span class="v">${formatWon(wolseMonthly)}</span></div>` +
+    `<div class="rent-summary">
+       <div class="line-item"><span class="k">초기자금 차이 (전세−월세)</span><span class="v">${formatWon(cashDiff)}</span></div>
+       <div class="line-item"><span class="k">월 부담 차이 (전세−월세)</span><span class="v">${formatWon(monthlyDiff)}</span></div>
+     </div>`;
+
+  document.getElementById('rentConsiderations').style.display = 'block';
 }
 
 renderProgress();
