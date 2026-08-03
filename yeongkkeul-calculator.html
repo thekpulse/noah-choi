@@ -178,7 +178,7 @@
     margin-top:8px;
     line-height:1.6;
   }
-  input[type="number"], input[type="text"], select{
+  input[type="number"], input[type="text"], input[type="date"], select{
     width:100%;
     padding:14px 16px;
     border:1.5px solid transparent;
@@ -190,7 +190,7 @@
     color:var(--ink);
     transition:background .15s, border-color .15s;
   }
-  select{font-family:'Pretendard', sans-serif;font-weight:600;font-size:14px;}
+  select{font-family:'Pretendard', sans-serif;font-weight:700;font-size:16px;}
   input::placeholder{color:#B0B8C1;font-weight:400;font-style:italic;opacity:1;}
   input:focus, select:focus{
     outline:none;
@@ -215,7 +215,7 @@
     padding:11px 0;
   }
   .checkrow input{width:19px;height:19px;margin-top:1px;accent-color:var(--primary);flex-shrink:0;}
-  .checkrow label{margin:0;font-weight:500;color:var(--ink);line-height:1.5;}
+  .checkrow label{margin:0;font-weight:600;color:var(--ink);line-height:1.5;}
 
   /* LOAN OPTIONS (policy loans) */
   .loan-option{
@@ -623,8 +623,6 @@
           <input type="checkbox" id="isTradeUp" onchange="toggleTradeUp()">
           <label for="isTradeUp">지금 사는 집을 팔고 새 집으로 갈아타는 거예요</label>
         </div>
-      </div>
-      <div class="field">
         <div class="checkrow">
           <input type="checkbox" id="firstTimeTaxCut">
           <label for="firstTimeTaxCut">생애최초 취득세 감면 적용 (12억 이하, 최대 200만원 한도)</label>
@@ -965,12 +963,12 @@
         <label style="margin-bottom:10px;">특수 상황 (해당하면 체크)</label>
         <div class="checkrow">
           <input type="checkbox" id="unregistered" onchange="toggleSpecialCaseWarning()">
-          <label for="unregistered" style="margin:0;font-weight:500;">아직 소유권 등기가 안 난 신축이에요 (미등기)</label>
+          <label for="unregistered">아직 소유권 등기가 안 난 신축이에요 (미등기)</label>
         </div>
         <div id="unregisteredWarning"></div>
         <div class="checkrow">
           <input type="checkbox" id="trustOwned" onchange="toggleSpecialCaseWarning()">
-          <label for="trustOwned" style="margin:0;font-weight:500;">신탁회사 명의로 등기되어 있어요 (신탁등기)</label>
+          <label for="trustOwned">신탁회사 명의로 등기되어 있어요 (신탁등기)</label>
         </div>
         <div id="trustWarning"></div>
       </div>
