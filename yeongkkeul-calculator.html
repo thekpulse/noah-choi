@@ -366,9 +366,9 @@
   .line-item.grand{
     background:var(--ink);
     color:#fff;
-    margin:12px -20px -20px;
+    margin:12px 0 0;
     padding:16px 20px;
-    border-radius:0 0 var(--radius) var(--radius);
+    border-radius:var(--radius);
     font-size:17px;
   }
   .line-item.grand .k{color:#B8C0CC;}
@@ -563,7 +563,7 @@
   <div class="wrap">
     <span class="hero-tag">영끌계산기 · 2026.08 기준</span>
     <h1>이 집,<br><span>나 살 수 있어?</span></h1>
-    <p>보유자금으로 살 수 있는 집, 원하는 집에 필요한 예산, 혹은 지금 집을 팔고 갈아타는 경우까지 — 대출한도·정책대출·취득세·복비·인테리어·양도세 비과세 여부까지 한 번에 계산해요.</p>
+    <p>보유자금으로 살 수 있는 집, 원하는 집에 필요한 예산, 혹은 지금 집을 팔고 갈아타는 경우까지 — 대출한도 · 정책대출 · 취득세 · 복비 · 인테리어 · 양도세 비과세 여부까지 한 번에 계산해요.</p>
   </div>
 </div>
 
@@ -599,7 +599,7 @@
           <option value="true" selected>규제지역 (투기과열지구·조정대상지역)</option>
           <option value="false">비규제지역</option>
         </select>
-        <div class="hint">서울 전역 및 경기 12개 지역(과천·광명·성남·수원 등)은 2026.06 기준 규제지역입니다. 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억·4억·2억)도 적용되지 않아요.</div>
+        <div class="hint">서울 전역 및 경기 12개 지역(과천 · 광명 · 성남 · 수원 등)은 2026.06 기준 규제지역입니다. 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억 · 4억 · 2억)도 적용되지 않아요.</div>
       </div>
       <div class="field">
         <label>주택 보유 상황</label>
@@ -628,7 +628,7 @@
         </div>
       </div>
       <div id="tradeUpCard" style="display:none;">
-        <div class="hint" style="margin-bottom:14px;">종전주택을 팔 때 <b>양도소득세</b>가 발생할 수 있어요. 아래 정보를 넣으면 비과세 가능 여부와, 팔고 나서 실제로 손에 쥐는 돈(순매도자금)을 계산해드려요.</div>
+        <div class="hint" style="margin-bottom:14px;">종전주택을 팔 때 양도소득세가 발생할 수 있어요. 아래 정보를 넣으면 비과세 가능 여부와, 팔고 나서 실제로 손에 쥐는 돈(순매도자금)을 계산해드려요.</div>
         <div class="field">
           <label>종전주택 취득일</label>
           <input type="date" id="prevAcqDate">
@@ -770,7 +770,7 @@
             <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 150, event)">일반형 · 150만</button>
             <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 250, event)">고급형 · 250만</button>
           </div>
-          <div class="hint">평당 단가예요. 기본형은 도배·장판 위주, 일반형은 주방·욕실 포함, 고급형은 전체 올수리·고급자재 기준의 대략적인 시세예요.</div>
+          <div class="hint">평당 단가(자재비+시공비 모두 포함된 턴키 견적 기준)예요. 기본형은 도배·장판 위주, 일반형은 주방·욕실 교체 포함, 고급형은 전체 올수리 · 수입타일 · 원목마루 등 기준의 대략적인 시세예요.</div>
         </div>
         <div class="field">
           <label>기타비용(이사·법무사 등)</label>
@@ -783,7 +783,7 @@
             <button type="button" class="chip" onclick="setChipValue('etc', 300, event)">중형(30평대) · 300만</button>
             <button type="button" class="chip" onclick="setChipValue('etc', 450, event)">대형(40평대~) · 450만</button>
           </div>
-          <div class="hint">이사비·법무사 등기대행비·중개 잡비 등을 합친 금액이에요. 대략 <b>이사비 50~150만원 + 등기대행(법무사) 30~80만원 + 기타 잡비(청소·가전설치 등) 20~50만원</b> 정도가 합쳐진 값이라고 보면 돼요. 평수·이사 거리·짐 양에 따라 달라질 수 있어요.</div>
+          <div class="hint">이사비·법무사 등기대행비·중개 잡비 등을 합친 금액이에요. 대략 이사비 50~150만원 + 등기대행(법무사) 30~80만원 + 기타 잡비(청소·가전설치 등) 20~50만원 정도가 합쳐진 값이라고 보면 돼요. 평수·이사 거리·짐 양에 따라 달라질 수 있어요.</div>
         </div>
         <div class="field">
           <label>대출금리 (연)</label>
@@ -806,7 +806,7 @@
             <input type="text" inputmode="numeric" id="manualLoanCap" placeholder="모르면 비워두세요" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
-          <div class="hint">정부 기준(LTV·구간별 한도)과 별개로, 개별 은행이 더 엄격한 자체 한도를 두는 경우가 있어요. 예: KB국민은행은 2026.07부터 지역과 무관하게 주택구입자금 대출을 3억원으로 자체 제한 중이에요(수시로 바뀔 수 있음). 상담받은 실제 한도를 알고 있다면 여기 입력해주세요 — 계산된 대출한도가 이 값보다 크면 이 값으로 대체돼요.</div>
+          <div class="hint">정부 기준(LTV·구간별 한도)과 별개로, 개별 은행이 더 엄격한 자체 한도를 두는 경우가 있어요. 예: KB국민은행은 2026.07부터 지역과 무관하게 주택구입자금 대출을 3억원으로 자체 제한 중이에요(수시로 바뀔 수 있음). 상담받은 실제 한도를 알고 있다면 여기 입력해주세요. 일반 시중은행 주담대에만 적용되고, 정책대출을 선택했다면 이 값은 적용되지 않아요. 계산된 대출한도가 이 값보다 크면, 이 값으로 대체돼요.</div>
         </div>
       </div>
     </div>
@@ -904,13 +904,13 @@
         <b>참고용 계산기예요.</b> 2026년 8월 기준 공개된 정책(10.15 대책, 디딤돌·보금자리론 등)을 참고해 만들었고, 공식 금융 상담이나 세무 자문을 대체하지 않아요.
       </div>
       <div class="disclaimer-item">
-        <b>수치는 실제와 다를 수 있어요.</b> LTV·DSR·정책대출 자격·취득세·중개보수는 지역 지정 현황, 실제 소득(DSR), 은행·기금 정책에 따라 달라질 수 있으니, 실제 매매·대출 전에는 반드시 은행, 주택도시기금(기금e든든), 공인중개사, 세무사와 확인하세요.
+        <b>수치는 실제와 다를 수 있어요.</b> LTV · DSR · 정책대출 자격 · 취득세 · 중개보수는 지역 지정 현황, 실제 소득(DSR), 은행·기금 정책에 따라 달라질 수 있으니, 실제 매매·대출 전에는 반드시 은행, 주택도시기금(기금e든든), 공인중개사, 세무사와 확인하세요.
       </div>
       <div class="disclaimer-item">
         <b>정책대출은 중복 불가예요.</b> 디딤돌대출과 보금자리론은 원칙적으로 하나만 선택할 수 있어요. MCG 보증 등을 활용한 "복합대출" 같은 예외도 있지만 조건이 까다로워 이 계산기에서는 다루지 않아요.
       </div>
       <div class="disclaimer-item">
-        <b>추가 자금원은 가정치예요.</b> 신용대출·사내대출·매도인 근저당(셀러파이낸싱) 금액은 사용자가 직접 입력한 값이며, 실제 가능 여부·한도는 개인 소득·회사 정책·상대방과의 협의에 따라 달라져요.
+        <b>추가 자금원은 가정치예요.</b> 신용대출 · 사내대출 · 매도인 근저당(셀러파이낸싱) 금액은 사용자가 직접 입력한 값이며, 실제 가능 여부·한도는 개인 소득·회사 정책·상대방과의 협의에 따라 달라져요.
       </div>
       <div class="disclaimer-item">
         <b>갈아타기 양도세는 비과세 여부만 판단해요.</b> 1세대1주택·일시적 2주택(1-2-3 법칙) 비과세 요건 충족 여부만 확인해드리고, 실제 양도세액(12억 초과분 과세, 장기보유특별공제 등)은 계산하지 않아요. 비과세가 안 되는 경우 정확한 세액은 반드시 세무사와 확인하세요.
@@ -1327,7 +1327,7 @@ function computeLoan(ctx){
   const noHouse = (ctx.houseStatus === 'first' || ctx.houseStatus === 'none');
   const firstTime = ctx.houseStatus === 'first';
   const clamp = (result) => {
-    if(ctx.manualLoanCap > 0 && result.amount > ctx.manualLoanCap){
+    if(result.type === 'bank' && ctx.manualLoanCap > 0 && result.amount > ctx.manualLoanCap){
       return {...result, amount: ctx.manualLoanCap, cappedByBank: true};
     }
     return {...result, cappedByBank: false};
