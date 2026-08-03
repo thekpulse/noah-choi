@@ -595,21 +595,28 @@
       <h2>내 상황</h2>
       <div class="field">
         <label>지역 규제 여부</label>
-        <select id="regulated" onchange="renderPolicyOptions()">
+        <select id="regulated" onchange="renderPolicyOptions(); toggleSeominField();">
           <option value="true" selected>규제지역 (투기과열지구·조정대상지역)</option>
           <option value="false">비규제지역</option>
         </select>
-        <div class="hint">서울 전역 및 경기 12개 지역(과천 · 광명 · 성남 · 수원 등)은 2026.06 기준 규제지역입니다. 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억 · 4억 · 2억)도 적용되지 않아요.</div>
+        <div class="hint">서울 전역 및 경기 15개 지역(과천 · 광명 · 성남 · 수원 · 화성 동탄 · 용인 기흥 · 구리 등)은 2026.07 기준 규제지역입니다. 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억 · 4억 · 2억)도 적용되지 않아요.</div>
       </div>
       <div class="field">
         <label>주택 보유 상황</label>
-        <select id="houseStatus" onchange="renderPolicyOptions()">
+        <select id="houseStatus" onchange="renderPolicyOptions(); toggleSeominField();">
           <option value="first" selected>생애최초 구입자</option>
           <option value="none">무주택자 (생애최초 아님)</option>
           <option value="oneDisposing">1주택자 · 기존 주택 처분조건부 갈아타기</option>
           <option value="multi">2주택 이상 (규제지역 추가구입)</option>
         </select>
         <div class="hint">규제지역에서 2주택 이상이 추가 구입 시 주담대는 원칙적으로 불가(LTV 0%)합니다. 정책대출(디딤돌·보금자리론 등)은 대부분 무주택 세대주만 가능해요.</div>
+      </div>
+      <div class="field" id="seominField" style="display:none;">
+        <div class="checkrow">
+          <input type="checkbox" id="seominCheck">
+          <label for="seominCheck">서민·실수요자 조건에 해당해요</label>
+        </div>
+        <div class="hint">무주택 세대주 + 부부합산 연소득 9천만원 이하 + 주택가격 8~9억 이하(투기과열지구 9억, 조정대상지역 8억)를 모두 충족하면, 규제지역에서도 LTV가 40%가 아니라 <b>60%</b>로 우대돼요. 여기 체크하면 3단계에서 입력한 연소득으로 자동 확인해드려요.</div>
       </div>
       <div class="field">
         <div class="checkrow">
@@ -879,7 +886,7 @@
 
       <div class="card" id="compareCard" style="display:none;">
         <h2>주택 보유 상황이 다르면?</h2>
-        <div class="hint" style="margin-bottom:12px;">일반 시중은행 주담대 기준으로, 같은 가격일 때 대출한도가 어떻게 달라지는지 비교했어요.</div>
+        <div class="hint" style="margin-bottom:12px;">일반 시중은행 주담대 기준으로, 같은 가격일 때 대출한도가 어떻게 달라지는지 비교했어요. LTV(%)는 상황마다 다르지만, 15억/25억 구간별 대출한도(6억·4억·2억)에 걸리면 LTV가 달라도 같은 금액으로 보일 수 있어요.</div>
         <div id="compareRows"></div>
       </div>
 
@@ -1248,7 +1255,16 @@ function toggleTradeUp(){
   if(checked){
     document.getElementById('houseStatus').value = 'oneDisposing';
     renderPolicyOptions();
+    toggleSeominField();
   }
+}
+
+function toggleSeominField(){
+  const regulated = document.getElementById('regulated').value === 'true';
+  const houseStatus = document.getElementById('houseStatus').value;
+  const show = regulated && houseStatus === 'none';
+  document.getElementById('seominField').style.display = show ? 'block' : 'none';
+  if(!show) document.getElementById('seominCheck').checked = false;
 }
 
 function computeTradeProceeds(){
@@ -1311,8 +1327,22 @@ function getLTV(houseStatus, regulated){
   if(houseStatus === 'multi' && regulated) return 0;
   if(houseStatus === 'multi' && !regulated) return 0.6;
   if(houseStatus === 'first') return regulated ? 0.7 : 0.8;
-  if(houseStatus === 'oneDisposing') return regulated ? 0.5 : 0.7;
+  if(houseStatus === 'oneDisposing') return regulated ? 0.4 : 0.7;
   return regulated ? 0.4 : 0.7;
+}
+
+function isSeominEligible(ctx){
+  // 서민·실수요자: 무주택 세대주 + 부부합산 연소득 9천만원 이하 + 주택가격 8~9억 이하(투기과열지구 9억/조정대상지역 8억, 여기선 9억 기준 적용) — 규제지역 한정, LTV 60% 우대
+  if(!ctx.regulated || !ctx.seominCheck) return false;
+  if(ctx.houseStatus !== 'none') return false;
+  if(!ctx.incomeEntered || ctx.income > 90000000) return false;
+  if(ctx.price > 900000000) return false;
+  return true;
+}
+
+function getEffectiveLTV(ctx){
+  if(isSeominEligible(ctx)) return 0.6;
+  return getLTV(ctx.houseStatus, ctx.regulated);
 }
 
 function loanTypeLabel(type){
@@ -1345,7 +1375,7 @@ function computeLoan(ctx){
       return clamp({amount: Math.max(0, amount), type: ctx.loanChoice, fellBack:false});
     }
     // 자격 미충족(또는 연소득·평형 미입력) -> 일반 주담대로 대체
-    const ltv = getLTV(ctx.houseStatus, ctx.regulated);
+    const ltv = getEffectiveLTV(ctx);
     let loan = ctx.price * ltv;
     if(ctx.regulated){
       let cap;
@@ -1357,7 +1387,7 @@ function computeLoan(ctx){
     return clamp({amount: Math.max(0, loan), type:'bank', fellBack:true, fellBackReason: infoMissing ? 'missing' : 'ineligible'});
   }
 
-  const ltv = getLTV(ctx.houseStatus, ctx.regulated);
+  const ltv = getEffectiveLTV(ctx);
   let loan = ctx.price * ltv;
   if(ctx.regulated){
     let cap;
@@ -1462,11 +1492,12 @@ function buildCtxBase(){
   const newborn = document.getElementById('newborn').checked;
   const multiChild = document.getElementById('multiChild').checked;
   const manualLoanCap = numVal('manualLoanCap') * 10000;
+  const seominCheck = document.getElementById('seominCheck').checked;
 
   return {
     regulated, houseStatus, pyeong, pyeongEntered, interiorPerPyeong, etc, over85, firstTimeTaxCut,
     extraFunding, loanChoice, income, incomeEntered, newlywed, newborn, multiChild,
-    creditLoan, companyLoan, sellerFinancing, manualLoanCap
+    creditLoan, companyLoan, sellerFinancing, manualLoanCap, seominCheck
   };
 }
 
@@ -1495,11 +1526,14 @@ function renderCompare(ctxBase, price){
   const rows = scenarios.map(s=>{
     const c = calcCosts({...ctxBase, price, houseStatus:s.key, loanChoice:'bank'});
     const isCurrent = s.key === ctxBase.houseStatus;
+    const ltv = getLTV(s.key, ctxBase.regulated);
+    const ltvBasedLoan = price * ltv;
+    const cappedNote = (ctxBase.regulated && ltvBasedLoan > c.mortgageLoan) ? ' · 구간 한도로 제한됨' : '';
     return `<div class="compare-row">
       <div class="name">${s.label}${isCurrent?'<span class="badge-current">현재 선택</span>':''}</div>
       <div class="figures">
         <div class="loan">대출 ${formatWon(c.mortgageLoan)}</div>
-        <div class="cash">자기자본 ${formatWon(c.cashNeeded)}</div>
+        <div class="cash">LTV ${(ltv*100).toFixed(0)}%${cappedNote} · 자기자본 ${formatWon(c.cashNeeded)}</div>
       </div>
     </div>`;
   }).join('');
@@ -1700,6 +1734,7 @@ function buildShareUrl(){
   p.set('nb', document.getElementById('newborn').checked ? '1' : '0');
   p.set('mc', document.getElementById('multiChild').checked ? '1' : '0');
   p.set('lc', loanChoice);
+  p.set('sm', document.getElementById('seominCheck').checked ? '1' : '0');
   p.set('mlc', numVal('manualLoanCap'));
   return location.origin + location.pathname + '?' + p.toString();
 }
@@ -1727,6 +1762,7 @@ function loadFromUrlIfPresent(){
   if(p.has('nb')) document.getElementById('newborn').checked = p.get('nb') === '1';
   if(p.has('mc')) document.getElementById('multiChild').checked = p.get('mc') === '1';
   if(p.has('lc')) loanChoice = p.get('lc');
+  if(p.has('sm')) document.getElementById('seominCheck').checked = p.get('sm') === '1';
   if(p.has('mlc')) document.getElementById('manualLoanCap').value = (parseFloat(p.get('mlc'))||0) > 0 ? (parseFloat(p.get('mlc'))||0).toLocaleString() : '';
   return true;
 }
@@ -1907,8 +1943,10 @@ function calculateRent(){
 
 renderProgress();
 renderPolicyOptions();
+toggleSeominField();
 if(loadFromUrlIfPresent()){
   renderPolicyOptions();
+  toggleSeominField();
   calculate();
 }
 </script>
