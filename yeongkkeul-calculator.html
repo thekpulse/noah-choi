@@ -546,7 +546,7 @@
           <option value="true" selected>규제지역 (투기과열지구·조정대상지역)</option>
           <option value="false">비규제지역</option>
         </select>
-        <div class="hint">서울 전역 및 경기 12개 지역(과천·광명·성남·수원 등)은 2026.06 기준 규제지역입니다.</div>
+        <div class="hint">서울 전역 및 경기 12개 지역(과천·광명·성남·수원 등)은 2026.06 기준 규제지역입니다. 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억·4억·2억)도 적용되지 않아요.</div>
       </div>
       <div class="field">
         <label>주택 보유 상황</label>
@@ -1112,8 +1112,8 @@ function fillTradeProceeds(){
 function getLTV(houseStatus, regulated){
   if(houseStatus === 'multi' && regulated) return 0;
   if(houseStatus === 'multi' && !regulated) return 0.6;
-  if(houseStatus === 'first') return 0.7;
-  if(houseStatus === 'oneDisposing') return regulated ? 0.4 : 0.7;
+  if(houseStatus === 'first') return regulated ? 0.7 : 0.8;
+  if(houseStatus === 'oneDisposing') return regulated ? 0.5 : 0.7;
   return regulated ? 0.4 : 0.7;
 }
 
@@ -1329,6 +1329,18 @@ function calculate(){
     document.getElementById('resultSub').textContent = '금리를 비워두면 0%로 계산돼서 월 상환액이 실제보다 훨씬 적게 나와요. 5단계에서 금리를 채워주세요.';
     document.getElementById('receiptLines').innerHTML = '';
     document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(5)">5단계로 바로 가기</button>';
+    document.getElementById('monthlyPayment').textContent = '-';
+    return;
+  }
+
+  const pyeongRaw = document.getElementById('pyeong').value;
+  if(pyeongRaw.trim() === '' || (parseFloat(pyeongRaw) || 0) <= 0){
+    heroBox.classList.add('warn-box');
+    document.getElementById('resultLabel').textContent = '입력이 필요해요';
+    document.getElementById('resultAmount').textContent = '평형을 입력해주세요';
+    document.getElementById('resultSub').textContent = '평형을 비워두면 인테리어비가 0원으로 계산돼요. 4단계에서 평형을 채워주세요.';
+    document.getElementById('receiptLines').innerHTML = '';
+    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
     document.getElementById('monthlyPayment').textContent = '-';
     return;
   }
