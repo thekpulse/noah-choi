@@ -180,7 +180,7 @@
     font-size:12px;font-weight:700;color:var(--ink-faint);
     pointer-events:none;
   }
-  .row2{display:flex;flex-direction:column;gap:22px;}
+  .row2{display:flex;flex-direction:column;gap:22px;margin-bottom:22px;}
   .row2 .field{margin-bottom:0;}
   .amount-row{display:flex;gap:10px;}
   .amount-row .input-suffix{flex:1;}
@@ -431,6 +431,29 @@
     transition:transform .1s ease, background .15s, border-color .15s;
   }
   .link-btn:hover{background:var(--primary-soft);border-color:var(--primary);}
+
+  .preset-chips{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .chip{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    padding:7px 12px;
+    border-radius:20px;
+    border:1.5px solid var(--border);
+    background:#fff;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:transform .1s ease, background .15s, border-color .15s, color .15s;
+    white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--primary);color:var(--primary-dark);background:var(--primary-soft);}
+  .chip:active{transform:scale(0.96);}
+  .chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
   .link-btn:active{transform:scale(0.97);}
 </style>
 </head>
@@ -598,6 +621,12 @@
             <input type="text" inputmode="numeric" id="interiorPerPyeong" placeholder="150" oninput="formatCommaInput(this)">
             <span>만/평</span>
           </div>
+          <div class="preset-chips">
+            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 80, event)">기본형 · 80만</button>
+            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 150, event)">일반형 · 150만</button>
+            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 250, event)">고급형 · 250만</button>
+          </div>
+          <div class="hint">평당 단가예요. 기본형은 도배·장판 위주, 일반형은 주방·욕실 포함, 고급형은 전체 올수리·고급자재 기준의 대략적인 시세예요.</div>
         </div>
         <div class="field">
           <label>기타비용(이사·법무사 등)</label>
@@ -605,6 +634,12 @@
             <input type="text" inputmode="numeric" id="etc" placeholder="300" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
+          <div class="preset-chips">
+            <button type="button" class="chip" onclick="setChipValue('etc', 200, event)">소형(~20평대) · 200만</button>
+            <button type="button" class="chip" onclick="setChipValue('etc', 300, event)">중형(30평대) · 300만</button>
+            <button type="button" class="chip" onclick="setChipValue('etc', 450, event)">대형(40평대~) · 450만</button>
+          </div>
+          <div class="hint">이사비·법무사 등기대행비·중개 잡비 등을 합친 금액이에요. 대략 <b>이사비 50~150만원 + 등기대행(법무사) 30~80만원 + 기타 잡비(청소·가전설치 등) 20~50만원</b> 정도가 합쳐진 값이라고 보면 돼요. 평수·이사 거리·짐 양에 따라 달라질 수 있어요.</div>
         </div>
         <div class="field">
           <label>대출금리 (연)</label>
@@ -612,6 +647,7 @@
             <input type="number" id="rate" placeholder="4.12" step="0.01">
             <span>%</span>
           </div>
+          <div class="hint">주택담보대출 금리예요. 2026.08 기준 은행권 주담대는 대략 연 4~5.6%대예요. 실제 대출 상담받은 은행 금리를 넣으면 더 정확해요.</div>
         </div>
         <div class="field">
           <label>대출기간</label>
@@ -776,6 +812,16 @@ function setAmountManwon(eokId, manId, totalMan){
   totalMan = Math.max(0, Math.round(totalMan));
   document.getElementById(eokId).value = Math.floor(totalMan/10000);
   document.getElementById(manId).value = (totalMan % 10000).toLocaleString();
+}
+
+function setChipValue(fieldId, value, evt){
+  const el = document.getElementById(fieldId);
+  el.value = value.toLocaleString();
+  const group = el.closest('.field').querySelector('.preset-chips');
+  if(group){
+    group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    if(evt && evt.target) evt.target.classList.add('active');
+  }
 }
 
 function formatCommaInput(el){
