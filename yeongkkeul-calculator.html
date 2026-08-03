@@ -6,6 +6,12 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#F7F8FA">
 <title>영끌계산기 — 아파트 예산 계산기</title>
+<meta property="og:title" content="영끌계산기 — 이 집, 나 살 수 있어?">
+<meta property="og:description" content="보유자금으로 살 수 있는 집, 원하는 집에 필요한 예산까지 — 대출한도·정책대출·취득세·복비·인테리어·전세월세 비교까지 한 번에 계산해요.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="영끌계산기 — 이 집, 나 살 수 있어?">
+<meta name="twitter:description" content="보유자금으로 살 수 있는 집, 원하는 집에 필요한 예산까지 한 번에 계산해요.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" />
@@ -178,6 +184,19 @@
     margin-top:8px;
     line-height:1.6;
   }
+  .hint-toggle{
+    background:none;
+    border:none;
+    padding:0;
+    font-family:'Pretendard', sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--primary-dark);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .hint-detail{display:none;margin-top:6px;}
+  .hint-detail.open{display:block;}
   input[type="number"], input[type="text"], input[type="date"], select{
     width:100%;
     padding:14px 16px;
@@ -258,6 +277,21 @@
     transition:transform .1s ease, background .15s;
   }
   button.calc-btn:active{background:var(--primary-dark);transform:scale(0.98);}
+  .share-btn-row{display:flex;gap:10px;margin-bottom:16px;}
+  #captureAreaBuy, #captureAreaRent{
+    padding:20px 14px 14px;
+    background:var(--bg);
+    border-radius:20px;
+  }
+  .capture-header{
+    text-align:center;
+    font-family:'Pretendard', sans-serif;
+    font-weight:800;
+    font-size:13px;
+    color:var(--primary-dark);
+    margin-bottom:12px;
+  }
+  .share-btn-row .calc-btn{flex:1;margin-bottom:0;font-size:14.5px;padding:15px 8px;}
 
   /* STEP NAV — sticky at the bottom of the screen like a native app's primary action bar */
   .step-nav{
@@ -599,7 +633,9 @@
           <option value="true" selected>규제지역 (투기과열지구·조정대상지역)</option>
           <option value="false">비규제지역</option>
         </select>
-        <div class="hint">서울 전역 및 경기 15개 지역(과천 · 광명 · 성남 · 수원 · 화성 동탄 · 용인 기흥 · 구리 등)은 2026.07 기준 규제지역입니다. 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억 · 4억 · 2억)도 적용되지 않아요.</div>
+        <div class="hint">서울 전역 및 경기 15개 지역은 규제지역이에요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+          <div class="hint-detail">과천 · 광명 · 성남 · 수원 · 화성 동탄 · 용인 기흥 · 구리 등(2026.07 기준). 그 외 지방은 대부분 비규제지역이에요. 비규제지역은 LTV가 더 높고(생애최초 80%, 무주택자 70%), 15억/25억 구간별 대출 한도(6억 · 4억 · 2억)도 적용되지 않아요.</div>
+        </div>
       </div>
       <div class="field">
         <label>주택 보유 상황</label>
@@ -616,7 +652,9 @@
           <input type="checkbox" id="seominCheck">
           <label for="seominCheck">서민·실수요자 조건에 해당해요</label>
         </div>
-        <div class="hint">무주택 세대주 + 부부합산 연소득 9천만원 이하 + 주택가격 8~9억 이하(투기과열지구 9억, 조정대상지역 8억)를 모두 충족하면, 규제지역에서도 LTV가 40%가 아니라 <b>60%</b>로 우대돼요. 여기 체크하면 3단계에서 입력한 연소득으로 자동 확인해드려요.</div>
+        <div class="hint">조건 충족 시 LTV가 40%가 아니라 <b>60%</b>로 우대돼요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+          <div class="hint-detail">무주택 세대주 + 부부합산 연소득 9천만원 이하 + 주택가격 8~9억 이하(투기과열지구 9억, 조정대상지역 8억)를 모두 충족해야 해요. 여기 체크하면 3단계에서 입력한 연소득으로 자동 확인해드려요.</div>
+        </div>
       </div>
       <div class="field">
         <div class="checkrow">
@@ -705,7 +743,9 @@
     <div class="card">
       <h2>내가 고를 수 있는 대출</h2>
       <div id="policyOptions"></div>
-      <div class="hint">집값·평형 조건은 다음 단계에서 매매가를 입력(또는 계산)해야 정확히 확인돼요. 여기서는 소득·가구 조건만으로 1차 판단한 결과이고, 최종 화면에서 다시 검증해서 알려드려요. 정책대출은 일반 주담대와 중복으로 받을 수 없고, 하나만 선택할 수 있어요.</div>
+      <div class="hint">정책대출은 일반 주담대와 중복으로 받을 수 없고, 하나만 선택할 수 있어요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+        <div class="hint-detail">집값·평형 조건은 다음 단계에서 매매가를 입력(또는 계산)해야 정확히 확인돼요. 여기서는 소득·가구 조건만으로 1차 판단한 결과이고, 최종 화면에서 다시 검증해서 알려드려요.</div>
+      </div>
     </div>
     <div class="step-nav">
       <button class="btn-back" onclick="goToStep(2)">이전</button>
@@ -788,7 +828,9 @@
             <button type="button" class="chip" onclick="setChipValue('etc', 300, event)">중형(30평대) · 300만</button>
             <button type="button" class="chip" onclick="setChipValue('etc', 450, event)">대형(40평대~) · 450만</button>
           </div>
-          <div class="hint">이사비·법무사 등기대행비·중개 잡비 등을 합친 금액이에요. 대략 이사비 50~150만원 + 등기대행(법무사) 30~80만원 + 기타 잡비(청소·가전설치 등) 20~50만원 정도가 합쳐진 값이라고 보면 돼요. 평수·이사 거리·짐 양에 따라 달라질 수 있어요.</div>
+          <div class="hint">이사비·법무사 등기대행비·중개 잡비 등을 합친 금액이에요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+            <div class="hint-detail">대략 이사비 50~150만원 + 등기대행(법무사) 30~80만원 + 기타 잡비(청소·가전설치 등) 20~50만원 정도가 합쳐진 값이라고 보면 돼요. 평수·이사 거리·짐 양에 따라 달라질 수 있어요.</div>
+          </div>
         </div>
         <div class="field">
           <label>대출금리 (연)</label>
@@ -811,7 +853,9 @@
             <input type="text" inputmode="numeric" id="manualLoanCap" placeholder="모르면 비워두세요" oninput="formatCommaInput(this)">
             <span>만원</span>
           </div>
-          <div class="hint">정부 기준(LTV·구간별 한도)과 별개로, 개별 은행이 더 엄격한 자체 한도를 두는 경우가 있어요. 예: KB국민은행은 2026.07부터 지역과 무관하게 주택구입자금 대출을 3억원으로 자체 제한 중이에요(수시로 바뀔 수 있음). 상담받은 실제 한도를 알고 있다면 여기 입력해주세요. 일반 시중은행 주담대에만 적용되고, 정책대출을 선택했다면 이 값은 적용되지 않아요. 계산된 대출한도가 이 값보다 크면, 이 값으로 대체돼요.</div>
+          <div class="hint">개별 은행이 정부 기준보다 더 엄격한 자체 한도를 두기도 해요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+            <div class="hint-detail">예: KB국민은행은 2026.07부터 지역과 무관하게 주택구입자금 대출을 3억원으로 자체 제한 중이에요(수시로 바뀔 수 있음). 상담받은 실제 한도를 알고 있다면 여기 입력해주세요. 일반 시중은행 주담대에만 적용되고, 정책대출을 선택했다면 이 값은 적용되지 않아요. 계산된 대출한도가 이 값보다 크면, 이 값으로 대체돼요.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -863,22 +907,28 @@
   <div class="step" data-step="7">
     <div class="step-label">결과</div>
     <div id="result">
-      <div class="result-hero" id="resultHero">
-        <div class="label" id="resultLabel">최대 구매 가능 매매가</div>
-        <div class="amount" id="resultAmount">0원</div>
-        <div class="sub" id="resultSub"></div>
-      </div>
-      <div id="fallbackNote"></div>
-      <div class="receipt">
-        <div class="receipt-title">예산 내역</div>
-        <div id="receiptLines"></div>
-        <div class="monthly-box">
-          <div class="k">월 원리금 상환액 (원리금균등)</div>
-          <div class="v" id="monthlyPayment">0원</div>
+      <div id="captureAreaBuy">
+        <div class="capture-header">🏠 영끌계산기 · 2026.08 기준</div>
+        <div class="result-hero" id="resultHero">
+          <div class="label" id="resultLabel">최대 구매 가능 매매가</div>
+          <div class="amount" id="resultAmount">0원</div>
+          <div class="sub" id="resultSub"></div>
         </div>
-        <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
+        <div id="fallbackNote"></div>
+        <div class="receipt">
+          <div class="receipt-title">예산 내역</div>
+          <div id="receiptLines"></div>
+          <div class="monthly-box">
+            <div class="k">월 원리금 상환액 (원리금균등)</div>
+            <div class="v" id="monthlyPayment">0원</div>
+          </div>
+          <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
+        </div>
       </div>
-      <button class="calc-btn" id="shareBtn" onclick="shareResult()">🔗 결과 링크 공유하기</button>
+      <div class="share-btn-row">
+        <button class="calc-btn share-half" id="shareBtn" onclick="shareResult()">🔗 링크 공유</button>
+        <button class="calc-btn share-half" id="imageBtnBuy" onclick="saveResultAsImage('captureAreaBuy','imageBtnBuy','영끌계산기_결과')" style="background:var(--ink);">📸 이미지 저장</button>
+      </div>
 
       <div class="hint" style="text-align:center;margin-bottom:20px;">📱 자주 쓰실 것 같으면 홈 화면에 추가해두세요 — 사파리는 공유 버튼 → "홈 화면에 추가", 크롬은 메뉴 → "홈 화면에 추가"예요.</div>
 
@@ -1042,17 +1092,21 @@
     <button class="calc-btn" onclick="calculateRent()">비교하기</button>
 
     <div id="rentResult" style="display:none;">
-      <div class="result-hero" id="rentResultHero">
-        <div class="label" id="rentResultLabel">비교 결과</div>
-        <div class="amount" id="rentResultAmount">-</div>
-        <div class="sub" id="rentResultSub"></div>
+      <div id="captureAreaRent">
+        <div class="capture-header">📄 영끌계산기 · 전세·월세 비교</div>
+        <div class="result-hero" id="rentResultHero">
+          <div class="label" id="rentResultLabel">비교 결과</div>
+          <div class="amount" id="rentResultAmount">-</div>
+          <div class="sub" id="rentResultSub"></div>
+        </div>
+        <div id="rentFallbackNote"></div>
+        <div class="receipt">
+          <div class="receipt-title">전세 vs 월세 상세 비교</div>
+          <div id="rentReceiptLines"></div>
+          <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
+        </div>
       </div>
-      <div id="rentFallbackNote"></div>
-      <div class="receipt">
-        <div class="receipt-title">전세 vs 월세 상세 비교</div>
-        <div id="rentReceiptLines"></div>
-        <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
-      </div>
+      <button class="calc-btn" id="imageBtnRent" onclick="saveResultAsImage('captureAreaRent','imageBtnRent','영끌계산기_전월세비교')" style="background:var(--ink);">📸 이미지로 저장/공유</button>
 
       <div class="card" id="rentConsiderations" style="display:none;">
         <h2>이 계산에 없는, 놓치기 쉬운 것들</h2>
@@ -1078,6 +1132,7 @@
   </div>
 </div><!-- /rentToolRoot -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const TOTAL_STEPS = 6;
 let currentStep = 1;
@@ -1765,6 +1820,49 @@ function loadFromUrlIfPresent(){
   return true;
 }
 
+async function saveResultAsImage(elementId, buttonId, filename){
+  const btn = document.getElementById(buttonId);
+  const original = btn.textContent;
+  btn.textContent = '이미지 만드는 중...';
+  btn.disabled = true;
+  try{
+    const el = document.getElementById(elementId);
+    const canvas = await html2canvas(el, {backgroundColor: '#F7F8FA', scale: 2, useCORS: true});
+    canvas.toBlob(async (blob) => {
+      if(!blob){
+        btn.textContent = '⚠ 실패, 다시 시도해주세요';
+        setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 2500);
+        return;
+      }
+      const file = new File([blob], filename + '.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file], title: filename});
+          btn.textContent = original;
+          btn.disabled = false;
+          return;
+        }catch(e){
+          if(e && e.name === 'AbortError'){ btn.textContent = original; btn.disabled = false; return; }
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      btn.textContent = '✅ 저장 완료! (카톡에 사진 첨부해서 보내세요)';
+      setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 2800);
+    }, 'image/png');
+  }catch(e){
+    console.error(e);
+    btn.textContent = '⚠ 실패, 다시 시도해주세요';
+    setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 2500);
+  }
+}
+
 async function shareResult(){
   const url = buildShareUrl();
   const summary = shareSummary || '영끌계산기 결과를 확인해보세요';
@@ -1799,6 +1897,12 @@ function showTool(name){
 function toggleJeonseLoan(){
   document.getElementById('jeonseLoanFields').style.display =
     document.getElementById('useJeonseLoan').checked ? 'block' : 'none';
+}
+
+function toggleHintDetail(btn){
+  const detail = btn.nextElementSibling;
+  const isOpen = detail.classList.toggle('open');
+  btn.textContent = isOpen ? '접기 ▴' : '자세히 ▾';
 }
 
 function toggleSpecialCaseWarning(){
