@@ -185,15 +185,18 @@
     line-height:1.6;
   }
   .hint-toggle{
-    background:none;
+    background:var(--primary-soft);
     border:none;
-    padding:0;
+    border-radius:20px;
+    padding:6px 12px;
+    margin-left:2px;
     font-family:'Pretendard', sans-serif;
-    font-size:12.5px;
+    font-size:12px;
     font-weight:700;
     color:var(--primary-dark);
     cursor:pointer;
     white-space:nowrap;
+    display:inline-block;
   }
   .hint-detail{display:none;margin-top:6px;}
   .hint-detail.open{display:block;}
@@ -216,6 +219,16 @@
     background:#fff;
     border-color:var(--primary);
     box-shadow:0 0 0 3px var(--primary-soft);
+  }
+  input.input-error, select.input-error{
+    border-color:var(--danger) !important;
+    box-shadow:0 0 0 3px #FDEBEC !important;
+    animation:shake .3s;
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);}
+    75%{transform:translateX(4px);}
   }
   .input-suffix{position:relative;}
   .input-suffix span{
@@ -567,8 +580,12 @@
   .rent-summary .line-item{padding:6px 0;border-bottom:none;}
   .rent-summary .k{color:#B8C0CC;font-family:'Pretendard', sans-serif;font-weight:500;}
   .rent-summary .v{color:#fff;font-weight:700;}
+  .compare-row{
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+  }
   .compare-row:last-child{border-bottom:none;}
-  .compare-row .name{font-size:13px;font-weight:600;color:var(--ink);}
+  .compare-row .name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;}
   .compare-row .name .badge-current{
     display:inline-block;
     font-size:10px;
@@ -579,9 +596,9 @@
     border-radius:10px;
     margin-left:6px;
   }
-  .compare-row .figures{text-align:right;}
-  .compare-row .figures .loan{font-family:'Space Mono','Pretendard',monospace;font-weight:700;font-size:14px;color:var(--ink);}
-  .compare-row .figures .cash{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
+  .compare-row .figures{display:flex;flex-direction:column;gap:3px;}
+  .compare-row .figures .loan{font-family:'Space Mono','Pretendard',monospace;font-weight:700;font-size:15px;color:var(--ink);}
+  .compare-row .figures .cash{font-size:11.5px;color:var(--ink-faint);}
   .link-btn:active{transform:scale(0.97);}
 </style>
 </head>
@@ -645,7 +662,9 @@
           <option value="oneDisposing">1주택자 · 기존 주택 처분조건부 갈아타기</option>
           <option value="multi">2주택 이상 (규제지역 추가구입)</option>
         </select>
-        <div class="hint">규제지역에서 2주택 이상이 추가 구입 시 주담대는 원칙적으로 불가(LTV 0%)합니다. 정책대출(디딤돌·보금자리론 등)은 대부분 무주택 세대주만 가능해요.</div>
+        <div class="hint">규제지역 2주택 이상 추가구입은 대출이 원칙적으로 불가해요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+          <div class="hint-detail">LTV 0%가 적용되고, 정책대출(디딤돌·보금자리론 등)은 대부분 무주택 세대주만 가능해요.</div>
+        </div>
       </div>
       <div class="field" id="seominField" style="display:none;">
         <div class="checkrow">
@@ -669,6 +688,7 @@
           <input type="checkbox" id="over85">
           <label for="over85">전용면적 85㎡ 초과 (농어촌특별세 0.2% 추가)</label>
         </div>
+        <div class="hint" style="margin-top:0;">전용면적 85㎡는 흔히 "34평형"이라고 불러요(국민주택규모 기준). 그보다 큰 집이면 여기에 체크하세요.</div>
       </div>
       <div id="tradeUpCard" style="display:none;">
         <div class="hint" style="margin-bottom:14px;">종전주택을 팔 때 양도소득세가 발생할 수 있어요. 아래 정보를 넣으면 비과세 가능 여부와, 팔고 나서 실제로 손에 쥐는 돈(순매도자금)을 계산해드려요.</div>
@@ -785,10 +805,13 @@
         </div>
       </div>
       <div class="field">
-        <label>평형 (전용면적 기준, 인테리어비·정책대출 조건 계산용)</label>
+        <label>평형 (흔히 말하는 공급면적 기준, 인테리어비·정책대출 조건 계산용)</label>
         <div class="input-suffix">
           <input type="number" id="pyeong" placeholder="25" step="1">
           <span>평</span>
+        </div>
+        <div class="hint">평소에 흔히 말하는 평형(예: "34평형") 그대로 입력하면 돼요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+          <div class="hint-detail">정책대출 조건(전용면적 85㎡ 이하 등) 판단에는 전용면적으로 환산해서 반영하는데, 전용률은 단지·연식마다 달라서 근사치예요. 인테리어비는 입력하신 평형 그대로 계산돼요.</div>
         </div>
       </div>
     </div>
@@ -815,7 +838,9 @@
             <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 150, event)">일반형 · 150만</button>
             <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong', 250, event)">고급형 · 250만</button>
           </div>
-          <div class="hint">평당 단가(자재비+시공비 모두 포함된 턴키 견적 기준)예요. 기본형은 도배·장판 위주, 일반형은 주방·욕실 교체 포함, 고급형은 전체 올수리 · 수입타일 · 원목마루 등 기준의 대략적인 시세예요.</div>
+          <div class="hint">평당 단가(자재비+시공비 모두 포함된 턴키 견적 기준)예요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+            <div class="hint-detail">기본형은 도배·장판 위주, 일반형은 주방·욕실 교체 포함, 고급형은 전체 올수리 · 수입타일 · 원목마루 등 기준의 대략적인 시세예요.</div>
+          </div>
         </div>
         <div class="field">
           <label>기타비용(이사·법무사 등)</label>
@@ -894,7 +919,9 @@
           <input type="text" inputmode="numeric" id="sellerFinancing" placeholder="0" oninput="formatCommaInput(this)">
           <span>만원</span>
         </div>
-        <div class="hint">매도인과 개인 간 합의로 잔금 일부를 빌리고 근저당을 설정하는 방식. 은행 대출 규제 밖이라 최근 확산 중이지만, 매도인·매수인 모두 법적 리스크(잔금 미회수, 경매 등)를 감수하는 사적 거래입니다.</div>
+        <div class="hint">매도인과 개인 간 사적 거래로, 법적 리스크가 있어요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+          <div class="hint-detail">매도인과 개인 간 합의로 잔금 일부를 빌리고 근저당을 설정하는 방식이에요. 은행 대출 규제 밖이라 최근 확산 중이지만, 매도인·매수인 모두 법적 리스크(잔금 미회수, 경매 등)를 감수하는 거래예요.</div>
+        </div>
       </div>
     </div>
     <div class="step-nav">
@@ -934,7 +961,9 @@
 
       <div class="card" id="compareCard" style="display:none;">
         <h2>주택 보유 상황이 다르면?</h2>
-        <div class="hint" style="margin-bottom:12px;">일반 시중은행 주담대 기준으로, 같은 가격일 때 대출한도가 어떻게 달라지는지 비교했어요. LTV(%)는 상황마다 다르지만, 15억/25억 구간별 대출한도(6억·4억·2억)에 걸리면 LTV가 달라도 같은 금액으로 보일 수 있어요.</div>
+        <div class="hint" style="margin-bottom:12px;">일반 시중은행 주담대 기준으로, 같은 가격일 때 대출한도가 어떻게 달라지는지 비교했어요. <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+          <div class="hint-detail">LTV(%)는 상황마다 다르지만, 15억/25억 구간별 대출한도(6억·4억·2억)에 걸리면 LTV가 달라도 같은 금액으로 보일 수 있어요.</div>
+        </div>
         <div id="compareRows"></div>
       </div>
 
@@ -1494,7 +1523,7 @@ function calcCosts(ctx){
 
   const interiorCost = ctx.pyeong * ctx.interiorPerPyeong * 10000;
   const etcCost = ctx.etc * 10000;
-  const pyeongM2 = ctx.pyeong * 3.3058;
+  const pyeongM2 = ctx.pyeong * 2.45; // 평형은 통상 공급면적 기준이라, 전용면적 추정 시 전용률(약 74%)을 적용한 근사치예요
 
   const loanResult = computeLoan({...ctx, pyeongM2});
   const mortgageLoan = loanResult.amount;
@@ -1619,7 +1648,7 @@ function calculate(){
     document.getElementById('resultAmount').textContent = '대출금리를 입력해주세요';
     document.getElementById('resultSub').textContent = '금리를 비워두면 0%로 계산돼서 월 상환액이 실제보다 훨씬 적게 나와요. 5단계에서 금리를 채워주세요.';
     document.getElementById('receiptLines').innerHTML = '';
-    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(5)">5단계로 바로 가기</button>';
+    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'rate\',5)">5단계로 바로 가기</button>';
     document.getElementById('monthlyPayment').textContent = '-';
     return;
   }
@@ -1631,7 +1660,7 @@ function calculate(){
     document.getElementById('resultAmount').textContent = '평형을 입력해주세요';
     document.getElementById('resultSub').textContent = '평형을 비워두면 인테리어비가 0원으로 계산돼요. 4단계에서 평형을 채워주세요.';
     document.getElementById('receiptLines').innerHTML = '';
-    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
+    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'pyeong\',4)">4단계로 바로 가기</button>';
     document.getElementById('monthlyPayment').textContent = '-';
     return;
   }
@@ -1644,7 +1673,7 @@ function calculate(){
       document.getElementById('resultAmount').textContent = '보유자금을 입력해주세요';
       document.getElementById('resultSub').textContent = '4단계에서 보유자금을 채워야 계산할 수 있어요.';
       document.getElementById('receiptLines').innerHTML = '';
-      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',4)">4단계로 바로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
       return;
     }
@@ -1655,7 +1684,7 @@ function calculate(){
       document.getElementById('resultAmount').textContent = '보유자금 부족';
       document.getElementById('resultSub').textContent = '인테리어비 + 기타비용이 이미 보유자금을 초과합니다. 입력값을 다시 확인해주세요.';
       document.getElementById('receiptLines').innerHTML = '';
-      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',4)">4단계로 바로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
       return;
     }
@@ -1664,7 +1693,7 @@ function calculate(){
     renderFallbackNote(c);
     renderCompare(ctxBase, maxPrice);
 
-    document.getElementById('resultLabel').textContent = '최대 구매 가능 매매가';
+    document.getElementById('resultLabel').textContent = '최대 구매 가능 매매가 (예상)';
     document.getElementById('resultAmount').textContent = formatWon(maxPrice);
     document.getElementById('resultSub').textContent = `조달자금 ${formatWon(c.totalFunding)} 포함, 보유자금 ${formatWon(cash)} 기준`;
 
@@ -1713,14 +1742,14 @@ function calculate(){
       document.getElementById('resultAmount').textContent = '매매가격을 입력해주세요';
       document.getElementById('resultSub').textContent = '4단계에서 아파트 매매가격을 채워야 계산할 수 있어요.';
       document.getElementById('receiptLines').innerHTML = '';
-      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="goToStep(4)">4단계로 바로 가기</button>';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'priceEok\',4)">4단계로 바로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
       return;
     }
     const c = calcCosts({...ctxBase, price});
     renderFallbackNote(c);
     renderCompare(ctxBase, price);
-    document.getElementById('resultLabel').textContent = '필요한 자기자본(현금)';
+    document.getElementById('resultLabel').textContent = '필요한 자기자본(현금) (예상)';
     document.getElementById('resultAmount').textContent = formatWon(c.cashNeeded);
     document.getElementById('resultSub').textContent = `총 소요금액 ${formatWon(c.totalNeeded)} 중 조달자금 ${formatWon(c.totalFunding)} 제외`;
 
@@ -1903,6 +1932,20 @@ function showTool(name){
 function toggleJeonseLoan(){
   document.getElementById('jeonseLoanFields').style.display =
     document.getElementById('useJeonseLoan').checked ? 'block' : 'none';
+}
+
+function flagFieldError(fieldId, stepNum){
+  goToStep(stepNum);
+  setTimeout(()=>{
+    const el = document.getElementById(fieldId);
+    if(!el) return;
+    el.classList.add('input-error');
+    el.focus({preventScroll:false});
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    const clear = () => { el.classList.remove('input-error'); el.removeEventListener('input', clear); el.removeEventListener('change', clear); };
+    el.addEventListener('input', clear);
+    el.addEventListener('change', clear);
+  }, 350);
 }
 
 function toggleHintDetail(btn){
