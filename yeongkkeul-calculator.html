@@ -1573,19 +1573,6 @@
         </div>
       </div>
       <div class="field" style="padding-top:16px;border-top:1px dashed var(--border);">
-        <label style="margin-bottom:10px;">특수 상황 (해당하면 체크)</label>
-        <div class="checkrow">
-          <input type="checkbox" id="unregistered" onchange="toggleSpecialCaseWarning()">
-          <label for="unregistered">아직 소유권 등기가 안 난 신축이에요 (미등기)</label>
-        </div>
-        <div id="unregisteredWarning"></div>
-        <div class="checkrow">
-          <input type="checkbox" id="trustOwned" onchange="toggleSpecialCaseWarning()">
-          <label for="trustOwned">신탁회사 명의로 등기되어 있어요 (신탁등기)</label>
-        </div>
-        <div id="trustWarning"></div>
-      </div>
-      <div class="field" style="padding-top:16px;border-top:1px dashed var(--border);">
         <div class="checkrow">
           <input type="checkbox" id="useJeonseLoan" onchange="toggleJeonseLoan()">
           <label for="useJeonseLoan">전세자금대출을 활용해요</label>
@@ -1610,18 +1597,10 @@
           </select>
           <div class="hint">호당대출한도와 금리가 지역에 따라 달라져요. 수도권 외는 금리가 0.2%p 낮아요.</div>
         </div>
-        <div class="field">
-          <label>부부합산 연소득</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="rentIncome" oninput="formatCommaInput(this); calculateRent();"><span>만원</span></div>
-          <div class="hint"><b>세전</b> 기준이에요. 버팀목은 5천만원 이하(2자녀 6천만·신혼 7.5천만)여야 하고, 소득 구간에 따라 금리도 달라져요.</div>
-        </div>
+        <div class="fallback-note" style="margin:0 0 14px;">ℹ️ 연소득은 아래 <b>내 조건</b> 카드에 입력해주세요. 버팀목 한도·금리와 월세 세액공제에 함께 반영돼요.</div>
         <div class="checkrow">
           <input type="checkbox" id="rentNewlywed" onchange="calculateRent()"><label for="rentNewlywed">신혼가구 (혼인 7년 이내)</label>
         </div>
-        <div class="checkrow">
-          <input type="checkbox" id="noHouseHousehold" onchange="calculateRent()"><label for="noHouseHousehold">무주택 세대주예요</label>
-        </div>
-        <div class="hint" style="margin-top:0;">월세 세액공제 자격 확인에 쓰여요. 체크 안 해도 계산에는 영향 없고, 월세 비교에서 세액공제만 빠져요.</div>
         <div class="field">
           <label>미성년 자녀 수</label>
           <div class="segmented sm four">
@@ -1672,7 +1651,40 @@
     </div>
 
     <div class="card">
-      <h2>추가 정보 (선택)</h2>
+      <h2>내 조건</h2>
+      <div class="hint" style="margin-top:0;margin-bottom:16px;">전세자금대출 한도·금리와 월세 세액공제를 판정할 때 쓰는 정보예요. 비워두면 두 가지 모두 계산에서 빠져요.</div>
+
+      <div class="field">
+        <label>연소득 (세전) <span class="opt-tag">선택</span></label>
+        <div class="input-suffix">
+          <input type="text" inputmode="numeric" id="rentIncome" oninput="formatCommaInput(this); calculateRent();">
+          <span>만원</span>
+        </div>
+        <div class="hint">버팀목전세자금 판정에 쓰이는 <b>부부합산</b> 기준으로 넣어주세요. 버팀목은 5천만원 이하(2자녀 6천만·신혼 7.5천만) 요건이 있고, 소득 구간에 따라 금리도 달라져요.
+          <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">월세 세액공제는 기준이 달라요 ▾</button>
+          <div class="hint-detail">버팀목은 <b>부부합산 연소득</b>, 월세 세액공제는 <b>본인 총급여</b> 기준이에요. 맞벌이라면 두 숫자가 달라서 판정이 갈릴 수 있어요. 아래 "무주택 세대주"에 체크하면 본인 총급여를 따로 넣는 칸이 나와요.</div>
+        </div>
+      </div>
+
+      <div class="checkrow">
+        <input type="checkbox" id="noHouseHousehold" onchange="toggleSelfSalary(); calculateRent();">
+        <label for="noHouseHousehold">무주택 세대주예요</label>
+      </div>
+      <div class="hint" style="margin-top:0;">체크하면 월세 쪽 비교에 <b>월세액 세액공제</b>(연 15~17%)가 반영돼요. 버팀목전세자금도 무주택 세대주가 요건이에요.</div>
+
+      <div class="field" id="selfSalaryField" style="display:none;">
+        <label>본인 총급여 <span class="opt-tag">선택</span></label>
+        <div class="input-suffix">
+          <input type="text" inputmode="numeric" id="selfSalary" oninput="formatCommaInput(this); calculateRent();">
+          <span>만원</span>
+        </div>
+        <div class="hint">월세 세액공제 판정에만 쓰여요. <b>비워두면 위 연소득을 그대로 씁니다.</b> 맞벌이라 부부합산과 본인 총급여가 다르다면 여기에 본인 것만 넣어주세요. 총급여 5,500만원 이하면 17%, 5,500만~8,000만원이면 15%예요.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>안전 확인 <span class="opt-tag">선택이지만 권장</span></h2>
+      <div class="hint" style="margin-top:0;margin-bottom:16px;">전세는 총비용보다 <b>보증금을 온전히 돌려받을 수 있는지</b>가 더 중요할 수 있어요. 계약 전이라 아직 모른다면 비워두고, 등기부등본을 뗀 뒤에 다시 와서 채워보세요.</div>
       <div class="field">
         <label>이 집 매매시세</label>
         <div class="amount-row">
@@ -1707,6 +1719,20 @@
           <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">어디서 보나요? ▾</button>
           <div class="hint-detail">인터넷등기소(iros.go.kr)에서 700원이면 등기부등본을 뗄 수 있어요. "을구"에 근저당권설정이 있으면 채권최고액이 적혀 있는데, 보통 실제 대출금의 110~130%로 잡혀 있어요. 계약 전에 반드시 확인하시고, <b>잔금일 당일에 한 번 더</b> 떼어보세요. 계약 후 잔금 전에 대출을 새로 받는 경우가 있어요.</div>
         </div>
+      </div>
+      <div class="field" style="padding-top:16px;border-top:1px dashed var(--border);">
+        <label style="margin-bottom:6px;">등기부등본에서 확인할 것 <span class="opt-tag">해당하면 체크</span></label>
+        <div class="hint" style="margin-top:0;margin-bottom:12px;">대부분의 집은 해당 없어요. 다만 이 두 가지는 전세자금대출·보증보험 가입 자체를 막거나, 계약이 무효가 될 수 있는 경우라 미리 확인하는 게 좋아요.</div>
+        <div class="checkrow">
+          <input type="checkbox" id="unregistered" onchange="toggleSpecialCaseWarning(); calculateRent();">
+          <label for="unregistered">아직 소유권 등기가 안 난 신축이에요 (미등기)</label>
+        </div>
+        <div id="unregisteredWarning"></div>
+        <div class="checkrow">
+          <input type="checkbox" id="trustOwned" onchange="toggleSpecialCaseWarning(); calculateRent();">
+          <label for="trustOwned">신탁회사 명의로 등기되어 있어요 (신탁등기)</label>
+        </div>
+        <div id="trustWarning"></div>
       </div>
       <div class="field">
         <label>계약 기간</label>
@@ -1746,10 +1772,10 @@
         </div>
       </div>
       <button class="calc-btn" id="imageBtnRent" onclick="saveResultAsImage('captureAreaRent','imageBtnRent','영끌계산기_전월세비교')" style="background:var(--ink);">📸 이미지로 저장/공유</button>
+      <button class="calc-btn" id="copyBtnRent" onclick="copyRentSummary()" style="background:var(--fill);color:var(--ink);border:1px solid var(--border);">📋 결과를 텍스트로 복사</button>
 
       <div class="card" id="rentConsiderations" style="display:none;">
         <div class="fallback-note" style="margin-bottom:14px;">📌 <b>전세자금대출은 보통 일시상환이에요.</b> 매달 이자만 내다가 계약이 끝날 때 원금을 한 번에 갚는 구조라, 여기 표시된 월 부담에는 원금 상환이 들어 있지 않아요. 그리고 <b>보증료</b>(HUG·HF·SGI)와 인지세(고객·은행 각 50%)가 별도로 들어요. 이 계산기에는 반영돼 있지 않아서 실제 비용은 조금 더 늘어나요.</div>
-        <div class="fallback-note" style="margin-bottom:14px;">💡 <b>월세는 연말정산 세액공제를 받을 수 있어요.</b> 무주택 세대주이고 총급여가 일정 기준 이하이면 낸 월세의 일부를 세금에서 돌려받아요. 이 계산기에는 반영돼 있지 않아서, 실제 월세 부담은 여기 표시된 것보다 줄어들 수 있어요. 공제율·한도·소득 요건은 매년 바뀌니 국세청 홈택스에서 확인해주세요.</div>
         <h2>이 계산에 없는, 놓치기 쉬운 것들</h2>
         <div class="field">
           <div class="hint" style="margin-bottom:10px;"><b>월세 세액공제</b> — 무주택 세대주·총급여 8,000만원 이하 조건을 충족하면 월세액의 15~17%(연 1,000만원 한도)를 세액공제 받을 수 있어요. 위에서 "무주택 세대주"에 체크하고 연소득을 넣으면 비교 결과에 반영돼요. 다만 임차주택이 국민주택규모(85㎡ 이하) 또는 기준시가 4억원 이하라는 조건은 이 계산기가 별도로 확인하지 않고 충족한다고 가정했어요.</div>
@@ -3444,7 +3470,17 @@ function rentBrokerFee(baseAmount){
   else { rate = 0.006; cap = null; }
   let fee = baseAmount * rate;
   if(cap !== null) fee = Math.min(fee, cap);
-  return fee * 1.1;   // 중개보수는 부가세 10% 별도 (매매 탭과 동일 기준)
+  // 중개보수는 부가세 10% 별도 (매매 탭과 동일 기준)
+  // 0.1 곱셈에서 부동소수점 잔여값이 생겨 총비용 합계로 번지므로 원 단위로 정리해요
+  return Math.round(fee * 1.1);
+}
+
+/* 무주택 세대주 체크 시에만 '본인 총급여' 입력칸을 노출해요.
+   버팀목(부부합산)과 세액공제(본인 총급여)의 기준이 달라서 분리한 필드예요. */
+function toggleSelfSalary(){
+  const box = document.getElementById('selfSalaryField');
+  if(!box) return;
+  box.style.display = document.getElementById('noHouseHousehold').checked ? 'block' : 'none';
 }
 
 function monthlyRentTaxCredit(annualIncome, noHouseHousehold, annualRentPaid){
@@ -3569,7 +3605,11 @@ function calculateRent(){
   const wolseOpportunity  = wolseDeposit  * (savingRate/100) * termYears;
 
   const noHouseHousehold = document.getElementById('noHouseHousehold').checked;
-  const taxCreditInfo = monthlyRentTaxCredit(rentIncome, noHouseHousehold, wolseMonthly * 12);
+  /* 세액공제는 '본인 총급여' 기준이라 버팀목(부부합산)과 분리했어요.
+     따로 입력했으면 그 값을, 비었으면 위 연소득을 그대로 씁니다. */
+  const selfSalaryWon = numVal('selfSalary') * 10000;
+  const taxCreditBase = selfSalaryWon > 0 ? selfSalaryWon : rentIncome;
+  const taxCreditInfo = monthlyRentTaxCredit(taxCreditBase, noHouseHousehold, wolseMonthly * 12);
   const wolseTaxCreditTotal = taxCreditInfo.credit * termYears;
 
   const jeonseTotal = jeonseMonthlyCost * 12 * termYears + jeonseBrokerFee + jeonseOpportunity;
@@ -3592,10 +3632,12 @@ function calculateRent(){
   if(taxCreditInfo.eligible){
     fallback += `<div class="success-note">✅ <b>월세액 세액공제</b>가 반영됐어요 — 연 ${taxCreditInfo.rate}%, ${termYears}년간 총 ${formatWon(wolseTaxCreditTotal)} 만큼 월세 비용에서 빠졌어요.
       <div class="mini-note">국세청 기준(2025년 귀속분): 무주택 세대주 + 총급여 8,000만원 이하 + 국민주택규모(85㎡ 이하)·기준시가 4억원 이하 주택. 연 1,000만원까지만 공제 대상이에요. 이 계산기는 주택 조건은 충족한다고 가정했어요 — 오피스텔·고시원도 조건에 포함될 수 있어요.</div></div>`;
-  } else if(rentIncome > 0 && !noHouseHousehold){
-    fallback += `<div class="fallback-note">ℹ️ <b>무주택 세대주</b>에 체크하면 월세 세액공제(연 15~17%)를 반영해드려요. 결과가 꽤 달라질 수 있어요.</div>`;
-  } else if(noHouseHousehold && rentIncome > 80000000){
-    fallback += `<div class="fallback-note">ℹ️ 총급여가 8,000만원을 넘어서 월세 세액공제 대상이 아니에요.</div>`;
+  } else if(wolseMonthly > 0 && !noHouseHousehold){
+    fallback += `<div class="fallback-note">ℹ️ <b>무주택 세대주</b>에 체크하고 연소득을 넣으면 월세 세액공제(연 15~17%)를 반영해드려요. 결과가 꽤 달라질 수 있어요.</div>`;
+  } else if(noHouseHousehold && taxCreditBase > 80000000){
+    fallback += `<div class="fallback-note">ℹ️ 총급여 ${formatWon(taxCreditBase)}${selfSalaryWon > 0 ? '(본인 총급여 기준)' : '(연소득 입력값 기준)'}은 8,000만원을 넘어서 월세 세액공제 대상이 아니에요.${selfSalaryWon === 0 ? ' 부부합산으로 넣으셨다면, <b>본인 총급여</b>를 따로 입력하면 판정이 달라질 수 있어요.' : ''}</div>`;
+  } else if(noHouseHousehold && taxCreditBase === 0 && wolseMonthly > 0){
+    fallback += `<div class="fallback-note">ℹ️ 월세 세액공제를 반영하려면 <b>연소득</b>도 입력해주세요.</div>`;
   }
   if(useLoan && loanRate <= 0){
     fallback = '<div class="fallback-note">⚠ 전세자금대출 금리를 입력해야 월 이자 부담이 정확히 계산돼요.</div>';
@@ -3677,9 +3719,65 @@ function calculateRent(){
   document.getElementById('rentConsiderations').style.display = 'block';
 }
 
+/* 결과를 텍스트로 복사. 계산 로직과 중복되지 않게 DOM에서 직접 읽어요. */
+function copyRentSummary(){
+  const g = id => (document.getElementById(id)?.textContent || '').trim();
+  const lines = ['[영끌계산기] 전세·월세 비교', ''];
+  if(g('rentResultLabel')) lines.push(g('rentResultLabel'));
+  if(g('rentResultAmount')) lines.push(g('rentResultAmount'));
+  if(g('rentResultSub')) lines.push(g('rentResultSub'));
+
+  const box = document.getElementById('rentReceiptLines');
+  if(box){
+    box.querySelectorAll('.receipt-section-label, .line-item').forEach(el => {
+      if(el.classList.contains('receipt-section-label')){
+        lines.push('', `— ${el.textContent.trim()} —`);
+        return;
+      }
+      const k = el.querySelector('.k')?.textContent.trim() || '';
+      const v = el.querySelector('.v')?.textContent.trim() || '';
+      if(k) lines.push(`${k}: ${v}`);
+    });
+  }
+
+  lines.push('', '※ 모두 추정치예요. 실제 한도·금리·비용은 금융기관과 중개사무소에서 확인하세요.');
+  lines.push('영끌계산기 · made by 노아초이(Noah Choi)');
+
+  const text = lines.join('\n');
+  const btn = document.getElementById('copyBtnRent');
+  const original = btn ? btn.textContent : '';
+  const done = ok => {
+    if(!btn) return;
+    btn.textContent = ok ? '✅ 복사했어요' : '⚠ 복사에 실패했어요';
+    setTimeout(() => { btn.textContent = original; }, 1800);
+  };
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(() => done(true)).catch(() => legacyCopy(text, done));
+  } else {
+    legacyCopy(text, done);
+  }
+}
+
+/* 구형 브라우저·비보안 컨텍스트(http) 대비 */
+function legacyCopy(text, cb){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, ta.value.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
+  document.body.removeChild(ta);
+  cb(ok);
+}
+
 renderProgress();
 renderPolicyOptions();
 toggleSeominField();
+toggleSelfSalary();
 applyStressDefault();
 syncAllUI();
 if(loadFromUrlIfPresent()){
