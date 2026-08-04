@@ -1124,7 +1124,7 @@
       <div class="ask-num">02</div>
       <div class="ask-body">
         <div class="ask-q" id="amountCardTitle">지금 가진 돈이 얼마인가요?</div>
-        <div class="ask-sub">예금·주식·돌려받을 전세보증금·가족 지원금까지 모두 합친 <b>현금</b>이에요. 대출로 마련할 돈은 빼주세요.</div>
+        <div class="ask-sub" id="amountCardSub">예금·주식·돌려받을 전세보증금·가족 지원금까지 모두 합친 <b>현금</b>이에요. 대출로 마련할 돈은 빼주세요.</div>
         <div class="field" id="fieldCash">
           <div class="amount-row">
             <div class="input-suffix"><input type="number" id="cashEok" step="1" min="0"><span>억</span></div>
@@ -1838,6 +1838,11 @@ function setMode(m){
   document.getElementById('fieldPrice').style.display = m === 'B' ? 'block' : 'none';
   document.getElementById('amountCardTitle').textContent =
     m === 'A' ? '지금 가진 돈이 얼마인가요?' : '그 집은 얼마인가요?';
+  /* 제목만 바꾸고 설명을 놔두면, 집값을 묻는 자리에 보유현금 설명이 남아요 */
+  document.getElementById('amountCardSub').innerHTML =
+    m === 'A'
+      ? '예금·주식·돌려받을 전세보증금·가족 지원금까지 모두 합친 <b>현금</b>이에요. 대출로 마련할 돈은 빼주세요.'
+      : '사려는 집의 <b>매매가</b>예요. 취득세·중개보수 같은 부대비용은 빼고, 집값만 넣어주세요.';
   liveRecalc();
 }
 
