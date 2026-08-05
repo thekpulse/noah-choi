@@ -15,9 +15,7 @@ const ENDPOINTS = {
      ※ 예전 'RTMSDataSvcAptTradeDev' 이름은 더 이상 동작하지 않아요. */
   trade: 'RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade',
 
-  /* ⚠️ 미검증 — 전월세 API 활용신청 승인 후, 상세페이지의 End Point 표기를 보고 확정할 것.
-     매매가 'Dev' 접미사 없이 바뀐 걸로 봐서 전월세도 다를 가능성이 큽니다.
-     확인 방법: 데이터포털 → 마이페이지 → 해당 서비스 → End Point / 상세기능 경로 */
+  /* 검증 완료 — 상세페이지 End Point 표기와 일치, 실제 응답 확인 (2026.08.05, 강남구 202606 → 1,000건) */
   rent:  'RTMSDataSvcAptRent/getRTMSDataSvcAptRent',
 };
 
@@ -99,16 +97,21 @@ export default async function handler(req, res) {
 }
 
 /* 필드명을 추측하지 않고 XML의 태그를 그대로 키로 옮겨요.
-   국토부 API는 개편에 따라 태그명이 달라져서, 실제 응답을 눈으로 확인한 뒤에
-   프론트에서 매핑을 확정합니다. (한글 태그도 있을 수 있어 유니코드 범위를 포함) */
+   실제 응답(2026.08.05, 강남구 202606)으로 검증한 태그:
+     매매   aptNm · dealAmount(만원,콤마) · excluUseAr(전용㎡) · floor · umdNm · dealYear/Month/Day
+     전월세 aptNm · aptSeq · deposit · monthlyRent(0이면 전세) · excluUseAr · floor · umdNm */
 function parseItems(xml) {
   const blocks = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
   return blocks.map(block => {
+    // <item> 껍데기를 먼저 벗겨야 해요. 안 그러면 item 자신이 태그로 잡혀서
+    // {"item": "<aptNm>...전체 XML..."} 처럼 통째로 들어가버려요.
+    const inner = block.replace(/^<item>/, '').replace(/<\/item>$/, '');
     const obj = {};
-    const re = /<([^\/\s>]+)>([\s\S]*?)<\/\1>/g;
+    const re = /<([A-Za-z0-9_가-힣]+)>([\s\S]*?)<\/\1>/g;
     let m;
-    while ((m = re.exec(block)) !== null) {
-      obj[m[1]] = m[2].trim();
+    while ((m = re.exec(inner)) !== null) {
+      const v = m[2].trim();
+      if (v !== '') obj[m[1]] = v;   // 공백뿐인 태그(aptDong 등)는 버려요
     }
     return obj;
   });
