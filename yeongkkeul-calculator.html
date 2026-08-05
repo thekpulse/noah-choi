@@ -2521,6 +2521,39 @@ const POLICY = {
     ]
   },
 
+  /* 정책대출 요건 — 자격 판정과 화면 문구(POLICY_DEFS.meta)가 이 값 하나만 봅니다(원칙 46).
+     기준: 별도 — 지역 구분이 아니라 상품 자체의 요건입니다(4장 대조표).
+           단 신생아특례 생애최초 LTV만 '수도권' 기준이라 키 이름에 드러냅니다(원칙 26).
+     출처: 주택도시기금 디딤돌대출·신생아특례 디딤돌 상품안내,
+           한국주택금융공사 보금자리론 상품안내
+     확인일: 2026.08.05
+     ⚠ v21.7까지 POLICY_DEFS 함수 안에 흩어져 있던 값을 옮긴 것으로, 숫자는 바꾸지 않았습니다.
+        여기를 고치면 화면 문구가 따라옵니다. meta를 손으로 고치지 마세요. */
+  policyLoan: {
+    didimdol: {
+      income: {base: 60000000, firstTime: 70000000, multiChild: 70000000, newlywed: 85000000},
+      price:  {base: 500000000, newlywedOrMultiChild: 600000000},
+      areaM2: 85,
+      ltv: 0.7,
+      cap: {base: 200000000, firstTime: 240000000, newlywedOrMultiChild: 320000000}
+    },
+    didimdolBaby: {
+      income: {base: 130000000, dualIncome: 200000000},
+      price:  {base: 900000000},
+      areaM2: 85,
+      netAssets: 511000000,        // 순자산 요건 — 화면 안내에만 쓰고 판정에는 반영하지 않습니다
+      ltv: 0.7,
+      ltvFirstTimeNonMetro: 0.8,   // 생애최초는 수도권 밖 80% · 수도권 70%(원칙 26)
+      cap: {base: 400000000}
+    },
+    bogeumjari: {
+      income: {base: 70000000, newlywed: 85000000, oneChild: 90000000, multiChild: 100000000},
+      price:  {base: 600000000},
+      ltv: 0.7,
+      cap: {base: 360000000, firstTime: 420000000, multiChild: 400000000}
+    }
+  },
+
   /* 면적 환산 — 평형은 공급면적 기준. 평 × 2.45 = 전용㎡ (전용률 약 74%)
      ⚠ ÷ 3.3058이 아닙니다(원칙 5) */
   area: {pyeongToM2: 2.45, ruralTaxOverM2: 85}
@@ -2530,66 +2563,123 @@ const POLICY = {
    호출부를 한꺼번에 바꾸면 되돌리기 어려워서, 이름은 유지하고 값의 출처만 옮겼어요. */
 const ROOM_DEDUCT_DEFAULT = POLICY.roomDeduct;
 
+/* ===== POLICY 값을 화면 문구로 옮기는 표기 규칙 (원칙 45·46) =====
+   정책 수치를 문장에 손으로 다시 적지 않기 위한 포맷터입니다.
+   문단을 하나씩 고치는 대신 규칙 하나를 세워 전수 적용해요.
+
+   1억 이상 → '5억' '1.3억' '5.11억'  (백만원 자리에서 반올림)
+   1억 미만 → '6천만원' '8,500만원'   (딱 떨어지면 '천만원', 아니면 만원 단위) */
+function policyAmount(won){
+  if(won >= 100000000) return String(Math.round(won / 1000000) / 100) + '억';
+  const man = Math.round(won / 10000);
+  if(man >= 1000 && man % 1000 === 0) return (man / 1000) + '천만원';
+  return man.toLocaleString() + '만원';
+}
+
+/* 구간별 대출한도(수도권 기준)를 문장에 쓰는 두 가지 형태.
+   POLICY.bandCap을 고치면 화면 문구가 같이 바뀝니다. */
+function bandCapAmounts(){                    // '6억/4억/2억'
+  return POLICY.bandCap.map(function(b){ return policyAmount(b.cap); }).join('/');
+}
+function bandCapRanges(){                     // '15억 이하 6억 · 25억 이하 4억 · 초과 2억'
+  return POLICY.bandCap.map(function(b){
+    return (b.upTo === Infinity ? '초과' : policyAmount(b.upTo) + ' 이하') + ' ' + policyAmount(b.cap);
+  }).join(' · ');
+}
+
 /* ===== 정책대출 정의 ===== */
 const POLICY_DEFS = {
   didimdol: {
     name: '디딤돌대출',
-    meta: '무주택 세대주 · 부부합산 소득 6천만원 이하(생애최초·2자녀 7천만, 신혼 8,500만) · 집값 5억 이하(신혼·2자녀 6억) · 전용 85㎡ 이하',
+    /* meta는 getter입니다. POLICY.policyLoan을 고치면 화면 문구가 따라옵니다(원칙 46).
+       ⚠ '생애최초·2자녀'를 한 라벨로 묶어 적고 있어요. 두 한도가 갈라지면 문장을 쪼개야 하고,
+          그때 회귀 테스트가 먼저 실패합니다. */
+    get meta(){
+      const L = POLICY.policyLoan.didimdol;
+      return `무주택 세대주 · 부부합산 소득 ${policyAmount(L.income.base)} 이하`
+        + `(생애최초·2자녀 ${policyAmount(L.income.firstTime)}, 신혼 ${policyAmount(L.income.newlywed)})`
+        + ` · 집값 ${policyAmount(L.price.base)} 이하(신혼·2자녀 ${policyAmount(L.price.newlywedOrMultiChild)})`
+        + ` · 전용 ${L.areaM2}㎡ 이하`;
+    },
     rateLabel: '연 2.85~4.15% (기금 고시금리)',
     incomeLimit(p){
-      if(p.newlywed) return 85000000;
-      if(p.multiChild || p.firstTime) return 70000000;
-      return 60000000;
+      const I = POLICY.policyLoan.didimdol.income;
+      if(p.newlywed) return I.newlywed;
+      if(p.multiChild) return I.multiChild;
+      if(p.firstTime) return I.firstTime;
+      return I.base;
     },
     eligible(p){
+      const L = POLICY.policyLoan.didimdol;
       return p.noHouse
         && p.income <= POLICY_DEFS.didimdol.incomeLimit(p)
-        && p.price <= ((p.newlywed || p.multiChild) ? 600000000 : 500000000)
-        && p.pyeongM2 <= 85;
+        && p.price <= ((p.newlywed || p.multiChild) ? L.price.newlywedOrMultiChild : L.price.base)
+        && p.pyeongM2 <= L.areaM2;
     },
-    ltv(p){ return 0.7; },                 // 최대 70%
+    ltv(p){ return POLICY.policyLoan.didimdol.ltv; },                 // 최대 70%
     cap(p){
-      if(p.newlywed || p.multiChild) return 320000000;
-      if(p.firstTime) return 240000000;
-      return 200000000;
+      const C = POLICY.policyLoan.didimdol.cap;
+      if(p.newlywed || p.multiChild) return C.newlywedOrMultiChild;
+      if(p.firstTime) return C.firstTime;
+      return C.base;
     }
   },
   didimdolBaby: {
     name: '신생아특례 디딤돌',
-    meta: '무주택 세대주 · 2년 내 출산·입양(\'23.1.1. 이후 출생아) · 부부합산 소득 1.3억 이하(맞벌이 2억) · 집값 9억 이하 · 전용 85㎡ 이하 · 순자산 5.11억 이하',
+    get meta(){
+      const L = POLICY.policyLoan.didimdolBaby;
+      return `무주택 세대주 · 2년 내 출산·입양('23.1.1. 이후 출생아)`
+        + ` · 부부합산 소득 ${policyAmount(L.income.base)} 이하(맞벌이 ${policyAmount(L.income.dualIncome)})`
+        + ` · 집값 ${policyAmount(L.price.base)} 이하 · 전용 ${L.areaM2}㎡ 이하`
+        + ` · 순자산 ${policyAmount(L.netAssets)} 이하`;
+    },
     rateLabel: '연 1.8~4.5% 특례금리 (기본 5년, 추가 출산 시 자녀당 5년 연장·최장 15년)',
-    incomeLimit(p){ return p.dualIncome ? 200000000 : 130000000; },
+    incomeLimit(p){
+      const I = POLICY.policyLoan.didimdolBaby.income;
+      return p.dualIncome ? I.dualIncome : I.base;
+    },
     eligible(p){
+      const L = POLICY.policyLoan.didimdolBaby;
       return p.noHouse && p.newborn
         && p.income <= POLICY_DEFS.didimdolBaby.incomeLimit(p)
-        && p.price <= 900000000
-        && p.pyeongM2 <= 85;
+        && p.price <= L.price.base
+        && p.pyeongM2 <= L.areaM2;
     },
     /* 생애최초는 LTV 80%, 다만 수도권·규제지역 소재 주택은 70% */
-    ltv(p){ return (p.firstTime && !p.metro) ? 0.8 : 0.7; },   /* 생애최초 LTV: 수도권·규제지역 70% · 그 외 80% */
-    cap(p){ return 400000000; }
+    ltv(p){
+      const L = POLICY.policyLoan.didimdolBaby;
+      return (p.firstTime && !p.metro) ? L.ltvFirstTimeNonMetro : L.ltv;
+    },
+    cap(p){ return POLICY.policyLoan.didimdolBaby.cap.base; }
   },
   bogeumjari: {
     name: '보금자리론',
-    meta: '무주택 또는 1주택 · 부부합산 소득 7천만 이하(신혼 8,500만·1자녀 9천만·다자녀 1억) · 집값 6억 이하 · 전용면적 제한 없음',
+    get meta(){
+      const L = POLICY.policyLoan.bogeumjari;
+      return `무주택 또는 1주택 · 부부합산 소득 ${policyAmount(L.income.base)} 이하`
+        + `(신혼 ${policyAmount(L.income.newlywed)}·1자녀 ${policyAmount(L.income.oneChild)}·다자녀 ${policyAmount(L.income.multiChild)})`
+        + ` · 집값 ${policyAmount(L.price.base)} 이하 · 전용면적 제한 없음`;
+    },
     rateLabel: '연 4.90~5.30% 기준금리 (2026.08.01 공시) · 실행일부터 만기까지 고정',
     incomeLimit(p){
-      if(p.childCount >= 2) return 100000000;   // 다자녀가구
-      if(p.childCount === 1) return 90000000;   // 미성년 자녀 1자녀
-      if(p.newlywed) return 85000000;           // 혼인 7년 이내·결혼예정
-      return 70000000;
+      const I = POLICY.policyLoan.bogeumjari.income;
+      if(p.childCount >= 2) return I.multiChild;   // 다자녀가구
+      if(p.childCount === 1) return I.oneChild;    // 미성년 자녀 1자녀
+      if(p.newlywed) return I.newlywed;            // 혼인 7년 이내·결혼예정
+      return I.base;
     },
     eligible(p){
       // 본건 담보주택을 빼고 무주택 또는 1주택이면 돼요. 2주택 이상만 제외돼요.
       return p.upToOneHouse
         && p.income <= POLICY_DEFS.bogeumjari.incomeLimit(p)
-        && p.price <= 600000000;
+        && p.price <= POLICY.policyLoan.bogeumjari.price.base;
     },
-    ltv(p){ return 0.7; },
+    ltv(p){ return POLICY.policyLoan.bogeumjari.ltv; },
     cap(p){
-      if(p.firstTime) return 420000000;         // 생애최초
-      if(p.childCount >= 2) return 400000000;   // 다자녀 (전세사기피해자도 4억)
-      return 360000000;
+      const C = POLICY.policyLoan.bogeumjari.cap;
+      if(p.firstTime) return C.firstTime;          // 생애최초
+      if(p.childCount >= 2) return C.multiChild;   // 다자녀 (전세사기피해자도 4억)
+      return C.base;
     }
   }
 };
@@ -2693,8 +2783,8 @@ function householdEligible(id, p){
   // 소득·가구·평형(전용면적 근사치) 조건으로 1차 판단. 집값은 다음 단계에서 확정돼요.
   // 아직 입력 안 한 값이 있으면, 무조건 "가능"으로 잘못 보여주지 않도록 미판정(불가) 처리
   if(!p.incomeEntered) return false;
-  if(id === 'didimdol') return p.noHouse && p.income <= POLICY_DEFS.didimdol.incomeLimit(p) && p.pyeongEntered && p.pyeongM2 <= 85;
-  if(id === 'didimdolBaby') return p.noHouse && p.newborn && p.income <= POLICY_DEFS.didimdolBaby.incomeLimit(p) && p.pyeongEntered && p.pyeongM2 <= 85;
+  if(id === 'didimdol') return p.noHouse && p.income <= POLICY_DEFS.didimdol.incomeLimit(p) && p.pyeongEntered && p.pyeongM2 <= POLICY.policyLoan.didimdol.areaM2;
+  if(id === 'didimdolBaby') return p.noHouse && p.newborn && p.income <= POLICY_DEFS.didimdolBaby.incomeLimit(p) && p.pyeongEntered && p.pyeongM2 <= POLICY.policyLoan.didimdolBaby.areaM2;
   if(id === 'bogeumjari') return p.upToOneHouse && p.income <= POLICY_DEFS.bogeumjari.incomeLimit(p);
   return true;
 }
@@ -2702,7 +2792,7 @@ function householdEligible(id, p){
 function renderPolicyOptions(){
   const p = getScreeningParams();
   const defs = [
-    {id:'bank', name:'일반 시중은행 주담대', meta:'규제지역 LTV·구간별 한도(6억/4억/2억) 적용', alwaysEligible:true}
+    {id:'bank', name:'일반 시중은행 주담대', meta:`규제지역 LTV·구간별 한도(${bandCapAmounts()}) 적용`, alwaysEligible:true}
   ];
   Object.keys(POLICY_DEFS).forEach(id=> defs.push({id, name:POLICY_DEFS[id].name, meta:POLICY_DEFS[id].meta}));
 
@@ -3253,7 +3343,7 @@ const BINDING_COPY = {
   'LTV':      {title:'집값 대비 대출비율(LTV)', why:'지역과 주택 보유 상황에 따라 집값의 몇 %까지 빌릴 수 있는지가 정해져 있어요. 그 비율이 먼저 걸린 경우예요.'},
   'DSR':      {title:'소득 대비 상환능력(DSR)', why:'집값 기준(LTV)보다 <b>상환능력 기준(DSR)</b>이 먼저 걸렸어요. 연소득이 늘거나 기존 대출이 줄면 한도가 올라가는 구조예요.'},
   'DTI':      {title:'정책대출 상환능력(DTI)', why:'정책대출은 DSR 대신 DTI 60%가 적용되는데, 여기에 걸렸어요.'},
-  '구간한도': {title:'수도권 구간별 대출한도', why:'집값 구간별 상한(15억 이하 6억 · 25억 이하 4억 · 초과 2억)에 걸렸어요. 규제지역이 아니어도 수도권이면 적용돼요. LTV로는 더 가능해도 이 상한을 넘을 수 없어요.'},
+  '구간한도': {title:'수도권 구간별 대출한도', why:`집값 구간별 상한(${bandCapRanges()})에 걸렸어요. 규제지역이 아니어도 수도권이면 적용돼요. LTV로는 더 가능해도 이 상한을 넘을 수 없어요.`},
   '토허구역':  {title:'토지거래허가구역 실거주 의무', why:'해당 없음'},
   '은행자체한도': {title:'은행이 자체적으로 정한 한도', why:'정부 규제와 별개로 은행이 스스로 정한 상한이에요. 은행을 바꾸면 달라질 수 있어요.'},
   '상품한도': {title:'정책대출 상품 자체의 최대한도', why:'디딤돌·보금자리론은 상품별 최대 대출금액이 정해져 있어요.'},

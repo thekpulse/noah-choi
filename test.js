@@ -49,7 +49,8 @@ js += '\n;globalThis.LAWD=LAWD; globalThis.SISE_MONTHS=SISE_MONTHS;'
    + 'globalThis.BOK=BOK; globalThis.LAST_VERIFIED=LAST_VERIFIED; globalThis.STALE_DAYS=STALE_DAYS;'
    + 'globalThis.REG_SGG=REG_SGG; globalThis.ROOM_4800_SGG=ROOM_4800_SGG; globalThis.ROOM_2800_SGG=ROOM_2800_SGG;'
    + 'globalThis.POLICY=POLICY; globalThis.SISE_UI=SISE_UI; globalThis.siseState=siseState;'
-   + 'globalThis.DSR_RATIO=DSR_RATIO; globalThis.DTI_RATIO=DTI_RATIO;';
+   + 'globalThis.DSR_RATIO=DSR_RATIO; globalThis.DTI_RATIO=DTI_RATIO;'
+   + 'globalThis.POLICY_DEFS=POLICY_DEFS; globalThis.BINDING_COPY=BINDING_COPY;';
 eval(js);
 
 let pass = 0, fail = 0;
@@ -280,7 +281,16 @@ t('취득세 수도권 비규제 다주택 8%',  acquisitionTaxRate(1000000000,'
 t('스트레스: 수도권 비규제도 3.0%',  computeStressBp(true,'variable',0,30) === 3.0, computeStressBp(true,'variable',0,30));
 t('스트레스: 그 외 지역 0.75%',      computeStressBp(false,'variable',0,30) === 0.75);
 t('구간한도가 metro 기준 코드', html.indexOf('if(c.metro){') !== -1 && html.indexOf('if(c.regulated){\n      if(c.price <= 1500000000)') === -1);
-t('디딤돌 생애최초 LTV는 수도권 기준', html.indexOf('(p.firstTime && !p.metro) ? 0.8 : 0.7') !== -1);
+/* v21.8 교체(원칙 48): 소스 문자열이 아니라 동작을 검사합니다.
+   목적 = "신생아특례 생애최초 LTV는 '규제지역'이 아니라 '수도권'으로 갈린다. 수도권 밖 80% · 안 70%" */
+t('디딤돌 생애최초 LTV는 수도권 밖 80%',
+  POLICY_DEFS.didimdolBaby.ltv({firstTime:true, metro:false}) === 0.8);
+t('디딤돌 생애최초 LTV는 수도권 안 70%',
+  POLICY_DEFS.didimdolBaby.ltv({firstTime:true, metro:true}) === 0.7);
+t('생애최초가 아니면 수도권 밖도 70%',
+  POLICY_DEFS.didimdolBaby.ltv({firstTime:false, metro:false}) === 0.7);
+t('규제지역 여부는 이 판정에 끼어들지 않음(원칙 26)',
+  POLICY_DEFS.didimdolBaby.ltv({firstTime:true, metro:false, regulated:true}) === 0.8);
 t('신생아특례 지방인하는 수도권 기준', html.indexOf('(metro ? 0 : 0.2)') !== -1);
 t('규제지역 목록에 동탄·기흥·구리 포함', ['화성 동탄','용인 기흥','구리'].every(x => html.indexOf(x) !== -1));
 
@@ -1075,6 +1085,206 @@ console.log('\n=== v21.7 ㊵ 출처 접기 하단 버튼 ===');
   t('고급설정과 같은 클래스를 재사용 (새 CSS 없음)',
     sec.indexOf('class="section-toggle"') !== -1 && html.indexOf('.sources-collapse') === -1);
   t('위쪽 버튼은 그대로 남음', html.indexOf('id="sourcesToggle"') !== -1);
+})();
+
+console.log('\n=== v21.8 ㉘ 정책 수치 단일 출처 (원칙 33·46) ===');
+(() => {
+  /* 목적: 화면에 보이는 정책대출 요건 숫자와, 자격을 판정하는 숫자가 갈라지지 않는다.
+     표현이 아니라 그 목적을 잠급니다(원칙 48). */
+  const i0 = html.indexOf('const POLICY_DEFS = {');
+  const i1 = html.indexOf('const BABY_RATE_TABLE');
+  const defsSrc = html.slice(i0, i1);
+  t('POLICY_DEFS 안에 원 단위 숫자 리터럴이 없음',
+    !/\d{8,}/.test(defsSrc), (defsSrc.match(/\d{8,}/g) || []).join(','));
+  t('POLICY_DEFS가 POLICY.policyLoan을 참조함',
+    defsSrc.indexOf('POLICY.policyLoan.didimdol') !== -1
+    && defsSrc.indexOf('POLICY.policyLoan.didimdolBaby') !== -1
+    && defsSrc.indexOf('POLICY.policyLoan.bogeumjari') !== -1);
+
+  const head = html.slice(Math.max(0, html.indexOf('policyLoan: {') - 700), html.indexOf('policyLoan: {'));
+  t('policyLoan에 기준·출처·확인일 주석이 붙어 있음(원칙 33)',
+    head.indexOf('기준:') !== -1 && head.indexOf('출처:') !== -1 && head.indexOf('확인일:') !== -1);
+
+  // meta에 등장할 수 있는 라벨은 POLICY 값에서만 나온다
+  function labelsOf(node, set){
+    Object.keys(node).forEach(k => {
+      const v = node[k];
+      if (typeof v === 'number') {
+        if (k === 'areaM2') set.add(v + '㎡');
+        else if (v >= 10000) set.add(policyAmount(v));
+      } else if (v && typeof v === 'object') labelsOf(v, set);
+    });
+    return set;
+  }
+  Object.keys(POLICY.policyLoan).forEach(id => {
+    const allowed = labelsOf(POLICY.policyLoan[id], new Set());
+    const tokens = POLICY_DEFS[id].meta.match(/[\d,.]+(?:천만원|만원|억|㎡)/g) || [];
+    const stray = tokens.filter(x => !allowed.has(x));
+    t(id + ' meta의 숫자가 전부 POLICY에서 나옴', tokens.length > 0 && stray.length === 0, stray.join(','));
+  });
+
+  // POLICY를 고치면 화면 문구가 실제로 따라오는가 (문자열이 살아 있는지 확인)
+  const cases = [
+    ['didimdol', () => POLICY.policyLoan.didimdol.income.base, v => POLICY.policyLoan.didimdol.income.base = v, 61000000, '6,100만원'],
+    ['didimdolBaby', () => POLICY.policyLoan.didimdolBaby.price.base, v => POLICY.policyLoan.didimdolBaby.price.base = v, 950000000, '9.5억'],
+    ['bogeumjari', () => POLICY.policyLoan.bogeumjari.income.multiChild, v => POLICY.policyLoan.bogeumjari.income.multiChild = v, 110000000, '1.1억']
+  ];
+  cases.forEach(([id, get, set, tmp, label]) => {
+    const orig = get();
+    try {
+      set(tmp);
+      t(id + ' meta가 POLICY를 따라 바뀜', POLICY_DEFS[id].meta.indexOf(label) !== -1, POLICY_DEFS[id].meta);
+    } finally { set(orig); }
+    t(id + ' meta 원복 확인', POLICY_DEFS[id].meta.indexOf(policyAmount(orig)) !== -1);
+  });
+
+  // 판정도 같은 값을 본다 (경계 동작)
+  const base = {noHouse:true, upToOneHouse:true, firstTime:false, newlywed:false, multiChild:false,
+                childCount:0, newborn:false, dualIncome:false, metro:false, income:0, price:0, pyeongM2:60};
+  const D = POLICY.policyLoan.didimdol, B = POLICY.policyLoan.didimdolBaby, G = POLICY.policyLoan.bogeumjari;
+  t('디딤돌 집값 상한 경계가 POLICY와 일치',
+    POLICY_DEFS.didimdol.eligible({...base, income:D.income.base, price:D.price.base})
+    && !POLICY_DEFS.didimdol.eligible({...base, income:D.income.base, price:D.price.base + 1}));
+  t('디딤돌 신혼 집값 상한 경계가 POLICY와 일치',
+    POLICY_DEFS.didimdol.eligible({...base, newlywed:true, income:D.income.newlywed, price:D.price.newlywedOrMultiChild})
+    && !POLICY_DEFS.didimdol.eligible({...base, newlywed:true, income:D.income.newlywed, price:D.price.newlywedOrMultiChild + 1}));
+  t('디딤돌 소득 상한 경계가 POLICY와 일치',
+    POLICY_DEFS.didimdol.eligible({...base, income:D.income.base, price:D.price.base})
+    && !POLICY_DEFS.didimdol.eligible({...base, income:D.income.base + 1, price:D.price.base}));
+  t('디딤돌 전용면적 경계가 POLICY와 일치',
+    POLICY_DEFS.didimdol.eligible({...base, income:D.income.base, price:D.price.base, pyeongM2:D.areaM2})
+    && !POLICY_DEFS.didimdol.eligible({...base, income:D.income.base, price:D.price.base, pyeongM2:D.areaM2 + 0.1}));
+  t('신생아특례 집값 상한 경계가 POLICY와 일치',
+    POLICY_DEFS.didimdolBaby.eligible({...base, newborn:true, income:B.income.base, price:B.price.base})
+    && !POLICY_DEFS.didimdolBaby.eligible({...base, newborn:true, income:B.income.base, price:B.price.base + 1}));
+  t('신생아특례 맞벌이 소득 경계가 POLICY와 일치',
+    POLICY_DEFS.didimdolBaby.eligible({...base, newborn:true, dualIncome:true, income:B.income.dualIncome, price:B.price.base})
+    && !POLICY_DEFS.didimdolBaby.eligible({...base, newborn:true, dualIncome:true, income:B.income.dualIncome + 1, price:B.price.base}));
+  t('보금자리론 집값 상한 경계가 POLICY와 일치',
+    POLICY_DEFS.bogeumjari.eligible({...base, income:G.income.base, price:G.price.base})
+    && !POLICY_DEFS.bogeumjari.eligible({...base, income:G.income.base, price:G.price.base + 1}));
+  t('보금자리론 다자녀 소득 경계가 POLICY와 일치',
+    POLICY_DEFS.bogeumjari.eligible({...base, childCount:2, multiChild:true, income:G.income.multiChild, price:G.price.base})
+    && !POLICY_DEFS.bogeumjari.eligible({...base, childCount:2, multiChild:true, income:G.income.multiChild + 1, price:G.price.base}));
+  t('상품한도도 POLICY에서 나옴',
+    POLICY_DEFS.didimdol.cap({...base}) === D.cap.base
+    && POLICY_DEFS.didimdol.cap({...base, firstTime:true}) === D.cap.firstTime
+    && POLICY_DEFS.bogeumjari.cap({...base, firstTime:true}) === G.cap.firstTime);
+
+  /* meta가 '생애최초·2자녀'를 한 라벨로 묶어 적고 있어요.
+     두 한도가 갈라지면 문장을 쪼개야 하므로 여기서 먼저 막습니다. */
+  t('생애최초·2자녀 한도가 같은 값 (한 라벨 표기의 전제)',
+    D.income.firstTime === D.income.multiChild, D.income.firstTime + ' / ' + D.income.multiChild);
+
+  // 구간별 대출한도 문장도 POLICY.bandCap에서 조립
+  t('구간한도 금액 문구가 POLICY.bandCap에서 나옴',
+    bandCapAmounts() === POLICY.bandCap.map(b => policyAmount(b.cap)).join('/'), bandCapAmounts());
+  t('구간한도 설명 문장이 POLICY.bandCap에서 나옴',
+    BINDING_COPY['구간한도'].why.indexOf(bandCapRanges()) !== -1, bandCapRanges());
+  t('구간한도 문구에 하드코딩된 숫자가 남아 있지 않음',
+    html.indexOf("meta:'규제지역 LTV·구간별 한도(6억/4억/2억) 적용'") === -1
+    && html.indexOf('집값 구간별 상한(15억 이하 6억') === -1);
+  (() => {
+    const orig = POLICY.bandCap[0].cap;
+    try {
+      POLICY.bandCap[0].cap = 700000000;
+      t('bandCap을 고치면 문구가 따라옴', bandCapAmounts().indexOf('7억') === 0, bandCapAmounts());
+    } finally { POLICY.bandCap[0].cap = orig; }
+    t('bandCap 원복 확인', bandCapAmounts() === '6억/4억/2억', bandCapAmounts());
+  })();
+
+  // 표기 규칙 자체
+  t('policyAmount 1억 이상은 억 표기', policyAmount(500000000) === '5억' && policyAmount(130000000) === '1.3억' && policyAmount(511000000) === '5.11억');
+  t('policyAmount 1억 미만은 만원 표기', policyAmount(60000000) === '6천만원' && policyAmount(85000000) === '8,500만원');
+})();
+
+console.log('\n=== v21.8 ㉙ solveMaxPrice 속성 검사 ===');
+(() => {
+  /* 정답(정책 수치)을 몰라도 걸 수 있는 검사들입니다.
+     cashNeeded(price)는 단조가 아니지만(정책대출→은행 전환 역전),
+     "현금이 늘었는데 살 수 있는 집값이 줄어드는" 일은 어떤 경우에도 없어야 해요. */
+  const pctx = (over) => Object.assign({
+    zone:'other', regulated:false, metro:false, houseStatus:'none', price:0,
+    roomDeductAmt:28000000, bankSelfCap:0,
+    pyeong:25, pyeongEntered:true, interiorPerPyeong:0, etc:0,
+    over85:false, firstTimeTaxCut:false,
+    extraFunding:0, loanChoice:'bank',
+    income:70000000, incomeEntered:true,
+    newlywed:false, newborn:false, multiChild:false, childCount:0, dualIncome:false,
+    creditLoan:0, companyLoan:0, sellerFinancing:0,
+    manualLoanCap:0, seominCheck:false, noLoan:false,
+    rate:4.5, years:30, otherDebtMonthly:0, stressBp:1.5,
+    mciCovered:false, rateType:'variable', fixedYears:0
+  }, over || {});
+
+  const scenarios = {
+    '무주택·비수도권': pctx(),
+    '무주택·수도권': pctx({zone:'metro', metro:true}),
+    '무주택·규제지역': pctx({zone:'reg', metro:true, regulated:true}),
+    '다주택·규제지역': pctx({houseStatus:'multi', zone:'reg', metro:true, regulated:true}),
+    '생애최초·디딤돌': pctx({houseStatus:'first', loanChoice:'didimdol', income:60000000, pyeong:24}),
+    '보금자리론': pctx({loanChoice:'bogeumjari', income:60000000}),
+    '신생아특례': pctx({loanChoice:'didimdolBaby', newborn:true, houseStatus:'first', income:100000000, pyeong:24}),
+    '대출 없이 전액 현금': pctx({noLoan:true})
+  };
+
+  /* ① 현금이 늘면 최대 매매가는 절대 줄지 않는다
+     ③ 돌려준 값보다 비싼데 살 수 있는 가격은 없다 (최댓값성)
+     cashNeeded는 정책대출 집값 상한을 넘는 순간 은행 주담대로 바뀌며 역전 구간이 생겨요.
+     단순 이분탐색으로 되돌리면 낮은 해에 갇히는데, 실측으로 최대 1.4억까지 과소평가됩니다.
+     역전 구간이 어디 있는지 모르니 현금 축을 훑으면서 두 성질을 같이 봅니다. */
+  const broken = [], notMax = [];
+  const CASH_STEP = 50000000, PROBE = 10000000;
+  Object.keys(scenarios).forEach(name => {
+    let prev = -1;
+    for (let cash = 0; cash <= 1000000000; cash += CASH_STEP) {
+      const v = solveMaxPrice(cash, scenarios[name]);
+      if (v < prev - 1) broken.push(name + ' @' + (cash / 100000000) + '억');
+      prev = v;
+      for (let p = Math.ceil((v + 1) / PROBE) * PROBE; p <= 5000000000; p += PROBE) {
+        if (calcCosts({...scenarios[name], price: p}).cashNeeded <= cash) {
+          notMax.push(name + ' @현금 ' + (cash / 100000000) + '억 → ' + (p / 100000000) + '억도 가능');
+          break;
+        }
+      }
+    }
+  });
+  t('현금이 늘면 최대 매매가가 줄지 않음 (8개 경우 · 5천만원 간격)', broken.length === 0, broken.join(', '));
+  t('돌려준 값보다 비싼데 살 수 있는 가격이 없음 (최댓값성)', notMax.length === 0, notMax.slice(0, 3).join(' / '));
+
+  // ② 돌려준 매매가는 실제로 살 수 있는 금액이다 (원칙 28 — 유리한 쪽 오차 금지)
+  const infeasible = [];
+  Object.keys(scenarios).forEach(name => {
+    [150000000, 400000000, 800000000].forEach(cash => {
+      const v = solveMaxPrice(cash, scenarios[name]);
+      if (v > 0 && calcCosts({...scenarios[name], price: v}).cashNeeded > cash + 1) {
+        infeasible.push(name + ' @' + (cash / 100000000) + '억');
+      }
+    });
+  });
+  t('돌려준 매매가의 필요현금이 보유현금을 넘지 않음', infeasible.length === 0, infeasible.join(', '));
+
+  // ④ 현금 0이면 0
+  t('현금 0이면 최대 매매가 0', Object.keys(scenarios).every(n => solveMaxPrice(0, scenarios[n]) === 0));
+
+  // ⑤ 같은 입력은 같은 결과
+  t('같은 입력은 같은 결과',
+    solveMaxPrice(400000000, scenarios['무주택·수도권']) === solveMaxPrice(400000000, scenarios['무주택·수도권']));
+
+  // ⑥ 불리한 조건이 결과를 유리하게 만들지 않는다 (v20 LTV 오류 계열의 방어선)
+  const pairs = [
+    ['규제지역이 비규제보다 크지 않음', pctx({zone:'reg', metro:true, regulated:true}), pctx()],
+    ['다주택이 무주택보다 크지 않음', pctx({houseStatus:'multi'}), pctx({houseStatus:'none'})],
+    ['기타부채가 늘면 커지지 않음', pctx({otherDebtMonthly:1000000}), pctx()],
+    ['대출 없이는 대출보다 크지 않음', pctx({noLoan:true}), pctx()],
+    ['소득이 낮으면 커지지 않음', pctx({income:40000000}), pctx({income:120000000})],
+    ['스트레스 금리가 높으면 커지지 않음', pctx({stressBp:3.0}), pctx({stressBp:0.75})]
+  ];
+  pairs.forEach(([name, worse, better]) => {
+    const bad = [100000000, 400000000, 900000000].filter(cash =>
+      solveMaxPrice(cash, worse) > solveMaxPrice(cash, better) + 1);
+    t(name, bad.length === 0, bad.map(c => (c / 100000000) + '억').join(', '));
+  });
 })();
 
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
