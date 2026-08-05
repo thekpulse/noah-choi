@@ -6,7 +6,27 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#F7F8FA">
 <title>영끌계산기 — 아파트 예산 계산기</title>
-<!-- v20 — 실거래 시세 중앙값 기본 · 천만원 반올림 · 편차 경고 -->
+<!-- v21.3 — 매매 탭 실거래가 연동 · POLICY 통합 · 안전/진단 카드 분리 -->
+
+<!-- ===== Google Analytics 4 =====
+     ⚠ 배포 전에 아래 GA_ID 를 실제 측정 ID(G-로 시작)로 바꿔주세요.
+     바꾸기 전까지는 스크립트를 아예 불러오지 않고, track()은 조용히 아무 것도 하지 않아요.
+     개인정보: 입력한 금액·소득은 전송하지 않아요. 어떤 기능을 썼는지(이벤트 이름)와
+     구간화된 값(예: 대출유형 라벨)만 보냅니다. -->
+<script>
+window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
+(function(){
+  if(!window.GA_ID || window.GA_ID.indexOf('G-X') === 0) return;   // 미설정이면 로드하지 않음
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + window.GA_ID;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ window.dataLayer.push(arguments); };
+  gtag('js', new Date());
+  gtag('config', window.GA_ID, { anonymize_ip: true });
+})();
+</script>
 <meta property="og:title" content="영끌계산기 — 이 집, 나 살 수 있어?">
 <meta property="og:description" content="매매가만 보고는 몰라요. 대출한도부터 부대비용까지, 집 사는 데 필요한 자금을 한눈에 추정해보세요.">
 <meta property="og:type" content="website">
@@ -18,6 +38,16 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" />
 <style>
   :root{
+    /* ===== 타이포·여백 스케일 (v21.3) =====
+       값이 흩어지면 화면이 미묘하게 어긋나 보여요. 아래 단계 밖의 값은 쓰지 않습니다.
+       글자   11 / 12 / 13 / 14 / 15 / 16 / 17 / 19 / 22 / 26 / 31 px
+              · 폼 컨트롤은 16px 이상 (iOS Safari가 그 미만에서 포커스 시 화면을 확대해요)
+              · 유의사항 본문은 13px 이상 (원칙 25)
+       행간   1.65 본문 · 1.55 조밀한 보조문 · 1.35 제목 · 1.2 큰 숫자
+       자간   본문은 지정하지 않음(normal). 한글에 음수 자간을 주면 조밀해져 읽기 나빠져요.
+              19px 이상 큰 글씨만 em 단위로 -0.02em ~ -0.03em
+       모서리 6 / 8 / 10 / 12 / 16(--radius) / 20 px
+       여백   4 / 6 / 8 / 10 / 12 / 14 / 16 / 20 / 24 px */
     --bg:#F7F8FA;
     --surface:#FFFFFF;
     --ink:#191F28;
@@ -111,11 +141,11 @@
     margin-bottom:14px;
   }
   h1{
-    font-size:28px;
+    font-size:26px;
     font-weight:800;
     margin:0 0 8px;
     letter-spacing:-0.02em;
-    line-height:1.3;
+    line-height:1.35;
     color:#fff;
   }
   h1 span{color:#fff;opacity:.82;}
@@ -137,7 +167,7 @@
     flex:1;
     height:5px;
     background:var(--border);
-    border-radius:3px;
+    border-radius:6px;
   }
   .progress .dot.done{background:var(--primary);}
   .progress .dot.now{background:var(--primary-dark);}
@@ -171,9 +201,9 @@
     background:var(--primary-soft);
   }
   .option-card:active{transform:scale(0.99);}
-  .option-icon{font-size:28px;margin-bottom:10px;}
+  .option-icon{font-size:26px;margin-bottom:10px;}
   .option-title{font-size:17px;font-weight:800;margin-bottom:6px;}
-  .option-desc{font-size:13.5px;color:var(--ink-soft);line-height:1.6;}
+  .option-desc{font-size:14px;color:var(--ink-soft);line-height:1.65;}
 
   /* CARD */
   .card{
@@ -191,21 +221,21 @@
     color:var(--ink);
   }
 
-  .field{margin-bottom:22px;}
+  .field{margin-bottom:24px;}
   .field:last-child{margin-bottom:0;}
   label{
     display:block;
-    font-size:13.5px;
+    font-size:14px;
     font-weight:600;
-    margin-bottom:9px;
+    margin-bottom:8px;
     color:var(--ink);
   }
   .hint{
-    font-size:12.5px;
+    font-size:13px;
     color:var(--ink-faint);
     font-weight:400;
     margin-top:8px;
-    line-height:1.6;
+    line-height:1.65;
   }
   .hint-toggle{
     background:var(--primary-soft);
@@ -233,7 +263,7 @@
     padding:14px 16px;
     margin:20px 0 0;
     font-family:'Pretendard', sans-serif;
-    font-size:13.5px;
+    font-size:14px;
     font-weight:700;
     color:var(--primary-dark);
     cursor:pointer;
@@ -295,17 +325,17 @@
     font-size:12px;font-weight:700;color:var(--ink-faint);
     pointer-events:none;
   }
-  .row2{display:flex;flex-direction:column;gap:22px;margin-bottom:22px;}
+  .row2{display:flex;flex-direction:column;gap:24px;margin-bottom:24px;}
   .row2 .field{margin-bottom:0;}
   .amount-row{display:flex;gap:10px;}
   .amount-row .input-suffix{flex:1;}
   .checkrow{
     display:flex;align-items:flex-start;gap:12px;
-    font-size:13.5px;font-weight:600;
+    font-size:14px;font-weight:600;
     padding:11px 0;
   }
   .checkrow input{width:19px;height:19px;margin-top:1px;accent-color:var(--primary);flex-shrink:0;}
-  .checkrow label{margin:0;font-weight:600;color:var(--ink);line-height:1.5;}
+  .checkrow label{margin:0;font-weight:600;color:var(--ink);line-height:1.55;}
 
   /* LOAN OPTIONS (policy loans) */
   .loan-option{
@@ -329,16 +359,16 @@
     cursor:not-allowed;
     background:#FAFAFB;
   }
-  .loan-option input{margin-top:3px;accent-color:var(--primary);flex-shrink:0;}
-  .loan-option-name{font-size:14px;font-weight:700;margin-bottom:5px;}
-  .loan-option-meta{font-size:12.5px;color:var(--ink-soft);line-height:1.6;}
+  .loan-option input{margin-top:4px;accent-color:var(--primary);flex-shrink:0;}
+  .loan-option-name{font-size:14px;font-weight:700;margin-bottom:6px;}
+  .loan-option-meta{font-size:13px;color:var(--ink-soft);line-height:1.65;}
 
   button.calc-btn{
     width:100%;
     padding:16px;
     background:var(--primary);
     border:none;
-    border-radius:14px;
+    border-radius:12px;
     color:#fff;
     font-family:inherit;
     font-weight:800;
@@ -354,15 +384,7 @@
     background:var(--bg);
     border-radius:20px;
   }
-  .capture-header{
-    text-align:center;
-    font-family:'Pretendard', sans-serif;
-    font-weight:800;
-    font-size:13px;
-    color:var(--primary-dark);
-    margin-bottom:12px;
-  }
-  .share-btn-row .calc-btn{flex:1;margin-bottom:0;font-size:14.5px;padding:15px 8px;}
+  .share-btn-row .calc-btn{flex:1;margin-bottom:0;font-size:15px;padding:15px 8px;}
 
   /* STEP NAV — sticky at the bottom of the screen like a native app's primary action bar */
   .step-nav{
@@ -386,7 +408,7 @@
     font-weight:700;
     font-size:15px;
     padding:14px;
-    border-radius:14px;
+    border-radius:12px;
     cursor:pointer;
     border:none;
     transition:transform .1s ease, background .15s;
@@ -409,28 +431,6 @@
 
   /* RESULT */
   #result{display:none;}
-  .result-hero{
-    background:var(--primary);
-    color:#fff;
-    border-radius:var(--radius);
-    padding:28px 22px;
-    margin-bottom:16px;
-  }
-  .result-hero .label{
-    font-size:12.5px;font-weight:700;
-    letter-spacing:.02em;opacity:.85;margin-bottom:8px;
-  }
-  .result-hero .amount{
-    font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
-    font-size:38px;
-    font-weight:700;
-    letter-spacing:-0.01em;
-    line-height:1.15;
-  }
-  .result-hero .sub{
-    font-size:13px;opacity:.9;margin-top:10px;
-    line-height:1.5;
-  }
   .warn-box{background:var(--danger);}
 
   /* RECEIPT */
@@ -456,20 +456,34 @@
   .line-item{
     display:flex;
     justify-content:space-between;
-    font-size:14.5px;
+    font-size:15px;
     padding:9px 0;
     gap:8px;
   }
   .line-item .k{color:var(--ink-soft);font-family:'Pretendard', sans-serif;font-weight:500;}
   .line-item .v{font-weight:700;white-space:nowrap;}
   .line-item.minus .v{color:var(--accent);}
+  /* 대출금액은 영수증에서 가장 큰 숫자인데 시선이 안 간다는 지적이 있어서
+     굵기·크기·배경으로 위계를 줬어요. 파랑 배경 위 흰 글씨는 쓰지 않아요(원칙 10). */
+  .line-item.loan{
+    background:#FFF1EC;
+    border-radius:10px;
+    margin:4px -10px;
+    padding:11px 10px;
+  }
+  .line-item.loan .k{color:#8C3A1E;font-weight:700;}
+  .line-item.loan .v{color:var(--accent);font-size:17px;font-weight:800;}
   .line-item.total{
-    border-top:1px dashed var(--border);
-    margin-top:8px;
-    padding-top:11px;
+    border-top:1.5px solid var(--border);
+    background:var(--fill);
+    border-radius:10px;
+    margin:9px -10px 0;
+    padding:12px 10px;
     font-size:16px;
     font-weight:700;
   }
+  .line-item.total .k{color:var(--ink);font-weight:700;}
+  .line-item.total .v{font-size:17px;font-weight:800;}
   .line-item.grand{
     background:var(--ink);
     color:#fff;
@@ -488,7 +502,7 @@
     border-radius:10px;
     padding:10px 12px;
     margin-bottom:12px;
-    line-height:1.5;
+    line-height:1.55;
   }
   .success-note{
     font-family:'Pretendard', sans-serif;
@@ -498,7 +512,7 @@
     border-radius:10px;
     padding:10px 12px;
     margin-bottom:12px;
-    line-height:1.6;
+    line-height:1.65;
   }
   #tradeUpCard{
     margin-top:6px;
@@ -508,7 +522,7 @@
   #tradeResultBox .amount-line{
     text-align:center;
     font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
-    font-size:20px;
+    font-size:19px;
     font-weight:700;
     color:var(--ink);
     margin-bottom:10px;
@@ -519,9 +533,9 @@
     padding-top:16px;
     border-top:1px dashed var(--border);
   }
-  .monthly-box .k{font-size:12.5px;color:var(--ink-soft);font-family:'Pretendard', sans-serif;}
+  .monthly-box .k{font-size:13px;color:var(--ink-soft);font-family:'Pretendard', sans-serif;}
   .monthly-box .v{
-    font-size:23px;font-weight:700;
+    font-size:22px;font-weight:700;
   }
   .monthly-box .v .num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;}
   .monthly-box .v .label{
@@ -534,7 +548,7 @@
   .receipt-watermark{
     text-align:center;
     font-family:'Pretendard', sans-serif;
-    font-size:10.5px;
+    font-size:11px;
     color:var(--ink-faint);
     opacity:.7;
     margin-top:18px;
@@ -549,14 +563,14 @@
     border:1px solid var(--border);
     font-size:13px;
     color:var(--ink-soft);
-    line-height:1.72;
+    line-height:1.65;
   }
   .disclaimer b{color:var(--ink);font-weight:700;}
   .disclaimer-item{margin-bottom:14px;}
   .disclaimer-item:last-child{margin-bottom:0;}
   .disclaimer-head{
-    font-size:13.5px;font-weight:800;color:var(--ink);
-    letter-spacing:-0.3px;margin-bottom:14px;
+    font-size:14px;font-weight:800;color:var(--ink);
+    margin-bottom:14px;
   }
   .disclaimer-more{display:none;}
   .disclaimer-more.open{display:block;margin-top:14px;}
@@ -565,7 +579,7 @@
     width:100%;margin-top:14px;padding:12px 14px;
     border:1px solid var(--border);border-radius:10px;
     background:var(--fill);color:var(--ink-soft);
-    font-family:inherit;font-size:12.5px;font-weight:700;
+    font-family:inherit;font-size:13px;font-weight:700;
     cursor:pointer;text-align:left;
   }
   .disclaimer-toggle .chevron{transition:transform .2s;flex-shrink:0;margin-left:10px;}
@@ -582,9 +596,9 @@
     margin-bottom:8px;
   }
   .footer-copyright{
-    font-size:10.5px;
+    font-size:11px;
     color:var(--ink-faint);
-    line-height:1.7;
+    line-height:1.65;
   }
 
   .search-links{display:flex;gap:8px;flex-wrap:wrap;}
@@ -642,7 +656,7 @@
     font-weight:700;
     color:var(--ink-faint);
     text-transform:uppercase;
-    letter-spacing:.03em;
+    letter-spacing:.02em;
     margin-bottom:6px;
     padding-bottom:8px;
     border-bottom:1px dashed var(--border);
@@ -669,7 +683,7 @@
   .compare-row .name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;}
   .compare-row .name .badge-current{
     display:inline-block;
-    font-size:10px;
+    font-size:11px;
     font-weight:700;
     color:var(--primary-dark);
     background:var(--primary-soft);
@@ -677,25 +691,25 @@
     border-radius:10px;
     margin-left:6px;
   }
-  .compare-row .figures{display:flex;flex-direction:column;gap:3px;}
+  .compare-row .figures{display:flex;flex-direction:column;gap:4px;}
   .compare-row .figures .loan{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-weight:700;font-size:15px;color:var(--ink);}
-  .compare-row .figures .cash{font-size:11.5px;color:var(--ink-faint);}
+  .compare-row .figures .cash{font-size:12px;color:var(--ink-faint);}
   .link-btn:active{transform:scale(0.97);}
 
   /* ===== 입력 보조 ===== */
   .req-tag{
     display:inline-block;margin-left:6px;padding:2px 7px;border-radius:6px;
     background:var(--primary-soft);color:var(--primary-dark);
-    font-size:11px;font-weight:700;vertical-align:middle;letter-spacing:-0.2px;
+    font-size:11px;font-weight:700;vertical-align:middle;
   }
   .echo{
-    margin-top:7px;padding:8px 11px;border-radius:9px;
+    margin-top:7px;padding:8px 11px;border-radius:10px;
     background:var(--fill);color:var(--ink-soft);
-    font-size:12.5px;font-weight:600;line-height:1.5;
+    font-size:13px;font-weight:600;line-height:1.55;
   }
   .subsection-label{
     font-size:13px;font-weight:800;color:var(--ink);
-    padding:10px 0 12px;letter-spacing:-0.3px;
+    padding:10px 0 12px;
   }
 
   /* ===== 자금 구성 스택바 ===== */
@@ -722,7 +736,7 @@
   .seg-extra{background:var(--extra);}
   .funding-legend{
     display:flex;flex-wrap:wrap;gap:8px 16px;
-    font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    font-size:13px;font-weight:600;color:var(--ink-soft);
   }
   .funding-legend .dot{
     display:inline-block;width:8px;height:8px;border-radius:50%;
@@ -738,15 +752,15 @@
     color:#fff;border-radius:var(--radius);padding:20px;margin-bottom:14px;
   }
   .diag-tag{
-    font-size:11.5px;font-weight:700;letter-spacing:0.4px;
-    color:rgba(255,255,255,.55);margin-bottom:5px;
+    font-size:12px;font-weight:700;letter-spacing:.02em;
+    color:rgba(255,255,255,.55);margin-bottom:6px;
   }
-  .diag-title{font-size:19px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px;}
-  .diag-why{font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.8);margin-bottom:16px;}
+  .diag-title{font-size:19px;font-weight:800;margin-bottom:8px;}
+  .diag-why{font-size:14px;line-height:1.65;color:rgba(255,255,255,.8);margin-bottom:16px;}
   .diag-why b{color:#8FD0FF;}
   .limit-list{
-    background:rgba(255,255,255,.07);border-radius:11px;
-    padding:5px 13px;margin-bottom:11px;
+    background:rgba(255,255,255,.07);border-radius:12px;
+    padding:5px 13px;margin-bottom:12px;
   }
   .limit-row{
     display:flex;justify-content:space-between;align-items:center;
@@ -755,13 +769,13 @@
   }
   .limit-row:last-child{border-bottom:none;}
   .limit-row.active{color:#fff;font-weight:800;}
-  .limit-val{font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:700;}
+  .limit-val{font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;}
   .limit-foot{font-size:12px;color:rgba(255,255,255,.5);line-height:1.55;}
   .limit-foot b{color:rgba(255,255,255,.85);}
   .what-if{
-    margin-top:11px;padding:11px 13px;border-radius:10px;
+    margin-top:12px;padding:11px 13px;border-radius:10px;
     background:rgba(143,208,255,.13);border:1px solid rgba(143,208,255,.22);
-    font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.92);
+    font-size:13px;line-height:1.65;color:rgba(255,255,255,.92);
   }
   .what-if b{color:#8FD0FF;}
 
@@ -777,20 +791,20 @@
   .burden-card.danger{border-left-color:var(--danger2);background:#FFF8F8;}
   .burden-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
   .burden-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
-  .burden-pct{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-size:26px;font-weight:700;letter-spacing:-1px;}
+  .burden-pct{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-size:26px;font-weight:700;letter-spacing:-0.02em;}
   .burden-card.safe .burden-pct{color:var(--safe);}
   .burden-card.ok .burden-pct{color:var(--ok);}
   .burden-card.warn .burden-pct{color:var(--warn);}
   .burden-card.danger .burden-pct{color:var(--danger2);}
-  .burden-gauge{height:7px;border-radius:5px;background:var(--fill);overflow:hidden;margin-bottom:11px;}
-  .burden-fill{height:100%;border-radius:5px;transition:width .6s cubic-bezier(.22,1,.36,1);}
+  .burden-gauge{height:7px;border-radius:6px;background:var(--fill);overflow:hidden;margin-bottom:12px;}
+  .burden-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.22,1,.36,1);}
   .burden-card.safe .burden-fill{background:var(--safe);}
   .burden-card.ok .burden-fill{background:var(--ok);}
   .burden-card.warn .burden-fill{background:var(--warn);}
   .burden-card.danger .burden-fill{background:var(--danger2);}
-  .burden-msg{font-size:13.5px;line-height:1.6;color:var(--ink);margin-bottom:9px;}
+  .burden-msg{font-size:14px;line-height:1.65;color:var(--ink);margin-bottom:8px;}
   .burden-stress{
-    font-size:12.5px;color:var(--ink-soft);padding-top:9px;
+    font-size:13px;color:var(--ink-soft);padding-top:8px;
     border-top:1px dashed var(--border);line-height:1.55;
   }
   .burden-stress b{color:var(--ink);}
@@ -800,26 +814,26 @@
   .ask{display:flex;gap:14px;padding:26px 0;border-bottom:1px solid var(--border);}
   .ask:last-of-type{border-bottom:none;}
   .ask-num{
-    flex:0 0 30px;height:30px;border-radius:9px;
+    flex:0 0 30px;height:30px;border-radius:10px;
     background:var(--ink);color:#fff;
     display:flex;align-items:center;justify-content:center;
-    font-size:12px;font-weight:800;letter-spacing:-0.3px;
+    font-size:12px;font-weight:800;
     font-variant-numeric:tabular-nums;
   }
   .ask-body{flex:1;min-width:0;}
-  .ask-q{font-size:19px;font-weight:800;letter-spacing:-0.6px;color:var(--ink);margin-bottom:6px;line-height:1.4;}
-  .ask-sub{font-size:13.5px;line-height:1.65;color:var(--ink-soft);margin-bottom:16px;}
+  .ask-q{font-size:19px;font-weight:800;color:var(--ink);margin-bottom:6px;line-height:1.35;}
+  .ask-sub{font-size:14px;line-height:1.65;color:var(--ink-soft);margin-bottom:16px;}
   .ask-sub b{color:var(--ink);font-weight:700;}
 
   .segmented{display:flex;gap:8px;}
   .seg-btn{
-    flex:1;padding:15px 12px;border-radius:13px;
+    flex:1;padding:15px 12px;border-radius:12px;
     border:1.5px solid var(--border);background:var(--surface);
     text-align:left;cursor:pointer;transition:all .16s ease;
     font-family:inherit;
   }
-  .seg-btn b{display:block;font-size:14.5px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;}
-  .seg-btn span{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:3px;line-height:1.4;}
+  .seg-btn b{display:block;font-size:15px;font-weight:700;color:var(--ink);}
+  .seg-btn span{display:block;font-size:12px;color:var(--ink-faint);margin-top:4px;line-height:1.35;}
   .seg-btn.active{border-color:var(--primary);background:var(--primary-soft);}
   .seg-btn.active b{color:var(--primary-dark);}
   .seg-btn:active{transform:scale(.985);}
@@ -827,48 +841,68 @@
 
   .choice-list{display:flex;flex-direction:column;gap:8px;}
   .choice{
-    width:100%;padding:14px 15px;border-radius:13px;
+    width:100%;padding:14px 15px;border-radius:12px;
     border:1.5px solid var(--border);background:var(--surface);
     text-align:left;cursor:pointer;transition:all .16s ease;font-family:inherit;
   }
-  .choice b{display:block;font-size:14.5px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;}
-  .choice span{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
+  .choice b{display:block;font-size:15px;font-weight:700;color:var(--ink);}
+  .choice span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px;}
   .choice.active{border-color:var(--primary);background:var(--primary-soft);}
   .choice.active b{color:var(--primary-dark);}
   .choice:active{transform:scale(.99);}
 
   .cta{
-    width:100%;padding:19px;margin:8px 0 10px;border:none;border-radius:15px;
+    width:100%;padding:19px;margin:8px 0 10px;border:none;border-radius:16px;
     background:var(--ink);color:#fff;font-family:inherit;
-    font-size:16.5px;font-weight:800;letter-spacing:-0.4px;cursor:pointer;
+    font-size:17px;font-weight:800;cursor:pointer;
     transition:transform .12s ease;
   }
   .cta:active{transform:scale(.985);}
-  .cta-note{font-size:12px;color:var(--ink-faint);text-align:center;line-height:1.6;margin-bottom:24px;}
+  .cta-note{font-size:12px;color:var(--ink-faint);text-align:center;line-height:1.65;margin-bottom:24px;}
+  /* 선택 섹션 토글과 CTA가 붙어 보인다는 지적이 있어서 사이에 안내문과 여백을 뒀어요(원칙 22는 유지). */
+  .stale-banner{
+    margin:16px 0 4px;padding:12px 14px;border-radius:10px;
+    background:#FFF4E5;border:1px solid #F0C68A;
+    font-size:13px;line-height:1.65;color:#7A4A10;
+  }
+  .stale-banner b{color:#5C3608;}
+  .zone-badge{
+    margin-top:8px;padding:10px 13px;border-radius:10px;
+    background:var(--fill);font-size:13px;line-height:1.65;color:var(--ink-soft);
+  }
+  .zone-badge b{color:var(--ink);}
+  .zone-badge.reg{background:#FFF1EC;color:#8C3A1E;}
+  .zone-badge.reg b{color:#7A2E14;}
+  .cta-lead{
+    margin:26px 0 12px;padding:12px 14px;
+    background:var(--fill);border-radius:10px;
+    font-size:13px;line-height:1.65;color:var(--ink-soft);text-align:center;
+  }
+  .cta-lead b{color:var(--ink);}
   .opt-tag{
-    display:inline-block;margin-left:5px;padding:1px 6px;border-radius:5px;
-    background:var(--fill);color:var(--ink-faint);font-size:10.5px;font-weight:700;vertical-align:middle;
+    display:inline-block;margin-left:5px;padding:1px 6px;border-radius:6px;
+    background:var(--fill);color:var(--ink-faint);font-size:11px;font-weight:700;vertical-align:middle;
   }
   .tag-warn{
     display:inline-block;margin-left:6px;padding:2px 7px;border-radius:6px;
-    background:#FFF2E3;color:#9A5B0A;font-size:10.5px;font-weight:700;vertical-align:middle;
+    background:#FFF2E3;color:#9A5B0A;font-size:11px;font-weight:700;vertical-align:middle;
   }
 
   /* ============ 결과: 가정 바 ============ */
   .assump-bar{
     position:relative;background:var(--surface);border:1px solid var(--border);
-    border-radius:14px;padding:14px 16px;margin-bottom:16px;
+    border-radius:12px;padding:14px 16px;margin-bottom:16px;
   }
-  .assump-label{font-size:11.5px;font-weight:700;color:var(--ink-faint);margin-bottom:9px;letter-spacing:-0.2px;}
+  .assump-label{font-size:12px;font-weight:700;color:var(--ink-faint);margin-bottom:8px;}
   .assump-chips{display:flex;flex-wrap:wrap;gap:6px;padding-right:76px;}
   .assump-chip{
     padding:5px 10px;border-radius:8px;background:var(--fill);
     font-size:12px;font-weight:700;color:var(--ink);
-    font-variant-numeric:tabular-nums;letter-spacing:-0.2px;
+    font-variant-numeric:tabular-nums;
   }
   .assump-edit{
     position:absolute;right:14px;top:50%;transform:translateY(-50%);
-    padding:8px 12px;border-radius:9px;border:1px solid var(--border);
+    padding:8px 12px;border-radius:10px;border:1px solid var(--border);
     background:var(--surface);color:var(--primary-dark);
     font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
   }
@@ -883,26 +917,27 @@
     display:flex;justify-content:space-between;align-items:center;
     padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);
   }
-  .report-brand{font-size:13px;font-weight:800;letter-spacing:-0.4px;color:var(--ink);}
+  .report-brand{font-size:13px;font-weight:800;color:var(--ink);}
   .report-brand::before{content:'🏠 ';}
-  .report-date{font-size:11.5px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+  .report-brand.rent::before{content:'📄 ';}
+  .report-date{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
   .report-hero{
     padding:34px 20px 26px;text-align:center;
     background:linear-gradient(165deg,#0D1421 0%,#16243A 55%,#0F1D30 100%);
     color:#fff;
   }
-  .report-hero .label{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:10px;letter-spacing:-0.2px;}
+  .report-hero .label{font-size:13px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:10px;}
   .report-hero .amount{
-    font-size:38px;font-weight:800;letter-spacing:-1.8px;line-height:1.15;
-    font-variant-numeric:tabular-nums;margin-bottom:9px;
+    font-size:31px;font-weight:800;letter-spacing:-0.03em;line-height:1.2;
+    font-variant-numeric:tabular-nums;margin-bottom:8px;
   }
-  .report-hero .sub{font-size:12.5px;color:rgba(255,255,255,.62);line-height:1.6;}
+  .report-hero .sub{font-size:13px;color:rgba(255,255,255,.62);line-height:1.65;}
   .report-cond{
     margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);
-    font-size:11px;color:rgba(255,255,255,.45);line-height:1.6;letter-spacing:-0.1px;
+    font-size:11px;color:rgba(255,255,255,.45);line-height:1.65;
   }
   .report-hero.warn-box{background:linear-gradient(165deg,#5C2E0D,#7A3E12);}
-  .report-hero.warn-box .amount{font-size:22px;letter-spacing:-0.6px;}
+  .report-hero.warn-box .amount{font-size:22px;}
 
   .report .funding-box, .report .burden-card{
     border:none;border-radius:0;margin:0;
@@ -915,63 +950,63 @@
   .rg-cell{padding:16px 20px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
   .rg-cell:nth-child(2n){border-right:none;}
   .rg-cell:nth-child(n+3){border-bottom:none;}
-  .rg-k{font-size:11.5px;font-weight:600;color:var(--ink-faint);margin-bottom:5px;}
-  .rg-v{font-size:16.5px;font-weight:800;letter-spacing:-0.6px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .rg-k{font-size:12px;font-weight:600;color:var(--ink-faint);margin-bottom:6px;}
+  .rg-v{font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;}
 
   .report .receipt{border:none;border-radius:0;margin:0;box-shadow:none;}
   .report-foot{
     display:flex;justify-content:space-between;align-items:center;gap:10px;
     padding:13px 20px;border-top:1px solid var(--border);background:var(--fill);
-    font-size:10.5px;color:var(--ink-faint);line-height:1.5;
+    font-size:11px;color:var(--ink-faint);line-height:1.55;
   }
   .report-by{font-weight:700;color:var(--ink-soft);white-space:nowrap;}
 
   .monthly-box .k span{
-    display:block;font-size:10.5px;font-weight:600;color:var(--ink-faint);margin-top:2px;
+    display:block;font-size:11px;font-weight:600;color:var(--ink-faint);margin-top:2px;
   }
 
   /* ============ 비교: 막대 차트 ============ */
   .cmp-row{padding:14px 0;border-bottom:1px solid var(--border);}
   .cmp-row:last-child{border-bottom:none;}
   .cmp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;}
-  .cmp-name{font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;}
+  .cmp-name{font-size:14px;font-weight:700;color:var(--ink);}
   .cmp-now{
-    display:inline-block;font-style:normal;margin-left:6px;padding:2px 7px;border-radius:7px;
-    background:var(--primary);color:#fff;font-size:10px;font-weight:800;vertical-align:middle;
+    display:inline-block;font-style:normal;margin-left:6px;padding:2px 7px;border-radius:8px;
+    background:var(--primary);color:#fff;font-size:11px;font-weight:800;vertical-align:middle;
   }
   .cmp-delta{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .cmp-delta.up{color:var(--success);}
   .cmp-delta.down{color:var(--danger);}
-  .cmp-track{height:9px;border-radius:5px;background:var(--fill);overflow:hidden;margin-bottom:8px;}
-  .cmp-fill{height:100%;border-radius:5px;background:var(--border);transition:width .5s cubic-bezier(.22,1,.36,1);}
+  .cmp-track{height:9px;border-radius:6px;background:var(--fill);overflow:hidden;margin-bottom:8px;}
+  .cmp-fill{height:100%;border-radius:6px;background:var(--border);transition:width .5s cubic-bezier(.22,1,.36,1);}
   .cmp-row.current .cmp-fill{background:linear-gradient(90deg,var(--primary),#4DB3FF);}
   .cmp-figs{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
-  .cmp-figs b{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-0.4px;font-variant-numeric:tabular-nums;}
-  .cmp-figs span{font-size:11.5px;color:var(--ink-faint);text-align:right;font-variant-numeric:tabular-nums;}
+  .cmp-figs b{font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .cmp-figs span{font-size:12px;color:var(--ink-faint);text-align:right;font-variant-numeric:tabular-nums;}
 
   .calc-btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--border);}
 
   @media (max-width:400px){
-    .report-hero .amount{font-size:31px;letter-spacing:-1.3px;}
-    .ask-q{font-size:17.5px;}
+    .report-hero .amount{font-size:31px;letter-spacing:-0.025em;}
+    .ask-q{font-size:17px;}
     .segmented{flex-direction:column;}
     .assump-chips{padding-right:0;}
-    .assump-edit{position:static;transform:none;margin-top:11px;width:100%;}
+    .assump-edit{position:static;transform:none;margin-top:12px;width:100%;}
     .assump-edit:active{transform:scale(.98);}
   }
 
   .hero p b{color:#7CC4FF;font-weight:800;}
   .hero-facts{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px;}
   .hero-facts span{
-    padding:6px 11px;border-radius:9px;background:var(--surface);
-    border:1px solid var(--border);font-size:11.5px;font-weight:700;color:var(--ink-soft);
+    padding:6px 11px;border-radius:10px;background:var(--surface);
+    border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--ink-soft);
   }
 
   .hero h1{color:#fff;}
   .hero h1 span{color:#7CC4FF;}
   .hero p{
     color:rgba(255,255,255,.82);
-    font-size:14.5px;line-height:1.72;letter-spacing:-0.2px;font-weight:500;
+    font-size:15px;line-height:1.65;font-weight:500;
   }
   .hero-tag{
     background:rgba(255,255,255,.12);color:#BEDDF7;
@@ -984,10 +1019,10 @@
 
   .sources{
     background:var(--surface);border:1px solid var(--border);
-    border-radius:14px;padding:18px;margin-bottom:20px;
+    border-radius:12px;padding:18px;margin-bottom:20px;
   }
-  .sources-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:12px;letter-spacing:-0.3px;}
-  .src-table{width:100%;border-collapse:collapse;font-size:11.5px;line-height:1.5;}
+  .sources-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:12px;}
+  .src-table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.55;}
   .src-table th{
     text-align:left;padding:7px 8px 7px 0;color:var(--ink-faint);
     font-weight:700;border-bottom:1.5px solid var(--border);white-space:nowrap;
@@ -995,15 +1030,32 @@
   .src-table td{padding:8px 8px 8px 0;border-bottom:1px solid var(--border);color:var(--ink-soft);vertical-align:top;}
   .src-table td:first-child{font-weight:700;color:var(--ink);white-space:nowrap;}
   .src-table td:last-child,.src-table th:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
-  .sources-note{margin-top:11px;font-size:11px;color:var(--ink-faint);line-height:1.6;}
-  @media (max-width:480px){
-    .src-table{font-size:10.5px;}
-    .src-table th:nth-child(3),.src-table td:nth-child(3){display:none;}
+  .sources-note{margin-top:12px;font-size:11px;color:var(--ink-faint);line-height:1.65;}
+  /* 모바일에서는 표를 카드로 바꿔요. 열을 숨기면 출처가 사라져서 원칙 11이 무너져요. */
+  @media (max-width:560px){
+    .src-table, .src-table tbody, .src-table tr, .src-table td{display:block;width:100%;}
+    .src-table thead{display:none;}
+    .src-table tr{
+      border:1px solid var(--border);border-radius:10px;
+      padding:11px 13px;margin-bottom:8px;background:var(--surface);
+    }
+    .src-table td{border:none;padding:0;font-size:13px;line-height:1.65;white-space:normal;}
+    .src-table td:first-child{
+      font-size:13px;font-weight:800;color:var(--ink);
+      white-space:normal;margin-bottom:4px;
+    }
+    .src-table td:nth-child(2){color:var(--ink-soft);margin-bottom:6px;}
+    .src-table td:nth-child(3),.src-table td:last-child{
+      display:inline-block;width:auto;font-size:12px;color:var(--ink-faint);
+      text-align:left;white-space:normal;
+    }
+    .src-table td:nth-child(3)::before{content:"출처 ";font-weight:700;}
+    .src-table td:last-child::before{content:" · 확인 ";}
   }
 
   .segmented.three .seg-btn{padding:12px 8px;}
-  .segmented.three .seg-btn b{font-size:13.5px;}
-  .segmented.three .seg-btn span{font-size:10.5px;}
+  .segmented.three .seg-btn b{font-size:14px;}
+  .segmented.three .seg-btn span{font-size:11px;}
   @media (max-width:400px){ .segmented.three{flex-direction:row;} }
 
   .inline-btn{
@@ -1021,15 +1073,15 @@
   .duty-item:last-child{border-bottom:none;}
   .duty-tag{
     flex:0 0 auto;align-self:flex-start;
-    padding:4px 9px;border-radius:7px;background:#FFF2E3;color:#9A5B0A;
-    font-size:11px;font-weight:800;white-space:nowrap;letter-spacing:-0.2px;
+    padding:4px 9px;border-radius:8px;background:#FFF2E3;color:#9A5B0A;
+    font-size:11px;font-weight:800;white-space:nowrap;
   }
   .duty-body{flex:1;min-width:0;}
-  .duty-title{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-0.3px;margin-bottom:6px;line-height:1.45;}
+  .duty-title{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:6px;line-height:1.55;}
   .duty-text{font-size:13px;line-height:1.65;color:var(--ink-soft);}
   .duty-note{
-    margin-top:9px;padding:10px 12px;border-radius:9px;background:var(--fill);
-    font-size:12px;line-height:1.6;color:var(--ink-faint);
+    margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--fill);
+    font-size:12px;line-height:1.65;color:var(--ink-faint);
   }
   .duty-contact{
     margin-top:18px;padding:15px;border-radius:12px;
@@ -1038,24 +1090,24 @@
   .duty-contact-title{font-size:12px;font-weight:800;color:var(--primary-dark);margin-bottom:10px;}
   .duty-contact-row{
     display:flex;justify-content:space-between;align-items:baseline;gap:10px;
-    padding:5px 0;font-size:12.5px;color:var(--ink-soft);
+    padding:5px 0;font-size:13px;color:var(--ink-soft);
   }
   .duty-contact-row b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;text-align:right;}
 
   .mini-note{
-    margin-top:9px;padding-top:9px;border-top:1px dashed var(--border);
-    font-size:11.5px;line-height:1.6;color:var(--ink-faint);
+    margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);
+    font-size:12px;line-height:1.65;color:var(--ink-faint);
   }
 
   /* ===== 실거래가 조회 ===== */
   .sise-box{
     background:var(--fill);
-    border-radius:14px;
+    border-radius:12px;
     padding:16px;
     margin-bottom:20px;
   }
   .sise-row{display:flex;gap:10px;}
-  .sise-row select{flex:1;min-width:0;font-size:15px;padding:13px 12px;background:var(--surface);}
+  .sise-row select{flex:1;min-width:0;font-size:16px;padding:13px 12px;background:var(--surface);}
   .sise-btn{
     width:100%;margin-top:10px;padding:13px;
     border-radius:12px;border:1.5px solid var(--primary);
@@ -1065,7 +1117,7 @@
   .sise-btn:active{transform:scale(.99);}
   .sise-btn:disabled{opacity:.5;cursor:default;transform:none;}
   .sise-note{
-    font-size:12px;line-height:1.6;border-radius:10px;
+    font-size:12px;line-height:1.65;border-radius:10px;
     padding:10px 12px;margin-top:10px;
   }
   .sise-note.info{background:var(--surface);color:var(--ink-soft);}
@@ -1079,32 +1131,32 @@
     display:block;font-size:12px;font-weight:700;
     color:var(--ink-soft);margin-bottom:6px;
   }
-  .sise-pick input, .sise-pick select{background:var(--surface);font-size:15px;padding:13px 12px;}
+  .sise-pick input, .sise-pick select{background:var(--surface);font-size:16px;padding:13px 12px;}
   .sise-pick input{margin-bottom:8px;font-weight:600;}
   .sise-stat{
     margin-top:12px;padding:14px;border-radius:12px;
     background:var(--surface);border:1px solid var(--border);
   }
   .sise-stat-amt{
-    font-size:21px;font-weight:800;letter-spacing:-0.6px;color:var(--ink);
+    font-size:22px;font-weight:800;color:var(--ink);
     font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
   }
   .sise-stat-sub{
-    margin-top:6px;font-size:11.5px;line-height:1.65;color:var(--ink-faint);
+    margin-top:6px;font-size:12px;line-height:1.65;color:var(--ink-faint);
     font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
   }
   .sise-apply{display:flex;gap:8px;margin-top:12px;}
   .sise-apply button{
     flex:1;padding:11px 6px;border-radius:10px;
     border:1px solid var(--border);background:var(--surface);
-    font-family:inherit;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;
+    font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;
   }
   .sise-apply button.primary{
     border-color:var(--primary);background:var(--primary);color:#fff;
   }
   .sise-apply button:active{transform:scale(.98);}
   .sise-src{
-    margin-top:8px;font-size:11.5px;line-height:1.6;color:var(--success);font-weight:600;
+    margin-top:8px;font-size:12px;line-height:1.65;color:var(--success);font-weight:600;
   }
 
   .src-table td.unverified{color:#9A5B0A;}
@@ -1124,10 +1176,9 @@
   .safety-card.ok{border-left-color:var(--ok);}
   .safety-card.warn{border-left-color:var(--warn);background:#FFFCF5;}
   .safety-card.danger{border-left-color:var(--danger2);background:#FFF8F8;}
-  .safety-card.empty{border-left-color:var(--border);}
   .safety-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:10px;}
-  .safety-label{font-size:13px;font-weight:700;color:var(--ink-soft);letter-spacing:-0.3px;}
-  .safety-pct{font-size:26px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+  .safety-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .safety-pct{font-size:26px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
   .safety-card.safe .safety-pct{color:var(--safe);}
   .safety-card.ok .safety-pct{color:var(--ok);}
   .safety-card.warn .safety-pct{color:var(--warn);}
@@ -1137,17 +1188,12 @@
   .seg-prior{background:var(--danger2);}
   .seg-mine{background:var(--loan);}
   .seg-left{background:var(--own);}
-  .safety-legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px;}
+  /* 안전카드는 v21.3부터 막대그래프 전용이라 legend가 카드의 마지막 줄이에요 */
+  .safety-legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;font-weight:600;color:var(--ink-soft);}
   .safety-legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;}
   .dot-prior{background:var(--danger2);}
   .dot-mine{background:var(--loan);}
   .dot-left{background:var(--own);}
-  .safety-msg{font-size:13.5px;line-height:1.65;color:var(--ink);}
-  .safety-foot{
-    margin-top:11px;padding-top:11px;border-top:1px dashed var(--border);
-    font-size:11.5px;line-height:1.6;color:var(--ink-faint);
-  }
-  .safety-card.empty .safety-msg{color:var(--ink-soft);}
 </style>
 </head>
 <body>
@@ -1162,8 +1208,8 @@
   <div class="wrap">
     <span class="hero-tag">2026.08 기준 · 회원가입 없음</span>
     <h1>이 집,<br><span>나 살 수 있어?</span></h1>
-    <p>집값만 보면 몰라요. 은행이 실제로 얼마까지 빌려주는지는 <b>내 소득</b>이 정합니다.
-       LTV·DSR·취득세·중개보수까지 계산해서, 필요한 현금과 매달 나갈 돈을 <b>추정</b>해 보여드려요.</p>
+    <p>은행이 얼마까지 빌려주는지는 <b>내 소득</b>이 정합니다.
+       필요한 현금과 매달 나갈 돈을 <b>추정</b>해 드려요.</p>
     <div class="hero-facts">
       <span>💸 DSR 반영</span><span>🧾 취득세·중개보수 포함</span><span>📸 리포트 저장</span>
     </div>
@@ -1176,6 +1222,7 @@
 </div>
 
 <div class="wrap">
+  <div class="stale-banner" style="display:none;"></div>
   <div class="progress" id="progressDots"></div>
 
   <!-- ===== 입력: 단일 스크린 ===== -->
@@ -1211,9 +1258,11 @@
         </div>
         <div class="field" id="fieldPrice" style="display:none">
           <div class="amount-row">
-            <div class="input-suffix"><input type="number" id="priceEok" step="1" min="0"><span>억</span></div>
-            <div class="input-suffix"><input type="text" inputmode="numeric" id="priceMan" oninput="formatCommaInput(this)"><span>만원</span></div>
+            <div class="input-suffix"><input type="number" id="priceEok" step="1" min="0" oninput="clearSiseSource('buy')"><span>억</span></div>
+            <div class="input-suffix"><input type="text" inputmode="numeric" id="priceMan" oninput="formatCommaInput(this); clearSiseSource('buy');"><span>만원</span></div>
           </div>
+          <div id="buySiseSource"></div>
+          <div class="hint"><span id="buySiseHintAuto">아래 04에서 시·군·구를 고르면 <b>실거래가를 불러와 이 칸을 채울</b> 수 있어요.</span></div>
         </div>
       </div>
     </div>
@@ -1226,7 +1275,7 @@
         <div class="ask-sub"><b>세금 떼기 전(세전)</b> 금액이에요. 기혼이면 배우자 소득까지 합산해주세요.
           은행은 집값뿐 아니라 <b>갚을 능력(DSR)</b>으로도 한도를 정하기 때문에 꼭 필요해요.</div>
         <div class="field">
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="income" oninput="formatCommaInput(this); renderPolicyOptions(); syncIncomeEcho(); liveRecalc();"><span>만원</span></div>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="incomeEok" step="1" min="0" oninput="renderPolicyOptions(); syncIncomeEcho(); liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="incomeMan" oninput="formatCommaInput(this); renderPolicyOptions(); syncIncomeEcho(); liveRecalc();"><span>만원</span></div></div>
           <div class="echo" id="incomeEcho"></div>
         </div>
       </div>
@@ -1241,14 +1290,50 @@
 
         <div class="field">
           <label>사려는 집의 지역</label>
-          <div class="segmented sm">
-            <button type="button" class="seg-btn active" data-val="true"  onclick="pickSeg(this,'regulated')"><b>수도권·규제지역</b><span>서울·경기·인천 및 규제지역</span></button>
-            <button type="button" class="seg-btn"        data-val="false" onclick="pickSeg(this,'regulated')"><b>지방</b><span>그 외 지역(규제지역 제외)</span></button>
+          <div class="row2">
+            <select id="buySido" onchange="onBuySido()"></select>
+            <select id="buySgg" onchange="onBuySgg()"></select>
           </div>
-          <select id="regulated" class="sr-only" onchange="renderPolicyOptions(); toggleSeominField(); applyStressDefault(); liveRecalc();">
-            <option value="true" selected>규제지역</option><option value="false">비규제지역</option>
+          <div class="zone-badge" id="zoneBadge">시·군·구를 고르면 규제지역인지 자동으로 판정해드려요.</div>
+          <button type="button" class="hint-toggle" onclick="toggleHintDetail(this,'직접 고르기 ▾','직접 고르기 접기 ▴')">직접 고르기 ▾</button>
+          <div class="hint-detail">
+          <div class="segmented sm three" id="zoneSeg">
+            <button type="button" class="seg-btn active" data-val="reg"   onclick="pickSeg(this,'zone')"><b>규제지역</b><span>서울 전역·경기 15곳</span></button>
+            <button type="button" class="seg-btn"        data-val="metro" onclick="pickSeg(this,'zone')"><b>수도권 비규제</b><span>인천·경기 나머지</span></button>
+            <button type="button" class="seg-btn"        data-val="other" onclick="pickSeg(this,'zone')"><b>그 외 지역</b><span>수도권 밖</span></button>
+          </div>
+          <select id="zone" class="sr-only" onchange="markZoneManual(); renderPolicyOptions(); toggleSeominField(); applyStressDefault(); applyZoneDefaults(); liveRecalc();">
+            <option value="reg" selected>규제지역</option><option value="metro">수도권 비규제</option><option value="other">그 외 지역</option>
           </select>
-          <div class="hint">LTV·스트레스 금리·정책대출 금리가 이 구분에 따라 달라져요. 서울·경기·인천은 모두 <b>수도권</b>이고, 그 밖에 과천·광명·성남·수원·화성 동탄·용인 기흥·구리 등이 규제지역이에요(2026.07 기준). 지방은 대출한도가 더 높고 스트레스 금리도 낮아요.</div>
+          </div>
+          <div class="hint">시·군·구만 고르면 규제지역 여부와 방공제가 자동으로 정해져요. 목록에 없거나 다르게 계산하고 싶으면 <b>직접 고르기</b>로 바꿀 수 있어요.
+            <br><span style="color:var(--ink-faint);">⚠ 방공제 기준(주택임대차보호법 시행령)과 규제지역 경계는 서로 달라요. 인천 영종·검단 일부와 통합 전 광주광역시 지역은 적용 기준이 확인되지 않아, 고급설정에서 직접 확인하시는 게 정확해요.</span>
+            <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">세 구분이 뭐가 다른가요? ▾</button>
+            <div class="hint-detail">
+              <b>규제지역</b>(투기과열지구·조정대상지역) — 서울 25개 자치구 전역과 경기 15곳(과천, 광명, 성남 분당·수정·중원, 수원 영통·장안·팔달, 안양 동안, 용인 수지, 의왕, 하남, 화성 동탄, 용인 기흥, 구리)이에요. 2026.7.1자 동탄·기흥·구리 추가 지정까지 반영했어요. LTV가 가장 낮고 취득세 중과도 여기만 적용돼요.<br><br>
+              <b>수도권 비규제</b> — 인천 전역과 위에 없는 경기 지역이에요. LTV는 규제지역보다 높지만, 집값 구간별 대출한도(6억·4억·2억)와 스트레스 금리 3.0%는 <b>수도권 전체</b>에 적용돼서 여기도 걸려요.<br><br>
+              <b>그 외 지역</b> — 수도권 밖이에요. 구간한도가 없고 스트레스 금리도 낮아요.
+            </div>
+          </div>
+          <div class="fallback-note" id="ltaNote" style="display:none;margin-top:10px;">⚠ <b>규제지역 15곳과 서울 전역은 토지거래허가구역이기도 해요.</b> 아파트를 사려면 관할 관청의 허가가 필요하고, <b>2년 실거주 의무</b>가 붙어요. 전세를 낀 매수(갭투자)가 안 되기 때문에 <b>세입자 보증금을 뺀 금액만 준비하면 되는 구조가 성립하지 않아요.</b> 이 계산기는 실거주 목적 매수를 전제로 계산해요. (국토교통부·경기도 지정, 2026.08 기준)</div>
+          <div class="sise-box" id="buySiseBox" style="margin-top:14px;margin-bottom:0;">
+            <label style="margin-bottom:6px;">🔎 이 지역 실거래가로 매매가 채우기 <span class="opt-tag">선택</span></label>
+            <div class="hint" style="margin-top:0;margin-bottom:12px;">위에서 고른 <b id="buySiseSggEcho">시·군·구</b>의 최근 6개월 아파트 매매 실거래가(국토교통부 신고자료)를 불러와요. 단지와 면적을 고르면 <b>02 매매가 칸</b>에 넣어드려요.</div>
+            <button type="button" class="sise-btn" id="buySiseLoadBtn" onclick="loadSiseTrades('buy')" disabled>실거래 불러오기</button>
+            <div id="buySiseStatus"></div>
+            <div id="buySiseAptWrap" style="display:none;">
+              <div class="sise-pick">
+                <span>단지 고르기</span>
+                <input type="text" id="buySiseAptFilter" placeholder="단지명 일부를 입력해 좁혀보세요" oninput="renderSiseAptOptions('buy')">
+                <select id="buySiseApt" onchange="onSiseApt('buy')"><option value="">단지 선택</option></select>
+              </div>
+              <div class="sise-pick" id="buySiseAreaWrap" style="display:none;">
+                <span>면적 고르기 <span style="font-weight:400;color:var(--ink-faint);">(전용면적 기준)</span></span>
+                <select id="buySiseArea" onchange="onSiseArea('buy')"><option value="">면적 선택</option></select>
+              </div>
+            </div>
+            <div id="buySiseResult"></div>
+          </div>
         </div>
 
         <div class="field">
@@ -1257,7 +1342,7 @@
             <button type="button" class="choice active" data-val="first"       onclick="pickChoice(this)"><b>생애최초 구입자</b><span>세대원 모두 집을 가진 적 없음</span></button>
             <button type="button" class="choice"        data-val="none"        onclick="pickChoice(this)"><b>무주택자</b><span>지금은 없지만 예전에 있었음</span></button>
             <button type="button" class="choice"        data-val="oneDisposing" onclick="pickChoice(this)"><b>갈아타기</b><span>기존 집을 팔기로 하고 새로 구입</span></button>
-            <button type="button" class="choice"        data-val="multi"       onclick="pickChoice(this)"><b>2주택 이상</b><span>규제지역은 대출이 원칙적으로 불가</span></button>
+            <button type="button" class="choice"        data-val="multi"       onclick="pickChoice(this)"><b>2주택 이상</b><span>규제지역은 주담대 원칙적으로 불가</span></button>
           </div>
           <select id="houseStatus" class="sr-only" onchange="renderPolicyOptions(); toggleSeominField(); applyStressDefault(); liveRecalc();">
             <option value="first" selected>생애최초</option><option value="none">무주택</option>
@@ -1286,12 +1371,10 @@
       <div class="row2">
         <div class="field">
           <label>대출금리 (연)</label>
-          <div class="input-suffix"><input type="number" id="rate" value="4.8" step="0.01" oninput="liveRecalc()"><span>%</span></div>
-          <div class="preset-chips">
-            <button type="button" class="chip" onclick="setChipValue('rate',4.2,event);liveRecalc();">우대 4.2%</button>
-            <button type="button" class="chip" onclick="setChipValue('rate',4.8,event);liveRecalc();">보통 4.8%</button>
-            <button type="button" class="chip" onclick="setChipValue('rate',5.4,event);liveRecalc();">높음 5.4%</button>
-          </div>
+          <div class="input-suffix"><input type="number" id="rate" value="5.4" step="0.01" oninput="this.dataset.touched='1'; liveRecalc()"><span>%</span></div>
+          <div class="preset-chips" id="rateChips"></div>
+          <select id="bankRatePick" onchange="applyBankRate(this)" style="margin-top:8px;"></select>
+          <div class="hint" id="rateBandHint"></div>
         </div>
         <div class="field">
           <label>대출기간</label>
@@ -1309,7 +1392,7 @@
           <button type="button" class="seg-btn" data-val="mixed" onclick="pickSeg(this,'rateType')"><b>혼합형</b><span>고정 후 변동</span></button>
           <button type="button" class="seg-btn" data-val="periodic" onclick="pickSeg(this,'rateType')"><b>주기형</b><span>주기마다 갱신</span></button>
         </div>
-        <select id="rateType" class="sr-only" onchange="applyStressDefault(); liveRecalc();">
+        <select id="rateType" class="sr-only" onchange="applyStressDefault(); renderRateChips(); liveRecalc();">
           <option value="variable" selected>변동형</option>
           <option value="mixed">혼합형</option>
           <option value="periodic">주기형</option>
@@ -1385,8 +1468,18 @@
             <input type="checkbox" id="mciCovered" onchange="liveRecalc()">
             <label for="mciCovered">MCI·MCG 보증 가입 예정</label>
           </div>
-          <div class="hint">가입하면 <b>방공제</b>가 면제돼요. 방공제는 세입자 최우선변제금만큼 은행이 미리 빼고 빌려주는 걸 말해요(규제지역 약 5,500만원).</div>
+          <div class="hint">가입하면 <b>방공제</b>가 면제돼요. 방공제는 세입자 최우선변제금만큼 은행이 미리 빼고 빌려주는 걸 말해요.</div>
         </div>
+      </div>
+      <div class="field">
+        <label>방공제 금액 <span class="opt-tag">지역 자동</span></label>
+        <select id="roomDeduct" onchange="this.dataset.touched='1'; liveRecalc();">
+          <option value="5500">5,500만원 — 서울특별시</option>
+          <option value="4800">4,800만원 — 과밀억제권역(서울 제외)·세종·용인·화성·김포</option>
+          <option value="2800">2,800만원 — 광역시·안산·광주·파주·이천·평택</option>
+          <option value="2500">2,500만원 — 그 밖의 지역</option>
+        </select>
+        <div class="hint">주택임대차보호법 시행령 제10조의 지역 구분이에요. 위에서 고른 지역으로 기본값을 맞춰두지만, 규제지역 경계와 이 구분은 달라서 직접 확인하시는 게 정확해요. MCI·MCG에 가입하면 차감되지 않아요.</div>
       </div>
 
       <div class="subsection-label">세금 · 추가 자금원</div>
@@ -1401,7 +1494,16 @@
         <div id="loanAmountField" class="field">
           <label>대출금액 직접 설정</label>
           <div class="amount-row"><div class="input-suffix"><input type="number" id="manualLoanCapEok" step="1" min="0" oninput="liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="manualLoanCapMan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div></div>
-          <div class="hint">은행 자체 한도가 더 낮거나, 덜 빌리고 싶을 때 쓰세요. <b>모르면 비워두세요.</b> 일반 주담대에만 적용돼요.</div>
+          <div class="hint">덜 빌리고 싶을 때 쓰세요. <b>모르면 비워두세요.</b> 일반 주담대에만 적용돼요.</div>
+        </div>
+        <div class="field">
+          <label>은행 자체 대출한도 <span class="opt-tag">선택</span></label>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="bankSelfCapEok" step="1" min="0" oninput="liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="bankSelfCapMan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div></div>
+          <div class="preset-chips">
+            <button type="button" class="chip" onclick="setAmountOrBlank('bankSelfCap',30000);liveRecalc();">3억</button>
+            <button type="button" class="chip" onclick="setAmountOrBlank('bankSelfCap',0);liveRecalc();">지우기</button>
+          </div>
+          <div class="hint"><b>정부 규제와 별개로 은행이 스스로 정하는 상한이에요.</b> 규제지역이 아니어도 적용하는 곳이 있어요. 예를 들어 KB국민은행은 2026.7.10부터 주택담보대출 최대한도를 3억원으로 줄였다고 보도됐어요(머니투데이 2026.07.31). 은행마다 다르고 자주 바뀌니 <b>상담받은 한도가 있으면 그 금액을 넣어주세요.</b> 넣으면 무엇이 먼저 걸리는지 진단에 함께 나와요.</div>
         </div>
         <div class="field">
           <label>신용대출</label>
@@ -1475,11 +1577,13 @@
       </button>
     </div>
 
+    <div class="cta-lead">
+      신용대출·사내대출이 있거나 인테리어 비용까지 보려면 위의 <b>"더 정확하게"</b>를 먼저 펼쳐주세요.
+    </div>
     <button type="button" class="cta" onclick="calculate()">내 예산 계산하기</button>
     <div class="cta-note">
-      금리 연 4.8% · 30년 원리금균등 상환을 기본 가정으로 계산해요.<br>
-      결과 화면에서 바로 바꿀 수 있고, 어떤 가정을 썼는지도 함께 보여드려요.<br>
-      신용대출·사내대출이 있거나 인테리어 비용까지 보려면 <b>위의 "더 정확하게"</b>를 펼쳐주세요.
+      금리 연 5.4% · 30년 원리금균등 상환을 기본 가정으로 계산해요.
+      이 금리는 시장 평균이 아니라 <b>임의로 정한 기본값</b>이고, 결과 화면에서 바로 바꿀 수 있어요.
     </div>
 
   </div>
@@ -1581,6 +1685,9 @@
       <div class="disclaimer-more" id="disclaimerMore">
       <div class="disclaimer-item"><b>아파트 기준이에요.</b> 대출·세금 로직은 주택 전반에 유효하지만 인테리어 단가는 아파트 시세 기준이에요. 오피스텔·상가는 대상이 아니에요.</div>
       <div class="disclaimer-item"><b>수치는 실제와 다를 수 있어요.</b> LTV·DSR·정책대출 자격·취득세·중개보수는 지역 지정 현황과 은행·기금 정책에 따라 달라져요. 실제 매매·대출 전에는 은행, 주택도시기금(기금e든든), 공인중개사, 세무사와 확인하세요.</div>
+      <div class="disclaimer-item"><b>금리는 두 가지 기준이 있어요.</b> 은행연합회 공시 평균(실제 나간 대출의 평균)은 우대를 받은 사람까지 포함돼 낮게 보이고, 은행이 게시한 금리 상단은 우대를 못 받았을 때예요. 본인 금리는 신용점수·거래실적·상품에 따라 정해지니 반드시 은행에서 확인하세요.</div>
+      <div class="disclaimer-item"><b>2주택 이상은 보수적으로 계산해요.</b> 취득세를 규제지역 12% · 그 외 8%로 잡는데, 규제지역이 아닌 곳에서 정확히 2주택이 되는 경우는 실제로 일반세율(1~3%)이 적용될 수 있어요. 이 경우 계산기가 세금을 실제보다 많게 잡아요.</div>
+      <div class="disclaimer-item"><b>전세대출 이자는 DSR에 넣지 않았어요.</b> 1주택자가 수도권·규제지역에서 전세를 얻는 경우 전세대출 이자상환분이 DSR에 반영되는데(2025.10.15 대책), 이 계산기는 그 상황을 다루지 않아요. 해당된다면 실제 한도가 더 낮아요.</div>
       <div class="disclaimer-item"><b>DSR은 추정치예요.</b> 스트레스 금리 가산폭과 기존 부채 산정 방식은 은행·상품·시기별로 달라서, 실제 심사 결과와 차이가 날 수 있어요.</div>
       <div class="disclaimer-item"><b>정책대출은 중복 불가예요.</b> 디딤돌대출과 보금자리론은 원칙적으로 하나만 선택할 수 있어요.</div>
       <div class="disclaimer-item"><b>갈아타기 양도세는 비과세 가능성만 짚어드려요.</b> 실제 세액(12억 초과분 과세, 장기보유특별공제 등)은 계산하지 않고, 요건 충족 여부의 최종 판단은 세무 전문가의 몫이에요.</div>
@@ -1598,7 +1705,7 @@
           <tr><td>디딤돌 한도</td><td>일반 2억 · 생애최초 2.4억 · 신혼/2자녀 3.2억</td><td>한국주택금융공사 상품안내</td><td>2026.08</td></tr>
           <tr><td>디딤돌 소득요건</td><td>6천만 · 생애최초/2자녀 7천만 · 신혼 8,500만</td><td>한국주택금융공사 상품안내</td><td>2026.08</td></tr>
           <tr><td>디딤돌 LTV·DTI</td><td>LTV 70% · DTI 60%</td><td>한국주택금융공사 상품안내</td><td>2026.08</td></tr>
-          <tr><td>스트레스 금리</td><td>변동형 수도권 3.00% · 지방 0.75% / 혼합형 2.40·1.80·1.20% / 주기형 1.20·0.90·0.60% (고정비중 70% 이상 미적용)</td><td>은행연합회 공시(2026.06.30, 적용 2026.07.01~12.31)</td><td>2026.08</td></tr>
+          <tr><td>스트레스 금리</td><td>변동형 수도권 3.00% · 그 외 지역 0.75% / 혼합형 2.40·1.80·1.20% / 주기형 1.20·0.90·0.60% (고정비중 70% 이상 미적용)</td><td>은행연합회 공시(2026.06.30, 적용 2026.07.01~12.31)</td><td>2026.08</td></tr>
           <tr><td>신용대출 스트레스</td><td>전체 잔액 1억원 초과 시 1.50%</td><td>은행연합회 공시</td><td>2026.08</td></tr>
           <tr><td>신생아특례 한도</td><td>최고 4억원 (LTV 70%, 생애최초·지방 80% / DTI 60%)</td><td>주택도시기금·마이홈포털</td><td>2026.08</td></tr>
           <tr><td>신생아특례 소득</td><td>부부합산 1.3억 이하 (맞벌이 2억, 각 1인 1.3억 이하)</td><td>주택도시기금·마이홈포털</td><td>2026.08</td></tr>
@@ -1615,6 +1722,12 @@
           <tr><td>정책대출 사후의무</td><td>실거주 2년 · 1주택 유지 · 기금 중복대출 금지</td><td>주택도시기금 유의사항</td><td>2026.08</td></tr>
           <tr><td>신생아특례 금리</td><td>소득·기간별 연 1.80~4.50% (지방 0.2%p 인하)</td><td>주택도시기금·마이홈포털</td><td>2026.08</td></tr>
           <tr><td>생애최초 LTV</td><td>수도권·규제지역 70% · 그 외 80%</td><td>6·27 대출규제</td><td>2026.08</td></tr>
+          <tr><td>규제지역 지정</td><td>서울 25개 자치구 전역 · 경기 15곳(과천·광명·성남 3구·수원 3구·안양 동안·용인 수지·의왕·하남·화성 동탄·용인 기흥·구리)</td><td>국토교통부 주거정책심의위(2026.06.29 의결, 07.01 시행)</td><td>2026.08</td></tr>
+          <tr><td>구간별 대출한도</td><td>수도권·규제지역 15억 이하 6억 · 25억 이하 4억 · 초과 2억</td><td>2025.10.15 주택시장 안정화 대책</td><td>2026.08</td></tr>
+          <tr><td>주담대 공시 평균금리</td><td>5대 은행 평균 4.50% (KB 4.63 · 신한 5.00 · 하나 4.26 · 우리 4.32 · NH 4.28). 만기 10년 이상 분할상환, 금액가중평균</td><td>전국은행연합회 소비자포털 공시 — 2026년 6월중 취급분</td><td>2026.08.05</td></tr>
+          <tr><td>주담대 게시 금리구간</td><td>고정형 4.74~7.50%(2026.07.31) · 변동형 4.17~6.88%(2026.07.20), 5대 은행. 계산기 기본값 5.40%는 두 기준 사이의 보수적 임의값</td><td>언론 집계(문화일보·국민일보 등) — 공시와 측정 대상이 달라 병기</td><td>2026.08</td></tr>
+          <tr><td>은행 자체 한도</td><td>계산에 반영 안 함(직접 입력 시에만 적용). KB국민은행 3억원 축소 보도(2026.07.10 시행)</td><td>머니투데이 2026.07.31 — 🟡 은행 상품설명서 미대조</td><td>2026.08</td></tr>
+          <tr><td>방공제(최우선변제금)</td><td>서울 5,500만 · 과밀억제권역 등 4,800만 · 광역시 등 2,800만 · 그 밖 2,500만</td><td>주택임대차보호법 시행령 제10조</td><td>2026.08</td></tr>
           <tr><td>DSR</td><td>은행권 40%</td><td>금융위 3단계 스트레스 DSR</td><td>2026.08</td></tr>
           <tr><td>중개보수</td><td>거래금액별 상한요율 + VAT 10%</td><td>공인중개사법 시행규칙</td><td>2026.08</td></tr>
           <tr><td>취득세</td><td>1~3% 구간세율 · 다주택 8/12% 중과</td><td>지방세법</td><td>2026.08</td></tr>
@@ -1678,12 +1791,12 @@
           <label>임차주택 소재지</label>
           <div class="segmented sm">
             <button type="button" class="seg-btn active" data-val="true" onclick="pickSeg(this,'rentMetro')"><b>수도권</b><span>서울·인천·경기</span></button>
-            <button type="button" class="seg-btn" data-val="false" onclick="pickSeg(this,'rentMetro')"><b>수도권 외</b><span>그 외 지역</span></button>
+            <button type="button" class="seg-btn" data-val="false" onclick="pickSeg(this,'rentMetro')"><b>그 외 지역</b><span>수도권 밖</span></button>
           </div>
           <select id="rentMetro" class="sr-only" onchange="calculateRent()">
             <option value="true" selected>수도권</option><option value="false">수도권 외</option>
           </select>
-          <div class="hint">호당대출한도와 금리가 지역에 따라 달라져요. 수도권 외는 금리가 0.2%p 낮아요.</div>
+          <div class="hint">호당대출한도와 금리가 지역에 따라 달라져요. 수도권 밖은 금리가 0.2%p 낮아요.</div>
         </div>
         <div class="fallback-note" style="margin:0 0 14px;">ℹ️ 연소득은 아래 <b>내 조건</b> 카드에 입력해주세요. 버팀목 한도·금리와 월세 세액공제에 함께 반영돼요.</div>
         <div class="checkrow">
@@ -1869,23 +1982,37 @@
     <button class="calc-btn" onclick="calculateRent()">비교하기</button>
 
     <div id="rentResult" style="display:none;">
-      <div id="rentSafetyBox"></div>
-      <div id="captureAreaRent">
-        <div class="capture-header">📄 영끌계산기 · 전세·월세 비교</div>
-        <div class="result-hero" id="rentResultHero">
+
+      <!-- 가정 바 — 결과 화면에서 바로 고칠 수 있게 -->
+      <div class="assump-bar" id="rentAssumpBar"></div>
+
+      <!-- 진단 인사이트 — 전월세의 "병목"은 보증금 안전이에요 -->
+      <div id="rentDiagBox"></div>
+
+      <div id="captureAreaRent" class="report">
+        <div class="report-top">
+          <div class="report-brand rent">영끌계산기</div>
+          <div class="report-date" id="rentReportDate"></div>
+        </div>
+        <div class="report-hero" id="rentResultHero">
           <div class="label" id="rentResultLabel">비교 결과</div>
           <div class="amount" id="rentResultAmount">-</div>
           <div class="sub" id="rentResultSub"></div>
+          <div class="report-cond" id="rentReportCond"></div>
         </div>
-        <div id="rentFallbackNote"></div>
         <div class="receipt">
           <div class="receipt-title">전세 vs 월세 상세 비교</div>
           <div id="rentReceiptLines"></div>
           <div class="receipt-watermark">영끌계산기 · made by 노아초이(Noah Choi)</div>
         </div>
       </div>
+
+      <div id="rentSafetyBox"></div>
+      <div id="rentFallbackNote"></div>
+
       <button class="calc-btn" id="imageBtnRent" onclick="saveResultAsImage('captureAreaRent','imageBtnRent','영끌계산기_전월세비교')" style="background:var(--ink);">📸 이미지로 저장/공유</button>
       <button class="calc-btn" id="copyBtnRent" onclick="copyRentSummary()" style="background:var(--fill);color:var(--ink);border:1px solid var(--border);">📋 결과를 텍스트로 복사</button>
+      <button class="calc-btn" id="linkBtnRent" onclick="copyRentLink()" style="background:var(--fill);color:var(--ink);border:1px solid var(--border);">🔗 링크로 공유 (입력값 그대로 열려요)</button>
 
       <div class="card" id="rentConsiderations" style="display:none;">
         <div class="fallback-note" style="margin-bottom:14px;">📌 <b>전세자금대출은 보통 일시상환이에요.</b> 매달 이자만 내다가 계약이 끝날 때 원금을 한 번에 갚는 구조라, 여기 표시된 월 부담에는 원금 상환이 들어 있지 않아요. 그리고 <b>보증료</b>(HUG·HF·SGI)와 인지세(고객·은행 각 50%)가 별도로 들어요. 이 계산기에는 반영돼 있지 않아서 실제 비용은 조금 더 늘어나요.</div>
@@ -1901,10 +2028,11 @@
 
     <div class="disclaimer">
       <div class="disclaimer-item">
-        <b>참고용 계산이에요.</b> 전월세전환율 법정 상한(기준금리+2%p)은 2026.08 기준 한국은행 기준금리(연 2.75%)를 반영한 값이며, 실제 계약 시점 금리에 따라 달라질 수 있어요. 전세보증보험 가입 가능 여부는 전세가율 외에도 여러 조건이 있으니 HUG·HF·SGI 등에 직접 확인하세요. 이 계산기는 계약 체결이나 대출 실행을 대신하지 않아요.
+        <span id="bokStaleNote"></span>
+        <b>참고용 계산이에요.</b> 전월세전환율 법정 상한(기준금리+2%p)은 한국은행 기준금리 <b>연 2.75%</b>(2026.7.16 결정)를 반영한 값이며, 실제 계약 시점 금리에 따라 달라질 수 있어요. 전세보증보험 가입 가능 여부는 전세가율 외에도 여러 조건이 있으니 HUG·HF·SGI 등에 직접 확인하세요. 이 계산기는 계약 체결이나 대출 실행을 대신하지 않아요.
       </div>
       <div class="disclaimer-item" style="margin-bottom:0;">
-        아파트·주택 전월세 기준으로 만들었어요. 오피스텔(아파텔 포함)과 상가는 이 계산기의 대상이 아니에요.
+        아파트·주택 전월세 기준으로 만들었어요. 오피스텔과 상가는 이 계산기의 대상이 아니에요.
       </div>
     </div>
 
@@ -1917,6 +2045,18 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+/* ===== 사용 로그 =====
+   GA가 없거나(미설정·차단·오프라인) 실패해도 계산기는 그대로 동작해야 해요.
+   ⚠ 금액·소득 같은 입력값은 절대 보내지 않아요. 어떤 기능을 썼는지와
+      구간화된 라벨(지역구분·대출유형·병목항목 등)만 보냅니다. */
+function track(name, params){
+  try{
+    if(typeof window !== 'undefined' && typeof window.gtag === 'function'){
+      window.gtag('event', name, params || {});
+    }
+  } catch(e){}
+}
+
 const TOTAL_STEPS = 2;
 let resultVisible = false;
 let currentStep = 1;
@@ -1956,6 +2096,7 @@ function setMode(m){
     m === 'A'
       ? '예금·주식·돌려받을 전세보증금·가족 지원금까지 모두 합친 <b>현금</b>이에요. 대출로 마련할 돈은 빼주세요.'
       : '사려는 집의 <b>매매가</b>예요. 취득세·중개보수 같은 부대비용은 빼고, 집값만 넣어주세요.';
+  track('set_mode', {mode: m});
   liveRecalc();
 }
 
@@ -1974,12 +2115,172 @@ function pickChoice(btn){
   sel.value = btn.dataset.val;
   sel.dispatchEvent(new Event('change'));
 }
+/* ===== 지역 구분 3단 =====
+   2025.10.15 대책 이후 "규제지역"과 "수도권"이 서로 다른 규제를 걸어요.
+   · 규제지역(투기과열지구·조정대상지역): LTV 강화 · 취득세 중과 · 서민실수요자 우대 · 보금자리론 가산
+   · 수도권(규제지역 포함): 집값 구간별 대출한도(6억/4억/2억) · 스트레스 금리 3.0% · 생애최초 LTV 70%
+   둘을 하나의 boolean으로 묶으면 인천·경기 비규제 지역의 LTV가 실제보다 낮게 계산돼요. */
+/* ===== 규제지역(투기과열지구·조정대상지역) 시군구 코드 =====
+   서울 25개 자치구 전역 + 경기 15곳.
+   경기 12곳은 2025.10.15 대책, 화성 동탄·용인 기흥·구리는 2026.6.29 의결(7.1 시행).
+   ⚠ 코드는 기억으로 적지 않고 아래 LAWD 데이터와 대조해 확정했어요(원칙 19).
+   출처: 국토교통부 주거정책심의위원회 / 확인일 2026.08.05 */
+const REG_SGG = {
+  '41290':'과천시',        '41210':'광명시',
+  '41131':'성남시 수정구', '41133':'성남시 중원구', '41135':'성남시 분당구',
+  '41111':'수원시 장안구', '41115':'수원시 팔달구', '41117':'수원시 영통구',
+  '41173':'안양시 동안구', '41465':'용인시 수지구',
+  '41430':'의왕시',        '41450':'하남시',
+  '41597':'화성시 동탄구', '41463':'용인시 기흥구', '41310':'구리시'
+};
+/* 방공제(소액임차보증금 최우선변제금) — 주택임대차보호법 시행령 제10조
+   ① 서울 5,500만 ② 과밀억제권역(서울 제외)·세종·용인·화성·김포 4,800만
+   ③ 광역시(과밀억제권역·군 제외)·안산·광주(경기)·파주·이천·평택 2,800만 ④ 그 밖 2,500만 */
+const ROOM_4800_SGG = {
+  /* 수도권정비계획법상 과밀억제권역에 속하는 경기 시군구 */
+  '41150':1,'41310':1,'41360':1,'41450':1,                     // 의정부·구리·남양주·하남
+  '41281':1,'41285':1,'41287':1,                               // 고양 3구
+  '41111':1,'41113':1,'41115':1,'41117':1,                     // 수원 4구
+  '41131':1,'41133':1,'41135':1,                               // 성남 3구
+  '41171':1,'41173':1,                                         // 안양 2구
+  '41192':1,'41194':1,'41196':1,                               // 부천 3구
+  '41210':1,'41290':1,'41430':1,'41410':1,'41390':1,           // 광명·과천·의왕·군포·시흥
+  /* 시행령이 이름으로 지정한 곳 */
+  '41461':1,'41463':1,'41465':1,                               // 용인 3구
+  '41591':1,'41593':1,'41595':1,'41597':1,                     // 화성 4구
+  '41570':1,                                                   // 김포
+  '36110':1                                                    // 세종
+};
+const ROOM_2800_SGG = {
+  '41271':1,'41273':1,   // 안산 2구
+  '41610':1,             // 경기 광주시
+  '41480':1,'41500':1,'41220':1,   // 파주·이천·평택
+  /* 옛 광주광역시 5개 자치구 — 통합 이후 적용 기준은 미확인(아래 hint에 표시) */
+  '12210':1,'12240':1,'12270':1,'12300':1,'12330':1
+};
+function isGunArea(code){ return parseInt(code.slice(2), 10) >= 700; }   // 서울 외에는 예외 없음(LAWD 전수 확인)
+
+function zoneFromSgg(code){
+  if(!code) return null;
+  if(code.slice(0,2) === '11') return 'reg';          // 서울 전역
+  if(REG_SGG[code]) return 'reg';
+  if(code.slice(0,2) === '41' || code.slice(0,2) === '28') return 'metro';  // 경기·인천
+  return 'other';
+}
+function roomDeductFromSgg(code){
+  if(!code) return null;
+  const p2 = code.slice(0,2);
+  if(p2 === '11') return 5500;
+  if(ROOM_4800_SGG[code]) return 4800;
+  if(p2 === '28') return isGunArea(code) ? 2500 : 4800;        // 인천(강화·옹진 제외)
+  if(ROOM_2800_SGG[code]) return 2800;
+  if(['26','27','30','31'].indexOf(p2) !== -1) return isGunArea(code) ? 2500 : 2800;  // 부산·대구·대전·울산
+  return 2500;
+}
+
+/* 시/도 → 시군구 드롭다운 (전월세 탭 실거래가 조회와 같은 LAWD를 씁니다) */
+function initBuyRegion(){
+  const sido = document.getElementById('buySido');
+  if(!sido || sido.dataset.built) return;
+  sido.innerHTML = '<option value="">시/도 선택</option>'
+    + Object.keys(LAWD).map(k => `<option value="${k}">${k}</option>`).join('');
+  sido.dataset.built = '1';
+  document.getElementById('buySgg').innerHTML = '<option value="">시/군/구</option>';
+}
+function onBuySido(){
+  const sido = document.getElementById('buySido').value;
+  const sgg = document.getElementById('buySgg');
+  const list = LAWD[sido] || [];
+  sgg.innerHTML = '<option value="">시/군/구</option>'
+    + list.map(p => `<option value="${p[0]}">${p[1]}</option>`).join('');
+  if(list.length === 1){ sgg.value = list[0][0]; onBuySgg(); return; }   // 세종
+  renderZoneBadge();
+  syncBuySise();
+}
+function onBuySgg(){
+  const code = document.getElementById('buySgg').value;
+  const z = zoneFromSgg(code);
+  if(z){
+    const zoneSel = document.getElementById('zone');
+    zoneSel.value = z;
+    delete zoneSel.dataset.manual;
+    const rd = document.getElementById('roomDeduct');
+    const rdVal = roomDeductFromSgg(code);
+    if(rd && rdVal){ rd.value = String(rdVal); delete rd.dataset.touched; }
+    syncSegments();
+    renderPolicyOptions(); toggleSeominField(); applyStressDefault();
+    const lta = document.getElementById('ltaNote');
+    if(lta) lta.style.display = (z === 'reg') ? 'block' : 'none';
+  }
+  renderZoneBadge();
+  syncBuySise();
+  liveRecalc();
+}
+function markZoneManual(){
+  const zoneSel = document.getElementById('zone');
+  if(zoneSel) zoneSel.dataset.manual = '1';
+  renderZoneBadge();
+}
+function renderZoneBadge(){
+  const badge = document.getElementById('zoneBadge');
+  if(!badge) return;
+  const code = (document.getElementById('buySgg') || {}).value || '';
+  const manual = !!(document.getElementById('zone') || {dataset:{}}).dataset.manual;
+  const z = zoneVal();
+  const rd = (document.getElementById('roomDeduct') || {}).value || '';
+  badge.classList.toggle('reg', z === 'reg');
+  if(!code){
+    badge.innerHTML = manual
+      ? `<b>${zoneLabelOf(z)}</b>로 직접 골랐어요. 시·군·구를 고르면 자동으로 판정해드려요.`
+      : '시·군·구를 고르면 규제지역인지 자동으로 판정해드려요.';
+    return;
+  }
+  const name = (document.getElementById('buySgg').selectedOptions[0] || {}).textContent || '';
+  const auto = zoneFromSgg(code);
+  const rdTxt = rd ? ` · 방공제 ${Number(rd).toLocaleString()}만원` : '';
+  badge.innerHTML = manual && auto !== z
+    ? `${name}은 <b>${zoneLabelOf(auto)}</b>인데, 직접 <b>${zoneLabelOf(z)}</b>로 바꾸셨어요. 그대로 계산할게요.`
+    : `${name} → <b>${zoneLabelOf(z)}</b>${rdTxt}`;
+}
+
+function zoneVal(){
+  const el = document.getElementById('zone');
+  const v = el ? el.value : 'reg';
+  if(v === 'true')  return 'reg';    // 구버전 공유링크 호환
+  if(v === 'false') return 'other';
+  return v;
+}
+function isReg(){ return zoneVal() === 'reg'; }
+function isMetro(){ return zoneVal() !== 'other'; }
+function zoneLabelOf(z){
+  return {reg:'규제지역', metro:'수도권 비규제', other:'그 외 지역'}[z] || '규제지역';
+}
+/* 방공제(소액임차보증금 최우선변제금)는 주택임대차보호법 시행령 제10조의 지역 구분을 따라요.
+   규제·수도권 구분과 경계가 달라서, 기본값만 지역에서 추정하고 직접 바꿀 수 있게 열어둬요.
+   값은 POLICY.roomDeduct 한 곳에서만 관리해요(선언은 POLICY 아래). */
+function applyZoneDefaults(){
+  const el = document.getElementById('roomDeduct');
+  if(el && !el.dataset.touched) el.value = String(ROOM_DEDUCT_DEFAULT[zoneVal()] || 2800);
+  const lta = document.getElementById('ltaNote');
+  if(lta) lta.style.display = isReg() ? 'block' : 'none';
+}
+
 function syncChoiceUI(){
   const hv = document.getElementById('houseStatus').value;
   document.querySelectorAll('#houseChoices .choice').forEach(b=>b.classList.toggle('active', b.dataset.val === hv));
-  const rv = document.getElementById('regulated').value;
-  document.querySelectorAll('#modeSeg ~ * .seg-btn, .segmented.sm .seg-btn').forEach(b=>{
-    if(b.dataset.val) b.classList.toggle('active', b.dataset.val === rv);
+  syncSegments();
+}
+
+/* 세그먼트 버튼은 "짝이 되는 select" 기준으로만 맞춰요.
+   전에는 화면 전체를 훑어서 값이 같은 다른 그룹(true/false 등)까지 같이 바뀌었어요. */
+function syncSegments(){
+  document.querySelectorAll('select.sr-only[id]').forEach(sel => {
+    const group = sel.previousElementSibling;
+    if(!group || !group.classList || !group.classList.contains('segmented')) return;
+    const v = sel.value;
+    group.querySelectorAll('.seg-btn').forEach(b => {
+      if(b.dataset.val !== undefined) b.classList.toggle('active', b.dataset.val === v);
+    });
   });
 }
 
@@ -2025,6 +2326,13 @@ function formatCommaInput(el){
   el.value = parseInt(raw, 10).toLocaleString();
 }
 
+/* 억/만원 2칸 중 하나라도 값이 있으면 "입력함"으로 봐요.
+   비어 있는데 0으로 계산하면 결과가 조용히 왜곡되기 때문에 꼭 구분해야 해요. */
+function amountEntered(eokId, manId){
+  const a = document.getElementById(eokId), b = document.getElementById(manId);
+  return (!!a && String(a.value).trim() !== '') || (!!b && String(b.value).trim() !== '');
+}
+
 function numVal(id){
   const el = document.getElementById(id);
   if(!el) return 0;
@@ -2043,6 +2351,86 @@ function formatWon(n){
   if(man > 0 || eok === 0) str += man.toLocaleString() + '만';
   return (neg ? '-' : '') + str.trim() + '원';
 }
+
+/* ===================================================================
+   POLICY — 정책 수치 단일 저장소
+   -------------------------------------------------------------------
+   v21까지 LTV·취득세·중개보수·구간한도 숫자가 각 함수 안에 흩어져 있었어요.
+   v20의 LTV 오류(인천·경기 비규제 40%)가 오래 살아남은 이유가 이것입니다.
+   같은 성격의 숫자가 한 화면에 모여 있으면 서로 어긋난 게 눈에 보입니다.
+
+   ⚠ 규칙
+     1) 계산 함수 안에 정책 숫자를 새로 적지 말고 여기에 추가하세요.
+     2) 각 항목에 출처와 확인일을 답니다(원칙 11).
+     3) 값을 갱신하면 LAST_VERIFIED도 함께 고치세요(원칙 31).
+     4) "규제지역"과 "수도권"은 다른 기준입니다. 키 이름에 그대로 드러냅니다(원칙 26).
+   =================================================================== */
+const POLICY = {
+
+  /* LTV — 규제지역(reg)과 수도권(metro)의 적용 기준이 다릅니다.
+     출처: 국토교통부 2025.10.15 가계부채 관리방안 / 확인일 2026.08.05 */
+  ltv: {
+    multi:        {reg: 0,    other: 0.6},   // 2주택 이상: 규제지역 대출 금지
+    noneOrDispose:{reg: 0.4,  other: 0.7},   // 무주택 · 처분조건부
+    firstTime:    {metro: 0.7, other: 0.8}   // 생애최초는 '수도권' 기준(규제지역 아님)
+  },
+
+  /* 서민·실수요자 우대 — 규제지역 한정, LTV 60%
+     주택가격 상한은 투기과열지구 9억 / 조정대상지역 8억이나, 여기서는 9억으로 단일 적용합니다.
+     출처: 은행권 여신심사 운영기준 / 확인일 2026.08.05 */
+  seomin: {ltv: 0.6, incomeCap: 90000000, priceCap: 900000000},
+
+  /* 집값 구간별 대출한도 — '수도권' 기준(규제지역이 아닌 인천·경기도 걸립니다)
+     출처: 국토교통부 2025.10.15 대책 / 확인일 2026.08.05 */
+  bandCap: [
+    {upTo: 1500000000, cap: 600000000},
+    {upTo: 2500000000, cap: 400000000},
+    {upTo: Infinity,   cap: 200000000}
+  ],
+
+  /* 상환능력 비율 — 은행 주담대는 스트레스 DSR 40%, 정책대출은 DTI 60% */
+  ratio: {dsr: 0.40, dti: 0.60},
+
+  /* 방공제(소액임차보증금 공제) 기본값. 실제 4단 구간은 #roomDeduct가 관리합니다.
+     출처: 주택임대차보호법 시행령 제10조 / 확인일 2026.08.05 */
+  roomDeduct: {reg: 5500, metro: 4800, other: 2800, fallbackWon: 28000000},
+
+  /* 취득세 — 중과는 '규제지역'(조정대상지역) 기준
+     출처: 지방세법 제11조·제13조의2, 지방세법 시행령 / 확인일 2026.08.05 */
+  acqTax: {
+    heavyMulti:  {reg: 0.12, other: 0.08},   // 2주택 이상
+    generalLow:  0.01,                        // 6억 이하
+    generalHigh: 0.03,                        // 9억 초과
+    slopeFrom:   600000000,                   // 6억~9억 선형 구간 시작
+    slopeTo:     900000000,
+    eduHeavyFlat: 0.004,                      // 중과구간 지방교육세 정액
+    eduStandardOfTax: 0.1,                    // 표준구간 지방교육세 = 취득세액의 10%
+    rural: {standard: 0.002, heavy8: 0.006, heavy12: 0.01},  // 농특세(전용 85㎡ 초과분만)
+    firstTimeCut: {maxPrice: 1200000000, amount: 2000000}    // 생애최초 취득세 감면
+  },
+
+  /* 중개보수 — 상한요율. VAT 별도(일반과세 중개사 기준)
+     출처: 공인중개사법 시행규칙 별표1 및 시·도 조례 / 확인일 2026.08.05 */
+  broker: {
+    vat: 1.1,
+    bands: [
+      {under:   50000000, rate: 0.006, cap: 250000},
+      {under:  200000000, rate: 0.005, cap: 800000},
+      {under:  900000000, rate: 0.004, cap: null},
+      {under: 1200000000, rate: 0.005, cap: null},
+      {under: 1500000000, rate: 0.006, cap: null},
+      {under: Infinity,   rate: 0.007, cap: null}
+    ]
+  },
+
+  /* 면적 환산 — 평형은 공급면적 기준. 평 × 2.45 = 전용㎡ (전용률 약 74%)
+     ⚠ ÷ 3.3058이 아닙니다(원칙 5) */
+  area: {pyeongToM2: 2.45, ruralTaxOverM2: 85}
+};
+
+/* POLICY를 유일한 출처로 두고, 기존 이름은 별칭으로만 남깁니다.
+   호출부를 한꺼번에 바꾸면 되돌리기 어려워서, 이름은 유지하고 값의 출처만 옮겼어요. */
+const ROOM_DEDUCT_DEFAULT = POLICY.roomDeduct;
 
 /* ===== 정책대출 정의 ===== */
 const POLICY_DEFS = {
@@ -2080,7 +2468,7 @@ const POLICY_DEFS = {
         && p.pyeongM2 <= 85;
     },
     /* 생애최초는 LTV 80%, 다만 수도권·규제지역 소재 주택은 70% */
-    ltv(p){ return (p.firstTime && !p.regulated) ? 0.8 : 0.7; },
+    ltv(p){ return (p.firstTime && !p.metro) ? 0.8 : 0.7; },   /* 생애최초 LTV: 수도권·규제지역 70% · 그 외 80% */
     cap(p){ return 400000000; }
   },
   bogeumjari: {
@@ -2123,12 +2511,12 @@ const BABY_RATE_TABLE = [
 ];
 const BABY_TERMS = [10, 15, 20, 30];
 
-function babyRate(income, years, regulated){
+function babyRate(income, years, metro){  /* 지방(수도권 밖) 소재 주택 0.2%p 인하 */
   const col = BABY_TERMS.indexOf(nearestBabyTerm(years));
   const row = BABY_RATE_TABLE.find(x => income <= x.upto);
   if(!row || col < 0) return null;
   // 지방 소재 주택은 0.2%p 인하
-  return Math.round((row.r[col] - (regulated ? 0 : 0.2)) * 100) / 100;
+  return Math.round((row.r[col] - (metro ? 0 : 0.2)) * 100) / 100;
 }
 function nearestBabyTerm(years){
   let best = BABY_TERMS[0];
@@ -2175,7 +2563,7 @@ function bogeumRate(p, years, product){
   let discount = Math.min(BOGEUM_PREF_CAP, prefs.reduce((a,b)=> a + b.bp, 0));
   // 전자약정·전자등기 우대는 한도와 별도로 추가 적용
   if((product || 'akkime') === 'akkime') discount += 0.1;
-  const add = p.regulated ? BOGEUM_REGULATED_ADD : 0;
+  const add = p.regulated ? BOGEUM_REGULATED_ADD : 0;   /* 규제지역(조정대상지역·투기과열지구) 소재 가산 */
   return {
     rate: Math.round((base.r[col] + add - discount) * 100) / 100,
     base: base.r[col], add, discount, prefs, label: base.label,
@@ -2187,8 +2575,8 @@ function getScreeningParams(){
   const houseStatus = document.getElementById('houseStatus').value;
   const pyeong = parseFloat(document.getElementById('pyeong').value) || 0;
   return {
-    income: numVal('income') * 10000,
-    incomeEntered: document.getElementById('income').value.trim() !== '',
+    income: getAmountManwon('incomeEok','incomeMan') * 10000,
+    incomeEntered: amountEntered('incomeEok','incomeMan'),
     newlywed: document.getElementById('newlywed').checked,
     newborn: document.getElementById('newborn').checked,
     childCount: parseInt(document.getElementById('childCount').value) || 0,
@@ -2196,10 +2584,10 @@ function getScreeningParams(){
     upToOneHouse: (houseStatus !== 'multi'),
     noHouse: (houseStatus === 'first' || houseStatus === 'none'),
     firstTime: houseStatus === 'first',
-    regulated: document.getElementById('regulated').value === 'true',
+    regulated: isReg(), metro: isMetro(), zone: zoneVal(),
     pyeongEntered: document.getElementById('pyeong').value.trim() !== '',
     dualIncome: document.getElementById('dualIncome').checked,
-    pyeongM2: pyeong * 2.45
+    pyeongM2: pyeong * POLICY.area.pyeongToM2
   };
 }
 
@@ -2264,7 +2652,7 @@ function toggleTradeUp(){
 }
 
 function toggleSeominField(){
-  const regulated = document.getElementById('regulated').value === 'true';
+  const regulated = isReg();
   const houseStatus = document.getElementById('houseStatus').value;
   const show = regulated && houseStatus === 'none';
   document.getElementById('seominField').style.display = show ? 'block' : 'none';
@@ -2349,16 +2737,16 @@ function fixedRatioBucket(fixedYears, totalYears){
   return 3;
 }
 
-function computeStressBp(regulated, rateType, fixedYears, totalYears){
-  const zone = regulated ? 'capital' : 'local';
+function computeStressBp(metro, rateType, fixedYears, totalYears){
+  const zone = metro ? 'capital' : 'local';
   if(rateType === 'variable') return STRESS.variable[zone];
   const table = STRESS[rateType];
   if(!table) return STRESS.variable[zone];
   return table[zone][fixedRatioBucket(fixedYears, totalYears)];
 }
 
-function stressExplain(regulated, rateType, fixedYears, totalYears){
-  const zoneLabel = regulated ? '수도권·규제지역' : '지방(규제지역 외)';
+function stressExplain(metro, rateType, fixedYears, totalYears){
+  const zoneLabel = metro ? '수도권(규제지역 포함)' : '그 외 지역';
   if(rateType === 'variable'){
     return `${zoneLabel} 변동형 기준이에요. 산출된 스트레스 금리가 그대로 적용돼요.`;
   }
@@ -2374,7 +2762,7 @@ function stressExplain(regulated, rateType, fixedYears, totalYears){
 function applyStressDefault(){
   const el = document.getElementById('stressBp');
   if(!el) return;
-  const regulated  = document.getElementById('regulated').value === 'true';
+  const metro  = isMetro();
   const rateType   = document.getElementById('rateType').value;
   const totalYears = parseFloat(document.getElementById('years').value) || 30;
   const fixedYears = parseFloat(document.getElementById('fixedYears').value) || 0;
@@ -2384,32 +2772,104 @@ function applyStressDefault(){
   if(fw) fw.style.display = (rateType === 'variable') ? 'none' : 'block';
 
   if(!el.dataset.touched){
-    el.value = computeStressBp(regulated, rateType, fixedYears, totalYears);
+    el.value = computeStressBp(metro, rateType, fixedYears, totalYears);
   }
   const note = document.getElementById('stressNote');
-  if(note) note.textContent = stressExplain(regulated, rateType, fixedYears, totalYears);
+  if(note) note.textContent = stressExplain(metro, rateType, fixedYears, totalYears);
 }
 
-function getLTV(houseStatus, regulated){
-  if(houseStatus === 'multi' && regulated) return 0;
-  if(houseStatus === 'multi' && !regulated) return 0.6;
-  if(houseStatus === 'first') return regulated ? 0.7 : 0.8;
-  if(houseStatus === 'oneDisposing') return regulated ? 0.4 : 0.7;
-  return regulated ? 0.4 : 0.7;
+/* ===== 시중은행 주담대 금리 구간 =====
+   5대 시중은행(KB국민·신한·하나·우리·NH농협) 신규 취급 금리 구간이에요.
+   언론 집계치라 은행연합회 공시(전월 취급분)와 다를 수 있어요.
+   기본값은 구간 안에서 정한 값이고 "시장 평균"이 아니에요 — 라벨에 평가어를 쓰지 않아요. */
+/* ① 실제 취급된 대출의 평균금리 — 은행연합회 소비자포털 공시
+      대상: 만기 10년 이상 분할상환방식 주택담보대출 / 2026년 6월중 취급분
+      금액가중평균이며, 신용점수와 무관한 은행 전체 평균이에요.
+      '-'는 해당 조건 취급액이 없는 곳(한국산업은행·토스뱅크)이라 뺐어요. */
+const KFB_DISCLOSURE = {asOf: '2026년 6월 취급분', src: '전국은행연합회 소비자포털', checked: '2026.08.05'};
+const KFB_AVG_RATES = [
+  {n:'IBK기업은행', r:4.20}, {n:'Sh수협은행', r:4.25}, {n:'하나은행', r:4.26},
+  {n:'NH농협은행', r:4.28},  {n:'우리은행', r:4.32},   {n:'SC제일은행', r:4.39},
+  {n:'케이뱅크', r:4.40},    {n:'BNK부산은행', r:4.52}, {n:'KB국민은행', r:4.63},
+  {n:'BNK경남은행', r:4.67}, {n:'카카오뱅크', r:4.86},  {n:'제주은행', r:4.89},
+  {n:'iM뱅크(구 대구은행)', r:4.94}, {n:'신한은행', r:5.00}, {n:'광주은행', r:5.10},
+  {n:'전북은행', r:5.57}
+];
+const KFB_TOP5_AVG = 4.50;   /* KB국민·신한·하나·우리·NH농협 단순평균 (4.63·5.00·4.26·4.32·4.28) */
+
+/* ② 은행이 지금 게시하고 있는 금리 구간 — 우대를 얼마나 받느냐로 갈려요.
+      ①과 달리 "신청 시점" 기준이라 공시보다 최신이지만 언론 집계치예요. */
+const RATE_BAND = {
+  fixed:    {lo: 4.74, hi: 7.50, label: '고정형(혼합형·주기형)', asOf: '2026.07.31', src: '문화일보'},
+  variable: {lo: 4.17, hi: 6.88, label: '변동형',                 asOf: '2026.07.20', src: '국민일보·이지경제'}
+};
+
+/* 기본값은 ①(우대 최대)과 ②상단(우대 없음) 사이에서 보수적으로 잡은 값이에요.
+   시장 평균이 아니고, 계산 결과가 실제보다 넉넉하게 나오지 않도록 고른 값이에요. */
+const RATE_DEFAULT = 5.4;
+function rateBandFor(rateType){
+  return (rateType === 'variable') ? RATE_BAND.variable : RATE_BAND.fixed;
+}
+function renderRateChips(){
+  const wrap = document.getElementById('rateChips');
+  if(!wrap) return;
+  const sel = document.getElementById('rateType');
+  const b = rateBandFor(sel ? sel.value : 'variable');
+  wrap.innerHTML = [
+    ['공시 평균 ' + KFB_TOP5_AVG.toFixed(2) + '%', KFB_TOP5_AVG],
+    ['기본값 ' + RATE_DEFAULT.toFixed(2) + '%', RATE_DEFAULT],
+    ['게시 상단 ' + b.hi.toFixed(2) + '%', b.hi]
+  ].map(x => `<button type="button" class="chip" onclick="setChipValue('rate',${x[1]},event);document.getElementById('rate').dataset.touched='1';liveRecalc();">${x[0]}</button>`).join('');
+  const hint = document.getElementById('rateBandHint');
+  if(hint){
+    hint.innerHTML =
+      `<b>두 숫자가 다른 걸 재고 있어요.</b><br>`
+      + `· <b>공시 평균 ${KFB_TOP5_AVG.toFixed(2)}%</b> — 실제로 나간 대출의 평균이에요. `
+      + `${KFB_DISCLOSURE.src} 공시, ${KFB_DISCLOSURE.asOf}, 만기 10년 이상 분할상환 기준. 5대 은행 평균이고 우대를 받은 사람까지 포함된 값이라 <b>잘 받았을 때</b>에 가까워요. 공시는 전월 취급분이라 지금과 시차가 있어요.<br>`
+      + `· <b>게시 ${b.lo.toFixed(2)}~${b.hi.toFixed(2)}%</b> — ${b.label} 기준으로 지금 은행이 내걸고 있는 범위예요(${b.src} ${b.asOf}). 상단은 <b>우대를 못 받았을 때</b>예요.<br>`
+      + `계산기 기본값 <b>${RATE_DEFAULT}%</b>는 그 사이에서 보수적으로 잡은 값이고 <b>시장 평균이 아니에요.</b> 상담받은 금리가 있으면 그 값을 넣어주세요.`;
+  }
+  renderBankRateOptions();
+}
+
+/* 은행별 공시 평균금리를 그대로 고를 수 있게 해요.
+   "내 은행이 얼마인지"가 구간 설명보다 훨씬 잡히기 쉬워요. */
+function renderBankRateOptions(){
+  const sel = document.getElementById('bankRatePick');
+  if(!sel || sel.dataset.built) return;
+  sel.innerHTML = '<option value="">— 은행을 고르면 공시 평균금리로 채워요 —</option>'
+    + KFB_AVG_RATES.map(b => `<option value="${b.r}">${b.n} · 연 ${b.r.toFixed(2)}%</option>`).join('');
+  sel.dataset.built = '1';
+}
+function applyBankRate(sel){
+  const v = parseFloat(sel.value);
+  if(!(v > 0)) return;
+  const rate = document.getElementById('rate');
+  rate.value = v; rate.dataset.touched = '1';
+  liveRecalc();
+}
+
+function getLTV(houseStatus, reg, metro){
+  /* reg   = 규제지역(투기과열지구·조정대상지역) → LTV 강화가 여기만 적용돼요
+     metro = 수도권(규제지역 포함)               → 생애최초 LTV 상한이 여기 기준이에요 */
+  const L = POLICY.ltv;
+  if(houseStatus === 'multi') return reg   ? L.multi.reg      : L.multi.other;
+  if(houseStatus === 'first') return metro ? L.firstTime.metro : L.firstTime.other;
+  return reg ? L.noneOrDispose.reg : L.noneOrDispose.other;   /* 무주택 · 처분조건부 */
 }
 
 function isSeominEligible(ctx){
   // 서민·실수요자: 무주택 세대주 + 부부합산 연소득 9천만원 이하 + 주택가격 8~9억 이하(투기과열지구 9억/조정대상지역 8억, 여기선 9억 기준 적용) — 규제지역 한정, LTV 60% 우대
-  if(!ctx.regulated || !ctx.seominCheck) return false;
+  if(!ctx.regulated || !ctx.seominCheck) return false;   /* 서민·실수요자 우대는 규제지역 한정 */
   if(ctx.houseStatus !== 'none') return false;
-  if(!ctx.incomeEntered || ctx.income > 90000000) return false;
-  if(ctx.price > 900000000) return false;
+  if(!ctx.incomeEntered || ctx.income > POLICY.seomin.incomeCap) return false;
+  if(ctx.price > POLICY.seomin.priceCap) return false;
   return true;
 }
 
 function getEffectiveLTV(ctx){
-  if(isSeominEligible(ctx)) return 0.6;
-  return getLTV(ctx.houseStatus, ctx.regulated);
+  if(isSeominEligible(ctx)) return POLICY.seomin.ltv;
+  return getLTV(ctx.houseStatus, ctx.regulated, ctx.metro);
 }
 
 function loanTypeLabel(type){
@@ -2428,8 +2888,8 @@ function loanTypeLabel(type){
    · 정책대출     : DSR 규제 대상이 아니고 DTI 60%를 적용 (주담대 원리금 + 기타대출 이자)
    · 스트레스 금리: 가산폭은 시기·지역별로 바뀌므로 사용자가 조정할 수 있게 열어둠 */
 
-const DSR_RATIO = 0.40;
-const DTI_RATIO = 0.60;
+const DSR_RATIO = POLICY.ratio.dsr;
+const DTI_RATIO = POLICY.ratio.dti;
 
 function annualPayment(loan, ratePct, years){
   return monthlyPaymentCalc(loan, ratePct, years) * 12;
@@ -2484,7 +2944,7 @@ function repaymentCapLimit(ctx, isPolicy){
    MCI/MCG 보증에 가입하면 면제되지만, 기본은 차감이 원칙이에요. */
 function roomDeduction(ctx){
   if(ctx.mciCovered) return 0;
-  return ctx.regulated ? 55000000 : 28000000;
+  return ctx.roomDeductAmt > 0 ? ctx.roomDeductAmt : POLICY.roomDeduct.fallbackWon;
 }
 
 function computeLoan(ctx){
@@ -2529,7 +2989,7 @@ function computeLoan(ctx){
       price: ctx.price, income: ctx.income, newlywed: ctx.newlywed, newborn: ctx.newborn,
       multiChild: ctx.multiChild, childCount: ctx.childCount,
       noHouse, firstTime, upToOneHouse: (ctx.houseStatus !== 'multi'),
-      regulated: ctx.regulated, dualIncome: ctx.dualIncome, pyeongM2: ctx.pyeongM2
+      regulated: ctx.regulated, metro: ctx.metro, dualIncome: ctx.dualIncome, pyeongM2: ctx.pyeongM2
     };
     if(!infoMissing && def && def.eligible(p)){
       const dti = repaymentCapLimit(ctx, true);
@@ -2550,11 +3010,13 @@ function computeLoan(ctx){
   function bankLimits(c){
     const ltv = getEffectiveLTV(c);
     const cands = {LTV: c.price * ltv};
-    if(c.regulated){
-      if(c.price <= 1500000000) cands['구간한도'] = 600000000;
-      else if(c.price <= 2500000000) cands['구간한도'] = 400000000;
-      else cands['구간한도'] = 200000000;
+    /* 집값 구간별 대출한도는 "수도권·규제지역"에 적용돼요(2025.10.15 대책).
+       규제지역이 아니어도 인천·경기라면 걸려요. */
+    if(c.metro){
+      const band = POLICY.bandCap.find(function(b){ return c.price <= b.upTo; });
+      if(band) cands['구간한도'] = band.cap;
     }
+    if(c.bankSelfCap > 0) cands['은행자체한도'] = c.bankSelfCap;
     const dsr = repaymentCapLimit(c, false);
     if(dsr.applied) cands.DSR = dsr.limit;
     return pick(cands);
@@ -2563,13 +3025,19 @@ function computeLoan(ctx){
 
 function acquisitionTaxRate(price, houseStatus, regulated){
   const eok = price / 100000000;
-  if(houseStatus === 'multi') return regulated ? 0.12 : 0.08;
+  /* 중과는 조정대상지역(=규제지역) 기준.
+     ⚠ 알려진 단순화: "2주택 이상"을 한 칸으로 받기 때문에, 비조정지역에서
+     정확히 2주택이 되는 경우(실제로는 일반세율 1~3%)에도 8%로 계산해요.
+     보수적인 방향이라 남겨두되, 화면에 한계를 표시해요. */
+  const A = POLICY.acqTax;
+  if(houseStatus === 'multi') return regulated ? A.heavyMulti.reg : A.heavyMulti.other;
   return generalRate(eok);
 
   function generalRate(eok){
-    if(eok <= 6) return 0.01;
-    if(eok <= 9) return Math.min(0.03, Math.max(0.01, (eok * (2/3) - 3) / 100));
-    return 0.03;
+    const lo = A.slopeFrom / 100000000, hi = A.slopeTo / 100000000;
+    if(eok <= lo) return A.generalLow;
+    if(eok <= hi) return Math.min(A.generalHigh, Math.max(A.generalLow, (eok * (2/3) - 3) / 100));
+    return A.generalHigh;
   }
 }
 
@@ -2579,37 +3047,31 @@ function calcCosts(ctx){
 
   /* 지방교육세: 표준세율(1~3%) 구간은 취득세액의 10%.
      중과세율(8%·12%) 구간은 0.4% 정액이라 별도 처리. */
-  const heavy = (baseRate >= 0.08);
-  const eduTax = heavy ? ctx.price * 0.004 : tax * 0.1;
+  const A = POLICY.acqTax;
+  const heavy = (baseRate >= A.heavyMulti.other);
+  const eduTax = heavy ? ctx.price * A.eduHeavyFlat : tax * A.eduStandardOfTax;
 
   /* 농어촌특별세: 전용 85㎡ 초과분에만 부과.
      표준세율 구간 0.2%, 8% 중과 0.6%, 12% 중과 1.0%. */
-  let ruralRate = 0.002;
-  if(baseRate >= 0.12) ruralRate = 0.01;
-  else if(baseRate >= 0.08) ruralRate = 0.006;
+  let ruralRate = A.rural.standard;
+  if(baseRate >= A.heavyMulti.reg) ruralRate = A.rural.heavy12;
+  else if(baseRate >= A.heavyMulti.other) ruralRate = A.rural.heavy8;
   const ruralTax = ctx.over85 ? ctx.price * ruralRate : 0;
 
   let totalTax = tax + eduTax + ruralTax;
 
-  if(ctx.firstTimeTaxCut && ctx.price <= 1200000000){
-    totalTax = Math.max(0, totalTax - 2000000);
+  if(ctx.firstTimeTaxCut && ctx.price <= A.firstTimeCut.maxPrice){
+    totalTax = Math.max(0, totalTax - A.firstTimeCut.amount);
   }
 
-  let brokerRate;
-  if(ctx.price < 50000000) brokerRate = 0.006;
-  else if(ctx.price < 200000000) brokerRate = 0.005;
-  else if(ctx.price < 900000000) brokerRate = 0.004;
-  else if(ctx.price < 1200000000) brokerRate = 0.005;
-  else if(ctx.price < 1500000000) brokerRate = 0.006;
-  else brokerRate = 0.007;
-  let brokerFee = ctx.price * brokerRate;
-  if(ctx.price < 50000000) brokerFee = Math.min(brokerFee, 250000);
-  if(ctx.price >= 50000000 && ctx.price < 200000000) brokerFee = Math.min(brokerFee, 800000);
-  brokerFee = brokerFee * 1.1;   // 중개보수는 부가세 10% 별도 (상한요율 기준, 실제는 협의 가능)
+  const bBand = POLICY.broker.bands.find(function(b){ return ctx.price < b.under; });
+  let brokerFee = ctx.price * bBand.rate;
+  if(bBand.cap !== null) brokerFee = Math.min(brokerFee, bBand.cap);
+  brokerFee = brokerFee * POLICY.broker.vat;   // 중개보수는 부가세 10% 별도 (상한요율 기준, 실제는 협의 가능)
 
   const interiorCost = ctx.pyeong * ctx.interiorPerPyeong * 10000;
   const etcCost = ctx.etc * 10000;
-  const pyeongM2 = ctx.pyeong * 2.45; // 평형은 통상 공급면적 기준이라, 전용면적 추정 시 전용률(약 74%)을 적용한 근사치예요
+  const pyeongM2 = ctx.pyeong * POLICY.area.pyeongToM2; // 평형은 통상 공급면적 기준이라, 전용면적 추정 시 전용률(약 74%)을 적용한 근사치예요
 
   const loanResult = computeLoan({...ctx, pyeongM2});
   const mortgageLoan = loanResult.amount;
@@ -2664,19 +3126,19 @@ function syncPyeong(){
   const echo = document.getElementById('pyeongEcho');
   const v = parseFloat(el.value) || 0;
   if(!v){ echo.textContent = ''; return; }
-  const m2 = v * 2.45;
+  const m2 = v * POLICY.area.pyeongToM2;
   let msg = `전용면적 약 ${m2.toFixed(1)}㎡ (추정)`;
-  if(m2 > 85) msg += ' · 85㎡ 초과 — 농어촌특별세 대상';
+  if(m2 > POLICY.area.ruralTaxOverM2) msg += ' · 85㎡ 초과 — 농어촌특별세 대상';
   if(m2 >= 80 && m2 <= 90) msg += ' ⚠ 경계선이라 실제 면적 확인 필요';
   echo.textContent = msg;
 
   // 농어촌특별세 체크박스 자동 연동 (사용자가 직접 건드린 뒤에는 존중)
   const cb = document.getElementById('over85');
-  if(!cb.dataset.touched) cb.checked = m2 > 85;
+  if(!cb.dataset.touched) cb.checked = m2 > POLICY.area.ruralTaxOverM2;
 }
 
 function syncIncomeEcho(){
-  const inc = numVal('income') * 10000;
+  const inc = getAmountManwon('incomeEok','incomeMan') * 10000;
   const echo = document.getElementById('incomeEcho');
   if(inc <= 0){ echo.textContent = ''; return; }
   const monthly = inc / 12;
@@ -2688,7 +3150,9 @@ const BINDING_COPY = {
   'LTV':      {title:'집값 대비 대출비율(LTV)', why:'지역과 주택 보유 상황에 따라 집값의 몇 %까지 빌릴 수 있는지가 정해져 있어요. 그 비율이 먼저 걸린 경우예요.'},
   'DSR':      {title:'소득 대비 상환능력(DSR)', why:'집값 기준(LTV)보다 <b>상환능력 기준(DSR)</b>이 먼저 걸렸어요. 연소득이 늘거나 기존 대출이 줄면 한도가 올라가는 구조예요.'},
   'DTI':      {title:'정책대출 상환능력(DTI)', why:'정책대출은 DSR 대신 DTI 60%가 적용되는데, 여기에 걸렸어요.'},
-  '구간한도': {title:'규제지역 구간별 대출한도', why:'집값 구간별 상한(6억·4억·2억)에 걸렸어요. LTV로는 더 가능해도 이 상한을 넘을 수 없어요.'},
+  '구간한도': {title:'수도권 구간별 대출한도', why:'집값 구간별 상한(15억 이하 6억 · 25억 이하 4억 · 초과 2억)에 걸렸어요. 규제지역이 아니어도 수도권이면 적용돼요. LTV로는 더 가능해도 이 상한을 넘을 수 없어요.'},
+  '토허구역':  {title:'토지거래허가구역 실거주 의무', why:'해당 없음'},
+  '은행자체한도': {title:'은행이 자체적으로 정한 한도', why:'정부 규제와 별개로 은행이 스스로 정한 상한이에요. 은행을 바꾸면 달라질 수 있어요.'},
   '상품한도': {title:'정책대출 상품 자체의 최대한도', why:'디딤돌·보금자리론은 상품별 최대 대출금액이 정해져 있어요.'},
   'manual':   {title:'직접 입력한 대출금액', why:'입력하신 금액이 계산된 한도보다 작아서, 그 값을 기준으로 계산했어요.'}
 };
@@ -2698,7 +3162,7 @@ function renderAssumptions(ctxBase, c){
   if(!bar) return;
   const hs = {first:'생애최초', none:'무주택', oneDisposing:'갈아타기', multi:'2주택 이상'}[ctxBase.houseStatus];
   const chips = [
-    {t: ctxBase.regulated ? '규제지역' : '비규제지역'},
+    {t: zoneLabelOf(ctxBase.zone)},
     {t: hs},
     {t: `금리 ${ctxBase.rate}%`},
     {t: `${ctxBase.years}년`},
@@ -2769,10 +3233,10 @@ function renderInsights(c, price, ctxBase, rate, years){
   const rateHint = document.getElementById('babyRateHint');
   if(rateHint){
     if(c.loanType === 'didimdolBaby' && ctxBase.income > 0){
-      const br = babyRate(ctxBase.income, ctxBase.years, ctxBase.regulated);
+      const br = babyRate(ctxBase.income, ctxBase.years, ctxBase.metro);
       const term = nearestBabyTerm(ctxBase.years);
       if(br !== null && Math.abs(br - ctxBase.rate) > 0.01){
-        rateHint.innerHTML = `<div class="fallback-note">ℹ️ 신생아특례 디딤돌의 공식 특례금리표에서 이 조건(연소득 ${formatWon(ctxBase.income)} · ${term}년${ctxBase.regulated ? '' : ' · 지방 0.2%p 인하'})에 해당하는 금리는 <b>연 ${br.toFixed(2)}%</b>예요. 지금은 ${ctxBase.rate}%로 계산돼 있어요. <button type="button" class="inline-btn" onclick="applyBabyRate(${br})">${br.toFixed(2)}%로 바꾸기</button></div>`;
+        rateHint.innerHTML = `<div class="fallback-note">ℹ️ 신생아특례 디딤돌의 공식 특례금리표에서 이 조건(연소득 ${formatWon(ctxBase.income)} · ${term}년${ctxBase.metro ? '' : ' · 지방 0.2%p 인하'})에 해당하는 금리는 <b>연 ${br.toFixed(2)}%</b>예요. 지금은 ${ctxBase.rate}%로 계산돼 있어요. <button type="button" class="inline-btn" onclick="applyBabyRate(${br})">${br.toFixed(2)}%로 바꾸기</button></div>`;
       } else { rateHint.innerHTML = ''; }
     } else { rateHint.innerHTML = ''; }
   }
@@ -2781,7 +3245,7 @@ function renderInsights(c, price, ctxBase, rate, years){
   if(rateHint && c.loanType === 'bogeumjari'){
     const br = bogeumRate({
       income: ctxBase.income, newlywed: ctxBase.newlywed, newborn: ctxBase.newborn,
-      childCount: ctxBase.childCount, regulated: ctxBase.regulated
+      childCount: ctxBase.childCount, regulated: ctxBase.regulated, metro: ctxBase.metro
     }, ctxBase.years, 'akkime');
     if(br){
       const prefTxt = br.prefs.length
@@ -2828,7 +3292,7 @@ function renderInsights(c, price, ctxBase, rate, years){
     if(c.binding === 'DSR' && ctxBase.rateType === 'variable' && ctxBase.income > 0){
       /* 스트레스 금리는 대출 유형에 따라 달라져요.
          변동형을 쓰고 있다면 고정기간이 긴 상품과의 차이를 함께 보여줘요. */
-      const altBp = computeStressBp(ctxBase.regulated, 'periodic', Math.round((ctxBase.years||30)*0.35), ctxBase.years||30);
+      const altBp = computeStressBp(ctxBase.metro, 'periodic', Math.round((ctxBase.years||30)*0.35), ctxBase.years||30);
       const alt = calcCosts({...ctxBase, price, stressBp: altBp});
       const gain = alt.mortgageLoan - c.mortgageLoan;
       if(gain > 1000000){
@@ -2890,7 +3354,11 @@ function line(k, v, cls){
 }
 
 function buildCtxBase(){
-  const regulated = document.getElementById('regulated').value === 'true';
+  const zone = zoneVal();
+  const regulated = zone === 'reg';
+  const metro = zone !== 'other';
+  const roomDeductAmt = (parseFloat((document.getElementById('roomDeduct')||{}).value) || 0) * 10000;
+  const bankSelfCap = getAmountManwon('bankSelfCapEok', 'bankSelfCapMan') * 10000;
   const houseStatus = document.getElementById('houseStatus').value;
   const pyeong = parseFloat(document.getElementById('pyeong').value) || 0;
   const pyeongEntered = document.getElementById('pyeong').value.trim() !== '';
@@ -2902,8 +3370,8 @@ function buildCtxBase(){
   const companyLoan = getAmountManwon('companyLoanEok', 'companyLoanMan') * 10000;
   const sellerFinancing = getAmountManwon('sellerFinancingEok', 'sellerFinancingMan') * 10000;
   const extraFunding = creditLoan + companyLoan + sellerFinancing;
-  const income = numVal('income') * 10000;
-  const incomeEntered = document.getElementById('income').value.trim() !== '';
+  const income = getAmountManwon('incomeEok','incomeMan') * 10000;
+  const incomeEntered = amountEntered('incomeEok','incomeMan');
   const newlywed = document.getElementById('newlywed').checked;
   const newborn = document.getElementById('newborn').checked;
   const childCount = parseInt(document.getElementById('childCount').value) || 0;
@@ -2921,7 +3389,7 @@ function buildCtxBase(){
   const fixedYears = parseFloat(document.getElementById('fixedYears').value) || 0;
 
   return {
-    regulated, houseStatus, pyeong, pyeongEntered, interiorPerPyeong, etc, over85, firstTimeTaxCut,
+    zone, regulated, metro, roomDeductAmt, bankSelfCap, houseStatus, pyeong, pyeongEntered, interiorPerPyeong, etc, over85, firstTimeTaxCut,
     extraFunding, loanChoice, income, incomeEntered, newlywed, newborn, multiChild, childCount, dualIncome,
     creditLoan, companyLoan, sellerFinancing, manualLoanCap, seominCheck, noLoan,
     rate, years, otherDebtMonthly, stressBp, mciCovered, rateType, fixedYears
@@ -3070,6 +3538,7 @@ function calculate(silent){
     document.getElementById('receiptLines').innerHTML = '';
     document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'rate\',1)">입력 화면으로 가기</button>';
     document.getElementById('monthlyPayment').textContent = '-';
+    track('calc_blocked', {tool:'buy', reason:'no_rate'});
     return;
   }
 
@@ -3084,6 +3553,7 @@ function calculate(silent){
       clearInsights();
       document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
+      track('calc_blocked', {tool:'buy', reason:'no_cash'});
       return;
     }
     const fixedCosts = ctxBase.pyeong*ctxBase.interiorPerPyeong*10000 + ctxBase.etc*10000;
@@ -3096,6 +3566,7 @@ function calculate(silent){
       clearInsights();
       document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
+      track('calc_blocked', {tool:'buy', reason:'cash_below_fixed_costs'});
       return;
     }
     const maxPrice = solveMaxPrice(cash, ctxBase);
@@ -3123,7 +3594,7 @@ function calculate(silent){
       line('매매가격', formatWon(maxPrice)) +
       line('취득세(교육세·농특세 포함)', formatWon(c.tax)) +
       line('중개보수 (부동산 중개수수료, VAT 포함)', formatWon(c.brokerFee)) +
-      (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'minus') : line(loanTypeLabel(c.loanType), '0원')) +
+      (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines +
       line('거래 자기자본', formatWon(financeSubtotal), 'total') +
       `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>` +
@@ -3143,6 +3614,9 @@ function calculate(silent){
     });
 
     shareSummary = `최대 구매 가능 매매가 ${formatWon(maxPrice)} · 자기자본 ${formatWon(c.cashNeeded)} 필요`;
+    track('calc_buy', {mode:'A', zone: zoneVal(), house_status: ctxBase.houseStatus,
+                       loan_type: c.loanType, binding: c.binding || '-',
+                       income_entered: ctxBase.incomeEntered ? 1 : 0});
 
   } else {
     const price = getAmountManwon('priceEok','priceMan') * 10000;
@@ -3155,6 +3629,7 @@ function calculate(silent){
       clearInsights();
       document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'priceEok\',1)">입력 화면으로 가기</button>';
       document.getElementById('monthlyPayment').textContent = '-';
+      track('calc_blocked', {tool:'buy', reason:'no_price'});
       return;
     }
     const c = calcCosts({...ctxBase, price});
@@ -3180,7 +3655,7 @@ function calculate(silent){
       line('매매가격', formatWon(price)) +
       line('취득세(교육세·농특세 포함)', formatWon(c.tax)) +
       line('중개보수 (부동산 중개수수료, VAT 포함)', formatWon(c.brokerFee)) +
-      (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'minus') : line(loanTypeLabel(c.loanType), '0원')) +
+      (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines2 +
       line('거래 자기자본', formatWon(financeSubtotal2), 'total') +
       `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>` +
@@ -3199,6 +3674,9 @@ function calculate(silent){
     });
 
     shareSummary = `필요한 자기자본 ${formatWon(c.cashNeeded)} · 매매가 ${formatWon(price)} 기준`;
+    track('calc_buy', {mode:'B', zone: zoneVal(), house_status: ctxBase.houseStatus,
+                       loan_type: c.loanType, binding: c.binding || '-',
+                       income_entered: ctxBase.incomeEntered ? 1 : 0});
   }
 }
 
@@ -3207,25 +3685,24 @@ function buildSummaryText(payload){
   const hs = {first:'생애최초', none:'무주택', oneDisposing:'갈아타기', multi:'2주택 이상'}[ctxBase.houseStatus];
   const d = new Date();
   const ratio = ctxBase.income > 0 && monthly > 0
-    ? `\n· 월소득 대비 원리금  ${(monthly/(ctxBase.income/12)*100).toFixed(0)}%` : '';
-  return `[ 영끌계산기 ]
-
-${title}
+    ? ` (월소득의 ${(monthly/(ctxBase.income/12)*100).toFixed(0)}%)` : '';
+  /* 카톡 말풍선에서 3초 안에 핵심이 잡히도록 4줄로 줄였어요.
+     상세 항목은 링크로 넘기고, 면책은 원칙 24에 따라 한 줄만 남겨요. */
+  return `${title}
 ▸ ${main}
 
-· 대출금액   ${formatWon(c.mortgageLoan)}
-· 내 돈      ${formatWon(c.cashNeeded)}
 · 월 상환액  ${formatWon(monthly)}${ratio}
-· 한도 결정  ${c.binding || '-'}
+· 필요한 내 돈  ${formatWon(c.cashNeeded)}
 
-조건 · ${ctxBase.regulated?'규제지역':'비규제지역'} / ${hs} / 금리 ${rate}% / ${years}년
+${zoneLabelOf(ctxBase.zone)} · ${hs} · 금리 ${rate}% · ${years}년
+${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} 추정치 (금융자문 아님)
 
-${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} 기준 추정치
-실제 대출 승인·세액과 다를 수 있으며,
-금융·세무 자문이 아닙니다`;
+전체 내역 보기 ↓
+${buildShareUrl()}`;
 }
 
 async function copySummaryText(){
+  track('share', {tool:'buy', method:'text'});
   const btn = document.getElementById('copyTextBtn');
   const original = btn.textContent;
   try{
@@ -3249,7 +3726,11 @@ function openSearch(site){
 function buildShareUrl(){
   const p = new URLSearchParams();
   p.set('m', mode);
-  p.set('r', document.getElementById('regulated').value === 'true' ? '1' : '0');
+  p.set('z', zoneVal());
+  p.set('sgg', document.getElementById('buySgg').value);
+  p.set('r', isMetro() ? '1' : '0');   /* 구버전 호환용 (읽을 때는 z를 우선) */
+  p.set('rd', document.getElementById('roomDeduct').value);
+  p.set('bsc', getAmountManwon('bankSelfCapEok','bankSelfCapMan'));
   p.set('h', document.getElementById('houseStatus').value);
   p.set('py', document.getElementById('pyeong').value);
   p.set('ip', numVal('interiorPerPyeong'));
@@ -3263,7 +3744,7 @@ function buildShareUrl(){
   p.set('sf', getAmountManwon('sellerFinancingEok', 'sellerFinancingMan'));
   p.set('ftc', document.getElementById('firstTimeTaxCut').checked ? '1' : '0');
   p.set('o85', document.getElementById('over85').checked ? '1' : '0');
-  p.set('inc', numVal('income'));
+  p.set('inc', getAmountManwon('incomeEok','incomeMan'));
   p.set('nw', document.getElementById('newlywed').checked ? '1' : '0');
   p.set('nb', document.getElementById('newborn').checked ? '1' : '0');
   p.set('cc', document.getElementById('childCount').value);
@@ -3278,7 +3759,21 @@ function loadFromUrlIfPresent(){
   const p = new URLSearchParams(location.search);
   if(![...p.keys()].length) return false;
   if(p.has('m')) setMode(p.get('m') === 'B' ? 'B' : 'A');
-  if(p.has('r')) document.getElementById('regulated').value = p.get('r') === '1' ? 'true' : 'false';
+  if(p.has('sgg') && p.get('sgg')){
+    const code = p.get('sgg');
+    const sido = Object.keys(LAWD).find(k => LAWD[k].some(x => x[0] === code));
+    if(sido){
+      initBuyRegion();
+      document.getElementById('buySido').value = sido;
+      onBuySido();
+      document.getElementById('buySgg').value = code;
+      onBuySgg();
+    }
+  }
+  if(p.has('z')) document.getElementById('zone').value = p.get('z');
+  else if(p.has('r')) document.getElementById('zone').value = p.get('r') === '1' ? 'reg' : 'other';
+  if(p.has('rd')){ const rd = document.getElementById('roomDeduct'); rd.value = p.get('rd'); rd.dataset.touched = '1'; }
+  if(p.has('bsc')) setAmountOrBlank('bankSelfCap', parseFloat(p.get('bsc')) || 0);
   if(p.has('h')) document.getElementById('houseStatus').value = p.get('h');
   if(p.has('py')) document.getElementById('pyeong').value = p.get('py');
   if(p.has('ip')) document.getElementById('interiorPerPyeong').value = (parseFloat(p.get('ip'))||0).toLocaleString();
@@ -3292,7 +3787,7 @@ function loadFromUrlIfPresent(){
   if(p.has('sf')) setAmountOrBlank('sellerFinancing', parseFloat(p.get('sf')) || 0);
   if(p.has('ftc')) document.getElementById('firstTimeTaxCut').checked = p.get('ftc') === '1';
   if(p.has('o85')) document.getElementById('over85').checked = p.get('o85') === '1';
-  if(p.has('inc')) document.getElementById('income').value = (parseFloat(p.get('inc'))||0).toLocaleString();
+  if(p.has('inc')) setAmountOrBlank('income', parseFloat(p.get('inc')) || 0);
   if(p.has('nw')) document.getElementById('newlywed').checked = p.get('nw') === '1';
   if(p.has('nb')) document.getElementById('newborn').checked = p.get('nb') === '1';
   if(p.has('cc')) document.getElementById('childCount').value = p.get('cc');
@@ -3311,6 +3806,7 @@ function loadFromUrlIfPresent(){
 }
 
 async function saveResultAsImage(elementId, buttonId, filename){
+  track('share', {tool: elementId === 'captureAreaRent' ? 'rent' : 'buy', method:'image'});
   const btn = document.getElementById(buttonId);
   const original = btn.textContent;
   btn.textContent = '이미지 만드는 중...';
@@ -3354,6 +3850,7 @@ async function saveResultAsImage(elementId, buttonId, filename){
 }
 
 async function shareResult(){
+  track('share', {tool:'buy', method:'link'});
   const url = buildShareUrl();
   const summary = shareSummary || '영끌계산기 결과를 확인해보세요';
   if(navigator.share){
@@ -3381,6 +3878,7 @@ function showTool(name){
   document.getElementById('rentToolRoot').style.display = isBuy ? 'none' : 'block';
   document.getElementById('tabBuy').classList.toggle('active', isBuy);
   document.getElementById('tabRent').classList.toggle('active', !isBuy);
+  track('switch_tool', {tool: name});
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -3456,10 +3954,10 @@ function toggleDisclaimer(btn){
     : '나머지 유의사항 8가지 보기 — 아파트 기준 · DSR 추정 · 정책대출 의무 등';
 }
 
-function toggleHintDetail(btn){
+function toggleHintDetail(btn, openLabel, closeLabel){
   const detail = btn.nextElementSibling;
   const isOpen = detail.classList.toggle('open');
-  btn.textContent = isOpen ? '접기 ▴' : '자세히 ▾';
+  btn.textContent = isOpen ? (closeLabel || '접기 ▴') : (openLabel || '자세히 ▾');
 }
 
 function toggleSpecialCaseWarning(){
@@ -3628,6 +4126,42 @@ function monthlyRentTaxCredit(annualIncome, noHouseHousehold, annualRentPaid){
   return {eligible:true, rate, credit};
 }
 
+/* 계산이 불가능한 상태에서 이전 결과가 남아 있으면 잘못 읽히니 함께 비워요. */
+function clearRentExtras(){
+  ['rentDiagBox','rentAssumpBar','rentFallbackNote'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.innerHTML = '';
+  });
+  const rc = document.getElementById('rentReportCond'); if(rc) rc.textContent = '';
+}
+
+/* ===== 한국은행 기준금리 =====
+   전월세전환율 법정 상한(기준금리 + 2%p)의 근거값이라, 바뀌면 판정이 어긋나요.
+   금통위 날짜가 지나면 화면이 스스로 "확인이 필요하다"고 말하게 해뒀어요.
+   출처: 한국은행 통화정책방향(2026.7.16 결정) */
+const BOK = {rate: 2.75, decidedOn: '2026.07.16', nextMeeting: '2026-08-27'};
+function bokIsStale(){
+  return new Date() >= new Date(BOK.nextMeeting + 'T00:00:00+09:00');
+}
+function bokNote(){
+  return bokIsStale()
+    ? `⚠ ${BOK.nextMeeting.replace(/-/g,'.')} 금융통화위원회가 지났어요. 기준금리가 바뀌었다면 아래 법정 상한도 달라져요. <b>한국은행 발표를 확인해주세요.</b>`
+    : '';
+}
+
+/* 기준값 확인일이 오래되면 배너로 알려요. 정책이 평균 5주에 한 번 바뀌기 때문에
+   "지금도 맞는 값인가"를 사용자가 알 수 있어야 해요(원칙 11의 연장). */
+const LAST_VERIFIED = '2026-08-05';
+const STALE_DAYS = 90;
+function renderStaleBanner(){
+  const days = Math.floor((Date.now() - new Date(LAST_VERIFIED + 'T00:00:00+09:00')) / 86400000);
+  document.querySelectorAll('.stale-banner').forEach(el => {
+    if(days < STALE_DAYS){ el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    el.innerHTML = `⚠ 이 계산기의 기준값은 <b>${LAST_VERIFIED.replace(/-/g,'.')}</b>에 마지막으로 확인했어요. `
+      + `그로부터 <b>${days}일</b>이 지났습니다. 규제지역·LTV·금리·세율이 그 사이 바뀌었을 수 있으니 공식 자료를 함께 확인해주세요.`;
+  });
+}
+
 function calculateRent(){
   const jeonseDeposit = getAmountManwon('jeonseEok','jeonseMan') * 10000;
   const wolseDeposit = getAmountManwon('wolseEok','wolseMan') * 10000;
@@ -3645,6 +4179,7 @@ function calculateRent(){
     document.getElementById('rentResultAmount').textContent = '전세보증금을 입력해주세요';
     document.getElementById('rentResultSub').textContent = '';
     document.getElementById('rentReceiptLines').innerHTML = '';
+    clearRentExtras();
     return;
   }
   if(wolseMonthly <= 0){
@@ -3653,6 +4188,7 @@ function calculateRent(){
     document.getElementById('rentResultAmount').textContent = '월세를 입력해주세요';
     document.getElementById('rentResultSub').textContent = '';
     document.getElementById('rentReceiptLines').innerHTML = '';
+    clearRentExtras();
     return;
   }
   const diff = jeonseDeposit - wolseDeposit;
@@ -3662,11 +4198,12 @@ function calculateRent(){
     document.getElementById('rentResultAmount').textContent = '월세보증금이 전세보증금 이상이에요';
     document.getElementById('rentResultSub').textContent = '월세보증금은 전세보증금보다 작아야 비교할 수 있어요.';
     document.getElementById('rentReceiptLines').innerHTML = '';
+    clearRentExtras();
     return;
   }
 
   const conversionRate = (wolseMonthly * 12) / diff * 100;
-  const baseRate = 2.75; // 2026.08 기준 한국은행 기준금리
+  const baseRate = BOK.rate;
   const legalCap = baseRate + 2;
 
   const isUnregistered = document.getElementById('unregistered').checked;
@@ -3688,7 +4225,7 @@ function calculateRent(){
       const overDeposit = jeonseDeposit > lim.depositCap;
       const overIncome  = rentIncome > 0 && rentIncome > lim.incomeCap;
       const tierLabel = lim.tier === 'special' ? '신혼·2자녀 이상' : '일반가구';
-      const zoneLabel = lim.zone === 'metro' ? '수도권' : '수도권 외';
+      const zoneLabel = lim.zone === 'metro' ? '수도권' : '그 외 지역';
 
       loanNote = `<div class="${(overDeposit||overIncome) ? 'fallback-note' : 'success-note'}">
         ${(overDeposit||overIncome) ? '⚠' : 'ℹ️'} <b>버팀목전세자금 기준</b> — ${tierLabel} · ${zoneLabel}
@@ -3783,14 +4320,14 @@ function calculateRent(){
   const priorityZone = document.getElementById('rentPriorityZone').value;
   const priority = priorityRepayment(priorityZone, jeonseDeposit, rentMarket);
 
+  /* ===== 안전카드 = 막대그래프 전용 =====
+     판단·해석·최우선변제권 안내는 전부 진단카드(renderRentDiag)가 맡아요.
+     v21까지는 두 카드가 같은 이야기를 두 번 하고 있었어요. */
   const safetyBox = document.getElementById('rentSafetyBox');
   if(safetyBox){
     if(!safety){
-      safetyBox.innerHTML = `<div class="safety-card empty">
-        <div class="safety-head"><span class="safety-label">내 보증금, 안전할까?</span></div>
-        <div class="safety-msg">이 집의 <b>매매 시세</b>와 <b>선순위 채권</b>을 넣으면, 보증금이 얼마나 안전한 구조인지 계산해드려요. 전세에서는 총비용보다 이게 더 중요할 수 있어요.</div>
-        ${(priority && priority.eligible) ? `<div class="safety-foot">그래도 <b>최우선변제권</b> 대상이라, 전입신고만 해두면 경매 시 최소 ${formatWon(priority.guaranteed)}은 다른 채권자보다 먼저 돌려받을 수 있어요(${priority.label} 기준).</div>` : ''}
-      </div>`;
+      /* 그릴 막대가 없어요. 무엇을 넣어야 하는지는 진단카드가 이미 안내해요. */
+      safetyBox.innerHTML = '';
     } else {
       const barPrior  = Math.min(100, safety.priorRatio);
       const barMine   = Math.min(100 - barPrior, safety.jeonseRatio);
@@ -3810,11 +4347,6 @@ function calculateRent(){
           <span><i class="dot dot-mine"></i>내 보증금 ${formatWon(jeonseDeposit)}</span>
           <span><i class="dot dot-left"></i>남는 여유 ${formatWon(Math.max(0, safety.cushion))}</span>
         </div>
-        <div class="safety-msg">${safety.msg}</div>
-        ${priority && priority.eligible
-          ? `<div class="safety-foot">✅ <b>소액임차인 최우선변제권</b> 대상이에요(${priority.label}). 전입신고만 해두면 경매가 진행돼도 다른 채권자보다 먼저 <b>최소 ${formatWon(priority.guaranteed)}</b>은 보장받아요${priority.cappedByHalf ? ' (주택가액의 절반으로 제한됨)' : ''}. 단, 이 기준은 계약일이 아니라 <b>그 집의 최선순위 근저당 설정일</b> 기준으로 적용돼요 — 오래된 근저당이 있다면 금액이 다를 수 있어요.</div>`
-          : `<div class="safety-foot">보증금이 ${priority ? formatWon(priority.depositCap) : ''} 이하가 아니라서, 이 지역 기준으로는 최우선변제권 대상이 아니에요.</div>`}
-        <div class="safety-foot">경매로 넘어가면 <b>집주인 대출이 내 보증금보다 먼저</b> 변제돼요. 실제 배당은 경매 낙찰가(보통 시세보다 낮음)와 선순위 관계에 따라 달라지니, 이 비율은 참고 지표로 보시고 계약 전 등기부등본을 직접 확인하세요.</div>
       </div>`;
     }
   }
@@ -3823,6 +4355,24 @@ function calculateRent(){
     fallback += `<div class="${jeonseRatio > 80 ? 'fallback-note' : 'success-note'}">${jeonseRatio > 80 ? '⚠' : 'ℹ️'} 전세가율(보증금÷시세) ${jeonseRatio.toFixed(1)}% — 보증기관 심사 지표 중 하나예요. 80%를 ${jeonseRatio > 80 ? '초과해서 전세보증보험 가입 심사가 까다로워질 수 있어요' : '넘지 않아 이 지표만으로는 통상적인 범위예요'}. 가입 가능 여부는 이 비율만으로 결정되지 않으니, 정확한 조건은 보증기관(HUG·HF·SGI)에 확인하세요.</div>`;
   }
   document.getElementById('rentFallbackNote').innerHTML = fallback;
+
+  const bs = document.getElementById('bokStaleNote');
+  if(bs) bs.innerHTML = bokNote() ? `<div class="fallback-note" style="margin-bottom:10px;">${bokNote()}</div>` : '';
+
+  renderRentDiag(safety, priority, jeonseDeposit, priorDebt, isUnregistered, document.getElementById('trustOwned').checked);
+  renderRentAssumptions({
+    metro: rentMetro, termYears, useLoan, loanType, loanRate,
+    savingRate: parseFloat(document.getElementById('savingRate').value) || 0,
+    marketPrice: rentMarket
+  });
+  const rd = document.getElementById('rentReportDate');
+  if(rd){ const dt = new Date(); rd.textContent = `${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()} 기준 추정`; }
+  const rc = document.getElementById('rentReportCond');
+  if(rc){
+    rc.textContent = `${rentMetro ? '수도권' : '그 외 지역'} · ${termYears}년 계약 · `
+      + (useLoan ? `${loanType === 'policy' ? '버팀목' : '은행'} 전세대출 ${loanRate}%` : '전세대출 없음')
+      + ` · 예금금리 ${parseFloat(document.getElementById('savingRate').value) || 0}%`;
+  }
 
   document.getElementById('rentReceiptLines').innerHTML =
     `<div class="receipt-section-label">전세로 산다면</div>` +
@@ -3853,8 +4403,140 @@ function calculateRent(){
   document.getElementById('rentConsiderations').style.display = 'block';
 }
 
+/* ===== 전월세 가정 바 =====
+   매매 탭의 .assump-bar를 그대로 재사용해요. 결과를 보다가 조건을 고치려고
+   위로 스크롤해야 하는 게 전월세 탭의 가장 큰 불편이었어요. */
+function renderRentAssumptions(a){
+  const bar = document.getElementById('rentAssumpBar');
+  if(!bar) return;
+  const chips = [
+    {t: a.metro ? '수도권' : '그 외 지역'},
+    {t: a.termYears + '년 계약'},
+    {t: a.useLoan ? (a.loanType === 'policy' ? '버팀목' : '은행 전세대출') : '전세대출 없음'}
+  ];
+  if(a.useLoan && a.loanRate > 0) chips.push({t: '대출금리 ' + a.loanRate + '%'});
+  chips.push({t: '예금금리 ' + a.savingRate + '%'});
+  if(a.marketPrice > 0) chips.push({t: '시세 ' + formatWon(a.marketPrice)});
+  bar.innerHTML = `
+    <div class="assump-label">이 조건으로 비교했어요</div>
+    <div class="assump-chips">${chips.map(x=>`<span class="assump-chip">${x.t}</span>`).join('')}</div>
+    <button type="button" class="assump-edit" onclick="scrollToRentInputs()">고치기</button>`;
+}
+function scrollToRentInputs(){
+  const el = document.getElementById('jeonseEok');
+  if(el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* ===== 전월세 진단 인사이트 =====
+   매매 탭의 "병목 진단"에 대응하는 자리예요. 전월세에서 가장 크게 어긋날 수 있는 건
+   총비용이 아니라 보증금을 돌려받을 수 있느냐라서, 그걸 맨 위로 올려요. */
+function renderRentDiag(safety, priority, deposit, priorDebt, isUnregistered, trustOwned){
+  const box = document.getElementById('rentDiagBox');
+  if(!box) return;
+  if(isUnregistered || trustOwned){
+    box.innerHTML = `<div class="diag-card" style="background:linear-gradient(160deg,#7A3E12,#5C2E0D);">
+      <div class="diag-tag">가장 먼저 확인할 것</div>
+      <div class="diag-title">${isUnregistered ? '미등기 물건이에요' : '신탁등기 물건이에요'}</div>
+      <div class="diag-why">${isUnregistered
+        ? '보존등기가 안 된 상태라 <b>확정일자·전세권 설정</b>이 어렵고, 대항력을 갖추기 힘든 구조예요. 비용 비교보다 이 문제를 먼저 정리해야 해요.'
+        : '등기부상 소유자가 신탁회사라, <b>수탁자 동의 없이 맺은 계약은 무효</b>가 될 수 있어요. 등기부등본의 신탁원부를 먼저 확인하세요.'}</div>
+      <div class="limit-foot">아래 비용 비교는 이 위험을 반영하지 않은 숫자예요.</div>
+    </div>`;
+    return;
+  }
+  if(!safety){
+    box.innerHTML = `<div class="diag-card">
+      <div class="diag-tag">아직 진단할 수 없어요</div>
+      <div class="diag-title">이 집 매매 시세를 넣어주세요</div>
+      <div class="diag-why">전월세에서 가장 중요한 건 총비용이 아니라 <b>보증금을 돌려받을 수 있는 구조인가</b>예요. 시세와 선순위 채권을 넣으면 진단해드려요.</div>
+      ${(priority && priority.eligible)
+        ? `<div class="limit-foot">시세를 넣지 않아도 확인되는 것 하나 — 이 보증금은 <b>최우선변제권</b> 대상이에요(${priority.label}). 전입신고를 해두면 경매 시 최소 ${formatWon(priority.guaranteed)}은 다른 채권자보다 먼저 변제돼요.</div>` : ''}
+      <div class="limit-foot">아래 &lsquo;안전 확인&rsquo;에서 실거래가를 바로 불러올 수 있어요.</div>
+    </div>`;
+    return;
+  }
+  const T = {
+    safe:   {tag:'보증금 안전 진단', title:'여유가 있는 구조예요'},
+    ok:     {tag:'보증금 안전 진단', title:'통상적인 범위예요'},
+    warn:   {tag:'가장 먼저 확인할 것', title:'여유가 얼마 없어요'},
+    danger: {tag:'가장 먼저 확인할 것', title:'보증금 전액 회수가 어려울 수 있어요'}
+  }[safety.level];
+  const bg = (safety.level === 'warn' || safety.level === 'danger')
+    ? ' style="background:linear-gradient(160deg,#7A3E12,#5C2E0D);"' : '';
+  box.innerHTML = `<div class="diag-card"${bg}>
+    <div class="diag-tag">${T.tag}</div>
+    <div class="diag-title">${T.title}</div>
+    <div class="diag-why">선순위 채권과 내 보증금을 합치면 시세의 <b>${safety.ratio.toFixed(0)}%</b>예요. ${safety.msg}</div>
+    <div class="limit-list">
+      <div class="limit-row"><span>집주인 선순위 채권</span><span class="limit-val">${formatWon(priorDebt)}</span></div>
+      <div class="limit-row active"><span>내 보증금</span><span class="limit-val">${formatWon(deposit)}</span></div>
+      <div class="limit-row"><span>시세에서 남는 여유</span><span class="limit-val">${formatWon(Math.max(0, safety.cushion))}</span></div>
+    </div>
+    <div class="limit-foot">${priority && priority.eligible
+      ? `최우선변제권 대상이라 전입신고만 해두면 최소 <b>${formatWon(priority.guaranteed)}</b>은 먼저 보장받아요(${priority.label})${priority.cappedByHalf ? ' — 주택가액의 절반으로 제한된 금액이에요' : ''}. 이 기준은 계약일이 아니라 <b>그 집의 최선순위 근저당 설정일</b>로 판정돼요.`
+      : `보증금이 ${formatWon(priority ? priority.depositCap : 0)} 이하가 아니라서 최우선변제권 대상은 아니에요.`}</div>
+    <div class="limit-foot">경매로 넘어가면 <b>집주인 대출이 내 보증금보다 먼저</b> 변제돼요. 실제 배당은 낙찰가(통상 시세보다 낮음)와 선순위 관계에 따라 달라져요. 계약 전 등기부등본을 직접 확인하세요.</div>
+  </div>`;
+}
+
+/* ===== 전월세 링크 공유 =====
+   매매 탭과 파라미터가 섞이지 않게 접두사 r_ 를 붙여요. */
+const RENT_URL_FIELDS = [
+  ['jd','jeonseEok','jeonseMan','amt'], ['wd','wolseEok','wolseMan','amt'],
+  ['pd','priorDebtEok','priorDebtMan','amt'], ['mk','rentMarketEok','rentMarketMan','amt'],
+  ['wm','wolseMonthly','','num'], ['ri','rentIncome','','num'], ['ss','selfSalary','','num'],
+  ['lr','jeonseLoanRate','','raw'], ['sr','savingRate','','raw'],
+  ['lt','jeonseLoanType','','raw'], ['mt','rentMetro','','raw'],
+  ['cc','rentChildCount','','raw'], ['tm','rentTerm','','raw'], ['pz','rentPriorityZone','','raw'],
+  ['ul','useJeonseLoan','','chk'], ['nw','rentNewlywed','','chk'], ['nh','noHouseHousehold','','chk'],
+  ['ur','unregistered','','chk'], ['tr','trustOwned','','chk']
+];
+function buildRentShareUrl(){
+  const p = new URLSearchParams();
+  p.set('t', 'rent');
+  RENT_URL_FIELDS.forEach(([key, a, b, kind]) => {
+    const el = document.getElementById(a);
+    if(!el) return;
+    let v;
+    if(kind === 'amt') v = getAmountManwon(a, b);
+    else if(kind === 'num') v = numVal(a);
+    else if(kind === 'chk') v = el.checked ? '1' : '0';
+    else v = el.value;
+    p.set('r_' + key, v);
+  });
+  return location.origin + location.pathname + '?' + p.toString();
+}
+function loadRentFromUrl(p){
+  let touched = false;
+  RENT_URL_FIELDS.forEach(([key, a, b, kind]) => {
+    const q = 'r_' + key;
+    if(!p.has(q)) return;
+    const el = document.getElementById(a);
+    if(!el) return;
+    const raw = p.get(q);
+    if(kind === 'amt') setAmountManwon(a, b, parseFloat(raw) || 0);
+    else if(kind === 'num') el.value = (parseFloat(raw) || 0).toLocaleString();
+    else if(kind === 'chk') el.checked = raw === '1';
+    else el.value = raw;
+    touched = true;
+  });
+  return touched;
+}
+async function copyRentLink(){
+  track('share', {tool:'rent', method:'link'});
+  const btn = document.getElementById('linkBtnRent');
+  const original = btn ? btn.textContent : '';
+  const url = buildRentShareUrl();
+  const done = ok => { if(btn){ btn.textContent = ok ? '✅ 링크를 복사했어요' : '⚠ 복사에 실패했어요'; setTimeout(()=>{btn.textContent = original;}, 1900); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try { await navigator.clipboard.writeText(url); done(true); return; } catch(e){}
+  }
+  legacyCopy(url, done);
+}
+
 /* 결과를 텍스트로 복사. 계산 로직과 중복되지 않게 DOM에서 직접 읽어요. */
 function copyRentSummary(){
+  track('share', {tool:'rent', method:'text'});
   const g = id => (document.getElementById(id)?.textContent || '').trim();
   const lines = ['[영끌계산기] 전세·월세 비교', ''];
   if(g('rentResultLabel')) lines.push(g('rentResultLabel'));
@@ -3956,9 +4638,42 @@ const LAWD = {
 
 const SISE_MONTHS = 6;          // 최근 몇 개월치를 볼지
 const SISE_TIMEOUT_MS = 20000;  // 클라이언트 타임아웃
-const siseCache = {};           // lawdCd → 집계 결과 (한 세션 동안 재사용)
-let siseGroups = null;          // 현재 지역의 단지 목록
-let siseSelected = null;        // 현재 선택된 단지+면적 통계
+const siseCache = {};           // lawdCd → 집계 결과 (탭이 달라도 같은 지역이면 재사용)
+
+/* ===== 실거래가 조회는 두 탭이 같은 엔진을 씁니다 =====
+   v21.3부터 매매 탭에서도 씁니다. 매매 탭은 이미 #buySgg(지역 선택)를 갖고 있어서
+   시/도·시군구 드롭다운을 새로 만들지 않고 그 값을 그대로 씁니다.
+
+   ⚠ 두 탭이 서로의 선택 상태를 건드리면 안 돼요(원칙 29와 같은 종류의 사고).
+      그래서 화면 요소 id와 진행 상태를 컨텍스트('rent'/'buy')별로 분리했습니다.
+
+   채우는 방향이 탭마다 다릅니다(원칙 28):
+     · 전월세 — 시세를 낮게 잡을수록 전세가율이 높아져 더 엄격하게 진단됨 → 보조 버튼은 최저가
+     · 매매   — 집값을 낮게 잡을수록 "살 수 있다"고 착각시키는 방향     → 보조 버튼은 최고가 */
+const SISE_UI = {
+  rent: {
+    sgg:'siseSgg', btn:'siseLoadBtn', status:'siseStatus',
+    aptWrap:'siseAptWrap', filter:'siseAptFilter', apt:'siseApt',
+    areaWrap:'siseAreaWrap', area:'siseArea', result:'siseResult',
+    targetEok:'rentMarketEok', targetMan:'rentMarketMan',
+    source:'rentMarketSource', autoHint:'rentMarketHintAuto',
+    altKey:'min', altLabel:'최저가'
+  },
+  buy: {
+    sgg:'buySgg', btn:'buySiseLoadBtn', status:'buySiseStatus',
+    aptWrap:'buySiseAptWrap', filter:'buySiseAptFilter', apt:'buySiseApt',
+    areaWrap:'buySiseAreaWrap', area:'buySiseArea', result:'buySiseResult',
+    targetEok:'priceEok', targetMan:'priceMan',
+    source:'buySiseSource', autoHint:'buySiseHintAuto',
+    altKey:'max', altLabel:'최고가'
+  }
+};
+const siseState = {
+  rent: {groups:null, selected:null},
+  buy:  {groups:null, selected:null}
+};
+function siseCtx(k){ return SISE_UI[k] ? k : 'rent'; }
+function siseEl(k, key){ return document.getElementById(SISE_UI[siseCtx(k)][key]); }
 
 function initSise(){
   const sido = document.getElementById('siseSido');
@@ -3989,22 +4704,40 @@ function onSiseSido(){
 
 function onSiseSgg(){
   document.getElementById('siseLoadBtn').disabled = !document.getElementById('siseSgg').value;
-  resetSiseResult();
+  resetSiseResult('rent');
 }
 
-function resetSiseResult(){
-  siseGroups = null; siseSelected = null;
-  document.getElementById('siseAptWrap').style.display = 'none';
-  document.getElementById('siseAreaWrap').style.display = 'none';
-  document.getElementById('siseApt').innerHTML = '<option value="">단지 선택</option>';
-  document.getElementById('siseAptFilter').value = '';
-  document.getElementById('siseResult').innerHTML = '';
-  document.getElementById('siseStatus').innerHTML = '';
+/* 매매 탭은 지역 드롭다운(#buySgg)이 이미 있어서 그 값에 따라 버튼만 열고 닫습니다.
+   지역이 바뀌면 이전 지역의 단지 목록을 반드시 비웁니다(원칙 30). */
+function syncBuySise(){
+  const sgg = document.getElementById('buySgg');
+  const btn = document.getElementById('buySiseLoadBtn');
+  if(!sgg || !btn) return;
+  btn.disabled = !sgg.value;
+  const echo = document.getElementById('buySiseSggEcho');
+  if(echo){
+    const opt = sgg.selectedOptions && sgg.selectedOptions[0];
+    echo.textContent = (sgg.value && opt) ? opt.textContent : '시·군·구';
+  }
+  resetSiseResult('buy');
 }
 
-function setSiseStatus(html, kind){
-  document.getElementById('siseStatus').innerHTML =
-    html ? '<div class="sise-note ' + (kind || 'info') + '">' + html + '</div>' : '';
+function resetSiseResult(k){
+  k = siseCtx(k);
+  siseState[k].groups = null;
+  siseState[k].selected = null;
+  const aw = siseEl(k,'aptWrap');   if(aw) aw.style.display = 'none';
+  const rw = siseEl(k,'areaWrap');  if(rw) rw.style.display = 'none';
+  const ap = siseEl(k,'apt');       if(ap) ap.innerHTML = '<option value="">단지 선택</option>';
+  const ft = siseEl(k,'filter');    if(ft) ft.value = '';
+  const rs = siseEl(k,'result');    if(rs) rs.innerHTML = '';
+  const st = siseEl(k,'status');    if(st) st.innerHTML = '';
+}
+
+function setSiseStatus(html, kind, k){
+  const el = siseEl(k, 'status');
+  if(!el) return;
+  el.innerHTML = html ? '<div class="sise-note ' + (kind || 'info') + '">' + html + '</div>' : '';
 }
 
 /* 최근 n개월의 YYYYMM. 매월 1일 기준으로 빼서 말일 건너뛰기 방지 */
@@ -4072,17 +4805,20 @@ function buildSiseGroups(months){
   return { groups: groups, exLease: exLease, exCancel: exCancel, used: used };
 }
 
-async function loadSiseTrades(){
-  const code = document.getElementById('siseSgg').value;
-  const label = document.getElementById('siseSgg').selectedOptions[0]
-              ? document.getElementById('siseSgg').selectedOptions[0].textContent : '';
+async function loadSiseTrades(k){
+  k = siseCtx(k);
+  const sggSel = siseEl(k, 'sgg');
+  const code = sggSel ? sggSel.value : '';
+  const label = (sggSel && sggSel.selectedOptions && sggSel.selectedOptions[0])
+              ? sggSel.selectedOptions[0].textContent : '';
   if(!code) return;
 
-  const btn = document.getElementById('siseLoadBtn');
+  const btn = siseEl(k, 'btn');
   const oldText = btn.textContent;
   btn.disabled = true; btn.textContent = '불러오는 중…';
-  resetSiseResult();
-  setSiseStatus('국토교통부에 신고된 최근 ' + SISE_MONTHS + '개월 거래를 불러오고 있어요. 몇 초 걸릴 수 있어요.', 'info');
+  resetSiseResult(k);
+  setSiseStatus('국토교통부에 신고된 최근 ' + SISE_MONTHS + '개월 거래를 불러오고 있어요. 몇 초 걸릴 수 있어요.', 'info', k);
+  track('sise_load', {tool: k});
 
   try{
     let data = siseCache[code];
@@ -4101,11 +4837,12 @@ async function loadSiseTrades(){
         const first = errs[0] || {};
         if(first.code === 'NO_API'){
           setSiseStatus('이 페이지에서는 실거래가 조회가 동작하지 않아요. ' +
-            '<a href="https://noah-choi.vercel.app/yeongkkeul-calculator.html">noah-choi.vercel.app</a> 주소에서 열어주세요.', 'err');
+            '<a href="https://noah-choi.vercel.app/yeongkkeul-calculator.html">noah-choi.vercel.app</a> 주소에서 열어주세요.', 'err', k);
         } else {
           setSiseStatus('실거래가를 불러오지 못했어요. 국토교통부 서버가 일시적으로 느릴 수 있어요. ' +
-            '잠시 후 다시 눌러주세요.' + (first.detail ? '<br>(' + first.detail + ')' : ''), 'err');
+            '잠시 후 다시 눌러주세요.' + (first.detail ? '<br>(' + first.detail + ')' : ''), 'err', k);
         }
+        track('sise_fail', {tool: k, reason: first.code || 'unknown'});
         return;
       }
 
@@ -4122,9 +4859,9 @@ async function loadSiseTrades(){
       siseCache[code] = data;
     }
 
-    siseGroups = data;
+    siseState[k].groups = data;
     if(data.groups.size === 0){
-      setSiseStatus(label + '에서 최근 ' + SISE_MONTHS + '개월 사이에 신고된 아파트 매매 거래를 찾지 못했어요.', 'warn');
+      setSiseStatus(label + '에서 최근 ' + SISE_MONTHS + '개월 사이에 신고된 아파트 매매 거래를 찾지 못했어요.', 'warn', k);
       return;
     }
 
@@ -4134,23 +4871,27 @@ async function loadSiseTrades(){
     if(data.truncated) notes.push('⚠️ 거래가 많은 지역이라 한 달에 1,000건까지만 불러왔어요. 일부 거래가 빠졌을 수 있어요.');
     if(data.failed)    notes.push('⚠️ ' + data.failed + '개월치는 불러오지 못했어요.');
     if(data.exLease)   notes.push('토지임대부 아파트 ' + data.exLease + '건은 시세 계산에서 뺐어요.');
-    setSiseStatus(notes.join('<br>'), data.truncated || data.failed ? 'warn' : 'info');
+    setSiseStatus(notes.join('<br>'), data.truncated || data.failed ? 'warn' : 'info', k);
 
-    document.getElementById('siseAptWrap').style.display = 'block';
-    renderSiseAptOptions();
+    siseEl(k, 'aptWrap').style.display = 'block';
+    renderSiseAptOptions(k);
 
   } catch(e){
-    setSiseStatus('실거래가를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.', 'err');
+    setSiseStatus('실거래가를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.', 'err', k);
+    track('sise_fail', {tool: k, reason: 'exception'});
   } finally {
     btn.disabled = false; btn.textContent = oldText;
   }
 }
 
-function renderSiseAptOptions(){
-  if(!siseGroups) return;
-  const q = (document.getElementById('siseAptFilter').value || '').trim().replace(/\s/g, '');
-  const sel = document.getElementById('siseApt');
-  let list = Array.from(siseGroups.groups.values());
+function renderSiseAptOptions(k){
+  k = siseCtx(k);
+  const st = siseState[k];
+  if(!st.groups) return;
+  const filterEl = siseEl(k, 'filter');
+  const q = ((filterEl && filterEl.value) || '').trim().replace(/\s/g, '');
+  const sel = siseEl(k, 'apt');
+  let list = Array.from(st.groups.groups.values());
   if(q) list = list.filter(function(g){ return (g.umd + g.name).replace(/\s/g, '').indexOf(q) !== -1; });
   list.sort(function(a, b){ return a.name.localeCompare(b.name, 'ko'); });
 
@@ -4168,25 +4909,27 @@ function renderSiseAptOptions(){
     o.textContent = '… 단지가 많아요. 위 칸에 단지명을 입력해 좁혀주세요.';
     sel.appendChild(o);
   }
-  document.getElementById('siseAreaWrap').style.display = 'none';
-  document.getElementById('siseResult').innerHTML = '';
-  siseSelected = null;
+  siseEl(k, 'areaWrap').style.display = 'none';
+  siseEl(k, 'result').innerHTML = '';
+  st.selected = null;
 }
 
-function onSiseApt(){
-  const key = document.getElementById('siseApt').value;
-  const wrap = document.getElementById('siseAreaWrap');
-  const sel  = document.getElementById('siseArea');
-  document.getElementById('siseResult').innerHTML = '';
-  siseSelected = null;
-  if(!key || !siseGroups){ wrap.style.display = 'none'; return; }
+function onSiseApt(k){
+  k = siseCtx(k);
+  const st = siseState[k];
+  const key = siseEl(k, 'apt').value;
+  const wrap = siseEl(k, 'areaWrap');
+  const sel  = siseEl(k, 'area');
+  siseEl(k, 'result').innerHTML = '';
+  st.selected = null;
+  if(!key || !st.groups){ wrap.style.display = 'none'; return; }
 
-  const g = siseGroups.groups.get(key);
+  const g = st.groups.groups.get(key);
   const areas = Array.from(g.areas.entries()).sort(function(a, b){ return b[1].length - a[1].length; });
   sel.innerHTML = '<option value="">면적 선택</option>';
   areas.forEach(function(pair){
     const ak = pair[0], rows = pair[1];
-    const py = ak / 2.45;   // 전용㎡ → 공급면적 기준 평 (전용률 약 74%)
+    const py = ak / POLICY.area.pyeongToM2;   // 전용㎡ → 공급면적 기준 평 (전용률 약 74%)
     const o = document.createElement('option');
     o.value = ak;
     o.textContent = '전용 ' + ak + '㎡ · 약 ' + py.toFixed(0) + '평 (' + rows.length + '건)';
@@ -4194,17 +4937,20 @@ function onSiseApt(){
   });
   wrap.style.display = 'block';
   // 면적이 하나뿐이면 바로 선택
-  if(areas.length === 1){ sel.value = areas[0][0]; onSiseArea(); }
+  if(areas.length === 1){ sel.value = areas[0][0]; onSiseArea(k); }
 }
 
-function onSiseArea(){
-  const key = document.getElementById('siseApt').value;
-  const ak  = document.getElementById('siseArea').value;
-  const box = document.getElementById('siseResult');
-  siseSelected = null;
-  if(!key || !ak || !siseGroups){ box.innerHTML = ''; return; }
+function onSiseArea(k){
+  k = siseCtx(k);
+  const st = siseState[k];
+  const u  = SISE_UI[k];
+  const key = siseEl(k, 'apt').value;
+  const ak  = siseEl(k, 'area').value;
+  const box = siseEl(k, 'result');
+  st.selected = null;
+  if(!key || !ak || !st.groups){ box.innerHTML = ''; return; }
 
-  const g = siseGroups.groups.get(key);
+  const g = st.groups.groups.get(key);
   const rows = (g.areas.get(parseInt(ak, 10)) || []).slice();
   if(rows.length === 0){ box.innerHTML = ''; return; }
 
@@ -4216,30 +4962,30 @@ function onSiseArea(){
   const min  = amts[0];
   const max  = amts[amts.length - 1];
   const last = rows[0];
-  const py   = parseInt(ak, 10) / 2.45;
+  const py   = parseInt(ak, 10) / POLICY.area.pyeongToM2;
   const spread = med > 0 ? (max - min) / med : 0;
 
-  siseSelected = {
+  st.selected = {
     name: g.name, umd: g.umd, ak: parseInt(ak, 10), py: py,
     med: med, avg: avg, min: min, max: max, n: rows.length, spread: spread,
     lastYm: last.y + '.' + String(last.m).padStart(2, '0')
   };
 
   let html = '<div class="sise-stat">';
-  html += '<div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;">'
+  html += '<div style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;">'
         + g.name + ' · 전용 ' + ak + '㎡ (약 ' + py.toFixed(0) + '평) 중앙값</div>';
   html += '<div class="sise-stat-amt">' + formatWon(roundToTenMil(med) * 10000) + '</div>';
   html += '<div class="sise-stat-sub">'
-        + '최근 ' + siseGroups.months.length + '개월 신고 ' + rows.length + '건 · '
+        + '최근 ' + st.groups.months.length + '개월 신고 ' + rows.length + '건 · '
         + '평균 ' + formatWon(roundToTenMil(avg) * 10000) + '<br>'
         + '최저 ' + formatWon(min * 10000) + ' ~ 최고 ' + formatWon(max * 10000) + '<br>'
-        + '가장 최근 거래 ' + siseSelected.lastYm + ' · ' + formatWon(last.amt * 10000)
+        + '가장 최근 거래 ' + st.selected.lastYm + ' · ' + formatWon(last.amt * 10000)
         + (last.floor ? ' (' + last.floor + '층)' : '')
         + '</div>';
   html += '</div>';
   html += '<div class="sise-apply">'
-        + '<button type="button" class="primary" onclick="applySisePrice(\'med\')">중앙값으로 채우기</button>'
-        + '<button type="button" onclick="applySisePrice(\'min\')">최저가로 채우기</button>'
+        + '<button type="button" class="primary" onclick="applySisePrice(\'med\',\'' + k + '\')">중앙값으로 채우기</button>'
+        + '<button type="button" onclick="applySisePrice(\'' + u.altKey + '\',\'' + k + '\')">' + u.altLabel + '로 채우기</button>'
         + '</div>';
   html += '<div class="sise-note info">신고된 거래를 금액순으로 줄 세웠을 때 <b>한가운데 값</b>이 중앙값이에요. '
         + '특이하게 비싸거나 싼 거래 한 건에 덜 흔들려서 기본값으로 씁니다. '
@@ -4255,8 +5001,12 @@ function onSiseArea(){
     html += '<div class="sise-note warn">거래가 ' + rows.length + '건뿐이라 실제 시세와 다를 수 있어요. '
           + '층·향·수리 상태에 따라 같은 면적도 가격 차이가 큽니다.</div>';
   }
-  html += '<div class="sise-note info">보증금 안전을 보수적으로 보려면 <b>최저가</b>를 넣어보세요. '
-        + '시세를 낮게 잡을수록 전세가율이 높게 나와 더 엄격하게 진단돼요.</div>';
+  html += (k === 'buy')
+    ? '<div class="sise-note info">실제 매수 가격은 중앙값보다 높을 수도 낮을 수도 있어요. '
+      + '집값을 낮게 넣으면 필요한 자기자본과 취득세도 함께 낮게 계산돼요. '
+      + '여유를 두고 보려면 <b>최고가</b>를 넣어 결과가 얼마나 달라지는지 확인해보실 수 있어요.</div>'
+    : '<div class="sise-note info">보증금 안전을 보수적으로 보려면 <b>최저가</b>를 넣어보세요. '
+      + '시세를 낮게 잡을수록 전세가율이 높게 나와 더 엄격하게 진단돼요.</div>';
   box.innerHTML = html;
 }
 
@@ -4274,34 +5024,53 @@ function roundToTenMil(man){
   return Math.round(man / 1000) * 1000;
 }
 
-function applySisePrice(which){
-  if(!siseSelected) return;
-  const raw  = which === 'min' ? siseSelected.min : siseSelected.med;
+function applySisePrice(which, k){
+  k = siseCtx(k);
+  const st = siseState[k], u = SISE_UI[k];
+  const sel = st.selected;
+  if(!sel) return;
+  const raw  = which === 'min' ? sel.min : (which === 'max' ? sel.max : sel.med);
   const man  = roundToTenMil(raw);
-  const kind = which === 'min' ? '최저가' : '중앙값';
-  setAmountManwon('rentMarketEok', 'rentMarketMan', man);
+  const kind = which === 'min' ? '최저가' : (which === 'max' ? '최고가' : '중앙값');
 
-  let note = '✓ ' + siseSelected.name + ' 전용 ' + siseSelected.ak + '㎡ · '
-           + '최근 ' + siseGroups.months.length + '개월 실거래 ' + siseSelected.n + '건의 ' + kind
+  /* 매매 탭에서 "가진 돈으로 얼마짜리" 모드일 때는 매매가 칸이 화면에 없어요.
+     값만 넣고 끝내면 사용자에게 아무 일도 일어나지 않은 것처럼 보입니다(원칙 15). */
+  let switched = false;
+  if(k === 'buy' && mode !== 'B'){ setMode('B'); switched = true; }
+
+  setAmountManwon(u.targetEok, u.targetMan, man);
+
+  let note = '✓ ' + sel.name + ' 전용 ' + sel.ak + '㎡ · '
+           + '최근 ' + st.groups.months.length + '개월 실거래 ' + sel.n + '건의 ' + kind
            + ' ' + formatWon(raw * 10000) + '을 천만원 단위로 반올림해 넣었어요 (국토교통부 신고자료).';
-  if(siseSelected.spread >= 0.2 && which !== 'min'){
+  if(switched){
+    note += '<br>매매가를 넣는 모드(<b>그 집은 얼마인가요?</b>)로 바꿨어요. 가진 돈 기준으로 다시 보려면 위에서 되돌릴 수 있어요.';
+  }
+  if(sel.spread >= 0.2 && which === 'med'){
     note += '<br><span style="color:#9A5B0A;">거래 편차가 큰 단지예요. 이 집의 층·향·수리 상태를 보고 값을 조정해주세요.</span>';
   }
-  document.getElementById('rentMarketSource').innerHTML = '<div class="sise-src">' + note + '</div>';
+  const srcEl = document.getElementById(u.source);
+  if(srcEl) srcEl.innerHTML = '<div class="sise-src">' + note + '</div>';
 
   // 이미 채웠으니 "불러오면 채워져요" 안내는 감춰요
-  const autoHint = document.getElementById('rentMarketHintAuto');
+  const autoHint = document.getElementById(u.autoHint);
   if(autoHint) autoHint.style.display = 'none';
 
-  calculateRent();
-  document.getElementById('rentMarketEok').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  track('sise_apply', {tool: k, stat: which});
+
+  if(k === 'rent') calculateRent();
+  else liveRecalc();
+
+  const target = document.getElementById(u.targetEok);
+  if(target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 /* 사용자가 시세를 직접 고치면 출처 표시를 지워요 */
-function clearSiseSource(){
-  const el = document.getElementById('rentMarketSource');
+function clearSiseSource(k){
+  const u = SISE_UI[siseCtx(k)];
+  const el = document.getElementById(u.source);
   if(el) el.innerHTML = '';
-  const autoHint = document.getElementById('rentMarketHintAuto');
+  const autoHint = document.getElementById(u.autoHint);
   if(autoHint) autoHint.style.display = '';
 }
 
@@ -4309,6 +5078,22 @@ function clearSiseSource(){
 renderProgress();
 renderPolicyOptions();
 initSise();
+(function restoreRentFromUrl(){
+  const p = new URLSearchParams(location.search);
+  if(p.get('t') !== 'rent') return;
+  if(loadRentFromUrl(p)){
+    showTool('rent');
+    syncAllUI();
+    toggleJeonseLoan();
+    toggleSelfSalary();
+    calculateRent();
+  }
+})();
+renderRateChips();
+initBuyRegion();
+applyZoneDefaults();
+renderZoneBadge();
+renderStaleBanner();
 toggleSeominField();
 toggleSelfSalary();
 applyStressDefault();
