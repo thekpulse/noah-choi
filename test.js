@@ -878,5 +878,110 @@ t('진입점이 새 CSS 클래스를 만들지 않음',
   html.indexOf('goToBuySise()">실거래가로 채우기') !== -1 &&
   html.indexOf('class="hint-toggle" onclick="goToBuySise()"') !== -1);
 
+console.log('\n=== v21.5 ⑤ 버튼 서브라벨 말투 (원칙 9) ===');
+(() => {
+  /* 01의 두 개만 물음표로 끝나 있었어요. 01의 질문이 이미 "무엇이 궁금하세요?"라서
+     답으로 고르는 버튼 안에 질문이 또 들어간 구조였습니다.
+     히어로 <h1>은 헤드라인 목소리라 대상이 아닙니다(여기서는 span 안을 안 봄). */
+  const subs = [...html.matchAll(/<b>[^<]*<\/b><span>([^<]*)<\/span>/g)].map(m => m[1].trim());
+  const q = subs.filter(s => s.endsWith('?'));
+  t('서브라벨이 물음표로 끝나지 않음', q.length === 0, q.join(' | '));
+  t('서브라벨 16개를 모두 검사함', subs.length >= 16, subs.length + '개');
+})();
+t('01 A모드 서브라벨', html.indexOf('<span>살 수 있는 최대 집값</span>') !== -1);
+t('01 B모드 서브라벨', html.indexOf('<span>그 집에 필요한 현금</span>') !== -1);
+t('히어로 헤드라인은 그대로', html.indexOf('나 살 수 있어?') !== -1);
+
+console.log('\n=== v21.6 고급설정 총량 상한 (원칙 43) ===');
+(() => {
+  /* 04와 같은 방식입니다(v21.5 문서 5장). 접힌 것(hint-detail)은 화면을 무겁게 하지
+     않으니 뺍니다. 다만 hint-detail 안에 <div>가 중첩된 곳이 있어서 04에서 쓴
+     비탐욕 정규식으로는 못 지웁니다. 여는/닫는 태그를 세서 잘라냅니다. */
+  function stripBalanced(src, openTag) {
+    let out = '', i = 0;
+    for (;;) {
+      const a = src.indexOf(openTag, i);
+      if (a === -1) { out += src.slice(i); break; }
+      out += src.slice(i, a);
+      let j = src.indexOf('>', a) + 1, depth = 1;
+      while (depth > 0 && j < src.length) {
+        const nd = src.indexOf('<div', j), cd = src.indexOf('</div>', j);
+        if (cd === -1) break;
+        if (nd !== -1 && nd < cd) { depth++; j = nd + 4; } else { depth--; j = cd + 6; }
+      }
+      i = j;
+    }
+    return out;
+  }
+  const sec = html.slice(html.indexOf('<div id="optionalSection"'),
+                         html.indexOf('<div class="cta-lead">'));
+  const noDetail = stripBalanced(sec, '<div class="hint-detail"');
+  const blocks = noDetail.match(/<div class="hint"[^>]*>[\s\S]*?<\/div>/g) || [];
+  const texts = blocks.map(b => b.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+  const n = texts.reduce((a, b) => a + b.length, 0);
+  const long = texts.filter(x => x.length > 100);
+
+  t('고급설정 노출 설명문 총량이 600자 이하 (v21.5는 1,488자)', n <= 600, n + '자');
+  t('100자 넘는 노출 문단이 없음 (v21.5는 5개)', long.length === 0, long.length + '개');
+  t('설명 문단 개수 자체도 줄었음 (v21.5는 21개)', blocks.length <= 19, blocks.length + '개');
+
+  /* 접기지 삭제가 아닙니다(원칙 28·37). 접힌 문장이 사라지면 여기서 걸립니다. */
+  const kept = [
+    '만기의 70% 이상 고정이면',
+    '대출만기 대비 비중으로 스트레스 금리 구간이',
+    '전용면적을 자동 환산해서',
+    '보금자리론은 1주택자도 신청할 수 있어요',
+    '정책대출이라고 항상 금리가 낮지는 않아요',
+    '순자산',
+    '1자녀 9천만원, 2자녀 이상 1억원',
+    '맞벌이는 부부 각자의 소득도 1.3억원 이하',
+    'DSR에 합산돼서 새 대출한도가 줄어요',
+    '은행연합회 공시(2026.06.30) 표에 따라',
+    '세입자 최우선변제금만큼',
+    '규제지역 경계와 이 구분은 달라서',
+    'KB국민은행은 2026.7.10부터',
+    '기본은 도배·장판 위주',
+    '평수·이사 거리에 따라'
+  ];
+  const lost = kept.filter(k => sec.indexOf(k) === -1);
+  t('접힌 문장이 지워지지 않고 남아 있음 (원칙 28·37)', lost.length === 0, lost.join(' | '));
+
+  /* 새 CSS를 만들지 말고 기존 것을 재사용하기로 했습니다. */
+  const toggles = (sec.match(/class="hint-toggle"/g) || []).length;
+  const details = (sec.match(/<div class="hint-detail"/g) || []).length;
+  t('접기는 기존 hint-toggle/hint-detail만 씀', toggles >= 12 && toggles === details,
+    'toggle ' + toggles + ' / detail ' + details);
+  t('고급설정용 새 CSS 클래스를 만들지 않음',
+    html.indexOf('.hint-collapsed') === -1 && html.indexOf('.adv-hint') === -1);
+})();
+
+console.log('\n=== v21.6 그룹 경계 · 금리 힌트 ===');
+t('소제목이 구분선으로 승격됨',
+  html.indexOf('#optionalSection .subsection-label{') !== -1 &&
+  html.slice(html.indexOf('#optionalSection .subsection-label{'),
+             html.indexOf('#optionalSection .subsection-label{') + 200)
+      .indexOf('border-top:1px solid var(--border)') !== -1);
+t('첫 소제목에는 구분선이 없음',
+  html.indexOf('#optionalSection .subsection-label:first-child{') !== -1);
+t('구분선이 고급설정 밖(출처 접기 등)에는 안 걸림',
+  html.indexOf('.optional-section .subsection-label{') === -1);
+t('여백이 스케일 안의 값 (24 / 16 / 12)',
+  /#optionalSection \.subsection-label\{[\s\S]{0,200}margin-top:24px;[\s\S]{0,80}padding:16px 0 12px;/.test(html));
+t('금리 힌트도 같은 규칙을 따름 (첫 문장만 노출)',
+  html.indexOf('`<b>두 숫자가 다른 걸 재고 있어요.</b>`') !== -1);
+t('금리 힌트의 나머지가 hint-detail 안으로 들어감',
+  html.indexOf('+ `<div class="hint-detail">`') !== -1);
+t('금리 힌트 내용은 그대로 남아 있음',
+  html.indexOf('실제로 나간 대출의 평균이에요') !== -1 &&
+  html.indexOf('시장 평균이 아니에요') !== -1);
+(() => {
+  /* 금리 힌트는 JS가 그립니다. toggleHintDetail은 nextElementSibling을 봐요.
+     버튼 바로 다음이 hint-detail이어야 합니다. */
+  const i = html.indexOf('두 숫자가 다른 걸 재고 있어요');
+  const seg = html.slice(i, i + 400);
+  t('버튼 바로 다음 형제가 hint-detail임',
+    seg.indexOf('hint-toggle') < seg.indexOf('hint-detail'));
+})();
+
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);
