@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#F7F8FA">
 <title>영끌계산기 — 아파트 예산 계산기</title>
-<!-- v18 — 전월세 탭 실거래가 시세 자동 채움 -->
+<!-- v20 — 실거래 시세 중앙값 기본 · 천만원 반올림 · 편차 경고 -->
 <meta property="og:title" content="영끌계산기 — 이 집, 나 살 수 있어?">
 <meta property="og:description" content="매매가만 보고는 몰라요. 대출한도부터 부대비용까지, 집 사는 데 필요한 자금을 한눈에 추정해보세요.">
 <meta property="og:type" content="website">
@@ -543,16 +543,33 @@
 
   .disclaimer{
     margin-top:8px;
-    padding:16px 18px;
+    padding:18px;
     border-radius:12px;
     background:var(--surface);
     border:1px solid var(--border);
-    font-size:11.5px;
-    color:var(--ink-faint);
-    line-height:1.6;
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.72;
   }
-  .disclaimer b{color:var(--ink-soft);}
-  .disclaimer-item{margin-bottom:12px;}
+  .disclaimer b{color:var(--ink);font-weight:700;}
+  .disclaimer-item{margin-bottom:14px;}
+  .disclaimer-item:last-child{margin-bottom:0;}
+  .disclaimer-head{
+    font-size:13.5px;font-weight:800;color:var(--ink);
+    letter-spacing:-0.3px;margin-bottom:14px;
+  }
+  .disclaimer-more{display:none;}
+  .disclaimer-more.open{display:block;margin-top:14px;}
+  .disclaimer-toggle{
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;margin-top:14px;padding:12px 14px;
+    border:1px solid var(--border);border-radius:10px;
+    background:var(--fill);color:var(--ink-soft);
+    font-family:inherit;font-size:12.5px;font-weight:700;
+    cursor:pointer;text-align:left;
+  }
+  .disclaimer-toggle .chevron{transition:transform .2s;flex-shrink:0;margin-left:10px;}
+  .disclaimer-toggle.open .chevron{transform:rotate(180deg);}
 
   footer{
     text-align:center;
@@ -1259,15 +1276,9 @@
       </div>
     </div>
 
-    <button type="button" class="cta" onclick="calculate()">내 예산 계산하기</button>
-    <div class="cta-note">
-      금리 연 4.8% · 30년 원리금균등 상환을 기본 가정으로 계산해요.<br>
-      결과 화면에서 바로 바꿀 수 있고, 어떤 가정을 썼는지도 함께 보여드려요.
-    </div>
-
     <!-- 고급 설정 -->
     <button type="button" class="section-toggle" id="topSectionToggle" onclick="toggleOptionalSection(this)">
-      <span>더 정확하게 — 대출조건 · 기존부채 · 부대비용</span><span class="chevron">▾</span>
+      <span>더 정확하게 — 대출조건 · 기존부채 · 부대비용 <span style="font-weight:600;opacity:.75;">(선택)</span></span><span class="chevron">▾</span>
     </button>
     <div id="optionalSection" class="optional-section">
 
@@ -1389,24 +1400,24 @@
       <div class="row2" style="margin-top:14px;">
         <div id="loanAmountField" class="field">
           <label>대출금액 직접 설정</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="manualLoanCap" placeholder="모르면 비워두세요" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div>
-          <div class="hint">은행 자체 한도가 더 낮거나, 덜 빌리고 싶을 때 쓰세요. 일반 주담대에만 적용돼요.</div>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="manualLoanCapEok" step="1" min="0" oninput="liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="manualLoanCapMan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div></div>
+          <div class="hint">은행 자체 한도가 더 낮거나, 덜 빌리고 싶을 때 쓰세요. <b>모르면 비워두세요.</b> 일반 주담대에만 적용돼요.</div>
         </div>
         <div class="field">
           <label>신용대출</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="creditLoan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="creditLoanEok" step="1" min="0" oninput="liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="creditLoanMan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div></div>
           <div class="hint">DSR에 합산돼 주담대 한도를 줄여요.</div>
         </div>
       </div>
       <div class="row2">
         <div class="field">
           <label>회사 사내대출</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="companyLoan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="companyLoanEok" step="1" min="0" oninput="liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="companyLoanMan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div></div>
           <div class="hint">보통 LTV·DSR 규제 대상이 아니에요.</div>
         </div>
         <div class="field">
           <label>매도인 근저당(셀러파이낸싱)</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="sellerFinancing" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="sellerFinancingEok" step="1" min="0" oninput="liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="sellerFinancingMan" oninput="formatCommaInput(this); liveRecalc();"><span>만원</span></div></div>
           <div class="hint">매도인과의 사적 거래로 법적 리스크가 있어요.</div>
         </div>
       </div>
@@ -1453,7 +1464,7 @@
         </div>
         <div class="field">
           <label>기존 대출 잔액</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="prevLoanBalance" oninput="formatCommaInput(this)"><span>만원</span></div>
+          <div class="amount-row"><div class="input-suffix"><input type="number" id="prevLoanBalanceEok" step="1" min="0" oninput=""><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="prevLoanBalanceMan" oninput="formatCommaInput(this); "><span>만원</span></div></div>
         </div>
         <button type="button" class="link-btn" style="width:100%;margin-bottom:14px;" onclick="computeTradeProceeds()">순매도자금 계산하기</button>
         <div id="tradeResultBox"></div>
@@ -1463,6 +1474,14 @@
         <span>접기</span><span class="chevron" style="transform:rotate(180deg);">▾</span>
       </button>
     </div>
+
+    <button type="button" class="cta" onclick="calculate()">내 예산 계산하기</button>
+    <div class="cta-note">
+      금리 연 4.8% · 30년 원리금균등 상환을 기본 가정으로 계산해요.<br>
+      결과 화면에서 바로 바꿀 수 있고, 어떤 가정을 썼는지도 함께 보여드려요.<br>
+      신용대출·사내대출이 있거나 인테리어 비용까지 보려면 <b>위의 "더 정확하게"</b>를 펼쳐주세요.
+    </div>
+
   </div>
 
   <!-- ===== 결과: 리포트 ===== -->
@@ -1553,8 +1572,13 @@
     </div>
 
     <div class="disclaimer">
+      <div class="disclaimer-head">⚠️ 계산 결과를 보기 전에 꼭 알아두세요</div>
       <div class="disclaimer-item"><b>이 계산기는 금융·세무·투자 자문이 아니에요.</b> 개인이 학습·참고 목적으로 만든 <b>단순 추정 도구</b>이며, 특정 금융상품의 권유·중개·자문에 해당하지 않아요. 2026년 8월 기준 공개 자료를 참고했고, 공식 상담을 대체하지 않아요.</div>
       <div class="disclaimer-item"><b>결과는 모두 추정치예요.</b> 실제 대출 승인 여부와 금액, 금리, 세액은 은행·기금의 개별 심사와 과세관청의 판단에 따라 결정돼요. 이 계산 결과에 근거한 의사결정과 그 결과에 대해 제작자는 책임지지 않아요.</div>
+      <button type="button" class="disclaimer-toggle" onclick="toggleDisclaimer(this)">
+        <span>나머지 유의사항 8가지 보기 — 아파트 기준 · DSR 추정 · 정책대출 의무 등</span><span class="chevron">▾</span>
+      </button>
+      <div class="disclaimer-more" id="disclaimerMore">
       <div class="disclaimer-item"><b>아파트 기준이에요.</b> 대출·세금 로직은 주택 전반에 유효하지만 인테리어 단가는 아파트 시세 기준이에요. 오피스텔·상가는 대상이 아니에요.</div>
       <div class="disclaimer-item"><b>수치는 실제와 다를 수 있어요.</b> LTV·DSR·정책대출 자격·취득세·중개보수는 지역 지정 현황과 은행·기금 정책에 따라 달라져요. 실제 매매·대출 전에는 은행, 주택도시기금(기금e든든), 공인중개사, 세무사와 확인하세요.</div>
       <div class="disclaimer-item"><b>DSR은 추정치예요.</b> 스트레스 금리 가산폭과 기존 부채 산정 방식은 은행·상품·시기별로 달라서, 실제 심사 결과와 차이가 날 수 있어요.</div>
@@ -1563,6 +1587,7 @@
       <div class="disclaimer-item"><b>입력값은 어디에도 저장되지 않아요.</b> 모든 계산은 사용자의 브라우저 안에서만 이뤄지고, 서버로 전송되거나 기록되지 않아요.</div>
       <div class="disclaimer-item"><b>정책대출은 실행 후 의무가 있어요.</b> 실거주·1주택 유지·중복대출 금지 등을 어기면 기한이익이 상실돼 대출금을 한꺼번에 갚아야 할 수 있어요. 심사 상담은 주택도시보증공사(1566-9009), 자산심사는 전용 상담센터(1551-3119)에서 확인하실 수 있어요.</div>
       <div class="disclaimer-item"><b>정책은 자주 바뀌어요.</b> 화면에 표시된 기준일 이후 규제지역 지정, LTV·DSR 규제, 정책대출 조건, 세율이 변경됐을 수 있으니 반드시 최신 공식 자료를 확인하세요.</div>
+      </div>
     </div>
 
     <div class="sources">
@@ -1593,7 +1618,7 @@
           <tr><td>DSR</td><td>은행권 40%</td><td>금융위 3단계 스트레스 DSR</td><td>2026.08</td></tr>
           <tr><td>중개보수</td><td>거래금액별 상한요율 + VAT 10%</td><td>공인중개사법 시행규칙</td><td>2026.08</td></tr>
           <tr><td>취득세</td><td>1~3% 구간세율 · 다주택 8/12% 중과</td><td>지방세법</td><td>2026.08</td></tr>
-          <tr><td>실거래가</td><td>최근 6개월 신고분 평균 (토지임대부 제외)</td><td>국토교통부 아파트 매매 실거래가 자료</td><td>2026.08</td></tr>
+          <tr><td>실거래가</td><td>최근 6개월 신고분 중앙값, 천만원 단위 반올림 (토지임대부·해제거래 제외)</td><td>국토교통부 아파트 매매 실거래가 자료</td><td>2026.08</td></tr>
           <tr><td>법정동코드</td><td>광역 16 · 시군구 256</td><td>행정안전부 행정표준코드관리시스템</td><td>2026.08</td></tr>
         </tbody>
       </table>
@@ -1785,7 +1810,7 @@
           </div>
         </div>
         <div id="rentMarketSource"></div>
-        <div class="hint">등기부등본이나 실거래가로 확인한 <b>이 집의 매매 시세</b>예요. 넣으면 보증금이 얼마나 안전한지 계산해드려요. 위에서 실거래가를 불러오면 자동으로 채워져요.</div>
+        <div class="hint">등기부등본이나 실거래가로 확인한 <b>이 집의 매매 시세</b>예요. 넣으면 보증금이 얼마나 안전한지 계산해드려요.<span id="rentMarketHintAuto"> 위에서 실거래가를 불러오면 자동으로 채워져요.</span></div>
       </div>
       <div class="field">
         <label>집 위치 (최우선변제금 계산용)</label>
@@ -2263,7 +2288,7 @@ function computeTradeProceeds(){
   const heldYears = (today - acqDate) / (1000*60*60*24*365.25);
   const regulatedAcq = document.getElementById('prevRegulatedAcq').checked;
   const lived2y = document.getElementById('prevLived2y').checked;
-  const loanBalance = numVal('prevLoanBalance') * 10000;
+  const loanBalance = getAmountManwon('prevLoanBalanceEok', 'prevLoanBalanceMan') * 10000;
 
   const meetsBasic = heldYears >= 2 && (!regulatedAcq || lived2y);
   const meets123 = heldYears >= 1;
@@ -2873,9 +2898,9 @@ function buildCtxBase(){
   const etc = numVal('etc');
   const over85 = document.getElementById('over85').checked;
   const firstTimeTaxCut = document.getElementById('firstTimeTaxCut').checked;
-  const creditLoan = numVal('creditLoan') * 10000;
-  const companyLoan = numVal('companyLoan') * 10000;
-  const sellerFinancing = numVal('sellerFinancing') * 10000;
+  const creditLoan = getAmountManwon('creditLoanEok', 'creditLoanMan') * 10000;
+  const companyLoan = getAmountManwon('companyLoanEok', 'companyLoanMan') * 10000;
+  const sellerFinancing = getAmountManwon('sellerFinancingEok', 'sellerFinancingMan') * 10000;
   const extraFunding = creditLoan + companyLoan + sellerFinancing;
   const income = numVal('income') * 10000;
   const incomeEntered = document.getElementById('income').value.trim() !== '';
@@ -2884,7 +2909,7 @@ function buildCtxBase(){
   const childCount = parseInt(document.getElementById('childCount').value) || 0;
   const multiChild = childCount >= 2;
   const dualIncome = document.getElementById('dualIncome').checked;
-  const manualLoanCap = numVal('manualLoanCap') * 10000;
+  const manualLoanCap = getAmountManwon('manualLoanCapEok', 'manualLoanCapMan') * 10000;
   const seominCheck = document.getElementById('seominCheck').checked;
   const noLoan = document.getElementById('noLoanCheck').checked;
   const rate = parseFloat(document.getElementById('rate').value) || 0;
@@ -3233,9 +3258,9 @@ function buildShareUrl(){
   p.set('yr', document.getElementById('years').value);
   p.set('cash', getAmountManwon('cashEok','cashMan'));
   p.set('price', getAmountManwon('priceEok','priceMan'));
-  p.set('cl', numVal('creditLoan'));
-  p.set('col', numVal('companyLoan'));
-  p.set('sf', numVal('sellerFinancing'));
+  p.set('cl', getAmountManwon('creditLoanEok', 'creditLoanMan'));
+  p.set('col', getAmountManwon('companyLoanEok', 'companyLoanMan'));
+  p.set('sf', getAmountManwon('sellerFinancingEok', 'sellerFinancingMan'));
   p.set('ftc', document.getElementById('firstTimeTaxCut').checked ? '1' : '0');
   p.set('o85', document.getElementById('over85').checked ? '1' : '0');
   p.set('inc', numVal('income'));
@@ -3245,7 +3270,7 @@ function buildShareUrl(){
   p.set('lc', loanChoice);
   p.set('sm', document.getElementById('seominCheck').checked ? '1' : '0');
   p.set('nl', document.getElementById('noLoanCheck').checked ? '1' : '0');
-  p.set('mlc', numVal('manualLoanCap'));
+  p.set('mlc', getAmountManwon('manualLoanCapEok', 'manualLoanCapMan'));
   return location.origin + location.pathname + '?' + p.toString();
 }
 
@@ -3262,9 +3287,9 @@ function loadFromUrlIfPresent(){
   if(p.has('yr')) document.getElementById('years').value = p.get('yr');
   if(p.has('cash')) setAmountManwon('cashEok','cashMan', parseFloat(p.get('cash')) || 0);
   if(p.has('price')) setAmountManwon('priceEok','priceMan', parseFloat(p.get('price')) || 0);
-  if(p.has('cl')) document.getElementById('creditLoan').value = (parseFloat(p.get('cl'))||0).toLocaleString();
-  if(p.has('col')) document.getElementById('companyLoan').value = (parseFloat(p.get('col'))||0).toLocaleString();
-  if(p.has('sf')) document.getElementById('sellerFinancing').value = (parseFloat(p.get('sf'))||0).toLocaleString();
+  if(p.has('cl')) setAmountOrBlank('creditLoan', parseFloat(p.get('cl')) || 0);
+  if(p.has('col')) setAmountOrBlank('companyLoan', parseFloat(p.get('col')) || 0);
+  if(p.has('sf')) setAmountOrBlank('sellerFinancing', parseFloat(p.get('sf')) || 0);
   if(p.has('ftc')) document.getElementById('firstTimeTaxCut').checked = p.get('ftc') === '1';
   if(p.has('o85')) document.getElementById('over85').checked = p.get('o85') === '1';
   if(p.has('inc')) document.getElementById('income').value = (parseFloat(p.get('inc'))||0).toLocaleString();
@@ -3275,7 +3300,7 @@ function loadFromUrlIfPresent(){
   if(p.has('lc')) loanChoice = p.get('lc');
   if(p.has('sm')) document.getElementById('seominCheck').checked = p.get('sm') === '1';
   if(p.has('nl')){ document.getElementById('noLoanCheck').checked = p.get('nl') === '1'; toggleNoLoan(); }
-  if(p.has('mlc')) document.getElementById('manualLoanCap').value = (parseFloat(p.get('mlc'))||0) > 0 ? (parseFloat(p.get('mlc'))||0).toLocaleString() : '';
+  if(p.has('mlc')) setAmountOrBlank('manualLoanCap', parseFloat(p.get('mlc')) || 0);
 
   const hasOptionalValues = ['ip','etc','cl','col','sf','mlc'].some(k => p.has(k) && parseFloat(p.get(k)) > 0);
   if(hasOptionalValues){
@@ -3362,15 +3387,22 @@ function showTool(name){
 function toggleNoLoan(){
   const checked = document.getElementById('noLoanCheck').checked;
   const field = document.getElementById('loanAmountField');
-  const input = document.getElementById('manualLoanCap');
-  if(checked){
-    input.value = '';
-    input.disabled = true;
-    field.style.opacity = '0.5';
-  } else {
-    input.disabled = false;
-    field.style.opacity = '1';
-  }
+  ['manualLoanCapEok', 'manualLoanCapMan'].forEach(function(id){
+    const input = document.getElementById(id);
+    if(!input) return;
+    if(checked){ input.value = ''; input.disabled = true; }
+    else { input.disabled = false; }
+  });
+  field.style.opacity = checked ? '0.5' : '1';
+}
+
+/* 금액 2칸 세팅 — 0이면 두 칸 모두 비움 (숫자 예시가 남지 않도록) */
+function setAmountOrBlank(base, totalMan){
+  const eok = document.getElementById(base + 'Eok');
+  const man = document.getElementById(base + 'Man');
+  if(!eok || !man) return;
+  if(!(totalMan > 0)){ eok.value = ''; man.value = ''; return; }
+  setAmountManwon(base + 'Eok', base + 'Man', totalMan);
 }
 
 function applyJeonseRate(r){
@@ -3413,6 +3445,15 @@ function toggleOptionalSection(btn){
   const section = document.getElementById('optionalSection');
   const isOpen = section.classList.toggle('open');
   btn.classList.toggle('open', isOpen);
+}
+
+function toggleDisclaimer(btn){
+  const more = document.getElementById('disclaimerMore');
+  const open = more.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  btn.querySelector('span').textContent = open
+    ? '유의사항 접기'
+    : '나머지 유의사항 8가지 보기 — 아파트 기준 · DSR 추정 · 정책대출 의무 등';
 }
 
 function toggleHintDetail(btn){
@@ -4168,37 +4209,50 @@ function onSiseArea(){
   if(rows.length === 0){ box.innerHTML = ''; return; }
 
   rows.sort(function(a, b){ return (b.y * 10000 + b.m * 100 + b.d) - (a.y * 10000 + a.m * 100 + a.d); });
-  const amts = rows.map(function(r){ return r.amt; });
+  const amts = rows.map(function(r){ return r.amt; }).sort(function(a, b){ return a - b; });
   const sum  = amts.reduce(function(a, b){ return a + b; }, 0);
   const avg  = Math.round(sum / amts.length);
-  const min  = Math.min.apply(null, amts);
-  const max  = Math.max.apply(null, amts);
+  const med  = medianOf(amts);
+  const min  = amts[0];
+  const max  = amts[amts.length - 1];
   const last = rows[0];
   const py   = parseInt(ak, 10) / 2.45;
+  const spread = med > 0 ? (max - min) / med : 0;
 
   siseSelected = {
     name: g.name, umd: g.umd, ak: parseInt(ak, 10), py: py,
-    avg: avg, min: min, max: max, n: rows.length,
+    med: med, avg: avg, min: min, max: max, n: rows.length, spread: spread,
     lastYm: last.y + '.' + String(last.m).padStart(2, '0')
   };
 
   let html = '<div class="sise-stat">';
   html += '<div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;">'
-        + g.name + ' · 전용 ' + ak + '㎡ (약 ' + py.toFixed(0) + '평) 평균</div>';
-  html += '<div class="sise-stat-amt">' + formatWon(avg * 10000) + '</div>';
+        + g.name + ' · 전용 ' + ak + '㎡ (약 ' + py.toFixed(0) + '평) 중앙값</div>';
+  html += '<div class="sise-stat-amt">' + formatWon(roundToTenMil(med) * 10000) + '</div>';
   html += '<div class="sise-stat-sub">'
         + '최근 ' + siseGroups.months.length + '개월 신고 ' + rows.length + '건 · '
+        + '평균 ' + formatWon(roundToTenMil(avg) * 10000) + '<br>'
         + '최저 ' + formatWon(min * 10000) + ' ~ 최고 ' + formatWon(max * 10000) + '<br>'
         + '가장 최근 거래 ' + siseSelected.lastYm + ' · ' + formatWon(last.amt * 10000)
         + (last.floor ? ' (' + last.floor + '층)' : '')
         + '</div>';
   html += '</div>';
   html += '<div class="sise-apply">'
-        + '<button type="button" class="primary" onclick="applySisePrice(\'avg\')">평균값으로 채우기</button>'
+        + '<button type="button" class="primary" onclick="applySisePrice(\'med\')">중앙값으로 채우기</button>'
         + '<button type="button" onclick="applySisePrice(\'min\')">최저가로 채우기</button>'
         + '</div>';
+  html += '<div class="sise-note info">신고된 거래를 금액순으로 줄 세웠을 때 <b>한가운데 값</b>이 중앙값이에요. '
+        + '특이하게 비싸거나 싼 거래 한 건에 덜 흔들려서 기본값으로 씁니다. '
+        + '채울 때는 <b>천만원 단위로 반올림</b>해요.</div>';
+
+  if(spread >= 0.2){
+    html += '<div class="sise-note warn">⚠️ 같은 면적인데도 거래가격 차이가 큽니다 — '
+          + '최저 ' + formatWon(min * 10000) + ', 최고 ' + formatWon(max * 10000)
+          + ' (중앙값의 ' + Math.round(spread * 100) + '%). '
+          + '동·층·향·수리 상태 차이일 수 있어요. <b>이 집과 조건이 비슷한 거래를 직접 확인</b>하고 값을 조정해주세요.</div>';
+  }
   if(rows.length < 3){
-    html += '<div class="sise-note warn">거래가 ' + rows.length + '건뿐이라 평균이 실제 시세와 다를 수 있어요. '
+    html += '<div class="sise-note warn">거래가 ' + rows.length + '건뿐이라 실제 시세와 다를 수 있어요. '
           + '층·향·수리 상태에 따라 같은 면적도 가격 차이가 큽니다.</div>';
   }
   html += '<div class="sise-note info">보증금 안전을 보수적으로 보려면 <b>최저가</b>를 넣어보세요. '
@@ -4206,14 +4260,39 @@ function onSiseArea(){
   box.innerHTML = html;
 }
 
+/* 오름차순 정렬된 배열의 중앙값. 짝수개면 가운데 두 값의 평균 */
+function medianOf(sorted){
+  const n = sorted.length;
+  if(n === 0) return 0;
+  const mid = Math.floor(n / 2);
+  return n % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+}
+
+/* 만원 단위 금액을 천만원 단위로 반올림 (58억 2,143만 → 58억 2,000만)
+   표본이 적은 실거래 통계를 만원 단위까지 보여주면 실제보다 정밀해 보여서요 */
+function roundToTenMil(man){
+  return Math.round(man / 1000) * 1000;
+}
+
 function applySisePrice(which){
   if(!siseSelected) return;
-  const man = which === 'min' ? siseSelected.min : siseSelected.avg;
+  const raw  = which === 'min' ? siseSelected.min : siseSelected.med;
+  const man  = roundToTenMil(raw);
+  const kind = which === 'min' ? '최저가' : '중앙값';
   setAmountManwon('rentMarketEok', 'rentMarketMan', man);
-  const kind = which === 'min' ? '최저가' : '평균';
-  document.getElementById('rentMarketSource').innerHTML =
-    '<div class="sise-src">✓ ' + siseSelected.name + ' 전용 ' + siseSelected.ak + '㎡ · '
-    + '최근 ' + siseGroups.months.length + '개월 실거래 ' + siseSelected.n + '건의 ' + kind + '을 넣었어요 (국토교통부 신고자료).</div>';
+
+  let note = '✓ ' + siseSelected.name + ' 전용 ' + siseSelected.ak + '㎡ · '
+           + '최근 ' + siseGroups.months.length + '개월 실거래 ' + siseSelected.n + '건의 ' + kind
+           + ' ' + formatWon(raw * 10000) + '을 천만원 단위로 반올림해 넣었어요 (국토교통부 신고자료).';
+  if(siseSelected.spread >= 0.2 && which !== 'min'){
+    note += '<br><span style="color:#9A5B0A;">거래 편차가 큰 단지예요. 이 집의 층·향·수리 상태를 보고 값을 조정해주세요.</span>';
+  }
+  document.getElementById('rentMarketSource').innerHTML = '<div class="sise-src">' + note + '</div>';
+
+  // 이미 채웠으니 "불러오면 채워져요" 안내는 감춰요
+  const autoHint = document.getElementById('rentMarketHintAuto');
+  if(autoHint) autoHint.style.display = 'none';
+
   calculateRent();
   document.getElementById('rentMarketEok').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -4222,6 +4301,8 @@ function applySisePrice(which){
 function clearSiseSource(){
   const el = document.getElementById('rentMarketSource');
   if(el) el.innerHTML = '';
+  const autoHint = document.getElementById('rentMarketHintAuto');
+  if(autoHint) autoHint.style.display = '';
 }
 
 
