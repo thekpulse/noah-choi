@@ -713,6 +713,17 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     font-size:13px;font-weight:800;color:var(--ink);
     padding:10px 0 12px;
   }
+  /* 고급설정 안에서만 소제목을 그룹 경계로 승격해요.
+     컨트롤 15개가 경계 없이 한 줄기로 흘러내리던 문제(v21.5 0장 B-1).
+     위계는 구분선·여백으로만 주고 색은 쓰지 않아요(원칙 38). */
+  #optionalSection .subsection-label{
+    margin-top:24px;
+    padding:16px 0 12px;
+    border-top:1px solid var(--border);
+  }
+  #optionalSection .subsection-label:first-child{
+    margin-top:0;padding-top:0;border-top:none;
+  }
 
   /* ===== 자금 구성 스택바 ===== */
   .funding-box{
@@ -1237,10 +1248,10 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <div class="ask-q">무엇이 궁금하세요?</div>
         <div class="segmented" id="modeSeg">
           <button type="button" class="seg-btn active" id="optA" onclick="setMode('A')">
-            <b>예산이 있어요</b><span>얼마짜리 집까지 가능?</span>
+            <b>예산이 있어요</b><span>살 수 있는 최대 집값</span>
           </button>
           <button type="button" class="seg-btn" id="optB" onclick="setMode('B')">
-            <b>집을 정했어요</b><span>현금이 얼마나 필요?</span>
+            <b>집을 정했어요</b><span>그 집에 필요한 현금</span>
           </button>
         </div>
       </div>
@@ -1400,12 +1411,12 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
           <option value="mixed">혼합형</option>
           <option value="periodic">주기형</option>
         </select>
-        <div class="hint">고정금리 기간이 길수록 스트레스 금리가 낮아져서 한도가 늘어나요. 만기의 70% 이상 고정이면 아예 적용되지 않아요.</div>
+        <div class="hint">고정금리 기간이 길수록 스트레스 금리가 낮아져서 한도가 늘어나요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">만기의 70% 이상 고정이면 아예 적용되지 않아요.</div></div>
       </div>
       <div class="field" id="fixedYearsField" style="display:none;">
         <label>고정금리 기간</label>
         <div class="input-suffix"><input type="number" id="fixedYears" step="1" min="0" oninput="applyStressDefault(); liveRecalc();"><span>년</span></div>
-        <div class="hint">처음 몇 년간 금리가 고정되는지 넣어주세요. 대출만기 대비 비중으로 스트레스 금리 구간이 정해져요.</div>
+        <div class="hint">처음 몇 년간 금리가 고정되는지 넣어주세요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">대출만기 대비 비중으로 스트레스 금리 구간이 정해져요.</div></div>
       </div>
       <div class="checkrow">
         <input type="checkbox" id="noLoanCheck" onchange="toggleNoLoan(); liveRecalc();">
@@ -1417,16 +1428,17 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <label>평형 <span class="opt-tag">선택</span></label>
         <div class="input-suffix"><input type="number" id="pyeong" step="1" oninput="renderPolicyOptions(); syncPyeong(); liveRecalc();"><span>평</span></div>
         <div class="echo" id="pyeongEcho"></div>
-        <div class="hint">부동산에서 "34평"처럼 부르는 <b>공급면적</b> 기준이에요. 넣으면 전용면적을 자동 환산해서 인테리어비와 정책대출 자격 판단에 반영해요.</div>
+        <div class="hint">부동산에서 "34평"처럼 부르는 <b>공급면적</b> 기준이에요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">넣으면 전용면적을 자동 환산해서 인테리어비와 정책대출 자격 판단에 반영해요.</div></div>
       </div>
 
       <div class="subsection-label">고를 수 있는 대출</div>
       <div id="policyOptions"></div>
-      <div class="hint" style="margin-bottom:10px;"><b>보금자리론은 1주택자도 신청할 수 있어요.</b> 디딤돌·신생아특례는 세대원 전원 무주택이어야 하지만, 보금자리론은 담보주택을 빼고 <b>무주택 또는 1주택</b>이면 돼요. 전용면적 제한도 없어요(디딤돌은 85㎡ 이하).</div>
-      <div class="hint" style="margin-bottom:10px;"><b>정책대출이라고 항상 금리가 낮지는 않아요.</b> 2026.08.01 공시 기준 보금자리론 기준금리는 연 4.90~5.30%로, 우대금리를 못 받으면 시중은행 주담대와 비슷하거나 높을 수 있어요. 반면 디딤돌·신생아특례는 소득 구간에 따라 훨씬 낮은 금리가 적용돼요. 결과 화면에서 예상금리를 계산해드릴게요.</div>
-      <div class="hint">정책대출과 일반 주담대는 중복해서 받을 수 없어요. 집값 조건은 결과 화면에서 다시 검증해드려요.
-        <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">계산에 안 들어가는 조건 ▾</button>
-        <div class="hint-detail">이 계산기가 확인하지 않는 요건이 있어요. <b>순자산</b>(신생아특례·디딤돌은 부부합산 5.11억원 이하, 2026년도 기준), <b>세대주 요건</b>, <b>신용도</b>, <b>중복대출 여부</b>는 실제 심사에서 따로 확인해요. 참고로 디딤돌·신생아특례는 2024.8.12.~2026.12.31. 중도상환분에 대해 중도상환수수료가 면제되고, 인지세는 고객과 은행이 절반씩 부담해요.</div>
+      <div class="hint">정책대출과 일반 주담대는 중복해서 받을 수 없어요.
+        <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>
+        <div class="hint-detail"><b>보금자리론은 1주택자도 신청할 수 있어요.</b> 디딤돌·신생아특례는 세대원 전원 무주택이어야 하지만, 보금자리론은 담보주택을 빼고 <b>무주택 또는 1주택</b>이면 돼요. 전용면적 제한도 없어요(디딤돌은 85㎡ 이하).
+          <div style="margin-top:10px;"><b>정책대출이라고 항상 금리가 낮지는 않아요.</b> 2026.08.01 공시 기준 보금자리론 기준금리는 연 4.90~5.30%로, 우대금리를 못 받으면 시중은행 주담대와 비슷하거나 높을 수 있어요. 반면 디딤돌·신생아특례는 소득 구간에 따라 훨씬 낮은 금리가 적용돼요. 결과 화면에서 예상금리를 계산해드릴게요.</div>
+          <div style="margin-top:10px;">집값 조건은 결과 화면에서 다시 검증해드려요. 다만 이 계산기가 확인하지 않는 요건이 있어요. <b>순자산</b>(신생아특례·디딤돌은 부부합산 5.11억원 이하, 2026년도 기준), <b>세대주 요건</b>, <b>신용도</b>, <b>중복대출 여부</b>는 실제 심사에서 따로 확인해요. 참고로 디딤돌·신생아특례는 2024.8.12.~2026.12.31. 중도상환분에 대해 중도상환수수료가 면제되고, 인지세는 고객과 은행이 절반씩 부담해요.</div>
+        </div>
       </div>
       <div class="checkrow" style="margin-top:12px;">
         <input type="checkbox" id="newlywed" onchange="renderPolicyOptions(); liveRecalc();"><label for="newlywed">신혼부부 (혼인 7년 이내)</label>
@@ -1446,32 +1458,32 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
           <option value="0" selected>0</option><option value="1">1</option>
           <option value="2">2</option><option value="3">3</option>
         </select>
-        <div class="hint">자녀 수에 따라 소득 인정 한도와 대출한도, 우대금리가 달라져요. 보금자리론은 1자녀 9천만원, 2자녀 이상 1억원까지 소득이 인정돼요.</div>
+        <div class="hint">자녀 수에 따라 소득 인정 한도와 대출한도, 우대금리가 달라져요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">보금자리론은 1자녀 9천만원, 2자녀 이상 1억원까지 소득이 인정돼요.</div></div>
       </div>
       <div class="checkrow">
         <input type="checkbox" id="dualIncome" onchange="renderPolicyOptions(); liveRecalc();"><label for="dualIncome">맞벌이예요 (부부 모두 소득이 있어요)</label>
       </div>
-      <div class="hint" style="margin-top:0;">신생아특례 디딤돌은 외벌이 1.3억원, 맞벌이 2억원까지 소득이 인정돼요. 맞벌이는 부부 각자의 소득도 1.3억원 이하여야 해요.</div>
+      <div class="hint" style="margin-top:0;">신생아특례 디딤돌은 외벌이 1.3억원, 맞벌이 2억원까지 소득이 인정돼요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">맞벌이는 부부 각자의 소득도 1.3억원 이하여야 해요.</div></div>
 
       <div class="subsection-label">이미 갚고 있는 빚 <span class="tag-warn">한도를 직접 깎아요</span></div>
       <div class="field">
         <label>기존 대출 월 상환액</label>
         <div class="input-suffix"><input type="text" inputmode="numeric" id="otherDebtMonthly" oninput="formatCommaInput(this); liveRecalc();"><span>만원/월</span></div>
-        <div class="hint">자동차 할부·학자금·기존 주담대 등 매달 나가는 원리금 합계예요. DSR에 합산돼서 새 대출한도가 줄어요.</div>
+        <div class="hint">자동차 할부·학자금·기존 주담대 등 매달 나가는 원리금 합계예요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">DSR에 합산돼서 새 대출한도가 줄어요.</div></div>
       </div>
       <div class="row2">
         <div class="field">
           <label>스트레스 금리 가산폭</label>
           <div class="input-suffix"><input type="number" id="stressBp" value="3.0" step="0.01" min="0" oninput="this.dataset.touched='1'; liveRecalc();"><span>%p</span></div>
           <div class="echo" id="stressNote">수도권·규제지역 변동형 기준이에요.</div>
-          <div class="hint">은행은 실제 금리보다 높은 금리를 가정해 한도를 계산해요. 은행연합회 공시(2026.06.30) 표에 따라 지역·대출유형별로 자동 반영하고, 직접 바꾸셔도 돼요. 이 금리는 한도 계산용이고 실제로 내는 이자가 아니에요.</div>
+          <div class="hint">은행은 실제 금리보다 높은 금리를 가정해 한도를 계산해요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">은행연합회 공시(2026.06.30) 표에 따라 지역·대출유형별로 자동 반영하고, 직접 바꾸셔도 돼요. 이 금리는 한도 계산용이고 실제로 내는 이자가 아니에요.</div></div>
         </div>
         <div class="field">
           <div class="checkrow" style="margin-top:26px;">
             <input type="checkbox" id="mciCovered" onchange="liveRecalc()">
             <label for="mciCovered">MCI·MCG 보증 가입 예정</label>
           </div>
-          <div class="hint">가입하면 <b>방공제</b>가 면제돼요. 방공제는 세입자 최우선변제금만큼 은행이 미리 빼고 빌려주는 걸 말해요.</div>
+          <div class="hint">가입하면 <b>방공제</b>가 면제돼요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">방공제는 세입자 최우선변제금만큼 은행이 미리 빼고 빌려주는 걸 말해요.</div></div>
         </div>
       </div>
       <div class="field">
@@ -1482,7 +1494,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
           <option value="2800">2,800만원 — 광역시·안산·광주·파주·이천·평택</option>
           <option value="2500">2,500만원 — 그 밖의 지역</option>
         </select>
-        <div class="hint">주택임대차보호법 시행령 제10조의 지역 구분이에요. 위에서 고른 지역으로 기본값을 맞춰두지만, 규제지역 경계와 이 구분은 달라서 직접 확인하시는 게 정확해요. MCI·MCG에 가입하면 차감되지 않아요.</div>
+        <div class="hint">주택임대차보호법 시행령 제10조의 지역 구분이에요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">위에서 고른 지역으로 기본값을 맞춰두지만, 규제지역 경계와 이 구분은 달라서 직접 확인하시는 게 정확해요. MCI·MCG에 가입하면 차감되지 않아요.</div></div>
       </div>
 
       <div class="subsection-label">세금 · 추가 자금원</div>
@@ -1506,7 +1518,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             <button type="button" class="chip" onclick="setAmountOrBlank('bankSelfCap',30000);liveRecalc();">3억</button>
             <button type="button" class="chip" onclick="setAmountOrBlank('bankSelfCap',0);liveRecalc();">지우기</button>
           </div>
-          <div class="hint"><b>정부 규제와 별개로 은행이 스스로 정하는 상한이에요.</b> 규제지역이 아니어도 적용하는 곳이 있어요. 예를 들어 KB국민은행은 2026.7.10부터 주택담보대출 최대한도를 3억원으로 줄였다고 보도됐어요(머니투데이 2026.07.31). 은행마다 다르고 자주 바뀌니 <b>상담받은 한도가 있으면 그 금액을 넣어주세요.</b> 넣으면 무엇이 먼저 걸리는지 진단에 함께 나와요.</div>
+          <div class="hint"><b>정부 규제와 별개로 은행이 스스로 정하는 상한이에요.</b><button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">규제지역이 아니어도 적용하는 곳이 있어요. 예를 들어 KB국민은행은 2026.7.10부터 주택담보대출 최대한도를 3억원으로 줄였다고 보도됐어요(머니투데이 2026.07.31). 은행마다 다르고 자주 바뀌니 <b>상담받은 한도가 있으면 그 금액을 넣어주세요.</b> 넣으면 무엇이 먼저 걸리는지 진단에 함께 나와요.</div></div>
         </div>
         <div class="field">
           <label>신용대출</label>
@@ -1537,7 +1549,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',150,event);liveRecalc();">일반 150만</button>
             <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',250,event);liveRecalc();">고급 250만</button>
           </div>
-          <div class="hint">평당 단가(자재비+시공비 포함 턴키 견적 기준)예요. 기본은 도배·장판 위주, 일반은 주방·욕실 교체 포함, 고급은 전체 올수리 기준이에요.</div>
+          <div class="hint">평당 단가(자재비+시공비 포함 턴키 견적 기준)예요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">기본은 도배·장판 위주, 일반은 주방·욕실 교체 포함, 고급은 전체 올수리 기준이에요.</div></div>
         </div>
         <div class="field">
           <label>기타비용(이사·법무사)</label>
@@ -1547,7 +1559,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             <button type="button" class="chip" onclick="setChipValue('etc',300,event);liveRecalc();">중형 300만</button>
             <button type="button" class="chip" onclick="setChipValue('etc',450,event);liveRecalc();">대형 450만</button>
           </div>
-          <div class="hint">이사비·법무사 등기대행비·기타 잡비를 합친 금액이에요. 평수·이사 거리에 따라 달라질 수 있어요.</div>
+          <div class="hint">이사비·법무사 등기대행비·기타 잡비를 합친 금액이에요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">평수·이사 거리에 따라 달라질 수 있어요.</div></div>
         </div>
       </div>
 
@@ -2864,12 +2876,17 @@ function renderRateChips(){
   ].map(x => `<button type="button" class="chip" onclick="setChipValue('rate',${x[1]},event);document.getElementById('rate').dataset.touched='1';liveRecalc();">${x[0]}</button>`).join('');
   const hint = document.getElementById('rateBandHint');
   if(hint){
+    /* 원칙 43 — 노출은 한 문장까지. 나머지는 "자세히 ▾" 안으로 넣어요.
+       접는 것이지 지우는 것이 아니에요(원칙 28·37). */
     hint.innerHTML =
-      `<b>두 숫자가 다른 걸 재고 있어요.</b><br>`
+      `<b>두 숫자가 다른 걸 재고 있어요.</b>`
+      + `<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button>`
+      + `<div class="hint-detail">`
       + `· <b>공시 평균 ${KFB_TOP5_AVG.toFixed(2)}%</b> — 실제로 나간 대출의 평균이에요. `
       + `${KFB_DISCLOSURE.src} 공시, ${KFB_DISCLOSURE.asOf}, 만기 10년 이상 분할상환 기준. 5대 은행 평균이고 우대를 받은 사람까지 포함된 값이라 <b>잘 받았을 때</b>에 가까워요. 공시는 전월 취급분이라 지금과 시차가 있어요.<br>`
       + `· <b>게시 ${b.lo.toFixed(2)}~${b.hi.toFixed(2)}%</b> — ${b.label} 기준으로 지금 은행이 내걸고 있는 범위예요(${b.src} ${b.asOf}). 상단은 <b>우대를 못 받았을 때</b>예요.<br>`
-      + `계산기 기본값 <b>${RATE_DEFAULT}%</b>는 그 사이에서 보수적으로 잡은 값이고 <b>시장 평균이 아니에요.</b> 상담받은 금리가 있으면 그 값을 넣어주세요.`;
+      + `계산기 기본값 <b>${RATE_DEFAULT}%</b>는 그 사이에서 보수적으로 잡은 값이고 <b>시장 평균이 아니에요.</b> 상담받은 금리가 있으면 그 값을 넣어주세요.`
+      + `</div>`;
   }
   renderBankRateOptions();
 }
