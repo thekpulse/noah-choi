@@ -36,6 +36,8 @@ global.document = {
   body: { appendChild(){}, removeChild(){} }, addEventListener(){}
 };
 global.window = { scrollTo(){}, location:{search:'', href:''}, history:{replaceState(){}} };
+/* 배포 위치에 따라 실거래 박스 노출이 갈립니다(㊱·㊶). 기본은 API가 있는 Vercel. */
+global.location = { protocol:'https:', hostname:'noah-choi.vercel.app', search:'', href:'' };
 global.navigator = { clipboard: null, userAgent: 'node' };
 global.fetch = () => Promise.reject(new Error('no network in test'));
 global.AbortController = class { constructor(){ this.signal = {}; } abort(){} };
@@ -394,9 +396,21 @@ t('모바일에서 출처 열을 숨기지 않음', html.indexOf('.src-table th:
 t('모바일 카드형 전환', html.indexOf('.src-table td:nth-child(3)::before{content:"출처 ";') !== -1);
 t('영수증 대출 행 강조 클래스', html.indexOf('.line-item.loan{') !== -1 && (html.match(/formatWon\(c\.mortgageLoan\), 'loan'\)/g) || []).length === 2);
 t('소계 행 배경 구분', /\.line-item\.total\{[^}]*background:var\(--fill\)/.test(html));
-t('파랑 배경 위 흰 글씨 아님 (원칙 10)', html.indexOf('.line-item.loan .k{color:#0068BD') !== -1);
-t('대출 금액이 그래프와 같은 --loan 색 (원칙 38)', html.indexOf('.line-item.loan .v{color:var(--loan)') !== -1);
-t('대출 금액에 골드(--accent) 안 씀 (원칙 38)', html.indexOf('.line-item.loan .v{color:var(--accent)') === -1);
+(() => {
+  /* ㊴ — 대출 행은 "채워진 진한 블록"이 되면 안 됩니다. 맨 아래 .grand와 역할이 겹쳐요. */
+  const seg = html.slice(html.indexOf('.line-item.loan{'), html.indexOf('.line-item.total{'));
+  t('파랑 배경 위 흰 글씨 아님 (원칙 10)',
+    seg.indexOf('#fff') === -1 && seg.indexOf('#FFF') === -1);
+  t('대출 행 배경은 연한 틴트 유지', seg.indexOf('background:var(--primary-soft)') !== -1);
+  t('대출 금액이 같은 파랑 계열 (원칙 38)',
+    seg.indexOf('.line-item.loan .v{color:var(--primary-dark)') !== -1);
+  t('라벨·금액이 같은 토큰을 씀 (하드코딩 색 없음)',
+    seg.indexOf('.line-item.loan .k{color:var(--primary-dark)') !== -1);
+  t('대출 금액에 골드(--accent) 안 씀 (원칙 38)', seg.indexOf('var(--accent)') === -1);
+  t('대출 금액 크기는 17px 유지', seg.indexOf('font-size:17px') !== -1);
+  /* 맨 아래 .grand(19px)가 계속 가장 큰 숫자여야 합니다. */
+  t('영수증에서 대출 행이 총액 행보다 크지 않음', seg.indexOf('font-size:19px') === -1);
+})();
 t('"지방" → "그 외 지역" 중립 표현', html.indexOf('<b>그 외 지역</b><span>수도권 밖</span>') !== -1);
 t('아파텔 표현 제거', html.indexOf('아파텔') === -1);
 
@@ -981,6 +995,86 @@ t('금리 힌트 내용은 그대로 남아 있음',
   const seg = html.slice(i, i + 400);
   t('버튼 바로 다음 형제가 hint-detail임',
     seg.indexOf('hint-toggle') < seg.indexOf('hint-detail'));
+})();
+
+console.log('\n=== v21.7 ㊳ 대출 없이 계산하는 진입점 (원칙 15) ===');
+(() => {
+  const iCheck = html.indexOf('id="noLoanCheck"');
+  const iOpt   = html.indexOf('<div id="optionalSection"');
+  const iAsk04 = html.indexOf('<div class="ask-num">04</div>');
+  t('noLoanCheck가 고급설정보다 위에 있음', iCheck > 0 && iCheck < iOpt, iCheck + ' < ' + iOpt);
+  t('noLoanCheck가 02 카드 안(04보다 위)에 있음', iCheck < iAsk04, iCheck + ' < ' + iAsk04);
+  t('체크박스를 복제하지 않음 (하나만 존재)',
+    (html.match(/id="noLoanCheck"/g) || []).length === 1);
+  t('옮기면서 새 CSS 클래스를 만들지 않음 (기존 checkrow 재사용)',
+    html.indexOf('.no-loan-row') === -1 && html.indexOf('class="checkrow"') !== -1);
+  t('toggleNoLoan 동작은 그대로', (() => {
+    el('noLoanCheck').checked = true; toggleNoLoan();
+    const off = el('manualLoanCapEok').disabled === true;
+    el('noLoanCheck').checked = false; toggleNoLoan();
+    return off && el('manualLoanCapEok').disabled === false;
+  })());
+})();
+
+console.log('\n=== v21.7 ㊱·㊶ 실거래 박스 노출 조건 ===');
+(() => {
+  const setLoc = (proto, host) => { global.location = { protocol:proto, hostname:host, search:'', href:'' }; };
+  const boxShown = () => el('buySiseBox').style.display !== 'none';
+  const noApiShown = () => el('buySiseNoApi').style.display === 'block';
+
+  t('박스가 마크업에서 기본 숨김',
+    html.indexOf('id="buySiseBox" style="display:none;') !== -1);
+
+  setLoc('https:', 'noah-choi.vercel.app');
+  t('Vercel은 조회 가능으로 판정', siseApiAvailable() === true);
+  setLoc('https:', 'thekpulse.github.io');
+  t('GitHub Pages는 조회 불가로 판정 (서버리스 함수 없음)', siseApiAvailable() === false);
+  setLoc('file:', '');
+  t('file://도 조회 불가로 판정', siseApiAvailable() === false);
+
+  /* 0장 C의 노출 조건 표 4줄을 그대로 옮긴 검사입니다. */
+  setLoc('https:', 'noah-choi.vercel.app');
+  setMode('B');
+  t('B모드·Vercel — 박스 노출', boxShown() && !noApiShown());
+  setMode('A');
+  t('A모드·Vercel — 숨김 (채울 매매가 칸이 없음)', !boxShown() && !noApiShown());
+
+  setLoc('https:', 'thekpulse.github.io');
+  setMode('B');
+  t('B모드·Pages — 박스 숨김, 안내는 유지', !boxShown() && noApiShown());
+  t('안내가 Vercel 주소를 알려줌',
+    el('buySiseNoApi').innerHTML.indexOf('noah-choi.vercel.app') !== -1);
+  setMode('A');
+  t('A모드·Pages — 둘 다 숨김', !boxShown() && !noApiShown());
+
+  t('02의 진입점도 같은 조건으로 감춰짐', el('buySiseHintRow').style.display === 'none');
+
+  /* 원칙 30·42 — 모드가 바뀌면 이전에 불러온 값이 남지 않아야 합니다. */
+  setLoc('https:', 'noah-choi.vercel.app');
+  setMode('B');
+  siseState.buy.groups = {y:1}; siseState.buy.selected = {tag:'b'};
+  siseState.rent.groups = {x:1};
+  el('buySiseSource').innerHTML = '<div class="sise-src">✓ 예전 단지</div>';
+  setMode('A');
+  t('B→A 전환이 매매 실거래 상태를 비움',
+    siseState.buy.groups === null && siseState.buy.selected === null);
+  t('B→A 전환이 출처 표시도 지움', el('buySiseSource').innerHTML === '');
+  t('전월세 쪽 상태는 건드리지 않음', siseState.rent.groups !== null);
+  setMode('A');
+})();
+
+console.log('\n=== v21.7 ㊵ 출처 접기 하단 버튼 ===');
+(() => {
+  const i0 = html.indexOf('<div id="sourcesDetail"');
+  const i1 = html.indexOf('<div class="sources-note">표시된 확인 시점');
+  const sec = html.slice(i0, i1);
+  t('접힌 영역 안에 하단 접기 버튼이 있음',
+    sec.indexOf("toggleOptionalSection(document.getElementById('sourcesToggle'),'sourcesDetail')") !== -1);
+  t('하단 버튼이 표 뒤에 있음',
+    sec.indexOf('</table>') < sec.lastIndexOf('section-toggle'));
+  t('고급설정과 같은 클래스를 재사용 (새 CSS 없음)',
+    sec.indexOf('class="section-toggle"') !== -1 && html.indexOf('.sources-collapse') === -1);
+  t('위쪽 버튼은 그대로 남음', html.indexOf('id="sourcesToggle"') !== -1);
 })();
 
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');

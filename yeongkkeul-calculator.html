@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#F7F8FA">
 <title>영끌계산기 — 아파트 예산 계산기</title>
-<!-- v21.3 — 매매 탭 실거래가 연동 · POLICY 통합 · 안전/진단 카드 분리 -->
+<!-- v21.7 — 실거래 박스 노출 조건(모드·배포본) · 대출 없이 계산 진입점 이동 · 출처 하단 접기 -->
 
 <!-- ===== Google Analytics 4 =====
      ⚠ 배포 전에 아래 GA_ID 를 실제 측정 ID(G-로 시작)로 바꿔주세요.
@@ -465,16 +465,22 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
   .line-item.minus .v{color:var(--accent);}
   /* 대출금액은 영수증에서 가장 큰 숫자인데 시선이 안 간다는 지적이 있어서
      굵기·크기·배경으로 위계를 줬어요. 파랑 배경 위 흰 글씨는 쓰지 않아요(원칙 10).
+     맨 아래 .line-item.grand가 이미 진한 배경 + 흰 글씨라, 대출 행까지 채우면
+     "가장 중요한 줄"이 두 개가 돼요.
      v21.5: 색은 같은 화면 그래프의 대출과 같은 --loan 계열로 맞춥니다.
-     이전에는 골드(--accent)여서 한 개념에 색이 둘이었어요(원칙 38). */
+     이전에는 골드(--accent)여서 한 개념에 색이 둘이었어요(원칙 38).
+     v21.7: 그 --loan(#0091FF)이 연파랑 배경(#E5F4FF) 위에서 대비 2.9:1이라 글씨가
+     묻혔어요(㊴). 같은 파랑의 진한 톤(--primary-dark #0068BD)으로 내려 5.0:1을 얻습니다.
+     팔레트는 늘리지 않았어요. 크기는 17px 그대로 둡니다 — 19px로 올리면 맨 아래
+     .grand의 값과 같아져 "가장 큰 숫자"가 둘이 되고, 긴 라벨이 좁은 화면에서 줄바꿈돼요. */
   .line-item.loan{
     background:var(--primary-soft);
     border-radius:10px;
     margin:4px -10px;
     padding:11px 10px;
   }
-  .line-item.loan .k{color:#0068BD;font-weight:700;}
-  .line-item.loan .v{color:var(--loan);font-size:17px;font-weight:800;}
+  .line-item.loan .k{color:var(--primary-dark);font-weight:700;}
+  .line-item.loan .v{color:var(--primary-dark);font-size:17px;font-weight:800;}
   .line-item.total{
     border-top:1.5px solid var(--border);
     background:var(--fill);
@@ -1275,8 +1281,15 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             <div class="input-suffix"><input type="text" inputmode="numeric" id="priceMan" oninput="formatCommaInput(this); clearSiseSource('buy');"><span>만원</span></div>
           </div>
           <div id="buySiseSource"></div>
-          <div class="hint"><span id="buySiseHintAuto">실거래가를 불러와 이 칸을 채울 수 있어요.
+          <div class="hint" id="buySiseHintRow"><span id="buySiseHintAuto">실거래가를 불러와 이 칸을 채울 수 있어요.
             <button type="button" class="hint-toggle" onclick="goToBuySise()">실거래가로 채우기 ↓</button></span></div>
+          <div class="fallback-note" id="buySiseNoApi" style="display:none;"></div>
+        </div>
+        <!-- 대출 없이 계산하는 길이 고급설정 안에만 있어서, 01·02만 채우는 사람은
+             이 선택지를 만나지 못했어요(원칙 15). 금액을 넣는 자리로 옮겼습니다. -->
+        <div class="checkrow">
+          <input type="checkbox" id="noLoanCheck" onchange="toggleNoLoan(); liveRecalc();">
+          <label for="noLoanCheck">대출 없이 전액 현금으로 계산할래요</label>
         </div>
       </div>
     </div>
@@ -1330,7 +1343,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             </div>
           </div>
           <div class="fallback-note" id="ltaNote" style="display:none;margin-top:10px;">⚠ <b>규제지역(서울 전역·경기 15곳)은 토지거래허가구역이기도 해요.</b> 아파트를 사려면 관할 관청의 허가가 필요하고 <b>2년 실거주 의무</b>가 붙어요. 전세를 낀 매수(갭투자)가 안 되므로 이 계산기는 실거주 목적 매수를 전제로 계산해요. (국토교통부·경기도 지정, 2026.08 기준)</div>
-          <div class="sise-box" id="buySiseBox" style="margin-top:14px;margin-bottom:0;">
+          <div class="sise-box" id="buySiseBox" style="display:none;margin-top:14px;margin-bottom:0;">
             <label style="margin-bottom:6px;">🔎 이 지역 실거래가로 매매가 채우기 <span class="opt-tag">선택</span></label>
             <div class="hint" style="margin-top:0;margin-bottom:12px;"><b id="buySiseSggEcho">시·군·구</b>의 최근 6개월 실거래가(국토교통부 신고자료)에서 단지·면적을 고르면 <b>02 매매가</b>에 넣어드려요.</div>
             <button type="button" class="sise-btn" id="buySiseLoadBtn" onclick="loadSiseTrades('buy')" disabled>실거래 불러오기</button>
@@ -1418,11 +1431,6 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <div class="input-suffix"><input type="number" id="fixedYears" step="1" min="0" oninput="applyStressDefault(); liveRecalc();"><span>년</span></div>
         <div class="hint">처음 몇 년간 금리가 고정되는지 넣어주세요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">대출만기 대비 비중으로 스트레스 금리 구간이 정해져요.</div></div>
       </div>
-      <div class="checkrow">
-        <input type="checkbox" id="noLoanCheck" onchange="toggleNoLoan(); liveRecalc();">
-        <label for="noLoanCheck">대출 없이 전액 현금으로 계산할래요</label>
-      </div>
-
       <div class="subsection-label">집 정보</div>
       <div class="field">
         <label>평형 <span class="opt-tag">선택</span></label>
@@ -1755,6 +1763,11 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
           <tr><td>법정동코드</td><td>광역 16 · 시군구 256</td><td>행정안전부 행정표준코드관리시스템</td><td>2026.08</td></tr>
         </tbody>
       </table>
+      <!-- 31개를 펼치면 위쪽 버튼이 화면 밖으로 나가 되돌릴 길이 없어요.
+           고급설정에 이미 있는 하단 접기 패턴을 그대로 씁니다. -->
+      <button type="button" class="section-toggle" style="margin-top:20px;" onclick="toggleOptionalSection(document.getElementById('sourcesToggle'),'sourcesDetail')">
+        <span>접기</span><span class="chevron" style="transform:rotate(180deg);">▾</span>
+      </button>
       </div>
       <div class="sources-note">표시된 확인 시점 이후 제도가 바뀌었을 수 있어요. 중요한 결정 전에는 각 기관의 최신 공고를 직접 확인해주세요.</div>
     </div>
@@ -2117,8 +2130,39 @@ function setMode(m){
     m === 'A'
       ? '예금·주식·돌려받을 전세보증금·가족 지원금까지 모두 합친 <b>현금</b>이에요. 대출로 마련할 돈은 빼주세요.'
       : '사려는 집의 <b>매매가</b>예요. 취득세·중개보수 같은 부대비용은 빼고, 집값만 넣어주세요.';
+  /* B → A로 돌아가면 매매가 칸이 화면에서 사라지는데, 불러온 단지·면적과 출처 표시가
+     그대로 남아 있으면 A모드 화면에 근거 없는 값이 섞여 보여요(원칙 30·42). */
+  if(m !== 'B'){ resetSiseResult('buy'); clearSiseSource('buy'); }
+  syncBuySiseVisibility();
   track('set_mode', {mode: m});
   liveRecalc();
+}
+
+/* 실거래가 조회는 Vercel 서버리스 함수(/api/apt-price)가 있어야 동작해요.
+   GitHub Pages 배포본에는 그 함수가 없어서 항상 실패합니다(2026.08.06 확인).
+   file://로 연 경우도 같아요. 지금까지는 눌러야 알 수 있었어요. */
+function siseApiAvailable(){
+  if(typeof location === 'undefined') return true;
+  if(location.protocol !== 'http:' && location.protocol !== 'https:') return false;
+  return String(location.hostname || '').indexOf('github.io') === -1;
+}
+
+/* 실거래 박스를 보여줄 조건은 두 가지가 모두 참일 때예요.
+     ① B모드 — A모드에는 매매가 입력칸(#fieldPrice) 자체가 없어서 채울 대상이 없어요(원칙 15)
+     ② 조회가 가능한 배포본 — 아니면 B모드에서 안내 한 줄만 남깁니다 */
+function syncBuySiseVisibility(){
+  const usable = siseApiAvailable();
+  const show = (mode === 'B') && usable;
+  const box = document.getElementById('buySiseBox');
+  if(box) box.style.display = show ? 'block' : 'none';
+  const hintRow = document.getElementById('buySiseHintRow');
+  if(hintRow) hintRow.style.display = show ? '' : 'none';
+  const noApi = document.getElementById('buySiseNoApi');
+  if(noApi){
+    const tell = (mode === 'B') && !usable;
+    if(tell) noApi.innerHTML = '⚠ ' + siseNoApiMsg();
+    noApi.style.display = tell ? 'block' : 'none';
+  }
 }
 
 /* 세그먼트·리스트형 선택지 → 숨겨진 select 값 동기화 */
@@ -5178,6 +5222,7 @@ function clearSiseSource(k){
 renderProgress();
 renderPolicyOptions();
 initSise();
+syncBuySiseVisibility();
 (function restoreRentFromUrl(){
   const p = new URLSearchParams(location.search);
   if(p.get('t') !== 'rent') return;
