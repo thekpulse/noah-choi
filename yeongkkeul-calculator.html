@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#F7F8FA">
 <title>영끌계산기 — 아파트 예산 계산기</title>
+<!-- v18 — 전월세 탭 실거래가 시세 자동 채움 -->
 <meta property="og:title" content="영끌계산기 — 이 집, 나 살 수 있어?">
 <meta property="og:description" content="매매가만 보고는 몰라요. 대출한도부터 부대비용까지, 집 사는 데 필요한 자금을 한눈에 추정해보세요.">
 <meta property="og:type" content="website">
@@ -1029,6 +1030,66 @@
     font-size:11.5px;line-height:1.6;color:var(--ink-faint);
   }
 
+  /* ===== 실거래가 조회 ===== */
+  .sise-box{
+    background:var(--fill);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:20px;
+  }
+  .sise-row{display:flex;gap:10px;}
+  .sise-row select{flex:1;min-width:0;font-size:15px;padding:13px 12px;background:var(--surface);}
+  .sise-btn{
+    width:100%;margin-top:10px;padding:13px;
+    border-radius:12px;border:1.5px solid var(--primary);
+    background:var(--primary-soft);color:var(--primary-dark);
+    font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;
+  }
+  .sise-btn:active{transform:scale(.99);}
+  .sise-btn:disabled{opacity:.5;cursor:default;transform:none;}
+  .sise-note{
+    font-size:12px;line-height:1.6;border-radius:10px;
+    padding:10px 12px;margin-top:10px;
+  }
+  .sise-note.info{background:var(--surface);color:var(--ink-soft);}
+  .sise-note.warn{background:#FFF6E8;color:#9A5B0A;}
+  .sise-note.err{background:#FDEBEC;color:var(--danger);}
+  .sise-note.ok{background:#E9FBF3;color:#0B7A4B;}
+  .sise-note b{font-weight:800;}
+  .sise-note a{color:inherit;font-weight:800;}
+  .sise-pick{margin-top:12px;}
+  .sise-pick > span{
+    display:block;font-size:12px;font-weight:700;
+    color:var(--ink-soft);margin-bottom:6px;
+  }
+  .sise-pick input, .sise-pick select{background:var(--surface);font-size:15px;padding:13px 12px;}
+  .sise-pick input{margin-bottom:8px;font-weight:600;}
+  .sise-stat{
+    margin-top:12px;padding:14px;border-radius:12px;
+    background:var(--surface);border:1px solid var(--border);
+  }
+  .sise-stat-amt{
+    font-size:21px;font-weight:800;letter-spacing:-0.6px;color:var(--ink);
+    font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
+  }
+  .sise-stat-sub{
+    margin-top:6px;font-size:11.5px;line-height:1.65;color:var(--ink-faint);
+    font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
+  }
+  .sise-apply{display:flex;gap:8px;margin-top:12px;}
+  .sise-apply button{
+    flex:1;padding:11px 6px;border-radius:10px;
+    border:1px solid var(--border);background:var(--surface);
+    font-family:inherit;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;
+  }
+  .sise-apply button.primary{
+    border-color:var(--primary);background:var(--primary);color:#fff;
+  }
+  .sise-apply button:active{transform:scale(.98);}
+  .sise-src{
+    margin-top:8px;font-size:11.5px;line-height:1.6;color:var(--success);font-weight:600;
+  }
+
   .src-table td.unverified{color:#9A5B0A;}
   .src-table td.unverified b{color:#9A5B0A;}
 
@@ -1532,6 +1593,8 @@
           <tr><td>DSR</td><td>은행권 40%</td><td>금융위 3단계 스트레스 DSR</td><td>2026.08</td></tr>
           <tr><td>중개보수</td><td>거래금액별 상한요율 + VAT 10%</td><td>공인중개사법 시행규칙</td><td>2026.08</td></tr>
           <tr><td>취득세</td><td>1~3% 구간세율 · 다주택 8/12% 중과</td><td>지방세법</td><td>2026.08</td></tr>
+          <tr><td>실거래가</td><td>최근 6개월 신고분 평균 (토지임대부 제외)</td><td>국토교통부 아파트 매매 실거래가 자료</td><td>2026.08</td></tr>
+          <tr><td>법정동코드</td><td>광역 16 · 시군구 256</td><td>행정안전부 행정표준코드관리시스템</td><td>2026.08</td></tr>
         </tbody>
       </table>
       <div class="sources-note">표시된 확인 시점 이후 제도가 바뀌었을 수 있어요. 중요한 결정 전에는 각 기관의 최신 공고를 직접 확인해주세요.</div>
@@ -1685,19 +1748,44 @@
     <div class="card">
       <h2>안전 확인 <span class="opt-tag">선택이지만 권장</span></h2>
       <div class="hint" style="margin-top:0;margin-bottom:16px;">전세는 총비용보다 <b>보증금을 온전히 돌려받을 수 있는지</b>가 더 중요할 수 있어요. 계약 전이라 아직 모른다면 비워두고, 등기부등본을 뗀 뒤에 다시 와서 채워보세요.</div>
+      <div class="sise-box" id="siseBox">
+        <label style="margin-bottom:6px;">🔎 실거래가로 시세 채우기 <span class="opt-tag">선택</span></label>
+        <div class="hint" style="margin-top:0;margin-bottom:12px;">지역과 단지를 고르면 국토교통부에 신고된 <b>최근 6개월 아파트 매매 실거래가</b>를 불러와 아래 시세 칸을 채워드려요.</div>
+        <div class="sise-row">
+          <select id="siseSido" onchange="onSiseSido()"><option value="">시/도</option></select>
+          <select id="siseSgg" onchange="onSiseSgg()" disabled><option value="">시군구</option></select>
+        </div>
+        <button type="button" class="sise-btn" id="siseLoadBtn" onclick="loadSiseTrades()" disabled>실거래 불러오기</button>
+        <div id="siseStatus"></div>
+
+        <div id="siseAptWrap" style="display:none;">
+          <div class="sise-pick">
+            <span>단지 고르기</span>
+            <input type="text" id="siseAptFilter" placeholder="단지명 일부를 입력해 좁혀보세요" oninput="renderSiseAptOptions()">
+            <select id="siseApt" onchange="onSiseApt()"><option value="">단지 선택</option></select>
+          </div>
+          <div class="sise-pick" id="siseAreaWrap" style="display:none;">
+            <span>면적 고르기 <span style="font-weight:400;color:var(--ink-faint);">(전용면적 기준)</span></span>
+            <select id="siseArea" onchange="onSiseArea()"><option value="">면적 선택</option></select>
+          </div>
+        </div>
+        <div id="siseResult"></div>
+      </div>
+
       <div class="field">
         <label>이 집 매매시세</label>
         <div class="amount-row">
           <div class="input-suffix">
-            <input type="number" id="rentMarketEok" placeholder="" step="1" min="0">
+            <input type="number" id="rentMarketEok" placeholder="" step="1" min="0" oninput="clearSiseSource()">
             <span>억</span>
           </div>
           <div class="input-suffix">
-            <input type="text" inputmode="numeric" id="rentMarketMan" placeholder="" oninput="formatCommaInput(this)">
+            <input type="text" inputmode="numeric" id="rentMarketMan" placeholder="" oninput="formatCommaInput(this); clearSiseSource();">
             <span>만원</span>
           </div>
         </div>
-        <div class="hint">등기부등본이나 실거래가로 확인한 <b>이 집의 매매 시세</b>예요. 넣으면 보증금이 얼마나 안전한지 계산해드려요.</div>
+        <div id="rentMarketSource"></div>
+        <div class="hint">등기부등본이나 실거래가로 확인한 <b>이 집의 매매 시세</b>예요. 넣으면 보증금이 얼마나 안전한지 계산해드려요. 위에서 실거래가를 불러오면 자동으로 채워져요.</div>
       </div>
       <div class="field">
         <label>집 위치 (최우선변제금 계산용)</label>
@@ -3779,8 +3867,367 @@ function legacyCopy(text, cb){
   cb(ok);
 }
 
+
+/* ===================================================================
+   국토교통부 실거래가 조회 — 전월세 탭 "이 집 매매시세" 자동 채움
+   프록시: /api/apt-price (Vercel 서버리스에서만 동작)
+   =================================================================== */
+
+/* 법정동코드 (시/도 → 시군구 2단)
+ *
+ * 출처: 행정안전부 행정표준코드관리시스템 www.code.go.kr
+ *       '법정동코드 전체자료' (폐지구분: 현존) — 2026.08.05 다운로드·추출
+ *
+ * 국토부 실거래가 API의 LAWD_CD는 법정동코드 앞 5자리입니다.
+ *
+ * 2026.08.05 실제 API 호출로 검증한 사항:
+ *   ① 전남광주통합특별시(12xxx) 새 코드 동작함        12110 목포시 → 210건
+ *   ② 폐지된 옛 코드는 0건 반환                        29170 옛 광주 북구 → 0건
+ *   ③ 구가 있는 시는 반드시 구 단위로 조회해야 함      41111 수원시 장안구 → 265건
+ *      상위 시 코드는 0건                              41110 수원시 → 0건
+ *   ④ 신설된 구도 동작함                               41597 화성시 동탄구 → 1000건
+ *
+ * 그래서 구를 가진 상위 시 13곳(수원·성남·안양·부천·안산·고양·용인·화성·
+ * 청주·천안·포항·창원·전주)은 목록에서 제외했습니다. 넣으면 조용히 0건이 나옵니다.
+ *
+ * 세종특별자치시는 시/도 레벨 코드가 없고 36110이 광역이자 시군구입니다.
+ *
+ * 광역 16개 / 시군구 256개
+ */
+const LAWD = {
+  "서울특별시": [["11110","종로구"], ["11140","중구"], ["11170","용산구"], ["11200","성동구"], ["11215","광진구"], ["11230","동대문구"], ["11260","중랑구"], ["11290","성북구"], ["11305","강북구"], ["11320","도봉구"], ["11350","노원구"], ["11380","은평구"], ["11410","서대문구"], ["11440","마포구"], ["11470","양천구"], ["11500","강서구"], ["11530","구로구"], ["11545","금천구"], ["11560","영등포구"], ["11590","동작구"], ["11620","관악구"], ["11650","서초구"], ["11680","강남구"], ["11710","송파구"], ["11740","강동구"]],
+  "전남광주통합특별시": [["12110","목포시"], ["12130","여수시"], ["12150","순천시"], ["12170","나주시"], ["12190","광양시"], ["12210","동구"], ["12240","서구"], ["12270","남구"], ["12300","북구"], ["12330","광산구"], ["12710","담양군"], ["12720","곡성군"], ["12730","구례군"], ["12740","고흥군"], ["12750","보성군"], ["12760","화순군"], ["12770","장흥군"], ["12780","강진군"], ["12790","해남군"], ["12800","영암군"], ["12810","무안군"], ["12820","함평군"], ["12830","영광군"], ["12840","장성군"], ["12850","완도군"], ["12860","진도군"], ["12870","신안군"]],
+  "부산광역시": [["26110","중구"], ["26140","서구"], ["26170","동구"], ["26200","영도구"], ["26230","부산진구"], ["26260","동래구"], ["26290","남구"], ["26320","북구"], ["26350","해운대구"], ["26380","사하구"], ["26410","금정구"], ["26440","강서구"], ["26470","연제구"], ["26500","수영구"], ["26530","사상구"], ["26710","기장군"]],
+  "대구광역시": [["27110","중구"], ["27140","동구"], ["27170","서구"], ["27200","남구"], ["27230","북구"], ["27260","수성구"], ["27290","달서구"], ["27710","달성군"], ["27720","군위군"]],
+  "인천광역시": [["28125","제물포구"], ["28155","영종구"], ["28177","미추홀구"], ["28185","연수구"], ["28200","남동구"], ["28237","부평구"], ["28245","계양구"], ["28275","서해구"], ["28290","검단구"], ["28710","강화군"], ["28720","옹진군"]],
+  "대전광역시": [["30110","동구"], ["30140","중구"], ["30170","서구"], ["30200","유성구"], ["30230","대덕구"]],
+  "울산광역시": [["31110","중구"], ["31140","남구"], ["31170","동구"], ["31200","북구"], ["31710","울주군"]],
+  "세종특별자치시": [["36110","세종특별자치시"]],
+  "경기도": [["41111","수원시 장안구"], ["41113","수원시 권선구"], ["41115","수원시 팔달구"], ["41117","수원시 영통구"], ["41131","성남시 수정구"], ["41133","성남시 중원구"], ["41135","성남시 분당구"], ["41150","의정부시"], ["41171","안양시 만안구"], ["41173","안양시 동안구"], ["41192","부천시 원미구"], ["41194","부천시 소사구"], ["41196","부천시 오정구"], ["41210","광명시"], ["41220","평택시"], ["41250","동두천시"], ["41271","안산시 상록구"], ["41273","안산시 단원구"], ["41281","고양시 덕양구"], ["41285","고양시 일산동구"], ["41287","고양시 일산서구"], ["41290","과천시"], ["41310","구리시"], ["41360","남양주시"], ["41370","오산시"], ["41390","시흥시"], ["41410","군포시"], ["41430","의왕시"], ["41450","하남시"], ["41461","용인시 처인구"], ["41463","용인시 기흥구"], ["41465","용인시 수지구"], ["41480","파주시"], ["41500","이천시"], ["41550","안성시"], ["41570","김포시"], ["41591","화성시 만세구"], ["41593","화성시 효행구"], ["41595","화성시 병점구"], ["41597","화성시 동탄구"], ["41610","광주시"], ["41630","양주시"], ["41650","포천시"], ["41670","여주시"], ["41800","연천군"], ["41820","가평군"], ["41830","양평군"]],
+  "충청북도": [["43111","청주시 상당구"], ["43112","청주시 서원구"], ["43113","청주시 흥덕구"], ["43114","청주시 청원구"], ["43130","충주시"], ["43150","제천시"], ["43720","보은군"], ["43730","옥천군"], ["43740","영동군"], ["43745","증평군"], ["43750","진천군"], ["43760","괴산군"], ["43770","음성군"], ["43800","단양군"]],
+  "충청남도": [["44131","천안시 동남구"], ["44133","천안시 서북구"], ["44150","공주시"], ["44180","보령시"], ["44200","아산시"], ["44210","서산시"], ["44230","논산시"], ["44250","계룡시"], ["44270","당진시"], ["44710","금산군"], ["44760","부여군"], ["44770","서천군"], ["44790","청양군"], ["44800","홍성군"], ["44810","예산군"], ["44825","태안군"]],
+  "경상북도": [["47111","포항시 남구"], ["47113","포항시 북구"], ["47130","경주시"], ["47150","김천시"], ["47170","안동시"], ["47190","구미시"], ["47210","영주시"], ["47230","영천시"], ["47250","상주시"], ["47280","문경시"], ["47290","경산시"], ["47730","의성군"], ["47750","청송군"], ["47760","영양군"], ["47770","영덕군"], ["47820","청도군"], ["47830","고령군"], ["47840","성주군"], ["47850","칠곡군"], ["47900","예천군"], ["47920","봉화군"], ["47930","울진군"], ["47940","울릉군"]],
+  "경상남도": [["48121","창원시 의창구"], ["48123","창원시 성산구"], ["48125","창원시 마산합포구"], ["48127","창원시 마산회원구"], ["48129","창원시 진해구"], ["48170","진주시"], ["48220","통영시"], ["48240","사천시"], ["48250","김해시"], ["48270","밀양시"], ["48310","거제시"], ["48330","양산시"], ["48720","의령군"], ["48730","함안군"], ["48740","창녕군"], ["48820","고성군"], ["48840","남해군"], ["48850","하동군"], ["48860","산청군"], ["48870","함양군"], ["48880","거창군"], ["48890","합천군"]],
+  "제주특별자치도": [["50110","제주시"], ["50130","서귀포시"]],
+  "강원특별자치도": [["51110","춘천시"], ["51130","원주시"], ["51150","강릉시"], ["51170","동해시"], ["51190","태백시"], ["51210","속초시"], ["51230","삼척시"], ["51720","홍천군"], ["51730","횡성군"], ["51750","영월군"], ["51760","평창군"], ["51770","정선군"], ["51780","철원군"], ["51790","화천군"], ["51800","양구군"], ["51810","인제군"], ["51820","고성군"], ["51830","양양군"]],
+  "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
+};
+
+const SISE_MONTHS = 6;          // 최근 몇 개월치를 볼지
+const SISE_TIMEOUT_MS = 20000;  // 클라이언트 타임아웃
+const siseCache = {};           // lawdCd → 집계 결과 (한 세션 동안 재사용)
+let siseGroups = null;          // 현재 지역의 단지 목록
+let siseSelected = null;        // 현재 선택된 단지+면적 통계
+
+function initSise(){
+  const sido = document.getElementById('siseSido');
+  if(!sido || sido.dataset.ready) return;
+  Object.keys(LAWD).forEach(name => {
+    const o = document.createElement('option');
+    o.value = name; o.textContent = name;
+    sido.appendChild(o);
+  });
+  sido.dataset.ready = '1';
+}
+
+function onSiseSido(){
+  const sido = document.getElementById('siseSido').value;
+  const sgg  = document.getElementById('siseSgg');
+  sgg.innerHTML = '<option value="">시군구</option>';
+  const list = LAWD[sido] || [];
+  list.forEach(pair => {
+    const o = document.createElement('option');
+    o.value = pair[0]; o.textContent = pair[1];
+    sgg.appendChild(o);
+  });
+  sgg.disabled = list.length === 0;
+  // 세종처럼 시군구가 하나뿐이면 자동 선택
+  if(list.length === 1) sgg.value = list[0][0];
+  onSiseSgg();
+}
+
+function onSiseSgg(){
+  document.getElementById('siseLoadBtn').disabled = !document.getElementById('siseSgg').value;
+  resetSiseResult();
+}
+
+function resetSiseResult(){
+  siseGroups = null; siseSelected = null;
+  document.getElementById('siseAptWrap').style.display = 'none';
+  document.getElementById('siseAreaWrap').style.display = 'none';
+  document.getElementById('siseApt').innerHTML = '<option value="">단지 선택</option>';
+  document.getElementById('siseAptFilter').value = '';
+  document.getElementById('siseResult').innerHTML = '';
+  document.getElementById('siseStatus').innerHTML = '';
+}
+
+function setSiseStatus(html, kind){
+  document.getElementById('siseStatus').innerHTML =
+    html ? '<div class="sise-note ' + (kind || 'info') + '">' + html + '</div>' : '';
+}
+
+/* 최근 n개월의 YYYYMM. 매월 1일 기준으로 빼서 말일 건너뛰기 방지 */
+function recentYms(n){
+  const out = [];
+  const d = new Date();
+  d.setDate(1);
+  for(let i = 0; i < n; i++){
+    out.push(d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0'));
+    d.setMonth(d.getMonth() - 1);
+  }
+  return out;
+}
+
+async function fetchSiseMonth(lawdCd, ym){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SISE_TIMEOUT_MS);
+  try{
+    const res = await fetch('/api/apt-price?lawdCd=' + lawdCd + '&dealYmd=' + ym + '&type=trade',
+                            { signal: ctrl.signal });
+    const ct = (res.headers.get('content-type') || '');
+    if(ct.indexOf('json') === -1){
+      // GitHub Pages 등 서버리스 함수가 없는 곳에서는 HTML(404)이 돌아와요
+      const err = new Error('NO_API'); err.code = 'NO_API'; throw err;
+    }
+    const j = await res.json();
+    if(j.error){ const err = new Error(j.error); err.code = 'API_ERROR'; err.detail = j.detail || j.hint || ''; throw err; }
+    return { ym: ym, items: j.items || [], truncated: !!j.truncated, totalCount: j.totalCount };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* 응답 아이템 → 단지별·면적별 묶음
+   제외: 토지임대부(landLeaseholdGbn !== 'N'), 해제된 거래(cdealType 존재) */
+function buildSiseGroups(months){
+  const groups = new Map();
+  let exLease = 0, exCancel = 0, used = 0;
+  months.forEach(mo => {
+    (mo.items || []).forEach(it => {
+      if(!it.aptNm || !it.dealAmount || !it.excluUseAr) return;
+      if(it.landLeaseholdGbn && it.landLeaseholdGbn !== 'N'){ exLease++; return; }
+      if(it.cdealType){ exCancel++; return; }
+      const amt = parseInt(String(it.dealAmount).replace(/[^0-9]/g, ''), 10);  // 만원
+      const ar  = parseFloat(it.excluUseAr);
+      if(!amt || !ar) return;
+      const umd = it.umdNm || '';
+      const key = umd + '|' + it.aptNm;
+      if(!groups.has(key)){
+        groups.set(key, { key: key, name: it.aptNm, umd: umd, count: 0, areas: new Map() });
+      }
+      const g = groups.get(key);
+      g.count++; used++;
+      const ak = Math.round(ar);
+      if(!g.areas.has(ak)) g.areas.set(ak, []);
+      g.areas.get(ak).push({
+        amt: amt, ar: ar,
+        y: parseInt(it.dealYear, 10) || 0,
+        m: parseInt(it.dealMonth, 10) || 0,
+        d: parseInt(it.dealDay, 10) || 0,
+        floor: it.floor || ''
+      });
+    });
+  });
+  return { groups: groups, exLease: exLease, exCancel: exCancel, used: used };
+}
+
+async function loadSiseTrades(){
+  const code = document.getElementById('siseSgg').value;
+  const label = document.getElementById('siseSgg').selectedOptions[0]
+              ? document.getElementById('siseSgg').selectedOptions[0].textContent : '';
+  if(!code) return;
+
+  const btn = document.getElementById('siseLoadBtn');
+  const oldText = btn.textContent;
+  btn.disabled = true; btn.textContent = '불러오는 중…';
+  resetSiseResult();
+  setSiseStatus('국토교통부에 신고된 최근 ' + SISE_MONTHS + '개월 거래를 불러오고 있어요. 몇 초 걸릴 수 있어요.', 'info');
+
+  try{
+    let data = siseCache[code];
+    if(!data){
+      const yms = recentYms(SISE_MONTHS);
+      const settled = await Promise.all(yms.map(function(ym){
+        return fetchSiseMonth(code, ym).then(
+          function(r){ return { ok: true, r: r }; },
+          function(e){ return { ok: false, e: e }; }
+        );
+      }));
+      const okMonths = settled.filter(function(s){ return s.ok; }).map(function(s){ return s.r; });
+      const errs     = settled.filter(function(s){ return !s.ok; }).map(function(s){ return s.e; });
+
+      if(okMonths.length === 0){
+        const first = errs[0] || {};
+        if(first.code === 'NO_API'){
+          setSiseStatus('이 페이지에서는 실거래가 조회가 동작하지 않아요. ' +
+            '<a href="https://noah-choi.vercel.app/yeongkkeul-calculator.html">noah-choi.vercel.app</a> 주소에서 열어주세요.', 'err');
+        } else {
+          setSiseStatus('실거래가를 불러오지 못했어요. 국토교통부 서버가 일시적으로 느릴 수 있어요. ' +
+            '잠시 후 다시 눌러주세요.' + (first.detail ? '<br>(' + first.detail + ')' : ''), 'err');
+        }
+        return;
+      }
+
+      const built = buildSiseGroups(okMonths);
+      data = {
+        groups: built.groups,
+        exLease: built.exLease,
+        exCancel: built.exCancel,
+        used: built.used,
+        months: okMonths.map(function(m){ return m.ym; }).sort(),
+        failed: errs.length,
+        truncated: okMonths.some(function(m){ return m.truncated; })
+      };
+      siseCache[code] = data;
+    }
+
+    siseGroups = data;
+    if(data.groups.size === 0){
+      setSiseStatus(label + '에서 최근 ' + SISE_MONTHS + '개월 사이에 신고된 아파트 매매 거래를 찾지 못했어요.', 'warn');
+      return;
+    }
+
+    const notes = [];
+    notes.push('<b>' + label + '</b> · 최근 ' + data.months.length + '개월 · 단지 ' +
+               data.groups.size.toLocaleString() + '곳 · 거래 ' + data.used.toLocaleString() + '건');
+    if(data.truncated) notes.push('⚠️ 거래가 많은 지역이라 한 달에 1,000건까지만 불러왔어요. 일부 거래가 빠졌을 수 있어요.');
+    if(data.failed)    notes.push('⚠️ ' + data.failed + '개월치는 불러오지 못했어요.');
+    if(data.exLease)   notes.push('토지임대부 아파트 ' + data.exLease + '건은 시세 계산에서 뺐어요.');
+    setSiseStatus(notes.join('<br>'), data.truncated || data.failed ? 'warn' : 'info');
+
+    document.getElementById('siseAptWrap').style.display = 'block';
+    renderSiseAptOptions();
+
+  } catch(e){
+    setSiseStatus('실거래가를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = oldText;
+  }
+}
+
+function renderSiseAptOptions(){
+  if(!siseGroups) return;
+  const q = (document.getElementById('siseAptFilter').value || '').trim().replace(/\s/g, '');
+  const sel = document.getElementById('siseApt');
+  let list = Array.from(siseGroups.groups.values());
+  if(q) list = list.filter(function(g){ return (g.umd + g.name).replace(/\s/g, '').indexOf(q) !== -1; });
+  list.sort(function(a, b){ return a.name.localeCompare(b.name, 'ko'); });
+
+  const capped = list.slice(0, 300);
+  sel.innerHTML = '<option value="">단지 선택 (' + list.length.toLocaleString() + '곳)</option>';
+  capped.forEach(function(g){
+    const o = document.createElement('option');
+    o.value = g.key;
+    o.textContent = g.name + ' · ' + g.umd + ' (' + g.count + '건)';
+    sel.appendChild(o);
+  });
+  if(list.length > capped.length){
+    const o = document.createElement('option');
+    o.disabled = true;
+    o.textContent = '… 단지가 많아요. 위 칸에 단지명을 입력해 좁혀주세요.';
+    sel.appendChild(o);
+  }
+  document.getElementById('siseAreaWrap').style.display = 'none';
+  document.getElementById('siseResult').innerHTML = '';
+  siseSelected = null;
+}
+
+function onSiseApt(){
+  const key = document.getElementById('siseApt').value;
+  const wrap = document.getElementById('siseAreaWrap');
+  const sel  = document.getElementById('siseArea');
+  document.getElementById('siseResult').innerHTML = '';
+  siseSelected = null;
+  if(!key || !siseGroups){ wrap.style.display = 'none'; return; }
+
+  const g = siseGroups.groups.get(key);
+  const areas = Array.from(g.areas.entries()).sort(function(a, b){ return b[1].length - a[1].length; });
+  sel.innerHTML = '<option value="">면적 선택</option>';
+  areas.forEach(function(pair){
+    const ak = pair[0], rows = pair[1];
+    const py = ak / 2.45;   // 전용㎡ → 공급면적 기준 평 (전용률 약 74%)
+    const o = document.createElement('option');
+    o.value = ak;
+    o.textContent = '전용 ' + ak + '㎡ · 약 ' + py.toFixed(0) + '평 (' + rows.length + '건)';
+    sel.appendChild(o);
+  });
+  wrap.style.display = 'block';
+  // 면적이 하나뿐이면 바로 선택
+  if(areas.length === 1){ sel.value = areas[0][0]; onSiseArea(); }
+}
+
+function onSiseArea(){
+  const key = document.getElementById('siseApt').value;
+  const ak  = document.getElementById('siseArea').value;
+  const box = document.getElementById('siseResult');
+  siseSelected = null;
+  if(!key || !ak || !siseGroups){ box.innerHTML = ''; return; }
+
+  const g = siseGroups.groups.get(key);
+  const rows = (g.areas.get(parseInt(ak, 10)) || []).slice();
+  if(rows.length === 0){ box.innerHTML = ''; return; }
+
+  rows.sort(function(a, b){ return (b.y * 10000 + b.m * 100 + b.d) - (a.y * 10000 + a.m * 100 + a.d); });
+  const amts = rows.map(function(r){ return r.amt; });
+  const sum  = amts.reduce(function(a, b){ return a + b; }, 0);
+  const avg  = Math.round(sum / amts.length);
+  const min  = Math.min.apply(null, amts);
+  const max  = Math.max.apply(null, amts);
+  const last = rows[0];
+  const py   = parseInt(ak, 10) / 2.45;
+
+  siseSelected = {
+    name: g.name, umd: g.umd, ak: parseInt(ak, 10), py: py,
+    avg: avg, min: min, max: max, n: rows.length,
+    lastYm: last.y + '.' + String(last.m).padStart(2, '0')
+  };
+
+  let html = '<div class="sise-stat">';
+  html += '<div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;">'
+        + g.name + ' · 전용 ' + ak + '㎡ (약 ' + py.toFixed(0) + '평) 평균</div>';
+  html += '<div class="sise-stat-amt">' + formatWon(avg * 10000) + '</div>';
+  html += '<div class="sise-stat-sub">'
+        + '최근 ' + siseGroups.months.length + '개월 신고 ' + rows.length + '건 · '
+        + '최저 ' + formatWon(min * 10000) + ' ~ 최고 ' + formatWon(max * 10000) + '<br>'
+        + '가장 최근 거래 ' + siseSelected.lastYm + ' · ' + formatWon(last.amt * 10000)
+        + (last.floor ? ' (' + last.floor + '층)' : '')
+        + '</div>';
+  html += '</div>';
+  html += '<div class="sise-apply">'
+        + '<button type="button" class="primary" onclick="applySisePrice(\'avg\')">평균값으로 채우기</button>'
+        + '<button type="button" onclick="applySisePrice(\'min\')">최저가로 채우기</button>'
+        + '</div>';
+  if(rows.length < 3){
+    html += '<div class="sise-note warn">거래가 ' + rows.length + '건뿐이라 평균이 실제 시세와 다를 수 있어요. '
+          + '층·향·수리 상태에 따라 같은 면적도 가격 차이가 큽니다.</div>';
+  }
+  html += '<div class="sise-note info">보증금 안전을 보수적으로 보려면 <b>최저가</b>를 넣어보세요. '
+        + '시세를 낮게 잡을수록 전세가율이 높게 나와 더 엄격하게 진단돼요.</div>';
+  box.innerHTML = html;
+}
+
+function applySisePrice(which){
+  if(!siseSelected) return;
+  const man = which === 'min' ? siseSelected.min : siseSelected.avg;
+  setAmountManwon('rentMarketEok', 'rentMarketMan', man);
+  const kind = which === 'min' ? '최저가' : '평균';
+  document.getElementById('rentMarketSource').innerHTML =
+    '<div class="sise-src">✓ ' + siseSelected.name + ' 전용 ' + siseSelected.ak + '㎡ · '
+    + '최근 ' + siseGroups.months.length + '개월 실거래 ' + siseSelected.n + '건의 ' + kind + '을 넣었어요 (국토교통부 신고자료).</div>';
+  calculateRent();
+  document.getElementById('rentMarketEok').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* 사용자가 시세를 직접 고치면 출처 표시를 지워요 */
+function clearSiseSource(){
+  const el = document.getElementById('rentMarketSource');
+  if(el) el.innerHTML = '';
+}
+
+
 renderProgress();
 renderPolicyOptions();
+initSise();
 toggleSeominField();
 toggleSelfSalary();
 applyStressDefault();
