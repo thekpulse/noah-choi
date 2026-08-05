@@ -464,15 +464,17 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
   .line-item .v{font-weight:700;white-space:nowrap;}
   .line-item.minus .v{color:var(--accent);}
   /* 대출금액은 영수증에서 가장 큰 숫자인데 시선이 안 간다는 지적이 있어서
-     굵기·크기·배경으로 위계를 줬어요. 파랑 배경 위 흰 글씨는 쓰지 않아요(원칙 10). */
+     굵기·크기·배경으로 위계를 줬어요. 파랑 배경 위 흰 글씨는 쓰지 않아요(원칙 10).
+     v21.5: 색은 같은 화면 그래프의 대출과 같은 --loan 계열로 맞춥니다.
+     이전에는 골드(--accent)여서 한 개념에 색이 둘이었어요(원칙 38). */
   .line-item.loan{
-    background:#FFF1EC;
+    background:var(--primary-soft);
     border-radius:10px;
     margin:4px -10px;
     padding:11px 10px;
   }
-  .line-item.loan .k{color:#8C3A1E;font-weight:700;}
-  .line-item.loan .v{color:var(--accent);font-size:17px;font-weight:800;}
+  .line-item.loan .k{color:#0068BD;font-weight:700;}
+  .line-item.loan .v{color:var(--loan);font-size:17px;font-weight:800;}
   .line-item.total{
     border-top:1.5px solid var(--border);
     background:var(--fill);
@@ -1030,7 +1032,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
   .src-table td{padding:8px 8px 8px 0;border-bottom:1px solid var(--border);color:var(--ink-soft);vertical-align:top;}
   .src-table td:first-child{font-weight:700;color:var(--ink);white-space:nowrap;}
   .src-table td:last-child,.src-table th:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
-  .sources-note{margin-top:12px;font-size:11px;color:var(--ink-faint);line-height:1.65;}
+  .sources-note{margin-top:12px;font-size:13px;color:var(--ink-soft);line-height:1.65;}
   /* 모바일에서는 표를 카드로 바꿔요. 열을 숨기면 출처가 사라져서 원칙 11이 무너져요. */
   @media (max-width:560px){
     .src-table, .src-table tbody, .src-table tr, .src-table td{display:block;width:100%;}
@@ -1262,7 +1264,8 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             <div class="input-suffix"><input type="text" inputmode="numeric" id="priceMan" oninput="formatCommaInput(this); clearSiseSource('buy');"><span>만원</span></div>
           </div>
           <div id="buySiseSource"></div>
-          <div class="hint"><span id="buySiseHintAuto">아래 04에서 시·군·구를 고르면 <b>실거래가를 불러와 이 칸을 채울</b> 수 있어요.</span></div>
+          <div class="hint"><span id="buySiseHintAuto">실거래가를 불러와 이 칸을 채울 수 있어요.
+            <button type="button" class="hint-toggle" onclick="goToBuySise()">실거래가로 채우기 ↓</button></span></div>
         </div>
       </div>
     </div>
@@ -1286,7 +1289,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
       <div class="ask-num">04</div>
       <div class="ask-body">
         <div class="ask-q">내 상황은 어떤가요?</div>
-        <div class="ask-sub">이 두 가지가 대출한도를 가장 크게 좌우해요. 나머지는 일반적인 기준으로 먼저 계산하고, 결과 화면에서 언제든 바꿀 수 있어요.</div>
+        <div class="ask-sub">이 두 가지가 대출한도를 가장 크게 좌우해요.</div>
 
         <div class="field">
           <label>사려는 집의 지역</label>
@@ -1306,19 +1309,19 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
             <option value="reg" selected>규제지역</option><option value="metro">수도권 비규제</option><option value="other">그 외 지역</option>
           </select>
           </div>
-          <div class="hint">시·군·구만 고르면 규제지역 여부와 방공제가 자동으로 정해져요. 목록에 없거나 다르게 계산하고 싶으면 <b>직접 고르기</b>로 바꿀 수 있어요.
-            <br><span style="color:var(--ink-faint);">⚠ 방공제 기준(주택임대차보호법 시행령)과 규제지역 경계는 서로 달라요. 인천 영종·검단 일부와 통합 전 광주광역시 지역은 적용 기준이 확인되지 않아, 고급설정에서 직접 확인하시는 게 정확해요.</span>
-            <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">세 구분이 뭐가 다른가요? ▾</button>
+          <div class="hint">
+            <button type="button" class="hint-toggle" onclick="toggleHintDetail(this,'세 구분이 뭐가 다른가요? ▾','세 구분 설명 접기 ▴')">세 구분이 뭐가 다른가요? ▾</button>
             <div class="hint-detail">
               <b>규제지역</b>(투기과열지구·조정대상지역) — 서울 25개 자치구 전역과 경기 15곳(과천, 광명, 성남 분당·수정·중원, 수원 영통·장안·팔달, 안양 동안, 용인 수지, 의왕, 하남, 화성 동탄, 용인 기흥, 구리)이에요. 2026.7.1자 동탄·기흥·구리 추가 지정까지 반영했어요. LTV가 가장 낮고 취득세 중과도 여기만 적용돼요.<br><br>
               <b>수도권 비규제</b> — 인천 전역과 위에 없는 경기 지역이에요. LTV는 규제지역보다 높지만, 집값 구간별 대출한도(6억·4억·2억)와 스트레스 금리 3.0%는 <b>수도권 전체</b>에 적용돼서 여기도 걸려요.<br><br>
-              <b>그 외 지역</b> — 수도권 밖이에요. 구간한도가 없고 스트레스 금리도 낮아요.
+              <b>그 외 지역</b> — 수도권 밖이에요. 구간한도가 없고 스트레스 금리도 낮아요.<br><br>
+              ⚠ 방공제 기준(주택임대차보호법 시행령)과 규제지역 경계는 서로 달라요. 인천 영종·검단 일부와 통합 전 광주광역시 지역은 적용 기준이 확인되지 않아, 고급설정에서 직접 확인하시는 게 정확해요.
             </div>
           </div>
-          <div class="fallback-note" id="ltaNote" style="display:none;margin-top:10px;">⚠ <b>규제지역 15곳과 서울 전역은 토지거래허가구역이기도 해요.</b> 아파트를 사려면 관할 관청의 허가가 필요하고, <b>2년 실거주 의무</b>가 붙어요. 전세를 낀 매수(갭투자)가 안 되기 때문에 <b>세입자 보증금을 뺀 금액만 준비하면 되는 구조가 성립하지 않아요.</b> 이 계산기는 실거주 목적 매수를 전제로 계산해요. (국토교통부·경기도 지정, 2026.08 기준)</div>
+          <div class="fallback-note" id="ltaNote" style="display:none;margin-top:10px;">⚠ <b>규제지역(서울 전역·경기 15곳)은 토지거래허가구역이기도 해요.</b> 아파트를 사려면 관할 관청의 허가가 필요하고 <b>2년 실거주 의무</b>가 붙어요. 전세를 낀 매수(갭투자)가 안 되므로 이 계산기는 실거주 목적 매수를 전제로 계산해요. (국토교통부·경기도 지정, 2026.08 기준)</div>
           <div class="sise-box" id="buySiseBox" style="margin-top:14px;margin-bottom:0;">
             <label style="margin-bottom:6px;">🔎 이 지역 실거래가로 매매가 채우기 <span class="opt-tag">선택</span></label>
-            <div class="hint" style="margin-top:0;margin-bottom:12px;">위에서 고른 <b id="buySiseSggEcho">시·군·구</b>의 최근 6개월 아파트 매매 실거래가(국토교통부 신고자료)를 불러와요. 단지와 면적을 고르면 <b>02 매매가 칸</b>에 넣어드려요.</div>
+            <div class="hint" style="margin-top:0;margin-bottom:12px;"><b id="buySiseSggEcho">시·군·구</b>의 최근 6개월 실거래가(국토교통부 신고자료)에서 단지·면적을 고르면 <b>02 매매가</b>에 넣어드려요.</div>
             <button type="button" class="sise-btn" id="buySiseLoadBtn" onclick="loadSiseTrades('buy')" disabled>실거래 불러오기</button>
             <div id="buySiseStatus"></div>
             <div id="buySiseAptWrap" style="display:none;">
@@ -1699,6 +1702,11 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
 
     <div class="sources">
       <div class="sources-title">계산에 쓴 기준값과 출처</div>
+      <div class="sources-note" style="margin-top:0;">31개 항목을 디딤돌·보금자리론·버팀목·세율·규제지역 등 기관 공시에서 가져왔어요. 모두 2026.08에 확인했어요.</div>
+      <button type="button" class="section-toggle" id="sourcesToggle" onclick="toggleOptionalSection(this,'sourcesDetail')">
+        <span>항목별 적용값·출처·확인일 보기 <span style="font-weight:600;opacity:.75;">(31개)</span></span><span class="chevron">▾</span>
+      </button>
+      <div id="sourcesDetail" class="optional-section">
       <table class="src-table">
         <thead><tr><th>항목</th><th>적용값</th><th>출처</th><th>확인</th></tr></thead>
         <tbody>
@@ -1735,6 +1743,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
           <tr><td>법정동코드</td><td>광역 16 · 시군구 256</td><td>행정안전부 행정표준코드관리시스템</td><td>2026.08</td></tr>
         </tbody>
       </table>
+      </div>
       <div class="sources-note">표시된 확인 시점 이후 제도가 바뀌었을 수 있어요. 중요한 결정 전에는 각 기관의 최신 공고를 직접 확인해주세요.</div>
     </div>
 
@@ -2194,8 +2203,26 @@ function onBuySido(){
   sgg.innerHTML = '<option value="">시/군/구</option>'
     + list.map(p => `<option value="${p[0]}">${p[1]}</option>`).join('');
   if(list.length === 1){ sgg.value = list[0][0]; onBuySgg(); return; }   // 세종
+  resetZoneToSafeDefault();
   renderZoneBadge();
   syncBuySise();
+  liveRecalc();
+}
+
+/* 시/도만 바꾸고 시·군·구를 안 고르면 지역이 "미확정"이 됩니다.
+   예전에는 이전 지역의 zone이 그대로 남아서, 부산(그 외 지역) → 서울로 바꾼 순간
+   화면은 "시·군·구를 고르면 판정해드려요"라고 하는데 계산은 여전히 '그 외 지역'
+   이었어요. LTV·구간한도·스트레스가 모두 느슨한 쪽이라 결과가 유리하게 나옵니다(원칙 28).
+   직접 고른 경우(manual)는 사용자의 뜻이므로 건드리지 않고,
+   그 외에는 가장 보수적인 '규제지역'으로 되돌립니다. */
+function resetZoneToSafeDefault(){
+  const zoneSel = document.getElementById('zone');
+  if(!zoneSel) return;
+  if(zoneSel.dataset && zoneSel.dataset.manual) return;
+  zoneSel.value = 'reg';
+  syncSegments();
+  applyZoneDefaults();
+  renderPolicyOptions(); toggleSeominField(); applyStressDefault();
 }
 function onBuySgg(){
   const code = document.getElementById('buySgg').value;
@@ -2209,9 +2236,8 @@ function onBuySgg(){
     if(rd && rdVal){ rd.value = String(rdVal); delete rd.dataset.touched; }
     syncSegments();
     renderPolicyOptions(); toggleSeominField(); applyStressDefault();
-    const lta = document.getElementById('ltaNote');
-    if(lta) lta.style.display = (z === 'reg') ? 'block' : 'none';
   }
+  syncLtaNote();
   renderZoneBadge();
   syncBuySise();
   liveRecalc();
@@ -2219,6 +2245,7 @@ function onBuySgg(){
 function markZoneManual(){
   const zoneSel = document.getElementById('zone');
   if(zoneSel) zoneSel.dataset.manual = '1';
+  syncLtaNote();
   renderZoneBadge();
 }
 function renderZoneBadge(){
@@ -2261,8 +2288,23 @@ function zoneLabelOf(z){
 function applyZoneDefaults(){
   const el = document.getElementById('roomDeduct');
   if(el && !el.dataset.touched) el.value = String(ROOM_DEDUCT_DEFAULT[zoneVal()] || 2800);
+  syncLtaNote();
+}
+
+/* 토지거래허가 안내는 "지역이 정해진 뒤"에만 띄웁니다.
+   zone 기본값이 'reg'라서 예전에는 첫 화면에서 시·군·구를 고르기도 전에 빨간 박스가 떴어요.
+   그때 배지는 "시·군·구를 고르면 판정해드려요"라고 하는데 아래에서는 규제지역이라고 단정하는
+   상태였습니다(원칙 39). 시·군·구를 골랐거나 직접 규제지역을 고른 경우에만 보여줍니다. */
+function ltaResolved(){
+  const sgg = document.getElementById('buySgg');
+  const zoneSel = document.getElementById('zone');
+  const picked = !!(sgg && sgg.value);
+  const manual = !!(zoneSel && zoneSel.dataset && zoneSel.dataset.manual);
+  return picked || manual;
+}
+function syncLtaNote(){
   const lta = document.getElementById('ltaNote');
-  if(lta) lta.style.display = isReg() ? 'block' : 'none';
+  if(lta) lta.style.display = (isReg() && ltaResolved()) ? 'block' : 'none';
 }
 
 function syncChoiceUI(){
@@ -3939,8 +3981,10 @@ function syncAllUI(){
   toggleSeominField();
 }
 
-function toggleOptionalSection(btn){
-  const section = document.getElementById('optionalSection');
+/* 인자 없이 부르면 예전처럼 #optionalSection을 엽니다(기존 호출부 그대로). */
+function toggleOptionalSection(btn, targetId){
+  const section = document.getElementById(targetId || 'optionalSection');
+  if(!section) return;
   const isOpen = section.classList.toggle('open');
   btn.classList.toggle('open', isOpen);
 }
@@ -4722,6 +4766,17 @@ function syncBuySise(){
   resetSiseResult('buy');
 }
 
+/* 02에서 매매가를 못 채우는 사람이 두 섹션 아래의 실거래 박스를 못 찾는다는 지적이 있었어요.
+   새 UI를 만들지 않고 기존 안내 문구에서 그 자리로 보내기만 합니다. */
+function goToBuySise(){
+  const box = document.getElementById('buySiseBox');
+  if(!box) return;
+  if(box.scrollIntoView) box.scrollIntoView({behavior:'smooth', block:'center'});
+  const sgg = document.getElementById('buySgg');
+  if(sgg && !sgg.value && sgg.focus) sgg.focus();
+  track('sise_jump', {tool:'buy'});
+}
+
 function resetSiseResult(k){
   k = siseCtx(k);
   siseState[k].groups = null;
@@ -4805,6 +4860,29 @@ function buildSiseGroups(months){
   return { groups: groups, exLease: exLease, exCancel: exCancel, used: used };
 }
 
+/* 실패 안내는 원인별로 나눕니다. 확인하지 못한 원인은 단정하지 않아요(원칙 39).
+   "국토교통부 서버가 느리다"는 서버에 도달했을 때만 할 수 있는 말입니다. */
+function siseNoApiMsg(){
+  return '이 페이지에서는 실거래가 조회가 동작하지 않아요. ' +
+    '<a href="https://noah-choi.vercel.app/yeongkkeul-calculator.html">noah-choi.vercel.app</a> 주소에서 열어주세요.';
+}
+function siseFailReason(err){
+  err = err || {};
+  if(err.code === 'NO_API')    return 'no_api';
+  if(err.code === 'API_ERROR') return 'api_error';
+  if(err.name === 'AbortError') return 'timeout';
+  return 'unknown';
+}
+function siseFailMsg(reason, err){
+  err = err || {};
+  const detail = err.detail ? '<br>(' + err.detail + ')' : '';
+  if(reason === 'no_api')    return siseNoApiMsg();
+  if(reason === 'api_error') return '국토교통부 실거래가 시스템이 오류를 회신했어요. 잠시 후 다시 눌러주세요.' + detail;
+  if(reason === 'timeout')   return '응답이 ' + Math.round(SISE_TIMEOUT_MS / 1000) + '초 안에 오지 않았어요. 잠시 후 다시 눌러주세요.';
+  return '실거래가를 불러오지 못했어요. 원인은 확인되지 않았어요. ' +
+         '인터넷 연결을 확인하고 다시 눌러주세요.' + detail;
+}
+
 async function loadSiseTrades(k){
   k = siseCtx(k);
   const sggSel = siseEl(k, 'sgg');
@@ -4812,6 +4890,16 @@ async function loadSiseTrades(k){
   const label = (sggSel && sggSel.selectedOptions && sggSel.selectedOptions[0])
               ? sggSel.selectedOptions[0].textContent : '';
   if(!code) return;
+
+  /* file:// 로 열면 fetch가 아예 나가지 않고 즉시 TypeError가 납니다.
+     응답이 없으니 content-type으로 판정하는 NO_API에 걸리지 않아서, 예전에는
+     "국토교통부 서버가 느릴 수 있어요"라는 확인되지 않은 원인을 띄웠어요(원칙 39).
+     요청을 보내기 전에 스킴을 먼저 봅니다. */
+  if(location.protocol !== 'http:' && location.protocol !== 'https:'){
+    setSiseStatus(siseNoApiMsg(), 'err', k);
+    track('sise_fail', {tool: k, reason: 'no_api_local'});
+    return;
+  }
 
   const btn = siseEl(k, 'btn');
   const oldText = btn.textContent;
@@ -4835,14 +4923,9 @@ async function loadSiseTrades(k){
 
       if(okMonths.length === 0){
         const first = errs[0] || {};
-        if(first.code === 'NO_API'){
-          setSiseStatus('이 페이지에서는 실거래가 조회가 동작하지 않아요. ' +
-            '<a href="https://noah-choi.vercel.app/yeongkkeul-calculator.html">noah-choi.vercel.app</a> 주소에서 열어주세요.', 'err', k);
-        } else {
-          setSiseStatus('실거래가를 불러오지 못했어요. 국토교통부 서버가 일시적으로 느릴 수 있어요. ' +
-            '잠시 후 다시 눌러주세요.' + (first.detail ? '<br>(' + first.detail + ')' : ''), 'err', k);
-        }
-        track('sise_fail', {tool: k, reason: first.code || 'unknown'});
+        const reason = siseFailReason(first);
+        setSiseStatus(siseFailMsg(reason, first), 'err', k);
+        track('sise_fail', {tool: k, reason: reason});
         return;
       }
 
