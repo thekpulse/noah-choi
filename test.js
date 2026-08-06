@@ -985,8 +985,13 @@ t('소제목이 구분선으로 승격됨',
   html.slice(html.indexOf('#optionalSection .subsection-label{'),
              html.indexOf('#optionalSection .subsection-label{') + 200)
       .indexOf('border-top:1px solid var(--border)') !== -1);
+/* v21.9 교체(원칙 48): 선택자 문자열이 아니라 "첫 소제목만 구분선이 없다"는 목적을 검사합니다.
+   ㊸에서 감춤용 래퍼가 생기면서 선택자가 바뀌었는데, 규칙 자체는 그대로 살아 있어야 해요. */
 t('첫 소제목에는 구분선이 없음',
-  html.indexOf('#optionalSection .subsection-label:first-child{') !== -1);
+  /#optionalSection[^{]*:first-child[^{]*\{[^}]*border-top:\s*none/.test(html));
+t('두 번째 소제목까지 구분선이 지워지지는 않음 (래퍼가 생겨도)',
+  /#optionalSection\s*>\s*div:first-child\s*>\s*\.subsection-label:first-child/.test(html)
+  || !/id="loanChoiceGroup"/.test(html));
 t('구분선이 고급설정 밖(출처 접기 등)에는 안 걸림',
   html.indexOf('.optional-section .subsection-label{') === -1);
 t('여백이 스케일 안의 값 (24 / 16 / 12)',
@@ -1314,6 +1319,99 @@ console.log('\n=== v21.9 ㊷ 대출 없이 계산할 때 비교카드 ===');
   renderCompare({...ctx, noLoan:false}, 500000000);
   t('체크를 다시 풀면 카드가 되살아남',
     el('compareCard').style.display === 'block' && el('compareRows').innerHTML !== '');
+})();
+
+console.log('\n=== v21.9 ㊸ 대출 없이 계산할 때 입력칸 ===');
+(() => {
+  /* 목적: 대출이 없으면 대출에만 쓰이는 칸을 보여주지 않는다.
+     단 결과에 실제로 반영되는 칸(평형·추가 자금원)은 남는다. */
+  t('감출 대상이 컨테이너로 묶여 있음',
+    html.indexOf('id="loanCondGroup"') !== -1 && html.indexOf('id="loanChoiceGroup"') !== -1);
+  t('감출 컨테이너를 새 CSS 클래스 없이 처리함',
+    html.indexOf('.loan-cond-group') === -1 && html.indexOf('.loan-choice-group') === -1);
+
+  const noLoan = el('noLoanCheck');
+  noLoan.checked = true;  toggleNoLoan();
+  t('대출 조건 묶음을 감춤', el('loanCondGroup').style.display === 'none');
+  t('고를 수 있는 대출 묶음을 감춤', el('loanChoiceGroup').style.display === 'none');
+
+  noLoan.checked = false; toggleNoLoan();
+  t('체크를 풀면 대출 조건이 돌아옴', el('loanCondGroup').style.display === '');
+  t('체크를 풀면 대출 선택이 돌아옴', el('loanChoiceGroup').style.display === '');
+
+  // 결과에 반영되는 칸은 감추지 않는다
+  const optSrc = html.slice(html.indexOf('id="optionalSection"'), html.indexOf('id="loanChoiceGroup"'));
+  t('평형은 감춤 묶음 밖에 있음 (인테리어비에 쓰임)',
+    optSrc.indexOf('id="pyeong"') !== -1 && optSrc.indexOf('/loanCondGroup') < optSrc.indexOf('id="pyeong"'));
+  const afterSrc = html.slice(html.indexOf('/loanChoiceGroup'), html.indexOf('subsection-label">입주 준비 비용'));
+  t('회사 사내대출은 감춤 묶음 밖에 있음 (조달자금에 쓰임)', afterSrc.indexOf('id="companyLoanEok"') !== -1);
+  t('매도인 근저당도 감춤 묶음 밖에 있음', afterSrc.indexOf('id="sellerFinancingEok"') !== -1);
+
+  // 가정 바에서도 안 쓴 조건을 빼는가
+  const base = {zone:'reg', houseStatus:'first', rate:5.4, years:30, rateType:'variable',
+                stressBp:3.0, mciCovered:false, pyeong:25, noLoan:false};
+  renderAssumptions({...base, noLoan:false});
+  const withLoan = el('assumpBar').innerHTML;
+  renderAssumptions({...base, noLoan:true});
+  const without = el('assumpBar').innerHTML;
+  t('대출을 받으면 금리·기간이 가정 바에 남음',
+    withLoan.indexOf('금리 5.4%') !== -1 && withLoan.indexOf('30년') !== -1);
+  t('대출이 없으면 금리·기간을 빼고 그 사실을 적음',
+    without.indexOf('금리') === -1 && without.indexOf('스트레스') === -1
+    && without.indexOf('대출 없이 전액 현금') !== -1, without);
+  t('대출이 없어도 지역·보유상황은 남음',
+    without.indexOf('규제지역') !== -1 && without.indexOf('생애최초') !== -1, without);
+})();
+
+console.log('\n=== v21.9 ㉛ 규제지역 판정 기준일 ===');
+(() => {
+  /* 목적: 자동으로 내린 규제지역 판정에는 "언제 기준인지"가 화면에 함께 보인다. */
+  const badge = el('zoneBadge'), sgg = el('buySgg'), zone = el('zone');
+  const asOf = LAST_VERIFIED.replace(/-/g, '.');
+
+  sgg.value = ''; zone.value = 'reg'; delete zone.dataset.manual;
+  renderZoneBadge();
+  t('시·군·구를 고르기 전에는 기준일을 붙이지 않음', badge.innerHTML.indexOf(asOf) === -1);
+
+  sgg.value = '11680'; sgg.selectedOptions = [{textContent:'서울 강남구'}];
+  zone.value = 'reg'; delete zone.dataset.manual; el('roomDeduct').value = '';
+  renderZoneBadge();
+  t('자동 판정에는 기준일이 함께 나옴', badge.innerHTML.indexOf(asOf) !== -1, badge.innerHTML);
+  t('판정 결과도 그대로 나옴', badge.innerHTML.indexOf('규제지역') !== -1);
+
+  zone.value = 'other'; zone.dataset.manual = '1';
+  renderZoneBadge();
+  t('직접 고른 경우엔 기준일을 붙이지 않음', badge.innerHTML.indexOf(asOf) === -1, badge.innerHTML);
+  delete zone.dataset.manual;
+
+  const src = html.slice(html.indexOf('function renderZoneBadge'),
+                         html.indexOf('function zoneVal'));
+  t('기준일을 손으로 적지 않고 LAST_VERIFIED에서 가져옴',
+    src.indexOf('LAST_VERIFIED') !== -1 && !/20\d\d[.\-]\d/.test(src));
+})();
+
+console.log('\n=== v21.9 ㉚ 면책 문구 위치·문장 ===');
+(() => {
+  /* 목적: 면책 블록의 제목이 그 블록이 실제로 놓인 자리와 어긋나지 않는다.
+     이 블록은 결과와 '입력 수정' 버튼 아래에 있어요. "보기 전에"는 그 자리와 맞지 않습니다. */
+  const i0 = html.indexOf('<div class="disclaimer">');
+  const head = html.slice(i0, i0 + 400);
+  t('면책 제목이 "보기 전에"라고 말하지 않음', head.indexOf('보기 전에') === -1, head.slice(0, 120));
+  t('면책 블록이 결과·입력수정 버튼 아래에 있음',
+    html.indexOf('btn-back') < i0 && html.indexOf('id="captureAreaBuy"') < i0);
+
+  // 자문 범위가 두 자리에서 같은가
+  t('리포트 하단과 면책 블록의 자문 범위가 같음',
+    html.indexOf('금융·세무·투자 자문이 아닙니다') !== -1
+    && html.indexOf('금융·세무·투자 자문이 아니에요') !== -1
+    && html.indexOf('금융·세무 자문이 아닙니다') === -1);
+
+  // 기준일을 손으로 적지 않는가
+  t('면책 문구에 연도를 손으로 적지 않음', head.indexOf('2026년 8월 기준') === -1);
+  renderStaleBanner();
+  t('면책 기준일을 LAST_VERIFIED에서 채움',
+    el('disclaimerAsOf').textContent.indexOf(LAST_VERIFIED.replace(/-/g, '.')) === 0,
+    el('disclaimerAsOf').textContent);
 })();
 
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');

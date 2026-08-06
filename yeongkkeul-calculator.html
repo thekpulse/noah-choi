@@ -727,7 +727,8 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     padding:16px 0 12px;
     border-top:1px solid var(--border);
   }
-  #optionalSection .subsection-label:first-child{
+  #optionalSection > .subsection-label:first-child,
+  #optionalSection > div:first-child > .subsection-label:first-child{
     margin-top:0;padding-top:0;border-top:none;
   }
 
@@ -1394,6 +1395,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     </button>
     <div id="optionalSection" class="optional-section">
 
+      <div id="loanCondGroup">
       <div class="subsection-label">대출 조건</div>
       <div class="row2">
         <div class="field">
@@ -1431,6 +1433,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <div class="input-suffix"><input type="number" id="fixedYears" step="1" min="0" oninput="applyStressDefault(); liveRecalc();"><span>년</span></div>
         <div class="hint">처음 몇 년간 금리가 고정되는지 넣어주세요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">대출만기 대비 비중으로 스트레스 금리 구간이 정해져요.</div></div>
       </div>
+      </div><!-- /loanCondGroup -->
       <div class="subsection-label">집 정보</div>
       <div class="field">
         <label>평형 <span class="opt-tag">선택</span></label>
@@ -1439,6 +1442,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <div class="hint">부동산에서 "34평"처럼 부르는 <b>공급면적</b> 기준이에요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">넣으면 전용면적을 자동 환산해서 인테리어비와 정책대출 자격 판단에 반영해요.</div></div>
       </div>
 
+      <div id="loanChoiceGroup">
       <div class="subsection-label">고를 수 있는 대출</div>
       <div id="policyOptions"></div>
       <div class="hint">정책대출과 일반 주담대는 중복해서 받을 수 없어요.
@@ -1504,6 +1508,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         </select>
         <div class="hint">주택임대차보호법 시행령 제10조의 지역 구분이에요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">위에서 고른 지역으로 기본값을 맞춰두지만, 규제지역 경계와 이 구분은 달라서 직접 확인하시는 게 정확해요. MCI·MCG에 가입하면 차감되지 않아요.</div></div>
       </div>
+      </div><!-- /loanChoiceGroup -->
 
       <div class="subsection-label">세금 · 추가 자금원</div>
       <div class="checkrow">
@@ -1647,7 +1652,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         </div>
 
         <div class="report-foot">
-          <span>참고용 추정치 · 실제 대출·세액과 다를 수 있어요<br>금융·세무 자문이 아닙니다</span>
+          <span>참고용 추정치 · 실제 대출·세액과 다를 수 있어요<br>금융·세무·투자 자문이 아닙니다</span>
           <span class="report-by">made by 노아초이</span>
         </div>
       </div>
@@ -1699,8 +1704,8 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     </div>
 
     <div class="disclaimer">
-      <div class="disclaimer-head">⚠️ 계산 결과를 보기 전에 꼭 알아두세요</div>
-      <div class="disclaimer-item"><b>이 계산기는 금융·세무·투자 자문이 아니에요.</b> 개인이 학습·참고 목적으로 만든 <b>단순 추정 도구</b>이며, 특정 금융상품의 권유·중개·자문에 해당하지 않아요. 2026년 8월 기준 공개 자료를 참고했고, 공식 상담을 대체하지 않아요.</div>
+      <div class="disclaimer-head">⚠️ 이 결과를 어떻게 봐야 하는지</div>
+      <div class="disclaimer-item"><b>이 계산기는 금융·세무·투자 자문이 아니에요.</b> 개인이 학습·참고 목적으로 만든 <b>단순 추정 도구</b>이며, 특정 금융상품의 권유·중개·자문에 해당하지 않아요. <span id="disclaimerAsOf">공개 자료</span>를 참고했고, 공식 상담을 대체하지 않아요.</div>
       <div class="disclaimer-item"><b>결과는 모두 추정치예요.</b> 실제 대출 승인 여부와 금액, 금리, 세액은 은행·기금의 개별 심사와 과세관청의 판단에 따라 결정돼요. 이 계산 결과에 근거한 의사결정과 그 결과에 대해 제작자는 책임지지 않아요.</div>
       <button type="button" class="disclaimer-toggle" onclick="toggleDisclaimer(this)">
         <span>나머지 유의사항 8가지 보기 — 아파트 기준 · DSR 추정 · 정책대출 의무 등</span><span class="chevron">▾</span>
@@ -2321,9 +2326,12 @@ function renderZoneBadge(){
   const name = (document.getElementById('buySgg').selectedOptions[0] || {}).textContent || '';
   const auto = zoneFromSgg(code);
   const rdTxt = rd ? ` · 방공제 ${Number(rd).toLocaleString()}만원` : '';
+  /* ㉛ 자동 판정에는 언제 기준인지 함께 적습니다. 규제지역은 월 단위로 바뀌어요(원칙 31).
+     날짜를 손으로 적지 않고 LAST_VERIFIED에서 가져옵니다(원칙 46).
+     직접 고른 경우에는 붙이지 않아요 — 그 판정은 사용자가 한 것이라 확인일과 무관합니다. */
   badge.innerHTML = manual && auto !== z
     ? `${name}은 <b>${zoneLabelOf(auto)}</b>인데, 직접 <b>${zoneLabelOf(z)}</b>로 바꾸셨어요. 그대로 계산할게요.`
-    : `${name} → <b>${zoneLabelOf(z)}</b>${rdTxt}`;
+    : `${name} → <b>${zoneLabelOf(z)}</b>${rdTxt} · ${LAST_VERIFIED.replace(/-/g, '.')} 확인 기준`;
 }
 
 function zoneVal(){
@@ -3354,7 +3362,11 @@ function renderAssumptions(ctxBase, c){
   const bar = document.getElementById('assumpBar');
   if(!bar) return;
   const hs = {first:'생애최초', none:'무주택', oneDisposing:'갈아타기', multi:'2주택 이상'}[ctxBase.houseStatus];
-  const chips = [
+  /* ㊸ 대출이 없으면 금리·기간·스트레스·방공제는 결과에 쓰이지 않아요.
+     "이 조건으로 계산했어요"라고 적힌 자리라, 안 쓴 조건을 남겨두면 사실과 어긋납니다. */
+  const chips = ctxBase.noLoan
+    ? [{t: zoneLabelOf(ctxBase.zone)}, {t: hs}, {t: '대출 없이 전액 현금'}]
+    : [
     {t: zoneLabelOf(ctxBase.zone)},
     {t: hs},
     {t: `금리 ${ctxBase.rate}%`},
@@ -4084,6 +4096,12 @@ function showTool(name){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
+/* ㊸ '대출 없이 전액 현금'을 고르면 대출에만 쓰이는 입력을 감춥니다.
+   `computeLoan()`은 `noLoan`이면 곧바로 0을 돌려주므로, 아래 칸들은 결과에 아무 영향이 없어요.
+   원칙 15의 반대편입니다 — 도달할 수 없는 칸을 옮기는 것처럼, 효과가 없는 칸은 보이지 않게 합니다.
+   ⚠ 값은 지우지 않습니다. 체크를 풀면 그대로 돌아와야 하니까요(대출금액 상한 2칸만 예외).
+   ⚠ '집 정보'(평형)와 '세금 · 추가 자금원'은 남깁니다. 평형은 인테리어비에,
+      회사 사내대출·매도인 근저당은 조달자금에 그대로 반영되기 때문이에요. */
 function toggleNoLoan(){
   const checked = document.getElementById('noLoanCheck').checked;
   const field = document.getElementById('loanAmountField');
@@ -4094,6 +4112,10 @@ function toggleNoLoan(){
     else { input.disabled = false; }
   });
   field.style.opacity = checked ? '0.5' : '1';
+  ['loanCondGroup', 'loanChoiceGroup'].forEach(function(id){
+    const box = document.getElementById(id);
+    if(box) box.style.display = checked ? 'none' : '';
+  });
 }
 
 /* 금액 2칸 세팅 — 0이면 두 칸 모두 비움 (숫자 예시가 남지 않도록) */
@@ -4358,6 +4380,10 @@ const LAST_VERIFIED = '2026-08-05';
 const STALE_DAYS = 90;
 function renderStaleBanner(){
   const days = Math.floor((Date.now() - new Date(LAST_VERIFIED + 'T00:00:00+09:00')) / 86400000);
+  /* ㉚ 면책 문구의 "언제 기준 자료인가"도 같은 상수에서 가져옵니다(원칙 46).
+     여기를 손으로 적어두면 LAST_VERIFIED만 고쳤을 때 둘이 갈라져요. */
+  const asOf = document.getElementById('disclaimerAsOf');
+  if(asOf) asOf.textContent = `${LAST_VERIFIED.replace(/-/g, '.')} 기준 공개 자료`;
   document.querySelectorAll('.stale-banner').forEach(el => {
     if(days < STALE_DAYS){ el.style.display = 'none'; return; }
     el.style.display = 'block';
