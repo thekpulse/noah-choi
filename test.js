@@ -1429,8 +1429,12 @@ console.log('\n=== v21.9 ㊻ 결과 화면 중복 정리 ===');
   t('없어진 이름 — 자기자본 투입액', html.indexOf('자기자본 투입액') === -1);
   t('없어진 이름 — 필요 자기자본', html.indexOf("line('필요 자기자본'") === -1);
   t('없어진 이름 — 거래 자기자본', html.indexOf('거래 자기자본') === -1);
-  t('정식 자리는 "내 돈(자기자본)" 하나',
-    (html.match(/내 돈\(자기자본\)/g) || []).length === 3, (html.match(/내 돈\(자기자본\)/g) || []).length);
+  /* 자리는 넷: A모드 꼬리의 두 분기(남는 돈 없음/있음) · B모드 꼬리 · 리포트 지표 칸.
+     v21.15에서 A모드 꼬리가 두 갈래로 나뉘며 3 → 4가 됐어요.
+     잠그는 건 개수가 아니라 "다른 이름을 새로 만들지 않았다"는 것입니다(원칙 48).
+     아래 '자기자본 단독' 검사와 '없어진 이름' 검사가 그 목적을 함께 지킵니다. */
+  t('정식 자리는 "내 돈(자기자본)" 하나 — 다른 이름을 쓰지 않음',
+    (html.match(/내 돈\(자기자본\)/g) || []).length === 4, (html.match(/내 돈\(자기자본\)/g) || []).length);
   t('"자기자본"만 단독으로 쓰는 자리가 없음',
     !/[^(]자기자본(?!\))/.test(html.replace(/내 돈\(자기자본\)/g, '')),
     (html.replace(/내 돈\(자기자본\)/g, '').match(/.{6}자기자본.{6}/g) || []).slice(0, 3).join(' | '));
@@ -1530,13 +1534,18 @@ console.log('\n=== v21.9 ㊻-b 영수증 꼬리 정리 ===');
     /\.line-item\.sub\{[^}]*\}/.test(html)
     && !/\.line-item\.sub\{[^}]*background/.test(html));
 
-  // 영수증 전체에서 채워진 블록은 몇 개인가
-  const src = html.slice(html.indexOf("document.getElementById('receiptLines').innerHTML ="),
-                         html.indexOf('lastShareText = buildSummaryText'));
-  t('A모드 영수증에 grand는 하나뿐 (원칙 10)',
-    (src.match(/'grand'/g) || []).length === 1, (src.match(/'grand'/g) || []).length);
-  t('A모드 영수증에 total은 하나뿐',
-    (src.match(/'total'/g) || []).length === 1, (src.match(/'total'/g) || []).length);
+  /* 채워진 블록 개수는 소스의 글자 수가 아니라 **그려진 결과**로 셉니다(원칙 48).
+     v21.14까지는 소스에서 'grand'/'total' 문자열을 셌는데, 꼬리가 분기되면
+     실제 화면과 무관하게 깨지는 검사였어요. */
+  const tailSame = receiptTail(800000000, 800000000);
+  const tailLeft = receiptTail(304240000, 400000000);
+  t('남는 돈이 없으면 grand 하나뿐 (원칙 10)',
+    (tailSame.match(/line-item grand/g) || []).length === 1);
+  t('남는 돈이 있어도 grand 하나뿐 (원칙 10)',
+    (tailLeft.match(/line-item grand/g) || []).length === 1);
+  t('남는 돈이 없으면 total 블록을 쓰지 않음', tailSame.indexOf('line-item total') === -1);
+  t('남는 돈이 있으면 total 하나뿐',
+    (tailLeft.match(/line-item total/g) || []).length === 1);
 })();
 
 console.log('\n=== v21.10 GA 연결 · 로그 개인정보 (원칙 36) ===');
@@ -1684,6 +1693,92 @@ console.log('\n=== v21.13-d 확인 결과 반영 ===');
   /* ⚠ 화면에서 뺐을 뿐 계산에서 뺀 게 아닙니다. 자동 세팅 경로는 그대로 있어야 합니다. */
   t('방공제 자동 세팅은 그대로 (계산에서 뺀 게 아님)',
     html.indexOf('roomDeductFromSgg(code)') !== -1);
+})();
+
+console.log('\n=== v21.15 결과 화면 정리 ===');
+(() => {
+  /* (1) 영수증 꼬리 — 남는 돈 */
+  const same = receiptTail(800000000, 800000000);
+  t('내 돈 = 보유자금이면 한 줄만 나온다',
+    (same.match(/line-item/g) || []).length === 1);
+  t('그 한 줄에 보유자금을 다시 적지 않는다', same.indexOf('보유자금') === -1);
+  t('그 한 줄은 "내 돈(자기자본)"이다', same.indexOf('내 돈(자기자본)') !== -1);
+
+  const left = receiptTail(304240000, 400000000);
+  t('남는 돈이 있으면 세 줄이 나온다',
+    (left.match(/line-item/g) || []).length === 3, (left.match(/line-item/g) || []).length);
+  t('세 줄은 내 돈 · 남는 돈 · 보유자금 순서',
+    left.indexOf('내 돈(자기자본)') < left.indexOf('남는 돈')
+    && left.indexOf('남는 돈') < left.indexOf('보유자금'));
+  t('남는 돈 금액이 맞다 (4억 − 3억424만 = 9,576만)', left.indexOf('9,576만원') !== -1,
+    (left.match(/>[^<]*만원</g) || []).join(' '));
+
+  /* ⚠ 원칙 28 — 남는 돈은 실제보다 커 보이면 안 됩니다. 만원 단위 내림. */
+  t('남는 돈은 내림 처리 (반올림으로 부풀지 않음)',
+    receiptTail(100000000 - 19000, 100000000).indexOf('1만원') !== -1,
+    receiptTail(100000000 - 19000, 100000000));
+  t('1만원 미만 차이는 남는 돈으로 치지 않는다',
+    (receiptTail(100000000 - 9000, 100000000).match(/line-item/g) || []).length === 1);
+  t('내 돈이 보유자금보다 커도 음수 남는 돈이 안 나온다',
+    (receiptTail(900000000, 800000000).match(/line-item/g) || []).length === 1);
+
+  /* (2) 위계 — 채워진 블록끼리 좌우 폭이 같다 */
+  const blockCss = id => (html.match(new RegExp('\\.line-item\\.' + id + '\\{[^}]*\\}'))||[''])[0];
+  const sideOf = css => [(css.match(/margin:[^;]*/)||[''])[0], (css.match(/padding:[^;]*/)||[''])[0]]
+                        .map(s => (s.match(/-?\d+px/g)||[]).slice(-1)[0]).join('/');
+  t('grand·loan·total의 좌우 폭이 같다 (margin -10px / padding 10px)',
+    sideOf(blockCss('grand')) === '-10px/10px'
+    && sideOf(blockCss('loan')) === '-10px/10px'
+    && sideOf(blockCss('total')) === '-10px/10px',
+    ['grand', 'loan', 'total'].map(k => k + ':' + sideOf(blockCss(k))).join(' | '));
+
+  /* ⚠ 같은 .grand가 전월세 요약 상자 안에도 있어요. 그쪽은 여백을 0으로 되돌려야
+     세 줄의 글자가 나란히 섭니다(원칙 55 — 지운 자리가 만드는 새 중복·새 어긋남). */
+  t('전월세 요약 상자 안에서는 grand 여백을 되돌린다',
+    /\.rent-summary \.line-item\{[^}]*margin:0[^}]*\}/.test(html),
+    (html.match(/\.rent-summary \.line-item\{[^}]*\}/)||[])[0]);
+
+  /* (3) 배치 — 공유 버튼이 리포트 카드와 한도 카드 사이에 온다 */
+  const iCapture = html.indexOf('id="captureAreaBuy"');
+  const iShare   = html.indexOf('class="share-btn-row"');
+  const iCopy    = html.indexOf('id="copyTextBtn"');
+  const iDiag    = html.indexOf('<div id="bindingDiagnosis">');
+  t('공유 버튼이 리포트 카드 뒤에 온다', iCapture < iShare);
+  t('공유 버튼이 한도 카드보다 앞에 온다', iShare < iDiag && iCopy < iDiag);
+
+  /* (3) 곁가지 카드는 접는다 — 유의사항은 접지 않는다 */
+  t('상황이 달랐다면 카드가 접힘', html.indexOf("toggleOptionalSection(this,'compareBody')") !== -1);
+  t('매물 찾아보기 카드가 접힘', html.indexOf("toggleOptionalSection(this,'searchBody')") !== -1);
+  t('접는 자리는 기존 optional-section을 재사용',
+    html.indexOf('id="compareBody" class="optional-section"') !== -1
+    && html.indexOf('id="searchBody" class="optional-section"') !== -1);
+  t('접어도 내용은 그대로 있다 (원칙 15 — 도달 가능)',
+    html.indexOf('id="compareRows"') !== -1 && html.indexOf("openSearch('naver')") !== -1);
+
+  /* ⚠ 접기 버튼을 .card로 감싸면 접혔을 때 빈 흰 상자만 남고, 버튼 폭이 좌우 24px씩
+     좁아져 제목이 두 줄로 접힙니다. 껍데기 없이 두고 제목도 한 줄 길이로 유지해요. */
+  t('접기 버튼을 카드로 감싸지 않는다',
+    html.indexOf('<div class="card" id="compareCard"') === -1
+    && /<div id="compareCard" style="display:none;">\s*<button/.test(html));
+  const toggleLabels = (html.match(/class="section-toggle"[^>]*>\s*<span>([^<]*)</g) || [])
+    .map(s => s.replace(/^[\s\S]*<span>/, ''));
+  const resultLabels = toggleLabels.filter(s => /상황이 달랐다면|매물 찾아보기/.test(s));
+  t('결과 화면 접기 제목을 둘 다 검사함', resultLabels.length === 2, resultLabels.join(' | '));
+  /* 폭 계산: 화면 393pt · 컨테이너 351pt · 버튼 좌우 padding 16px · 셰브런 자리 24px
+     → 글자 자리 약 295pt. 14px 한글이 한 자 14pt이므로 21자가 한계입니다.
+     여유를 한 자 두고 20자로 잠급니다. 넘으면 두 줄로 접혀 버튼이 세로로 길어져요. */
+  t('접기 제목이 한 줄에 들어가는 길이 (20자 이내)',
+    resultLabels.every(s => s.length <= 20), resultLabels.map(s => s + '=' + s.length).join(' | '));
+  /* ⚠ 유의사항은 법적 고지라 기본 노출입니다. 접는 대상에 넣지 마세요. */
+  const disc = html.slice(html.indexOf('class="disclaimer"'));
+  t('유의사항 본문은 접히지 않는다',
+    disc.indexOf('disclaimer-item') < disc.indexOf('disclaimer-toggle'));
+
+  /* (4) 말투 — 특정 앱으로 좁히지 않는다 (원칙 9·44) */
+  t('화면 문구에 특정 메신저 이름이 없다', html.indexOf('카톡') === -1,
+    (html.match(/.{10}카톡.{10}/g) || []).slice(0, 2).join(' | '));
+  t('텍스트 복사 버튼 이름에서 용도 제한을 뺐다',
+    html.indexOf('📋 요약 텍스트 복사</button>') !== -1);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');

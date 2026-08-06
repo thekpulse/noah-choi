@@ -510,11 +510,15 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
   .line-item.total .k{color:var(--ink);font-weight:700;}
   .line-item.total .v{font-size:17px;font-weight:800;}
+  /* v21.15: 좌우 폭을 위의 .loan/.total 블록과 맞춥니다.
+     margin -10px + padding 10px이면 블록 가장자리는 나란히 서고,
+     글자는 여백 없는 일반 행과 같은 줄에 정렬돼요. 이전에는 여기만 20px이라
+     맨 아래 줄이 위 블록보다 좁아 보였습니다. */
   .line-item.grand{
     background:var(--ink);
     color:#fff;
-    margin:12px 0 0;
-    padding:16px 20px;
+    margin:12px -10px 0;
+    padding:16px 10px;
     border-radius:var(--radius);
     font-size:17px;
   }
@@ -683,7 +687,10 @@ window.GA_ID = 'G-NVTLEPG53G';
     padding:14px 20px;
     border-radius:var(--radius);
   }
-  .rent-summary .line-item{padding:6px 0;border-bottom:none;}
+  /* ⚠ 이 안에도 .line-item.grand가 하나 있어요(총비용 차이 행).
+     .grand의 좌우 -10px 여백이 여기까지 따라오면 이 줄만 좌우로 삐져나가
+     위 두 줄과 글자가 어긋납니다. 상자 안에서는 여백을 0으로 되돌립니다. */
+  .rent-summary .line-item{padding:6px 0;margin:0;border-bottom:none;}
   .rent-summary .k{color:#B8C0CC;font-family:'Pretendard', sans-serif;font-weight:500;}
   .rent-summary .v{color:#fff;font-weight:700;}
   .compare-row{
@@ -1677,22 +1684,26 @@ window.GA_ID = 'G-NVTLEPG53G';
 
       <!-- 곁가지 카드는 제목 줄만 남기고 접습니다. 결과를 확인하는 데 꼭 필요한 건
            리포트 카드와 '한도를 결정한 건'까지이고, 아래 둘은 찾아볼 때만 필요해요(원칙 43).
-           유의사항은 접지 않습니다. -->
-      <div class="card" id="compareCard" style="display:none;">
-        <button type="button" class="section-toggle" style="margin:0;" id="compareToggle" onclick="toggleOptionalSection(this,'compareBody')">
-          <span>상황이 달랐다면? — 주택 보유 상황별 대출한도</span><span class="chevron">▾</span>
+           유의사항은 접지 않습니다.
+           ⚠ 접기 버튼을 .card로 한 번 더 감싸면, 접혀 있을 때 빈 흰 상자만 남고
+              버튼 폭이 좌우 24px씩 좁아져 제목이 두 줄로 접혀요. 껍데기 없이 둡니다. -->
+      <div id="compareCard" style="display:none;">
+        <button type="button" class="section-toggle" id="compareToggle" onclick="toggleOptionalSection(this,'compareBody')">
+          <span>상황이 달랐다면? — 한도 비교</span><span class="chevron">▾</span>
         </button>
         <div id="compareBody" class="optional-section">
-          <div class="hint" style="margin-bottom:14px;">같은 집값일 때 주택 보유 상황에 따라 대출한도가 얼마나 달라지는지 비교했어요. 일반 시중은행 주담대 기준이에요.</div>
-          <div id="compareRows"></div>
+          <div class="card">
+            <div class="hint" style="margin-bottom:14px;">같은 집값일 때 주택 보유 상황에 따라 대출한도가 얼마나 달라지는지 비교했어요. 일반 시중은행 주담대 기준이에요.</div>
+            <div id="compareRows"></div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <button type="button" class="section-toggle" style="margin:0;" id="searchToggle" onclick="toggleOptionalSection(this,'searchBody')">
-          <span>이 예산으로 매물 찾아보기</span><span class="chevron">▾</span>
-        </button>
-        <div id="searchBody" class="optional-section">
+      <button type="button" class="section-toggle" id="searchToggle" onclick="toggleOptionalSection(this,'searchBody')">
+        <span>이 예산으로 매물 찾아보기</span><span class="chevron">▾</span>
+      </button>
+      <div id="searchBody" class="optional-section">
+        <div class="card">
           <div class="hint" style="margin-bottom:12px;">계산된 예산을 각 사이트 필터에 넣어 확인해보세요.</div>
           <div class="search-links">
             <button class="link-btn" onclick="openSearch('naver')">네이버부동산</button>
