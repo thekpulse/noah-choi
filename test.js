@@ -916,14 +916,22 @@ console.log('\n=== v21.5 ⑤ 버튼 서브라벨 말투 (원칙 9) ===');
   t('서브라벨 16개를 모두 검사함', subs.length >= 16, subs.length + '개');
 })();
 /* v21.9 교체(원칙 48): 결과 히어로가 "(예상)"이라고 적는데 그걸 고르는 01에서는
-   확정된 값처럼 말하고 있었어요(원칙 44). 문구 자체가 아니라 그 목적을 검사합니다. */
-t('01 A모드 부제가 추정치임을 밝힘',
-  /<span>살 수 있는 예상 최대 집값<\/span>/.test(html));
-t('01 B모드 부제가 추정치임을 밝힘',
-  /<span>그 집에 필요한 예상 현금<\/span>/.test(html));
+   확정된 값처럼 말하고 있었어요(원칙 44). 문구 자체가 아니라 그 목적을 검사합니다.
+   v21.21에서 카드 B가 '얼마나 영끌?'(명사+물음표)에서 '얼마나 영끌해야 할까?'로 바뀌었어요 —
+   카드 A의 '~있을까?'와 문법(제대로 된 서술어 질문)을 맞추기 위해서입니다. */
+const optASub = (html.match(/<b>영끌하면, 이 집 살 수 있을까\?<\/b><span>([^<]*)<\/span>/) || [, ''])[1];
+const optBSub = (html.match(/<b>이 집 사려면, 얼마나 영끌해야 할까\?<\/b><span>([^<]*)<\/span>/) || [, ''])[1];
+t('01 A모드 부제가 추정치임을 밝힘', optASub.indexOf('예상') !== -1, optASub);
+t('01 B모드 부제가 추정치임을 밝힘', optBSub.indexOf('예상') !== -1, optBSub);
 t('결과 히어로와 말이 어긋나지 않음',
   html.indexOf('최대 구매 가능 매매가 (예상)') !== -1 && html.indexOf("'필요한 내 돈 (예상)'") !== -1);
-t('히어로 헤드라인은 그대로', html.indexOf('나 살 수 있어?') !== -1);
+/* v21.16: '나 살 수 있어?'였던 자리는 이제 '이 집 살 수 있어?'입니다.
+   ⚠ 예전 검사가 h1 주석 속 예전 문구에 우연히 걸려 계속 통과하고 있었어요 — 실제 헤드라인이
+   아니라 설명 주석을 본 것이라 의미가 없었습니다. h1만 뽑아서 검사합니다(원칙 48). */
+const h1Src = html.slice(html.indexOf('<h1>'), html.indexOf('</h1>') + 5);
+t('히어로 헤드라인이 "나" 먼저로 시작한다', h1Src.indexOf('<h1>나,') === 0);
+t('헤드라인 강조 줄이 "이 집 살 수 있어?"', h1Src.indexOf('<span>이 집 살 수 있어?</span>') !== -1);
+t('og:title이 새 헤드라인과 맞다', html.indexOf('나, 이 집 살 수 있어?') !== -1);
 
 console.log('\n=== v21.6 고급설정 총량 상한 (원칙 43) ===');
 (() => {
@@ -1926,10 +1934,12 @@ console.log('\n=== v21.15 첫 화면 안내 문구 (원칙 9) ===');
     html.indexOf('내 소득</b>이 정합니다') === -1);
 
   /* 목적 ②: 첫 문장이 약속한 것을 결과 화면이 실제로 보여준다.
-     '진짜 드는 돈' = 영수증. 아래 항목 중 하나라도 빠지면 첫 문장이 빈말이 됩니다(원칙 58). */
-  const hero = html.slice(html.indexOf('id="heroSection"'), html.indexOf('class="hero-facts"'));
+     '진짜 드는 돈' = 영수증. 아래 항목 중 하나라도 빠지면 첫 문장이 빈말이 됩니다(원칙 58).
+     v21.20에서 "빠지는 게 생겨요"가 목적어 없이 헐렁하다는 지적을 받아 문구가 바뀌었어요 —
+     목적은 그대로("혼자 하면 놓친다"에서 시작), 표현만 구체화했습니다(원칙 48). */
+  const hero = html.slice(html.indexOf('id="heroSection"'), html.indexOf('</div>\n</div>\n<div class="compact-header"'));
   t('첫 문장이 "혼자 하면 놓친다"에서 시작한다',
-    hero.indexOf('혼자 알아보면 꼭 빠지는 게 생겨요') !== -1);
+    hero.indexOf('집값만 보면 나머지를 놓치기 쉬워요') !== -1);
   t('두 번째 줄이 결과로 받아친다', hero.indexOf('<b>진짜 드는 돈</b>') !== -1);
   const receiptSrc = html.slice(html.indexOf("`<div class=\"receipt-section-label finance\">거래·대출</div>`"),
                                 html.indexOf('lastShareText = buildSummaryText'));
@@ -1946,7 +1956,13 @@ console.log('\n=== v21.15 첫 화면 안내 문구 (원칙 9) ===');
   t('첫 문장에 평가하는 말이 없다',
     !/무리|위험해요|안 돼요|하세요|해야/.test(heroSentence),
     (heroSentence.match(/무리|위험해요|안 돼요|하세요|해야/g) || []).join(', '));
-  t('DSR 반영 표시는 그대로 남는다', html.indexOf('💸 DSR 반영') !== -1);
+  /* v21.17: 칩 문구가 '~해요' 어미로 바뀌고, '리포트 저장'(기능 나열)은 뺐습니다.
+     DSR 언급이 아예 사라지지 않는지만 확인합니다 — 문구 자체가 아니라 목적(원칙 48). */
+  t('DSR 반영 표시는 그대로 남는다', hero.indexOf('DSR') !== -1);
+  /* ⚠ 주석에 '리포트 저장'이라는 단어가 남아 있어(빼는 이유를 적어둔 문장) 주석까지 훑으면
+     걸립니다. 원칙 66과 같은 함정이라, 실제 칩 마크업(<div class="hero-facts">...)만 봅니다. */
+  const heroFacts = (hero.match(/<div class="hero-facts">[\s\S]*?<\/div>/) || [''])[0];
+  t('기능 나열형 칩(리포트 저장)은 뺐다', heroFacts.indexOf('리포트 저장') === -1, heroFacts);
 
   /* 목적 ③: 포함한다고 적은 것을 실제로 다 더한다.
      '취득세·중개보수 포함'은 인테리어비·기타비용을 빠뜨린 좁은 표현이었어요. */
@@ -1989,6 +2005,205 @@ console.log('\n=== v21.15 판정 뱃지 색 (원칙 38·42) ===');
   t('시·군·구로 규제지역 판정되면 색이 켜진다', badge.classList.contains('reg'), badge.innerHTML);
 
   el('buySgg').value = ''; el('zone').value = 'reg'; delete el('zone').dataset.manual;
+})();
+
+console.log('\n=== v21.17 첫 화면 재검토 (와이프 피드백) ===');
+(() => {
+  /* (1) 01 카드 — 영끌 브랜드로 직관화, 물음표로 안 끝나는 원칙(v21.14 검사)은 그대로 지킴
+     v21.20: 두 카드가 서로 다른 문법(A=평서문·B=의문문)이라 짝이 안 맞다는 지적을 받아
+     둘 다 [조건절],[질문]? 구조로 맞췄어요(원칙 48 — 목적은 "영끌 브랜드 사용" 그대로,
+     표현이 갱신됨). */
+  t('카드 A 제목이 영끌 브랜드를 쓴다', html.indexOf('<b>영끌하면, 이 집 살 수 있을까?</b>') !== -1);
+  t('카드 B 제목이 영끌 브랜드를 쓴다', html.indexOf('<b>이 집 사려면, 얼마나 영끌해야 할까?</b>') !== -1);
+  t('예전 카드 문구(예산이 있어요·집을 정했어요)가 남아있지 않다',
+    html.indexOf('<b>예산이 있어요</b>') === -1 && html.indexOf('<b>집을 정했어요</b>') === -1);
+  /* mode는 텍스트가 아니라 'A'/'B' 값으로만 판정합니다 — 문구를 바꿔도 로직은 안 변함 */
+  t('setMode 로직은 텍스트가 아니라 A/B 값을 쓴다',
+    html.indexOf("m === 'A' ? '영끌 전, 가진 현금성 자산이 얼마인가요?'") !== -1);
+
+  /* (2) 02 — "영끌 전" 프레이밍 + "현금성 자산"으로 명확화 */
+  t('02 제목이 "영끌 전"으로 시작한다', html.indexOf('id="amountCardTitle">영끌 전,') !== -1);
+  /* v21.19에서 부제의 '현금성 자산이에요' 반복을 뺐습니다 — 제목에 이미 있어서 중복이었어요.
+     그래서 이 용어를 검사하는 자리를 제목(ask-q)으로 옮깁니다(원칙 48 — 목적은 그대로: 정확한 용어가 한 번은 쓰인다). */
+  t('02가 "현금성 자산"이라는 정확한 용어를 쓴다 (제목에)',
+    html.indexOf('id="amountCardTitle">영끌 전, 가진 현금성 자산이 얼마인가요?') !== -1);
+  t('부제에서는 반복하지 않는다 (원칙 43 — 같은 말 두 번 안 함)',
+    html.indexOf('<b>현금성 자산</b>이에요') === -1);
+  t('setMode의 A분기도 같은 제목으로 동기화됐다 (v21.17)',
+    html.indexOf("'영끌 전, 가진 현금성 자산이 얼마인가요?' : '그 집은 얼마인가요?'") !== -1);
+  t('B분기(매매가 질문)는 건드리지 않았다', html.indexOf("'그 집은 얼마인가요?'") !== -1);
+  /* ⚠ v21.21: 체크박스+라벨을 세그먼트 토글('대출 포함'/'전액 현금')로 바꿨어요.
+     헷갈리지 않는지는 이제 새 라벨이 '대출'이라는 단어로 부제와 안 겹치는지로 봅니다. */
+  t('대출/현금 토글이 별개 라벨을 쓴다 (헷갈리지 않음)',
+    html.indexOf('<b>대출 포함</b>') !== -1 && html.indexOf('<b>전액 현금</b>') !== -1);
+
+  /* (3) 04 — 주택 보유 상황이 지역보다 먼저 온다 */
+  const askSituation = html.slice(html.indexOf('id="askSituation"'), html.indexOf('id="askSituation"') + 6000);
+  const iHouse = askSituation.indexOf('label>주택 보유 상황');
+  const iRegion = askSituation.indexOf('label>사려는 집의 지역');
+  t('04 안에서 두 필드를 모두 찾음', iHouse !== -1 && iRegion !== -1);
+  t('주택 보유 상황이 지역보다 먼저 나온다', iHouse < iRegion, `house=${iHouse} region=${iRegion}`);
+  t('소제목 어순도 새 화면 순서와 맞다 (원칙 57)',
+    askSituation.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+  /* ⚠ 서민·실수요자 우대 칸은 지역(regulated)과 주택보유상황 둘 다에 의존하므로,
+     어느 쪽을 먼저 두든 마지막 필드 뒤에 그대로 남아있어야 합니다. */
+  const iSeomin = askSituation.indexOf('id="seominField"');
+  t('서민·실수요자 칸이 지역 필드 뒤에 그대로 있다', iSeomin > iRegion);
+  /* ⚠ 지역 필드의 서브컨트롤(뱃지·토글·실거래가 박스·LTA안내)이 통째로 옮겨졌는지 확인 */
+  ['zoneBadge', 'ltaNote', 'buySiseBox', 'zoneSeg'].forEach(id => {
+    t(`지역 서브컨트롤 ${id}이 04 안에 그대로 있다`, askSituation.indexOf('id="' + id + '"') !== -1);
+  });
+
+  /* (4) 계산 로직 불변 — 마크업 순서를 바꿔도 DOM id 참조라 결과가 같아야 함(원칙 48) */
+  el('houseStatus').value = 'first'; el('zone').value = 'reg';
+  const orderCtx = {
+    zone: 'reg', regulated: true, metro: true, houseStatus: 'first', price: 500000000,
+    roomDeductAmt: 55000000, bankSelfCap: 0, pyeong: 25, pyeongEntered: true,
+    interiorPerPyeong: 0, etc: 0, over85: false, firstTimeTaxCut: false,
+    extraFunding: 0, loanChoice: 'bank', income: 70000000, incomeEntered: true,
+    newlywed: false, newborn: false, multiChild: false, childCount: 0, dualIncome: false,
+    creditLoan: 0, companyLoan: 0, sellerFinancing: 0, manualLoanCap: 0, seominCheck: false,
+    noLoan: false, rate: 5.4, years: 30, otherDebtMonthly: 0, stressBp: 3.0,
+    mciCovered: false, rateType: 'variable', fixedYears: 0
+  };
+  const c = calcCosts(orderCtx);
+  t('04 순서 변경 후에도 계산값이 그대로다 (생애최초·규제지역·5억)',
+    c.tax === 5500000 && Math.round(c.mortgageLoan) === 251276975,
+    `tax=${c.tax} loan=${Math.round(c.mortgageLoan)}`);
+})();
+
+console.log('\n=== v21.18 02 문구 겹침 · 히어로 칩 정렬 ===');
+(() => {
+  /* (1) 02 부제와 '전액 현금' 체크박스가 서로 다른 개념인데 같은 단어(대출+현금)를
+     나란히 써서 겹쳐 보였어요. 부제에서 '대출'이라는 단어를 뺍니다.
+     ⚠ v21.19: '앞으로 빌릴 돈은 넣지 마세요' 문장 자체가 없어졌습니다 — 제목의 '영끌 전'이
+        이미 같은 뜻이라 군더더기였어요(원칙 43). 그래서 "문장이 남아있다" 검사는 더 이상
+        맞지 않고, "문장이 사라졌고 제목이 그 역할을 대신한다"로 목적이 바뀌었습니다(원칙 48). */
+  const askAmount = html.slice(html.indexOf('id="askAmount"'), html.indexOf('id="askIncome"'));
+  t('02 부제에 "대출"이라는 단어가 없다 (체크박스와 겹치지 않음)',
+    (askAmount.match(/id="amountCardSub"[^<]*<[^>]*>[^<]*<\/b>([^<]*)/) || [, ''])[1].indexOf('대출') === -1);
+  t('전액 현금 토글 라벨은 그대로 (별개 개념이라 안 건드림)',
+    askAmount.indexOf('<b>전액 현금</b>') !== -1);
+
+  /* (2) 히어로 칩 — v21.17에서 3개 → 2개로 줄였지만, 길이가 다른 두 칩이 여전히
+     flex-wrap으로 줄마다 폭이 달랐어요. 세로로 쌓아 항상 폭이 맞게 고칩니다. */
+  const css = html.slice(html.indexOf('<style>'), html.indexOf('</style>'));
+  const heroFactsCss = (css.match(/\.hero-facts\{[^}]*\}/) || [''])[0];
+  t('칩 컨테이너가 세로로 쌓인다 (길이와 무관하게 폭이 맞음)',
+    /flex-direction:column/.test(heroFactsCss));
+  const heroFactsSpanCss = (css.match(/\.hero-facts span\{[^}]*\}/) || [''])[0];
+  t('칩 하나하나가 전체 폭을 쓴다', /width:100%/.test(heroFactsSpanCss));
+})();
+
+console.log('\n=== v21.19 02 부제 간결화 · 04 소제목 어순 동기화 ===');
+(() => {
+  const askAmount19 = html.slice(html.indexOf('id="askAmount"'), html.indexOf('id="askIncome"'));
+  /* (1) 제목이 이미 '영끌 전, 현금성 자산'을 말하니, 부제에서 반복하지 않는다.
+     '앞으로 빌릴 돈은 넣지 마세요'도 제목의 '영끌 전'이 대신하므로 뺐다(원칙 43). */
+  /* ⚠ 제 설명 주석 안에 이 문구를 인용해뒀어요(왜 뺐는지 적느라). 주석까지 훑으면 걸립니다 —
+     원칙 66과 같은 함정이라 주석을 걷어내고 봅니다. */
+  const askAmountVisible = askAmount19.replace(/<!--[\s\S]*?-->/g, '');
+  t('부제에 "빌릴 돈" 지시문이 더는 없다 (제목이 그 역할을 대신함)',
+    askAmountVisible.indexOf('앞으로 빌릴 돈은 넣지 마세요') === -1);
+  t('제목이 "영끌 전"으로 그 역할을 대신 한다',
+    html.indexOf('id="amountCardTitle">영끌 전,') !== -1);
+  /* (2) 나열이 '가족 지원금'에서 끊기면 다른 경로(퇴직금·증여 등)를 빠뜨린 것처럼 읽힌다.
+     '등'을 붙여 예시가 전부가 아님을 밝힌다. */
+  t('예시 나열이 "등"으로 열려있다 (가족 지원금에서 끊기지 않음)',
+    askAmount19.indexOf('가족 지원금 등') !== -1);
+  t('setMode의 A분기도 v21.19 문구로 동기화됐다',
+    html.indexOf("'예금·주식·돌려받을 전세보증금·가족 지원금 등 <b>갖고 계신 돈이면 다 포함</b>돼요.'") !== -1);
+
+  /* (3) 04 — 주택 보유 상황을 지역보다 먼저 보여주기로 했는데, 정적 HTML의 소제목만 바꾸고
+     JS가 노출/숨김 시 다시 쓰는 SITUATION_SUB는 안 고쳐서 화면엔 옛 순서가 다시 나왔어요.
+     같은 값을 두 자리(정적 기본값 · JS 재작성)에서 보여줄 땐 둘 다 맞아야 합니다(원칙 58). */
+  t('SITUATION_SUB.loan도 주택 보유 상황이 먼저다',
+    SITUATION_SUB.loan.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+  t('SITUATION_SUB.noLoan도 주택 보유 상황이 먼저다',
+    SITUATION_SUB.noLoan.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+  /* 실제 화면에 반영되는지까지 — 함수를 직접 호출해 DOM에 쓰인 값을 확인 */
+  syncSituationSub(false);
+  t('대출 있음 상태에서 실제 DOM에도 새 어순이 반영된다',
+    el('situationSub').innerHTML.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+  syncSituationSub(true);
+  t('대출 없음 상태에서도 새 어순이 반영된다',
+    el('situationSub').innerHTML.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+})();
+
+console.log('\n=== v21.20 히어로 부제 임팩트 · 01 카드 대칭 ===');
+(() => {
+  const hero20 = html.slice(html.indexOf('id="heroSection"'), html.indexOf('</div>\n</div>\n<div class="compact-header"'));
+
+  /* (1) 부제 — 목적어 없이 헐렁했던 문제와, <br> 없이 화면 폭에 맡겨 줄바꿈이
+     예측 불가능했던 문제를 함께 고칩니다. */
+  t('부제에 구체적인 목적어가 있다 ("나머지를", "세금부터 수수료까지")',
+    hero20.indexOf('나머지를 놓치기 쉬워요') !== -1 && hero20.indexOf('세금부터 수수료까지') !== -1);
+  t('줄바꿈 지점을 <br>으로 못박았다 (화면 폭에 맡기지 않음)',
+    /집값만 보면 나머지를 놓치기 쉬워요\.<br>/.test(hero20));
+  /* ⚠ h1의 <br>과 같은 방식이어야 일관됩니다(원칙 44) */
+  t('h1도 같은 방식(<br>)으로 줄바꿈을 못박고 있다 (일관성 확인)',
+    /<h1>나,<br>/.test(hero20));
+  const heroSentence20 = (hero20.replace(/<!--[\s\S]*?-->/g, '').match(/<p>([\s\S]*?)<\/p>/) || [, ''])[1];
+  t('평가하는 말은 여전히 없다 (원칙 9)',
+    !/무리|위험해요|안 돼요|하세요|해야/.test(heroSentence20));
+
+  /* (2) 01 카드 — 두 카드가 같은 문법 구조([조건절],[질문]?)로 거울상을 이룬다.
+     '영끌'과 '이 집'의 등장 순서가 서로 바뀌어야 진짜 대칭입니다.
+     v21.21: 카드 B가 명사+물음표('영끌?')였던 걸 제대로 된 서술어 질문('영끌해야 할까?')으로
+     고쳐서 카드 A의 '~있을까?'와 문법까지 맞췄어요. */
+  const iEung = html.indexOf('<b>영끌하면, 이 집 살 수 있을까?</b>');
+  const iJip = html.indexOf('<b>이 집 사려면, 얼마나 영끌해야 할까?</b>');
+  t('두 카드 제목을 모두 찾음', iEung !== -1 && iJip !== -1);
+  t('카드 A는 "영끌"이 먼저, 카드 B는 "이 집"이 먼저 나온다 (진짜 거울상)',
+    '영끌하면, 이 집 살 수 있을까?'.indexOf('영끌') < '영끌하면, 이 집 살 수 있을까?'.indexOf('이 집')
+    && '이 집 사려면, 얼마나 영끌해야 할까?'.indexOf('이 집') < '이 집 사려면, 얼마나 영끌해야 할까?'.indexOf('영끌'));
+  t('두 카드 다 완전한 서술어로 끝나는 질문이다 (명사+물음표 아님)',
+    (html.match(/<b>영끌하면, 이 집 살 수 있을까\?<\/b>/) || [''])[0].endsWith('?</b>')
+    && (html.match(/<b>이 집 사려면, 얼마나 영끌해야 할까\?<\/b>/) || [''])[0].endsWith('?</b>'));
+  t('카드 B가 명사만 남기고 끝나던 옛 형태로 되돌아가지 않았다',
+    html.indexOf('<b>이 집 사려면, 얼마나 영끌?</b>') === -1);
+})();
+
+console.log('\n=== v21.21 대출/현금 토글 · 부제 중복 제거 · 카드 B 문법 ===');
+(() => {
+  /* (1) 체크박스 → 세그먼트 토글. #noLoanCheck는 숨겨진 채로 살아있어야 하고
+     (7곳이 .checked를 직접 읽음), 버튼 클릭이 그 값을 정확히 세팅해야 합니다. */
+  t('숨겨진 체크박스가 그대로 있다 (기존 로직 7곳이 참조함)',
+    html.indexOf('id="noLoanCheck" class="sr-only"') !== -1);
+  t('체크박스에 눈에 보이는 라벨이 더는 없다 (세그먼트가 그 역할을 함)',
+    html.indexOf('for="noLoanCheck"') === -1);
+  t('두 버튼 다 있다 (대출 포함 · 전액 현금)',
+    html.indexOf('<b>대출 포함</b>') !== -1 && html.indexOf('<b>전액 현금</b>') !== -1);
+  t('토글이 2칸 전용 클래스를 쓴다 (좁은 화면에서도 안 접힘)',
+    html.indexOf('class="segmented sm two"') !== -1);
+  t('2칸 토글의 좁은 화면 가로 유지 규칙이 있다 (.three와 같은 패턴)',
+    /@media \(max-width:400px\)\{ \.segmented\.two\{flex-direction:row;\} \}/.test(html));
+
+  /* 실제 클릭 동작 — pickLoanToggle이 체크박스를 세팅하고 toggleNoLoan()의 기존 분기를 그대로 태운다 */
+  const cashBtn = { dataset: { val: 'cash' }, classList: { add(){}, remove(){} },
+    parentNode: { querySelectorAll: () => [] } };
+  pickLoanToggle(cashBtn, 'cash');
+  t('전액 현금 버튼을 누르면 체크박스가 checked=true가 된다', el('noLoanCheck').checked === true);
+  t('전액 현금을 고르면 04 소제목이 취득세 문장으로 바뀐다 (기존 toggleNoLoan 로직 그대로 작동)',
+    el('situationSub').innerHTML === SITUATION_SUB.noLoan);
+  const loanBtn = { dataset: { val: 'loan' }, classList: { add(){}, remove(){} },
+    parentNode: { querySelectorAll: () => [] } };
+  pickLoanToggle(loanBtn, 'loan');
+  t('대출 포함 버튼을 누르면 체크박스가 다시 checked=false가 된다', el('noLoanCheck').checked === false);
+  t('되돌리면 04 소제목도 대출한도 문장으로 돌아온다', el('situationSub').innerHTML === SITUATION_SUB.loan);
+
+  /* URL 복원(?nl=1)처럼 버튼을 안 거치고 checked가 바뀌는 경로 — 버튼 표시도 따라가야 함(원칙 58) */
+  el('noLoanCheck').checked = true;
+  syncLoanToggleButtons(true);
+  t('syncLoanToggleButtons가 정의돼 있고 에러 없이 실행된다', true);
+
+  /* (2) 히어로 부제 — 칩과 겹치던 나열을 뺐다 */
+  const hero21 = html.slice(html.indexOf('id="heroSection"'), html.indexOf('</div>\n</div>\n<div class="compact-header"'));
+  t('부제가 칩과 같은 나열("세금부터 수수료까지")을 반복하지 않는다',
+    hero21.replace(/<!--[\s\S]*?-->/g, '').indexOf('세금부터 수수료까지') === -1);
+  t('그래도 "진짜 드는 돈" 문구는 남아있다', hero21.indexOf('<b>진짜 드는 돈</b>') !== -1);
+  t('칩이 세부 항목 나열을 전담한다 (부제는 안 함)',
+    html.indexOf('세금·중개보수·부대비용까지 챙겨요') !== -1);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
