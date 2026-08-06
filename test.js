@@ -1287,5 +1287,34 @@ console.log('\n=== v21.8 ㉙ solveMaxPrice 속성 검사 ===');
   });
 })();
 
+console.log('\n=== v21.9 ㊷ 대출 없이 계산할 때 비교카드 ===');
+(() => {
+  /* 목적: 히어로가 '주담대 0원'인 화면에 대출 금액을 나란히 보여주지 않는다. */
+  const ctx = {
+    zone:'reg', regulated:true, metro:true, houseStatus:'first', price:500000000,
+    roomDeductAmt:55000000, bankSelfCap:0, pyeong:25, pyeongEntered:true,
+    interiorPerPyeong:0, etc:0, over85:false, firstTimeTaxCut:false,
+    extraFunding:0, loanChoice:'bank', income:70000000, incomeEntered:true,
+    newlywed:false, newborn:false, multiChild:false, childCount:0, dualIncome:false,
+    creditLoan:0, companyLoan:0, sellerFinancing:0, manualLoanCap:0, seominCheck:false,
+    noLoan:false, rate:5.4, years:30, otherDebtMonthly:0, stressBp:3.0,
+    mciCovered:false, rateType:'variable', fixedYears:0
+  };
+
+  renderCompare({...ctx, noLoan:false}, 500000000);
+  const shownRows = el('compareRows').innerHTML;
+  t('대출을 받는 경우엔 카드가 그대로 나옴', el('compareCard').style.display === 'block');
+  t('세 가지 보유 상황이 모두 나옴', (shownRows.match(/cmp-row/g) || []).length === 3);
+  t('카드는 은행 주담대 기준으로 계산함', shownRows.indexOf('대출 0원') === -1, shownRows.slice(0, 120));
+
+  renderCompare({...ctx, noLoan:true}, 500000000);
+  t('대출 없이 계산하면 카드를 감춤', el('compareCard').style.display === 'none');
+  t('감출 때 이전 내용도 비움 (원칙 30)', el('compareRows').innerHTML === '', el('compareRows').innerHTML);
+
+  renderCompare({...ctx, noLoan:false}, 500000000);
+  t('체크를 다시 풀면 카드가 되살아남',
+    el('compareCard').style.display === 'block' && el('compareRows').innerHTML !== '');
+})();
+
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);

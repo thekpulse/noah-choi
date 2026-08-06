@@ -3670,6 +3670,15 @@ function renderFallbackNote(c){
 }
 
 function renderCompare(ctxBase, price){
+  /* ㊷ '대출 없이 전액 현금'을 고른 화면에서는 이 카드를 감춥니다.
+     카드는 아래에서 loanChoice:'bank', noLoan:false로 계산해요. 카드 안에서는 맞는 말이지만,
+     히어로에 '주담대 0원'이 뜬 바로 아래라 같은 화면에서 대출 금액이 나오면 모순으로 읽혀요.
+     원칙 30에 따라 감출 때 이전 내용도 같이 비웁니다. */
+  if(ctxBase.noLoan){
+    document.getElementById('compareCard').style.display = 'none';
+    document.getElementById('compareRows').innerHTML = '';
+    return;
+  }
   const scenarios = [
     {key:'first', label:'생애최초 구입자'},
     {key:'none', label:'무주택자'},
