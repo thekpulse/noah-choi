@@ -1228,7 +1228,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
   <div class="step active" data-step="1">
 
     <!-- Q1. 무엇이 궁금한가 -->
-    <div class="ask">
+    <div class="ask" id="askMode">
       <div class="ask-num">01</div>
       <div class="ask-body">
         <div class="ask-q">무엇이 궁금하세요?</div>
@@ -1244,7 +1244,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     </div>
 
     <!-- Q2. 금액 -->
-    <div class="ask">
+    <div class="ask" id="askAmount">
       <div class="ask-num">02</div>
       <div class="ask-body">
         <div class="ask-q" id="amountCardTitle">지금 가진 돈이 얼마인가요?</div>
@@ -1275,7 +1275,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     </div>
 
     <!-- Q3. 연소득 -->
-    <div class="ask">
+    <div class="ask" id="askIncome">
       <div class="ask-num">03</div>
       <div class="ask-body">
         <div class="ask-q">연소득은 얼마인가요?</div>
@@ -1289,7 +1289,7 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     </div>
 
     <!-- 조건 (기본값 노출) -->
-    <div class="ask">
+    <div class="ask" id="askSituation">
       <div class="ask-num">04</div>
       <div class="ask-body">
         <div class="ask-q">내 상황은 어떤가요?</div>
@@ -2825,7 +2825,9 @@ function toggleTradeUp(){
 function toggleSeominField(){
   const regulated = isReg();
   const houseStatus = document.getElementById('houseStatus').value;
-  const show = regulated && houseStatus === 'none';
+  const noLoanEl = document.getElementById('noLoanCheck');
+  /* 서민·실수요자 우대는 LTV 우대예요. 대출이 없으면 걸릴 곳이 없습니다. */
+  const show = regulated && houseStatus === 'none' && !(noLoanEl && noLoanEl.checked);
   document.getElementById('seominField').style.display = show ? 'block' : 'none';
   if(!show) document.getElementById('seominCheck').checked = false;
 }
@@ -3440,7 +3442,8 @@ function renderInsights(c, price, ctxBase, rate, years){
   const diag = document.getElementById('bindingDiagnosis');
 
   // 연소득 미입력 = DSR 미반영 = 한도 과대추정. 반드시 알려야 해요.
-  if(!ctxBase.incomeEntered || ctxBase.income <= 0){
+  // 단 대출이 없으면 LTV도 DSR도 쓰지 않으므로, 이 경고는 사실과 맞지 않습니다.
+  if(!ctxBase.noLoan && (!ctxBase.incomeEntered || ctxBase.income <= 0)){
     diag.innerHTML = `
       <div class="diag-card" style="background:linear-gradient(160deg,#7A3E12,#5C2E0D);">
         <div class="diag-tag">주의</div>
@@ -4084,6 +4087,26 @@ function toggleNoLoan(){
   ['loanCondGroup', 'loanChoiceGroup'].forEach(function(id){
     const box = document.getElementById(id);
     if(box) box.style.display = checked ? 'none' : '';
+  });
+  /* 연소득은 DSR·DTI 판정에만 써요. 대출이 없으면 결과에 전혀 반영되지 않습니다.
+     ⚠ 04(내 상황)는 감추지 않습니다. 지역과 주택 보유 상황은 취득세율을 정하기 때문에
+        대출을 안 받아도 결과가 달라져요(`acquisitionTaxRate`). */
+  const askIncome = document.getElementById('askIncome');
+  if(askIncome) askIncome.style.display = checked ? 'none' : '';
+  toggleSeominField();
+  syncAskNumbers();
+}
+
+/* 질문 번호는 보이는 것만 세어 다시 매깁니다.
+   03을 감췄을 때 01·02·04로 건너뛰면 사라진 질문이 있다는 인상을 줘요. */
+function syncAskNumbers(){
+  let n = 0;
+  ['askMode', 'askAmount', 'askIncome', 'askSituation'].forEach(function(id){
+    const box = document.getElementById(id);
+    if(!box || box.style.display === 'none') return;
+    n += 1;
+    const num = box.querySelector('.ask-num');
+    if(num) num.textContent = (n < 10 ? '0' : '') + n;
   });
 }
 

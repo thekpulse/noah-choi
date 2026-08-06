@@ -1447,5 +1447,41 @@ console.log('\n=== v21.9 ㊻ 결과 화면 중복 정리 ===');
   t('내 돈(자기자본)도 리포트 지표 칸에 남음', gridSrc.indexOf("k:'내 돈(자기자본)'") !== -1);
 })();
 
+console.log('\n=== v21.9 ㊹ 대출 없이 계산할 때 질문 흐름 ===');
+(() => {
+  /* 목적: 결과에 반영되지 않는 질문은 묻지 않는다.
+     단 결과가 달라지는 질문은 남긴다 — 지역·보유상황은 취득세율을 정한다. */
+  const noLoan = el('noLoanCheck');
+  el('houseStatus').value = 'none'; el('zone').value = 'reg';
+
+  noLoan.checked = false; toggleNoLoan();
+  t('대출을 받으면 연소득을 묻는다', el('askIncome').style.display === '');
+  t('번호가 01~04로 매겨진다',
+    ['askMode','askAmount','askIncome','askSituation']
+      .map(id => el(id).querySelector('.ask-num').textContent).join(',') === '01,02,03,04');
+  t('규제지역 무주택이면 서민 우대가 보인다', el('seominField').style.display === 'block');
+
+  noLoan.checked = true; toggleNoLoan();
+  t('대출이 없으면 연소득을 묻지 않는다', el('askIncome').style.display === 'none');
+  t('04(내 상황)는 남는다 — 취득세가 걸림', el('askSituation').style.display !== 'none');
+  t('02(가진 돈)도 남는다', el('askAmount').style.display !== 'none');
+  t('번호를 다시 매겨 01~03이 된다',
+    ['askMode','askAmount','askSituation']
+      .map(id => el(id).querySelector('.ask-num').textContent).join(',') === '01,02,03');
+  t('서민·실수요자 우대도 감춘다 (LTV 우대라 걸릴 곳이 없음)',
+    el('seominField').style.display === 'none');
+  t('감추면서 서민 체크도 풀어둔다 (원칙 42)', el('seominCheck').checked === false);
+
+  noLoan.checked = false; toggleNoLoan();
+  t('체크를 풀면 연소득이 돌아온다', el('askIncome').style.display === '');
+  t('번호도 01~04로 돌아온다',
+    el('askSituation').querySelector('.ask-num').textContent === '04');
+
+  // 소득 미입력 경고가 대출 없는 화면에 뜨지 않는가
+  const diagSrc = html.slice(html.indexOf('연소득 미입력 = DSR 미반영'),
+                             html.indexOf('연소득 미입력 = DSR 미반영') + 300);
+  t('대출이 없으면 DSR 미반영 경고를 띄우지 않음', diagSrc.indexOf('!ctxBase.noLoan') !== -1);
+})();
+
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);
