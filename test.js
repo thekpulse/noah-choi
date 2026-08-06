@@ -2206,5 +2206,95 @@ console.log('\n=== v21.21 대출/현금 토글 · 부제 중복 제거 · 카드
     html.indexOf('세금·중개보수·부대비용까지 챙겨요') !== -1);
 })();
 
+/* ===================================================================
+   v21.22 — 62 색 규칙 재정리
+   원칙 38(한 개념에 색 하나) · 62(색을 새로 쓰기 전에 그 색이 이미 무슨 뜻인지 센다)
+   ⚠ 원칙 66: 아래 검사는 전부 CSS 주석을 걷어낸 텍스트에 대해서만 돕니다.
+      :root 주석에 규칙을 적어뒀기 때문에, 주석을 안 지우면 검사가 자기 주석에 걸립니다.
+   =================================================================== */
+console.log('\n=== v21.22 색 규칙(62) ===');
+(() => {
+  const styleRaw = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1];
+  const css = styleRaw.replace(/\/\*[\s\S]*?\*\//g, '');   // ← 원칙 66
+  t('CSS 블록을 찾았고 주석을 걷어냈다',
+    css.length > 1000 && css.indexOf('파랑 사용 규칙') === -1);
+
+  /* 규칙 ②③ — 연파랑 채움을 쓰는 자리를 전수로 센다 */
+  const softFill = (css.match(/background:var\(--primary-soft\)/g) || []).length;
+  t('연파랑 채움은 정확히 다섯 자리 (선택됨 4 + 영수증 1)', softFill === 5, '실제 ' + softFill);
+
+  const has = (sel, decl) => {
+    const i = css.indexOf(sel);
+    if (i === -1) return false;
+    const body = css.slice(i, css.indexOf('}', i));
+    return body.indexOf(decl) !== -1;
+  };
+  t('선택됨 ① 01 카드', has('.option-card.active{', 'background:var(--primary-soft)'));
+  t('선택됨 ② 대출 상품', has('.loan-option:has(input:checked){', 'background:var(--primary-soft)'));
+  t('선택됨 ③ 세그먼트', has('.seg-btn.active{', 'background:var(--primary-soft)'));
+  t('선택됨 ④ 칩 — 진한 파랑+흰 글씨에서 내려왔다 (같은 뜻은 같은 모양)',
+    has('.chip.active{', 'background:var(--primary-soft)') && !has('.chip.active{', 'color:#fff'));
+  t('값 강조는 영수증 대출 행 하나뿐', has('.line-item.loan{', 'background:var(--primary-soft)'));
+
+  /* 규칙 ① — 진한 파랑 채움은 "다음으로 넘어가는 버튼" + 진행 막대만 */
+  const hardFill = (css.match(/background:var\(--primary\)/g) || []).length;
+  t('진한 파랑 채움은 세 자리뿐 (계산 버튼·다음 버튼·진행 막대)', hardFill === 3, '실제 ' + hardFill);
+  t('계산 버튼은 진한 파랑 유지', has('button.calc-btn{', 'background:var(--primary)'));
+  t('다음 버튼도 진한 파랑 유지', has('.step-nav .btn-next{', 'background:var(--primary)'));
+
+  /* 규칙 — 펼치기·접기·실행 버튼은 채우지 않는다 */
+  [['.hint-toggle{', '펼치기 알약'],
+   ['.section-toggle{', '「더 정확하게」 접기'],
+   ['.sise-btn{', '실거래가 조회'],
+   ['.sise-apply button.primary{', '실거래가 적용']].forEach(([sel, name]) => {
+    t('버튼을 채우지 않는다: ' + name,
+      !has(sel, 'background:var(--primary-soft)') && !has(sel, 'background:var(--primary)'));
+  });
+  t('접기 버튼 테두리도 파랑이 아니다 (선택된 것처럼 보이지 않게)',
+    has('.section-toggle{', 'border:1.5px solid var(--border)'));
+  t('접기 버튼 글자는 파랑으로 남겨 "누를 수 있다"를 알린다',
+    has('.section-toggle{', 'color:var(--primary-dark)'));
+
+  /* 규칙 — hover는 채우지 않는다 */
+  const hovers = css.match(/\.(link-btn|chip):hover\{[^}]*\}/g) || [];
+  t('hover 규칙 두 개를 찾음', hovers.length === 2);
+  t('hover는 배경을 채우지 않는다', hovers.every(r => r.indexOf('background:') === -1));
+
+  /* 규칙 — 뱃지·태그는 회색. 판정색은 판정이 켜졌을 때만(원칙 63) */
+  [['.badge-current{', '현재 조건(비교표)'],
+   ['.cmp-now{', '현재 조건(정책대출)'],
+   ['.req-tag{', '필수'],
+   ['.funding-ratio{', '자금 비율']].forEach(([sel, name]) => {
+    t('뱃지는 회색: ' + name, has(sel, 'background:var(--fill)'));
+  });
+  t('자금 비율은 위험할 때만 색이 켜진다', has('.funding-ratio.hot{', 'background:#FFE9EB'));
+
+  /* 규칙 — 컨테이너는 파랑으로 감싸지 않는다 */
+  t('문의 박스는 회색 컨테이너', has('.duty-contact{', 'background:var(--fill)'));
+
+  /* 규칙 — 포커스 링은 채널이 달라 그대로 둔다 */
+  t('포커스 링은 box-shadow로 유지',
+    (css.match(/box-shadow:0 0 0 3px var\(--primary-soft\)/g) || []).length === 1);
+
+  /* 팔레트를 늘리지 않았다 — 밝은 파랑은 이미 쓰던 값을 토큰으로 정리한 것 */
+  t('--primary-bright가 :root에 정의됐다', css.indexOf('--primary-bright:#7CC4FF') !== -1);
+  t('밝은 파랑 하드코딩이 남아있지 않다',
+    (css.match(/#7CC4FF/gi) || []).length === 1);
+
+  /* 히어로 파랑 강조 — 어두운 배경 위 광원 + 태그 */
+  const heroCss = (css.match(/\n  \.hero\{[\s\S]*?\n  \}/) || [''])[0];
+  t('히어로 배경에 파란 광원이 한 겹 있다',
+    heroCss.indexOf('radial-gradient') !== -1 && heroCss.indexOf('rgba(0,145,255') !== -1);
+  t('원래의 어두운 그라디언트도 그대로 남아있다',
+    heroCss.indexOf('linear-gradient(160deg,#0D1421') !== -1);
+  t('히어로 태그가 파랑 계열이다', css.indexOf('background:rgba(0,145,255,.18);color:var(--primary-bright)') !== -1);
+  t('히어로 강조 글자는 토큰을 쓴다',
+    css.indexOf('.hero h1 span{color:var(--primary-bright);}') !== -1
+    && css.indexOf('.hero p b{color:var(--primary-bright);') !== -1);
+
+  /* 판 번호 */
+  t('판 번호가 v21.22', BUILD === 'v21.22', BUILD);
+})();
+
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);
