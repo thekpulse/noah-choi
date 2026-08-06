@@ -481,6 +481,14 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
   }
   .line-item.loan .k{color:var(--primary-dark);font-weight:700;}
   .line-item.loan .v{color:var(--primary-dark);font-size:17px;font-weight:800;}
+  /* 소계는 선으로만 구분해요. 채워진 블록이 여러 개면 "가장 중요한 줄"이 흐려져요(원칙 10). */
+  .line-item.sub{
+    border-top:1px solid var(--border);
+    margin-top:9px;
+    padding-top:12px;
+  }
+  .line-item.sub .k{color:var(--ink);font-weight:700;}
+  .line-item.sub .v{font-weight:700;}
   .line-item.total{
     border-top:1.5px solid var(--border);
     background:var(--fill);
@@ -1234,10 +1242,10 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <div class="ask-q">무엇이 궁금하세요?</div>
         <div class="segmented" id="modeSeg">
           <button type="button" class="seg-btn active" id="optA" onclick="setMode('A')">
-            <b>예산이 있어요</b><span>살 수 있는 최대 집값</span>
+            <b>예산이 있어요</b><span>살 수 있는 예상 최대 집값</span>
           </button>
           <button type="button" class="seg-btn" id="optB" onclick="setMode('B')">
-            <b>집을 정했어요</b><span>그 집에 필요한 현금</span>
+            <b>집을 정했어요</b><span>그 집에 필요한 예상 현금</span>
           </button>
         </div>
       </div>
@@ -3536,6 +3544,18 @@ function line(k, v, cls){
   return `<div class="line-item ${cls||''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
 }
 
+/* 입주 준비 비용이 0이면 그 섹션을 통째로 생략합니다.
+   ⚠ 이때 '거래·대출 소계'도 같이 생략해요. 입주 준비가 0이면 그 소계가 곧 '내 돈'이라
+      같은 금액이 세 줄 연달아 나오기 때문입니다. 중복을 지우려다 만든 중복이었어요. */
+function executionBlock(c, executionSubtotal, financeSubtotal){
+  if(!(executionSubtotal > 0)) return '';
+  return line('거래·대출 소계', formatWon(financeSubtotal), 'sub')
+    + `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>`
+    + line('인테리어비', formatWon(c.interiorCost))
+    + line('기타비용', formatWon(c.etcCost))
+    + line('입주 준비 소계', formatWon(executionSubtotal), 'sub');
+}
+
 function buildCtxBase(){
   const zone = zoneVal();
   const regulated = zone === 'reg';
@@ -3788,11 +3808,7 @@ function calculate(silent){
       line('중개보수 (부동산 중개수수료, VAT 포함)', formatWon(c.brokerFee)) +
       (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines +
-      line('거래·대출 소계', formatWon(financeSubtotal), 'total') +
-      `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>` +
-      line('인테리어비', formatWon(c.interiorCost)) +
-      line('기타비용', formatWon(c.etcCost)) +
-      line('입주 준비 소계', formatWon(executionSubtotal), 'total') +
+      executionBlock(c, executionSubtotal, financeSubtotal) +
       line('내 돈(자기자본)', formatWon(c.cashNeeded), 'total') +
       line('보유자금', formatWon(cash), 'grand');
 
@@ -3847,11 +3863,7 @@ function calculate(silent){
       line('중개보수 (부동산 중개수수료, VAT 포함)', formatWon(c.brokerFee)) +
       (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines2 +
-      line('거래·대출 소계', formatWon(financeSubtotal2), 'total') +
-      `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>` +
-      line('인테리어비', formatWon(c.interiorCost)) +
-      line('기타비용', formatWon(c.etcCost)) +
-      line('입주 준비 소계', formatWon(executionSubtotal2), 'total') +
+      executionBlock(c, executionSubtotal2, financeSubtotal2) +
       line('내 돈(자기자본)', formatWon(c.cashNeeded), 'grand');
 
 

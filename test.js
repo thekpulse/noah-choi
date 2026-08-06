@@ -912,8 +912,14 @@ console.log('\n=== v21.5 ⑤ 버튼 서브라벨 말투 (원칙 9) ===');
   t('서브라벨이 물음표로 끝나지 않음', q.length === 0, q.join(' | '));
   t('서브라벨 16개를 모두 검사함', subs.length >= 16, subs.length + '개');
 })();
-t('01 A모드 서브라벨', html.indexOf('<span>살 수 있는 최대 집값</span>') !== -1);
-t('01 B모드 서브라벨', html.indexOf('<span>그 집에 필요한 현금</span>') !== -1);
+/* v21.9 교체(원칙 48): 결과 히어로가 "(예상)"이라고 적는데 그걸 고르는 01에서는
+   확정된 값처럼 말하고 있었어요(원칙 44). 문구 자체가 아니라 그 목적을 검사합니다. */
+t('01 A모드 부제가 추정치임을 밝힘',
+  /<span>살 수 있는 예상 최대 집값<\/span>/.test(html));
+t('01 B모드 부제가 추정치임을 밝힘',
+  /<span>그 집에 필요한 예상 현금<\/span>/.test(html));
+t('결과 히어로와 말이 어긋나지 않음',
+  html.indexOf('최대 구매 가능 매매가 (예상)') !== -1 && html.indexOf("'필요한 내 돈 (예상)'") !== -1);
 t('히어로 헤드라인은 그대로', html.indexOf('나 살 수 있어?') !== -1);
 
 console.log('\n=== v21.6 고급설정 총량 상한 (원칙 43) ===');
@@ -1497,6 +1503,39 @@ console.log('\n=== v21.9 ㊾ 계산 불가일 때 직전 결과 지우기 (원�
 
   const src = html.slice(html.indexOf('function clearInsights'), html.indexOf('function renderFallbackNote'));
   t('지우는 목록에 reportGrid가 들어 있음', src.indexOf("'reportGrid'") !== -1);
+})();
+
+console.log('\n=== v21.9 ㊻-b 영수증 꼬리 정리 ===');
+(() => {
+  /* 목적: 같은 금액이 연달아 반복되지 않는다. 채워진 블록이 여럿이 아니다(원칙 10). */
+  const c = {interiorCost: 0, etcCost: 0};
+
+  t('입주 준비가 0이면 그 섹션을 통째로 생략', executionBlock(c, 0, 800000000) === '');
+  t('입주 준비가 0이면 거래·대출 소계도 생략 (내 돈과 같은 값이라)',
+    executionBlock(c, 0, 800000000).indexOf('거래·대출 소계') === -1);
+
+  const withCost = executionBlock({interiorCost: 30000000, etcCost: 3000000}, 33000000, 800000000);
+  t('입주 준비가 있으면 두 소계가 모두 나옴',
+    withCost.indexOf('거래·대출 소계') !== -1 && withCost.indexOf('입주 준비 소계') !== -1);
+  t('인테리어비·기타비용 항목도 나옴',
+    withCost.indexOf('인테리어비') !== -1 && withCost.indexOf('기타비용') !== -1);
+
+  // 위계 — 소계는 채워진 블록이 아니다
+  t('소계는 sub, 채워진 블록(total/grand)이 아님',
+    withCost.indexOf("line-item sub") !== -1
+    && withCost.indexOf("line-item total") === -1
+    && withCost.indexOf("line-item grand") === -1);
+  t('sub 스타일에 배경을 깔지 않음',
+    /\.line-item\.sub\{[^}]*\}/.test(html)
+    && !/\.line-item\.sub\{[^}]*background/.test(html));
+
+  // 영수증 전체에서 채워진 블록은 몇 개인가
+  const src = html.slice(html.indexOf("document.getElementById('receiptLines').innerHTML ="),
+                         html.indexOf('lastShareText = buildSummaryText'));
+  t('A모드 영수증에 grand는 하나뿐 (원칙 10)',
+    (src.match(/'grand'/g) || []).length === 1, (src.match(/'grand'/g) || []).length);
+  t('A모드 영수증에 total은 하나뿐',
+    (src.match(/'total'/g) || []).length === 1, (src.match(/'total'/g) || []).length);
 })();
 
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
