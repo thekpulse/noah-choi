@@ -1649,14 +1649,19 @@ window.GA_ID = 'G-NVTLEPG53G';
       </div>
 
       <div id="babyRateHint"></div>
-      <div id="bindingDiagnosis"></div>
       <div id="fallbackNote"></div>
 
+      <!-- 공유 버튼은 리포트 카드 바로 아래에 둡니다.
+           v21.14까지는 '한도를 결정한 건' 카드가 사이에 끼어 있어서, 리포트를 보고
+           저장하려면 캡처 영역 밖의 긴 카드를 한 번 지나쳐야 했어요.
+           설명 카드들은 버튼 아래로 내렸습니다. -->
       <div class="share-btn-row">
         <button class="calc-btn share-half" id="imageBtnBuy" onclick="saveResultAsImage('captureAreaBuy','imageBtnBuy','영끌계산기_결과')">📸 리포트 이미지 저장</button>
         <button class="calc-btn share-half ghost" id="shareBtn" onclick="shareResult()">🔗 링크 공유</button>
       </div>
-      <button class="calc-btn ghost" style="margin-bottom:20px;" onclick="copySummaryText()" id="copyTextBtn">📋 요약 텍스트 복사 (카톡용)</button>
+      <button class="calc-btn ghost" style="margin-bottom:20px;" onclick="copySummaryText()" id="copyTextBtn">📋 요약 텍스트 복사</button>
+
+      <div id="bindingDiagnosis"></div>
 
       <div class="card duty-card" id="dutyCard" style="display:none;">
         <h2>대출받은 뒤에 지켜야 할 것</h2>
@@ -1670,23 +1675,33 @@ window.GA_ID = 'G-NVTLEPG53G';
         </div>
       </div>
 
+      <!-- 곁가지 카드는 제목 줄만 남기고 접습니다. 결과를 확인하는 데 꼭 필요한 건
+           리포트 카드와 '한도를 결정한 건'까지이고, 아래 둘은 찾아볼 때만 필요해요(원칙 43).
+           유의사항은 접지 않습니다. -->
       <div class="card" id="compareCard" style="display:none;">
-        <h2>상황이 달랐다면?</h2>
-        <div class="hint" style="margin-bottom:14px;">같은 집값일 때 주택 보유 상황에 따라 대출한도가 얼마나 달라지는지 비교했어요. 일반 시중은행 주담대 기준이에요.</div>
-        <div id="compareRows"></div>
-      </div>
-
-      <div class="card">
-        <h2>이 예산으로 매물 찾아보기</h2>
-        <div class="hint" style="margin-bottom:12px;">계산된 예산을 각 사이트 필터에 넣어 확인해보세요.</div>
-        <div class="search-links">
-          <button class="link-btn" onclick="openSearch('naver')">네이버부동산</button>
-          <button class="link-btn" onclick="openSearch('hogang')">호갱노노</button>
-          <button class="link-btn" onclick="openSearch('kb')">KB부동산</button>
+        <button type="button" class="section-toggle" style="margin:0;" id="compareToggle" onclick="toggleOptionalSection(this,'compareBody')">
+          <span>상황이 달랐다면? — 주택 보유 상황별 대출한도</span><span class="chevron">▾</span>
+        </button>
+        <div id="compareBody" class="optional-section">
+          <div class="hint" style="margin-bottom:14px;">같은 집값일 때 주택 보유 상황에 따라 대출한도가 얼마나 달라지는지 비교했어요. 일반 시중은행 주담대 기준이에요.</div>
+          <div id="compareRows"></div>
         </div>
       </div>
 
-      <div class="hint" style="text-align:center;margin-bottom:20px;">📱 자주 쓰실 것 같으면 홈 화면에 추가해두세요 — 사파리는 공유 → "홈 화면에 추가", 크롬은 메뉴 → "홈 화면에 추가"예요.</div>
+      <div class="card">
+        <button type="button" class="section-toggle" style="margin:0;" id="searchToggle" onclick="toggleOptionalSection(this,'searchBody')">
+          <span>이 예산으로 매물 찾아보기</span><span class="chevron">▾</span>
+        </button>
+        <div id="searchBody" class="optional-section">
+          <div class="hint" style="margin-bottom:12px;">계산된 예산을 각 사이트 필터에 넣어 확인해보세요.</div>
+          <div class="search-links">
+            <button class="link-btn" onclick="openSearch('naver')">네이버부동산</button>
+            <button class="link-btn" onclick="openSearch('hogang')">호갱노노</button>
+            <button class="link-btn" onclick="openSearch('kb')">KB부동산</button>
+          </div>
+          <div class="hint" style="text-align:center;margin-top:16px;">📱 자주 쓰실 것 같으면 홈 화면에 추가해두세요 — 사파리는 공유 → "홈 화면에 추가", 크롬은 메뉴 → "홈 화면에 추가"예요.</div>
+        </div>
+      </div>
     </div>
 
     <div class="step-nav">
@@ -3554,6 +3569,25 @@ function line(k, v, cls){
 /* 입주 준비 비용이 0이면 그 섹션을 통째로 생략합니다.
    ⚠ 이때 '거래·대출 소계'도 같이 생략해요. 입주 준비가 0이면 그 소계가 곧 '내 돈'이라
       같은 금액이 세 줄 연달아 나오기 때문입니다. 중복을 지우려다 만든 중복이었어요. */
+/* 영수증 꼬리 — A모드(가진 돈으로 살 수 있는 집) 전용.
+   A모드는 "보유자금을 다 쓰는 지점"을 찾으므로 내 돈 = 보유자금이 되는 게 보통이고,
+   그때 같은 금액이 두 줄 연달아 나오는 중복이 있었어요(원칙 55).
+   → 남는 돈이 없으면 '내 돈' 한 줄로 끝냅니다. B모드와 같은 자리·같은 위계가 됩니다(원칙 58).
+
+   남는 돈이 생기는 경우는 정책대출 집값 상한에 먼저 걸려 더 비싼 집을 못 살 때예요.
+   예) 보금자리론 집값 상한 6억 · 보유자금 4억 → 매매가 6억, 내 돈 3억 424만, 남는 돈 9,576만
+   이때는 내 돈 + 남는 돈 = 보유자금이 눈으로 맞아떨어지도록 세 줄을 씁니다.
+
+   ⚠ 남는 돈은 만원 단위로 **내림**해요. 반올림하면 실제보다 여유가 있어 보일 수 있어요(원칙 28).
+   ⚠ 채워진 진한 블록은 어느 쪽 분기에서도 맨 아래 한 줄뿐입니다(원칙 10). */
+function receiptTail(cashNeeded, cashAvailable){
+  const leftover = Math.max(0, Math.floor((cashAvailable - cashNeeded) / 10000) * 10000);
+  if(leftover <= 0) return line('내 돈(자기자본)', formatWon(cashNeeded), 'grand');
+  return line('내 돈(자기자본)', formatWon(cashNeeded), 'total')
+       + line('남는 돈', formatWon(leftover))
+       + line('보유자금', formatWon(cashAvailable), 'grand');
+}
+
 function executionBlock(c, executionSubtotal, financeSubtotal){
   if(!(executionSubtotal > 0)) return '';
   return line('거래·대출 소계', formatWon(financeSubtotal), 'sub')
@@ -3816,8 +3850,7 @@ function calculate(silent){
       (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines +
       executionBlock(c, executionSubtotal, financeSubtotal) +
-      line('내 돈(자기자본)', formatWon(c.cashNeeded), 'total') +
-      line('보유자금', formatWon(cash), 'grand');
+      receiptTail(c.cashNeeded, cash);
 
 
     lastShareText = buildSummaryText({
@@ -3894,7 +3927,7 @@ function buildSummaryText(payload){
   const d = new Date();
   const ratio = ctxBase.income > 0 && monthly > 0
     ? ` (월소득의 ${(monthly/(ctxBase.income/12)*100).toFixed(0)}%)` : '';
-  /* 카톡 말풍선에서 3초 안에 핵심이 잡히도록 4줄로 줄였어요.
+  /* 메신저 말풍선에서 3초 안에 핵심이 잡히도록 4줄로 줄였어요.
      상세 항목은 링크로 넘기고, 면책은 원칙 24에 따라 한 줄만 남겨요. */
   return `${title}
 ▸ ${main}
@@ -3915,7 +3948,7 @@ async function copySummaryText(){
   const original = btn.textContent;
   try{
     await navigator.clipboard.writeText(lastShareText || '');
-    btn.textContent = '✅ 복사 완료! 카톡에 붙여넣기 하세요';
+    btn.textContent = '✅ 복사 완료 — 붙여넣기 하세요';
   }catch(e){
     prompt('아래 내용을 복사하세요:', lastShareText || '');
     return;
@@ -4047,7 +4080,7 @@ async function saveResultAsImage(elementId, buttonId, filename){
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      btn.textContent = '✅ 저장 완료! (카톡에 사진 첨부해서 보내세요)';
+      btn.textContent = '✅ 저장 완료 — 사진첩에 있어요';
       setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 2800);
     }, 'image/png');
   }catch(e){
@@ -4073,7 +4106,7 @@ async function shareResult(){
     await navigator.clipboard.writeText(url);
     const btn = document.getElementById('shareBtn');
     const original = btn.textContent;
-    btn.textContent = '✅ 링크 복사 완료! 카톡에 붙여넣기 하세요';
+    btn.textContent = '✅ 링크 복사 완료 — 붙여넣기 하세요';
     setTimeout(()=>{ btn.textContent = original; }, 2200);
   }catch(e){
     prompt('아래 링크를 복사하세요:', url);
@@ -4409,7 +4442,7 @@ const LAST_VERIFIED = '2026-08-05';
    파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
    "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
    ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
-const BUILD = 'v21.14';
+const BUILD = 'v21.15';
 const STALE_DAYS = 90;
 
 function renderBuildTag(){
