@@ -54,9 +54,24 @@ window.GA_ID = 'G-NVTLEPG53G';
     --ink:#191F28;
     --ink-soft:#6B7684;
     --ink-faint:#78828E;
+    /* ===== 파랑 사용 규칙 (v21.22, 원칙 38·62) =====
+       연파랑 하나가 15곳에서 선택됨·펼치기·포커스·값 강조·뱃지·hover·컨테이너를
+       전부 가리키고 있었어요. 아래 다섯 자리 밖에서는 파랑을 쓰지 않습니다.
+       ① --primary 채움(흰 글씨)   = 다음으로 넘어가는 버튼. 한 화면에 하나
+                                     (.calc-btn / .step-nav .btn-next)
+       ② --primary-soft 채움+테두리 = 지금 선택된 것
+                                     (.option-card.active / .loan-option:checked
+                                      / .seg-btn.active / .chip.active)
+       ③ --primary-soft 채움        = 영수증 안의 값 강조 (.line-item.loan 하나뿐)
+       ④ --primary-soft 링          = 포커스 (box-shadow — 배경 채움과 채널이 다름)
+       ⑤ --primary-bright           = 어두운 히어로 위의 강조 글자
+       ⑥ --primary 막대            = 진행 표시 점 (.progress .dot.done — 글자 없는 상태 막대)
+       그 밖(펼치기·접기·실행 버튼·hover·뱃지·컨테이너)은 회색 테두리 + 파란 글자,
+       또는 --fill + --ink-soft로 둡니다. */
     --primary:#0091FF;
     --primary-soft:#E5F4FF;
     --primary-dark:#0068BD;
+    --primary-bright:#7CC4FF;   /* 어두운 배경 위에서만 쓰는 밝은 파랑 */
     --accent:#C8862E;
     --finance:#0091FF;
     --finance-soft:#E5F4FF;
@@ -116,7 +131,12 @@ window.GA_ID = 'G-NVTLEPG53G';
 
   /* HERO */
   .hero{
-    background:linear-gradient(160deg,#0D1421 0%,#16243A 58%,#0E2136 100%);
+    /* v21.22(62): 파랑 쓰임을 14곳에서 5곳으로 줄인 대신, 첫 화면에서 파랑이 확실히
+       보이도록 어두운 배경 위에 파란 광원을 한 겹 얹습니다. 팔레트는 늘리지 않고
+       --primary(#0091FF)를 그대로 씁니다. */
+    background:
+      radial-gradient(115% 85% at 88% -12%, rgba(0,145,255,.36) 0%, rgba(0,145,255,0) 62%),
+      linear-gradient(160deg,#0D1421 0%,#16243A 58%,#0E2136 100%);
     padding:38px 20px 32px;
   }
   .compact-header{
@@ -238,9 +258,11 @@ window.GA_ID = 'G-NVTLEPG53G';
     margin-top:8px;
     line-height:1.65;
   }
+  /* v21.22(62): 펼치기 버튼은 채우지 않아요. 채움은 "지금 선택된 것" 전용입니다.
+     회색 테두리 + 파란 글자로 "누를 수 있다"만 말합니다. */
   .hint-toggle{
-    background:var(--primary-soft);
-    border:none;
+    background:var(--surface);
+    border:1px solid var(--border);
     border-radius:20px;
     padding:6px 12px;
     margin-left:2px;
@@ -258,8 +280,10 @@ window.GA_ID = 'G-NVTLEPG53G';
     align-items:center;
     justify-content:space-between;
     width:100%;
-    background:var(--primary-soft);
-    border:1.5px solid var(--primary);
+    /* v21.22(62): 채움+파란 테두리는 "선택됨"의 표현이라, 접기 버튼이 늘 선택된 것처럼
+       보였어요. 회색 테두리 + 파란 글자로 내립니다. 셰브런만 파랑을 유지해요. */
+    background:var(--surface);
+    border:1.5px solid var(--border);
     border-radius:12px;
     padding:14px 16px;
     margin:20px 0 0;
@@ -639,7 +663,8 @@ window.GA_ID = 'G-NVTLEPG53G';
     color:var(--ink);
     transition:transform .1s ease, background .15s, border-color .15s;
   }
-  .link-btn:hover{background:var(--primary-soft);border-color:var(--primary);}
+  /* v21.22(62): hover는 채우지 않아요 — 채워지면 눌러서 선택된 것처럼 보입니다. */
+  .link-btn:hover{border-color:var(--primary);color:var(--primary-dark);}
 
   .preset-chips{
     display:flex;
@@ -660,9 +685,11 @@ window.GA_ID = 'G-NVTLEPG53G';
     transition:transform .1s ease, background .15s, border-color .15s, color .15s;
     white-space:nowrap;
   }
-  .chip:hover{border-color:var(--primary);color:var(--primary-dark);background:var(--primary-soft);}
+  .chip:hover{border-color:var(--primary);color:var(--primary-dark);}
   .chip:active{transform:scale(0.96);}
-  .chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+  /* v21.22(62): 칩만 진한 파랑+흰 글씨여서, 같은 "선택됨"이 두 표현이었어요.
+     진한 파랑 채움은 계산 버튼 전용으로 두고, 칩도 다른 선택 컨트롤과 같은 표현을 씁니다. */
+  .chip.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-dark);}
 
   .compare-row{
     display:flex;
@@ -711,8 +738,8 @@ window.GA_ID = 'G-NVTLEPG53G';
     display:inline-block;
     font-size:11px;
     font-weight:700;
-    color:var(--primary-dark);
-    background:var(--primary-soft);
+    color:var(--ink-soft);
+    background:var(--fill);
     padding:2px 7px;
     border-radius:10px;
     margin-left:6px;
@@ -725,7 +752,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   /* ===== 입력 보조 ===== */
   .req-tag{
     display:inline-block;margin-left:6px;padding:2px 7px;border-radius:6px;
-    background:var(--primary-soft);color:var(--primary-dark);
+    background:var(--fill);color:var(--ink-soft);
     font-size:11px;font-weight:700;vertical-align:middle;
   }
   .echo{
@@ -760,8 +787,9 @@ window.GA_ID = 'G-NVTLEPG53G';
     margin-bottom:12px;font-size:13px;font-weight:700;color:var(--ink-soft);
   }
   .funding-ratio{
-    padding:3px 10px;border-radius:20px;background:var(--primary-soft);
-    color:var(--primary-dark);font-size:12px;font-weight:800;
+    /* v21.22(62): 기본값은 회색. 붉은 .hot일 때만 색이 켜집니다(판정 전에 켜두지 않음, 원칙 63). */
+    padding:3px 10px;border-radius:20px;background:var(--fill);
+    color:var(--ink-soft);font-size:12px;font-weight:800;
   }
   .funding-ratio.hot{background:#FFE9EB;color:var(--danger2);}
   .funding-bar{
@@ -1036,7 +1064,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   .cmp-name{font-size:14px;font-weight:700;color:var(--ink);}
   .cmp-now{
     display:inline-block;font-style:normal;margin-left:6px;padding:2px 7px;border-radius:8px;
-    background:var(--primary);color:#fff;font-size:11px;font-weight:800;vertical-align:middle;
+    background:var(--fill);color:var(--ink-soft);font-size:11px;font-weight:800;vertical-align:middle;
   }
   .cmp-delta{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .cmp-delta.up{color:var(--success);}
@@ -1060,7 +1088,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     .assump-edit:active{transform:scale(.98);}
   }
 
-  .hero p b{color:#7CC4FF;font-weight:800;}
+  .hero p b{color:var(--primary-bright);font-weight:800;}
   /* v21.18: 칩 두 개를 flex-wrap으로 두면 하나는 짧고 하나는 길어서 폭이 안 맞았어요.
      세 번째 칩을 뺀 것만으로는 안 고쳐진 문제였습니다(v21.17에서 놓친 부분).
      내용 길이와 무관하게 폭이 맞으려면, 나란히 두지 말고 세로로 쌓아 둘 다 같은 폭(전체 폭)을
@@ -1073,14 +1101,14 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
 
   .hero h1{color:#fff;}
-  .hero h1 span{color:#7CC4FF;}
+  .hero h1 span{color:var(--primary-bright);}
   .hero p{
     color:rgba(255,255,255,.82);
     font-size:15px;line-height:1.65;font-weight:500;
   }
   .hero-tag{
-    background:rgba(255,255,255,.12);color:#BEDDF7;
-    border:1px solid rgba(255,255,255,.16);
+    background:rgba(0,145,255,.18);color:var(--primary-bright);
+    border:1px solid rgba(0,145,255,.38);
   }
   .hero-facts span{
     background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
@@ -1158,9 +1186,9 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
   .duty-contact{
     margin-top:18px;padding:15px;border-radius:12px;
-    background:var(--primary-soft);border:1px solid rgba(0,145,255,.18);
+    background:var(--fill);border:1px solid var(--border);
   }
-  .duty-contact-title{font-size:12px;font-weight:800;color:var(--primary-dark);margin-bottom:10px;}
+  .duty-contact-title{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;}
   .duty-contact-row{
     display:flex;justify-content:space-between;align-items:baseline;gap:10px;
     padding:5px 0;font-size:13px;color:var(--ink-soft);
@@ -1183,8 +1211,9 @@ window.GA_ID = 'G-NVTLEPG53G';
   .sise-row select{flex:1;min-width:0;font-size:16px;padding:13px 12px;background:var(--surface);}
   .sise-btn{
     width:100%;margin-top:10px;padding:13px;
-    border-radius:12px;border:1.5px solid var(--primary);
-    background:var(--primary-soft);color:var(--primary-dark);
+    /* v21.22(62): 실행 버튼도 채우지 않아요. .sise-box(회색) 위라 흰 배경이 뜹니다. */
+    border-radius:12px;border:1.5px solid var(--border);
+    background:var(--surface);color:var(--primary-dark);
     font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;
   }
   .sise-btn:active{transform:scale(.99);}
@@ -1225,7 +1254,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;
   }
   .sise-apply button.primary{
-    border-color:var(--primary);background:var(--primary);color:#fff;
+    border-color:var(--primary);background:var(--surface);color:var(--primary-dark);
   }
   .sise-apply button:active{transform:scale(.98);}
   .sise-src{
@@ -4585,7 +4614,7 @@ const LAST_VERIFIED = '2026-08-05';
    파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
    "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
    ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
-const BUILD = 'v21.21';
+const BUILD = 'v21.22';
 const STALE_DAYS = 90;
 
 function renderBuildTag(){
