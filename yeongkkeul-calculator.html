@@ -536,23 +536,6 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     margin-bottom:10px;
   }
 
-  .monthly-box{
-    margin-top:16px;
-    padding-top:16px;
-    border-top:1px dashed var(--border);
-  }
-  .monthly-box .k{font-size:13px;color:var(--ink-soft);font-family:'Pretendard', sans-serif;}
-  .monthly-box .v{
-    font-size:22px;font-weight:700;
-  }
-  .monthly-box .v .num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;}
-  .monthly-box .v .label{
-    font-family:'Pretendard', sans-serif;
-    font-size:14px;
-    font-weight:600;
-    color:var(--ink-soft);
-    margin-left:2px;
-  }
   .receipt-watermark{
     text-align:center;
     font-family:'Pretendard', sans-serif;
@@ -980,10 +963,6 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
     font-size:11px;color:var(--ink-faint);line-height:1.55;
   }
   .report-by{font-weight:700;color:var(--ink-soft);white-space:nowrap;}
-
-  .monthly-box .k span{
-    display:block;font-size:11px;font-weight:600;color:var(--ink-faint);margin-top:2px;
-  }
 
   /* ============ 비교: 막대 차트 ============ */
   .cmp-row{padding:14px 0;border-bottom:1px solid var(--border);}
@@ -1645,10 +1624,6 @@ window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
         <div class="receipt">
           <div class="receipt-title">돈이 어디로 가는지</div>
           <div id="receiptLines"></div>
-          <div class="monthly-box">
-            <div class="k">월 원리금 상환액<span>원리금균등 기준</span></div>
-            <div class="v" id="monthlyPayment">0원</div>
-          </div>
         </div>
 
         <div class="report-foot">
@@ -3751,7 +3726,6 @@ function calculate(silent){
     document.getElementById('resultSub').textContent = '금리가 0%면 월 상환액이 실제와 크게 달라져요. 아래 버튼으로 금리를 넣어주시면 계산해드릴게요.';
     document.getElementById('receiptLines').innerHTML = '';
     document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'rate\',1)">입력 화면으로 가기</button>';
-    document.getElementById('monthlyPayment').textContent = '-';
     track('calc_blocked', {tool:'buy', reason:'no_rate'});
     return;
   }
@@ -3766,7 +3740,6 @@ function calculate(silent){
       document.getElementById('receiptLines').innerHTML = '';
       clearInsights();
       document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
-      document.getElementById('monthlyPayment').textContent = '-';
       track('calc_blocked', {tool:'buy', reason:'no_cash'});
       return;
     }
@@ -3779,7 +3752,6 @@ function calculate(silent){
       document.getElementById('receiptLines').innerHTML = '';
       clearInsights();
       document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
-      document.getElementById('monthlyPayment').textContent = '-';
       track('calc_blocked', {tool:'buy', reason:'cash_below_fixed_costs'});
       return;
     }
@@ -3810,15 +3782,14 @@ function calculate(silent){
       line('중개보수 (부동산 중개수수료, VAT 포함)', formatWon(c.brokerFee)) +
       (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines +
-      line('거래 자기자본', formatWon(financeSubtotal), 'total') +
+      line('거래·대출 소계', formatWon(financeSubtotal), 'total') +
       `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>` +
       line('인테리어비', formatWon(c.interiorCost)) +
       line('기타비용', formatWon(c.etcCost)) +
-      line('입주 준비 비용 합계', formatWon(executionSubtotal), 'total') +
-      line('자기자본 투입액', formatWon(c.cashNeeded), 'total') +
+      line('입주 준비 소계', formatWon(executionSubtotal), 'total') +
+      line('내 돈(자기자본)', formatWon(c.cashNeeded), 'total') +
       line('보유자금', formatWon(cash), 'grand');
 
-    document.getElementById('monthlyPayment').innerHTML = '<span class="num">' + formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years)) + '</span>';
 
     lastShareText = buildSummaryText({
       title: '가진 돈으로 살 수 있는 집',
@@ -3827,7 +3798,7 @@ function calculate(silent){
       monthly: monthlyPaymentCalc(c.mortgageLoan, rate, years)
     });
 
-    shareSummary = `최대 구매 가능 매매가 ${formatWon(maxPrice)} · 자기자본 ${formatWon(c.cashNeeded)} 필요`;
+    shareSummary = `최대 구매 가능 매매가 ${formatWon(maxPrice)} · 내 돈 ${formatWon(c.cashNeeded)} 필요`;
     track('calc_buy', {mode:'A', zone: zoneVal(), house_status: ctxBase.houseStatus,
                        loan_type: c.loanType, binding: c.binding || '-',
                        income_entered: ctxBase.incomeEntered ? 1 : 0});
@@ -3842,7 +3813,6 @@ function calculate(silent){
       document.getElementById('receiptLines').innerHTML = '';
       clearInsights();
       document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'priceEok\',1)">입력 화면으로 가기</button>';
-      document.getElementById('monthlyPayment').textContent = '-';
       track('calc_blocked', {tool:'buy', reason:'no_price'});
       return;
     }
@@ -3852,7 +3822,7 @@ function calculate(silent){
     renderReportGrid(c, price, ctxBase, rate, years);
     renderCompare(ctxBase, price);
     renderDuties(c.loanType);
-    document.getElementById('resultLabel').textContent = '필요한 자기자본(현금) (예상)';
+    document.getElementById('resultLabel').textContent = '필요한 내 돈 (예상)';
     document.getElementById('resultAmount').textContent = formatWon(c.cashNeeded);
     document.getElementById('resultSub').textContent = `총 소요금액 ${formatWon(c.totalNeeded)} 중 조달자금 ${formatWon(c.totalFunding)} 제외`;
 
@@ -3871,14 +3841,13 @@ function calculate(silent){
       line('중개보수 (부동산 중개수수료, VAT 포함)', formatWon(c.brokerFee)) +
       (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
       extraLines2 +
-      line('거래 자기자본', formatWon(financeSubtotal2), 'total') +
+      line('거래·대출 소계', formatWon(financeSubtotal2), 'total') +
       `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>` +
       line('인테리어비', formatWon(c.interiorCost)) +
       line('기타비용', formatWon(c.etcCost)) +
-      line('입주 준비 비용 합계', formatWon(executionSubtotal2), 'total') +
-      line('필요 자기자본', formatWon(c.cashNeeded), 'grand');
+      line('입주 준비 소계', formatWon(executionSubtotal2), 'total') +
+      line('내 돈(자기자본)', formatWon(c.cashNeeded), 'grand');
 
-    document.getElementById('monthlyPayment').innerHTML = '<span class="num">' + formatWon(monthlyPaymentCalc(c.mortgageLoan, rate, years)) + '</span>';
 
     lastShareText = buildSummaryText({
       title: `${formatWon(price)} 집을 사려면`,
@@ -3887,7 +3856,7 @@ function calculate(silent){
       monthly: monthlyPaymentCalc(c.mortgageLoan, rate, years)
     });
 
-    shareSummary = `필요한 자기자본 ${formatWon(c.cashNeeded)} · 매매가 ${formatWon(price)} 기준`;
+    shareSummary = `필요한 내 돈 ${formatWon(c.cashNeeded)} · 매매가 ${formatWon(price)} 기준`;
     track('calc_buy', {mode:'B', zone: zoneVal(), house_status: ctxBase.houseStatus,
                        loan_type: c.loanType, binding: c.binding || '-',
                        income_entered: ctxBase.incomeEntered ? 1 : 0});
@@ -5272,7 +5241,7 @@ function onSiseArea(k){
   }
   html += (k === 'buy')
     ? '<div class="sise-note info">실제 매수 가격은 중앙값보다 높을 수도 낮을 수도 있어요. '
-      + '집값을 낮게 넣으면 필요한 자기자본과 취득세도 함께 낮게 계산돼요. '
+      + '집값을 낮게 넣으면 필요한 내 돈과 취득세도 함께 낮게 계산돼요. '
       + '여유를 두고 보려면 <b>최고가</b>를 넣어 결과가 얼마나 달라지는지 확인해보실 수 있어요.</div>'
     : '<div class="sise-note info">보증금 안전을 보수적으로 보려면 <b>최저가</b>를 넣어보세요. '
       + '시세를 낮게 잡을수록 전세가율이 높게 나와 더 엄격하게 진단돼요.</div>';

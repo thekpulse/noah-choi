@@ -1414,5 +1414,38 @@ console.log('\n=== v21.9 ㉚ 면책 문구 위치·문장 ===');
     el('disclaimerAsOf').textContent);
 })();
 
+console.log('\n=== v21.9 ㊻ 결과 화면 중복 정리 ===');
+(() => {
+  /* 목적: 같은 값에 이름이 하나다. 같은 값을 한 카드 안에서 두 번 보여주지 않는다. */
+
+  // (1) cashNeeded의 이름이 하나로 모였는가
+  t('없어진 이름 — 자기자본 투입액', html.indexOf('자기자본 투입액') === -1);
+  t('없어진 이름 — 필요 자기자본', html.indexOf("line('필요 자기자본'") === -1);
+  t('없어진 이름 — 거래 자기자본', html.indexOf('거래 자기자본') === -1);
+  t('정식 자리는 "내 돈(자기자본)" 하나',
+    (html.match(/내 돈\(자기자본\)/g) || []).length === 3, (html.match(/내 돈\(자기자본\)/g) || []).length);
+  t('"자기자본"만 단독으로 쓰는 자리가 없음',
+    !/[^(]자기자본(?!\))/.test(html.replace(/내 돈\(자기자본\)/g, '')),
+    (html.replace(/내 돈\(자기자본\)/g, '').match(/.{6}자기자본.{6}/g) || []).slice(0, 3).join(' | '));
+
+  // (2) 소계 이름이 섹션 라벨과 겹치지 않는가
+  t('입주 준비 비용 라벨이 두 번 나오지 않음',
+    html.indexOf('입주 준비 비용 합계') === -1 && html.indexOf('입주 준비 소계') !== -1);
+  t('거래·대출 소계가 소계임을 이름으로 드러냄', html.indexOf('거래·대출 소계') !== -1);
+
+  // (3) 월 상환액이 리포트 카드 안에서 두 번 나오지 않는가
+  t('영수증의 월 상환액 블록이 사라짐',
+    html.indexOf('monthly-box') === -1 && html.indexOf("id=\"monthlyPayment\"") === -1);
+  t('쓰이지 않는 CSS도 같이 정리됨', html.indexOf('.monthly-box') === -1);
+  const card = html.slice(html.indexOf('id="captureAreaBuy"'), html.indexOf('id="babyRateHint"'));
+  t('리포트 카드 안에 월 상환액 자리는 하나뿐',
+    (card.match(/월 원리금 상환액|월 상환액/g) || []).length === 0, card.match(/월 원리금 상환액|월 상환액/g));
+
+  // (4) 값 자체는 여전히 나온다 — 지표 칸에서
+  const gridSrc = html.slice(html.indexOf('function renderReportGrid'), html.indexOf('function renderInsights'));
+  t('월 상환액은 리포트 지표 칸에 남음', gridSrc.indexOf("k:'월 상환액'") !== -1);
+  t('내 돈(자기자본)도 리포트 지표 칸에 남음', gridSrc.indexOf("k:'내 돈(자기자본)'") !== -1);
+})();
+
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);
