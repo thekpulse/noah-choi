@@ -329,14 +329,14 @@ window.GA_ID = 'G-NVTLEPG53G';
   .row2{display:flex;flex-direction:column;gap:24px;margin-bottom:24px;}
   .row2 .field{margin-bottom:0;}
   /* 한 쌍으로 읽히는 칸(시/도–시군구)은 가로로 붙입니다.
-     기본 .row2는 세로 24px 간격이라 두 칸이 서로 다른 질문처럼 보였어요.
-     ⚠ 폭이 모자라면 줄바꿈시킵니다. `창원시 마산합포구`처럼 긴 이름이 잘리면 안 돼요.
-        폼 글자는 16px 아래로 못 내리므로(원칙 34) 좁은 화면에서는 두 줄이 맞습니다.
-        그래도 간격이 24px → 8px이라 한 쌍으로 읽힙니다. */
-  .row2.inline{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+     ⚠ 줄바꿈시키면 다시 위아래가 됩니다. 가로를 유지하고 폭만 비대칭으로 줍니다.
+        긴 이름(`창원시 마산합포구`)은 select 안에서 잘릴 수 있지만,
+        **바로 아래 판정 뱃지가 고른 이름을 그대로 다시 적어줍니다**(renderZoneBadge).
+        그래서 어느 구를 골랐는지 확인할 방법이 남아 있습니다. */
+  .row2.inline{flex-direction:row;gap:8px;margin-bottom:10px;}
   .row2.inline > select{min-width:0;}
-  .row2.inline > select:first-child{flex:1 1 120px;}
-  .row2.inline > select:last-child{flex:2 1 210px;}
+  .row2.inline > select:first-child{flex:0 1 34%;}
+  .row2.inline > select:last-child{flex:1 1 66%;}
   .amount-row{display:flex;gap:10px;}
   .amount-row .input-suffix{flex:1;}
   .checkrow{
@@ -604,6 +604,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     color:var(--ink-soft);
     margin-bottom:8px;
   }
+  .build-tag{font-variant-numeric:tabular-nums;letter-spacing:0.02em;}
   .footer-copyright{
     font-size:11px;
     color:var(--ink-faint);
@@ -1793,6 +1794,7 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div class="footer-title">영끌계산기 · 개인용 아파트 예산 계산기</div>
       <div class="footer-copyright">© 2026 노아초이(Noah Choi). All rights reserved.</div>
       <div class="footer-copyright">무단 복제 및 도용을 금합니다.</div>
+      <div class="footer-copyright build-tag"></div>
     </footer>
   </div>
 </div>
@@ -2090,6 +2092,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     <footer>
       <div class="footer-title">영끌계산기 · 전세·월세 비교 도구</div>
       <div class="footer-copyright">© 2026 노아초이(Noah Choi). All rights reserved.</div>
+      <div class="footer-copyright build-tag"></div>
     </footer>
   </div>
 </div><!-- /rentToolRoot -->
@@ -2429,7 +2432,16 @@ function previewState(){
 function renderPreview(){
   const box = document.getElementById('previewBar');
   if(!box) return;
-  const p = previewState();
+
+  let p;
+  /* ⚠ 여기서 예외가 나면 상자가 빈 채로 남아 "미리보기가 어디 있냐"가 됩니다.
+     원인을 단정하지 않되(원칙 39), 자리는 반드시 무언가로 채웁니다. */
+  try { p = previewState(); }
+  catch(e){
+    box.classList.add('empty');
+    box.innerHTML = '<div class="pv-need">지금은 예상 결과를 만들 수 없어요. 입력값을 한 번 확인해보시겠어요?</div>';
+    return;
+  }
 
   if(!p.ready){
     box.classList.add('empty');
@@ -4483,7 +4495,18 @@ function bokNote(){
 /* 기준값 확인일이 오래되면 배너로 알려요. 정책이 평균 5주에 한 번 바뀌기 때문에
    "지금도 맞는 값인가"를 사용자가 알 수 있어야 해요(원칙 11의 연장). */
 const LAST_VERIFIED = '2026-08-05';
+/* 배포된 판을 화면에서 바로 가릴 수 있게 합니다(원칙 60).
+   파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
+   "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
+   ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
+const BUILD = 'v21.13-c';
 const STALE_DAYS = 90;
+
+function renderBuildTag(){
+  document.querySelectorAll('.build-tag').forEach(function(box){
+    box.textContent = BUILD + ' · 정책 ' + LAST_VERIFIED.replace(/-/g, '.') + ' 기준';
+  });
+}
 function renderStaleBanner(){
   const days = Math.floor((Date.now() - new Date(LAST_VERIFIED + 'T00:00:00+09:00')) / 86400000);
   /* ㉚ 면책 문구의 "언제 기준 자료인가"도 같은 상수에서 가져옵니다(원칙 46).
@@ -5470,6 +5493,7 @@ initBuyRegion();
 applyZoneDefaults();
 renderZoneBadge();
 renderStaleBanner();
+renderBuildTag();
 toggleSeominField();
 toggleSelfSalary();
 applyStressDefault();

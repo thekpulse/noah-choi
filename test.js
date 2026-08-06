@@ -51,7 +51,7 @@ js += '\n;globalThis.LAWD=LAWD; globalThis.SISE_MONTHS=SISE_MONTHS;'
    + 'globalThis.POLICY=POLICY; globalThis.SISE_UI=SISE_UI; globalThis.siseState=siseState;'
    + 'globalThis.DSR_RATIO=DSR_RATIO; globalThis.DTI_RATIO=DTI_RATIO;'
    + 'globalThis.POLICY_DEFS=POLICY_DEFS; globalThis.BINDING_COPY=BINDING_COPY;'
-   + 'globalThis.SITUATION_SUB=SITUATION_SUB;';
+   + 'globalThis.SITUATION_SUB=SITUATION_SUB; globalThis.BUILD=BUILD;';
 eval(js);
 
 let pass = 0, fail = 0;
@@ -1564,7 +1564,7 @@ console.log('\n=== v21.10 GA 연결 · 로그 개인정보 (원칙 36) ===');
   t('원 단위 숫자를 그대로 보내는 호출도 없음', numeric.length === 0, numeric.slice(0, 2).join(' | '));
 })();
 
-console.log('\n=== v21.12 ㉿ 04 전용 판 — 컨트롤 교체와 부제 ===');
+console.log('\n=== v21.12 ㊲ 04 전용 판 — 컨트롤 교체와 부제 ===');
 (() => {
   /* 목적: 04를 감추지 않고 세로 길이만 줄인다. 내용은 하나도 사라지지 않는다. */
   const card = html.slice(html.indexOf('id="askSituation"'), html.indexOf('id="topSectionToggle"'));
@@ -1572,10 +1572,14 @@ console.log('\n=== v21.12 ㉿ 04 전용 판 — 컨트롤 교체와 부제 ===')
   // (1) 지역 두 칸을 한 쌍으로
   t('시/도–시군구가 가로 한 쌍으로 묶임', /class="row2 inline"[\s\S]{0,220}id="buySgg"/.test(card));
   t('.row2.inline은 가로 배치', /\.row2\.inline\{[^}]*flex-direction:row/.test(html));
-  t('폭이 모자라면 줄바꿈 — 긴 시군구명이 잘리지 않음',
-    /\.row2\.inline\{[^}]*flex-wrap:wrap/.test(html));
-  t('시군구 칸이 시/도 칸보다 넓음 (`창원시 마산합포구`가 들어가야 함)',
-    /select:last-child\{flex:2 1 210px/.test(html) && /select:first-child\{flex:1 1 120px/.test(html));
+  t('줄바꿈시키지 않는다 — 줄바꿈하면 다시 위아래가 됨',
+    /\.row2\.inline\{(?![^}]*flex-wrap)[^}]*\}/.test(html));
+  t('시군구 칸이 시/도 칸보다 넓음 (긴 이름 우선)',
+    /select:first-child\{flex:0 1 34%/.test(html) && /select:last-child\{flex:1 1 66%/.test(html));
+  /* 잘려도 어느 구인지 알 방법이 남아 있어야 합니다 — 바로 아래 뱃지가 이름을 다시 적습니다. */
+  t('판정 뱃지가 고른 시군구 이름을 그대로 다시 적는다',
+    html.indexOf('const name = (document.getElementById(\'buySgg\').selectedOptions[0]') !== -1 &&
+    /badge\.innerHTML[\s\S]{0,200}\$\{name\}/.test(html));
 
   // (2) 주택 보유 상황 — 세로 4줄 → 2×2 격자
   t('choice-list 컨트롤이 남아 있지 않음', html.indexOf('choice-list') === -1);
@@ -1620,7 +1624,7 @@ console.log('\n=== v21.12 ㉿ 04 전용 판 — 컨트롤 교체와 부제 ===')
   t('체크를 풀면 되돌아옴 (원칙 42)', el('situationSub').innerHTML === SITUATION_SUB.loan);
 })();
 
-console.log('\n=== v21.13 ㈝ 결과 미리보기 상시 노출 ===');
+console.log('\n=== v21.13 ㉝ 결과 미리보기 상시 노출 ===');
 (() => {
   /* 목적: 계산 버튼을 누르기 전에도 고른 값이 숫자로 보인다.
      단 미리보기와 본 결과가 어긋나서는 안 된다 — 같은 함수를 써야 한다(원칙 28·53). */
@@ -1669,7 +1673,7 @@ console.log('\n=== v21.13 ㈝ 결과 미리보기 상시 노출 ===');
   t('A모드는 최대 매매가를 보여준다', p.ready === true && p.mainLabel === '최대 매매가');
   t('미리보기 금액이 본 계산과 정확히 같다', p.main === truth, p.main + ' vs ' + truth);
   t('필요한 내 돈도 함께 보여준다', p.sub === calcCosts({...ctx, price: truth}).cashNeeded);
-  t('좁은 자리 이름 규칙을 지킨다 (㉻)', p.subLabel === '내 돈');
+  t('좁은 자리 이름 규칙을 지킨다 (㊻)', p.subLabel === '내 돈');
   t('내 돈이 보유자금을 넘지 않는다 (원칙 28)', p.sub <= 500000000);
 
   const regPrice = p.main;
@@ -1702,6 +1706,30 @@ console.log('\n=== v21.13 ㈝ 결과 미리보기 상시 노출 ===');
   setC(5); renderPreview();
   t('다시 채우면 빈 상태가 풀린다', el('previewBar').classList.contains('empty') === false);
   t('미리보기가 확정처럼 말하지 않는다', el('previewBar').innerHTML.indexOf('예상') !== -1);
+
+  /* 계산이 터져도 자리를 비워두지 않는다 — 빈 상자는 "미리보기가 어디 있냐"가 됩니다. */
+  t('예외가 나도 상자를 비워두지 않는다',
+    /try \{ p = previewState\(\); \}/.test(html) &&
+    /catch\(e\)\{[\s\S]{0,240}box\.innerHTML/.test(html));
+})();
+
+console.log('\n=== v21.13-b 원칙 60 판 표시 ===');
+(() => {
+  /* 목적: 화면만 보고 어느 판이 올라가 있는지 가릴 수 있다.
+     파일명이 매번 같아 다운로드가 여러 개 쌓이면 파일로는 못 가립니다. */
+  t('판 번호가 한 곳에서만 정의됨 (원칙 46)',
+    (html.match(/const BUILD = /g) || []).length === 1);
+  t('판 번호 형식이 v숫자.숫자', /^v\d+\.\d+/.test(BUILD), BUILD);
+  t('두 탭 하단에 모두 자리가 있음 (원칙 35)',
+    (html.match(/class="footer-copyright build-tag"/g) || []).length === 2);
+  t('문구를 값에서 조립함 — 판 번호를 마크업에 적지 않음',
+    html.indexOf('>' + BUILD + '<') === -1);
+  t('확인일도 같은 상수에서 가져옴',
+    /renderBuildTag[\s\S]{0,200}LAST_VERIFIED/.test(html));
+  t('첫 화면에서 채워짐', /renderStaleBanner\(\);\s*renderBuildTag\(\);/.test(html));
+
+  t('판 번호가 맨 앞에 오고 확인일이 뒤따름',
+    /BUILD \+ ' · 정책 ' \+ LAST_VERIFIED/.test(html));
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
