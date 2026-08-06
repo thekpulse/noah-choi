@@ -1538,5 +1538,30 @@ console.log('\n=== v21.9 ㊻-b 영수증 꼬리 정리 ===');
     (src.match(/'total'/g) || []).length === 1, (src.match(/'total'/g) || []).length);
 })();
 
+console.log('\n=== v21.10 GA 연결 · 로그 개인정보 (원칙 36) ===');
+(() => {
+  const head = html.slice(0, html.indexOf('</head>'));
+  t('측정 ID가 실제 값으로 설정됨',
+    /window\.GA_ID = 'G-(?!X)[A-Z0-9]+';/.test(head), (head.match(/window\.GA_ID = '[^']*'/) || [])[0]);
+  t('미설정이면 스크립트를 안 불러오는 가드는 그대로',
+    head.indexOf("indexOf('G-X') === 0") !== -1);
+  t('측정 ID는 한 곳에서만 정의됨',
+    (html.match(/G-NVTLEPG53G/g) || []).length === 1);
+  t('연결 기록(속성·스트림·연결일)이 주석에 남아 있음',
+    head.indexOf('연결일:') !== -1 && head.indexOf('noah-choi.vercel.app') !== -1);
+
+  /* 목적: 사용 로그에 금액·소득이 실려 나가지 않는다. 범주형 라벨만 보낸다. */
+  const calls = html.match(/track\('[^']+',\s*\{[^}]*\}/g) || [];
+  t('추적 호출을 모두 검사함', calls.length >= 15, calls.length + '개');
+  /* ⚠ `income_entered`는 금액이 아니라 입력 여부(1/0)예요. 단어 경계로 갈라야 오탐이 안 납니다. */
+  const money = calls.filter(c =>
+    /cashNeeded|mortgageLoan|maxPrice|ctxBase\.income\b|ctxBase\.price\b|formatWon|\bcash\b|\bprice\b/.test(c));
+  t('금액·소득을 담은 추적 호출이 없음', money.length === 0, money.slice(0, 2).join(' | '));
+  t('입력 여부 플래그는 보내도 됨 (금액이 아님)',
+    calls.some(c => c.indexOf('income_entered') !== -1));
+  const numeric = calls.filter(c => /:\s*\d{5,}/.test(c));
+  t('원 단위 숫자를 그대로 보내는 호출도 없음', numeric.length === 0, numeric.slice(0, 2).join(' | '));
+})();
+
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);

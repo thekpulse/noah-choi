@@ -6,15 +6,16 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#F7F8FA">
 <title>영끌계산기 — 아파트 예산 계산기</title>
-<!-- v21.7 — 실거래 박스 노출 조건(모드·배포본) · 대출 없이 계산 진입점 이동 · 출처 하단 접기 -->
+<!-- v21.10 — 대출 없이 계산 흐름 정리 · 결과 화면 중복 제거 · 판정 기준일·면책 문구 · GA 연결 -->
 
 <!-- ===== Google Analytics 4 =====
-     ⚠ 배포 전에 아래 GA_ID 를 실제 측정 ID(G-로 시작)로 바꿔주세요.
-     바꾸기 전까지는 스크립트를 아예 불러오지 않고, track()은 조용히 아무 것도 하지 않아요.
-     개인정보: 입력한 금액·소득은 전송하지 않아요. 어떤 기능을 썼는지(이벤트 이름)와
-     구간화된 값(예: 대출유형 라벨)만 보냅니다. -->
+     측정 ID는 아래 GA_ID 한 곳에서만 정의합니다.
+     'G-X'로 시작하면(=미설정) 스크립트를 아예 불러오지 않고 track()은 조용히 아무 것도 하지 않아요.
+     개인정보: 입력한 금액·소득은 전송하지 않아요(원칙 36). 어떤 기능을 썼는지(이벤트 이름)와
+     구간화된 값(예: 대출유형 라벨)만 보냅니다.
+     연결일: 2026.08.06 · 속성 '영끌계산기' · 스트림 https://noah-choi.vercel.app -->
 <script>
-window.GA_ID = 'G-XXXXXXXXXX';   // ← 실제 측정 ID로 교체
+window.GA_ID = 'G-NVTLEPG53G';
 (function(){
   if(!window.GA_ID || window.GA_ID.indexOf('G-X') === 0) return;   // 미설정이면 로드하지 않음
   const s = document.createElement('script');
