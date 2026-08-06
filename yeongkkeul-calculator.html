@@ -522,8 +522,16 @@ window.GA_ID = 'G-NVTLEPG53G';
     border-radius:var(--radius);
     font-size:17px;
   }
-  .line-item.grand .k{color:#B8C0CC;}
+  /* v21.15: 강조 행의 라벨은 .loan/.sub/.total 모두 700인데 여기만 지정이 없어
+     기본값 500으로 떨어져 있었어요. 가장 강조된 행의 라벨이 제일 얇았던 셈입니다.
+     색은 그대로 낮춰 둡니다 — 위계는 값이 흰색 19px/800으로 이미 잡고 있어요(원칙 38). */
+  .line-item.grand .k{color:#B8C0CC;font-weight:700;}
   .line-item.grand .v{color:#fff;font-size:19px;}
+  /* 매매 영수증의 결론 행만 한 단계 더 키웁니다.
+     .loan .v가 17px이라 19px과는 2px 차이뿐이어서 "가장 큰 숫자"로 읽히지 않았어요.
+     ⚠ 전월세 요약 상자(.rent-summary)의 .grand는 올리지 않습니다. 그쪽 라벨이
+        '2년 총비용 차이 (전세−월세)'처럼 길어서, 값을 키우면 한 줄에 안 들어가요. */
+  #receiptLines .line-item.grand .v{font-size:22px;}
   .fallback-note{
     font-family:'Pretendard', sans-serif;
     font-size:12px;
@@ -808,6 +816,35 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-size:13px;line-height:1.65;color:rgba(255,255,255,.92);
   }
   .what-if b{color:#8FD0FF;}
+  /* 어두운 진단 카드 안에서 쓰는 접기 버튼.
+     .section-toggle은 파란 배경 + 파란 테두리라 이 카드 위에서는 톤이 안 맞아요.
+     구조(전체폭 · 좌우 끝 정렬 · 셰브런)와 크기(14px/700)는 그대로 가져오고 색만 바꿉니다.
+     .open 토글은 기존 toggleOptionalSection()이 그대로 붙여줘요 — 새 함수는 없습니다. */
+  .diag-more{
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:12px;
+    padding:13px 14px;
+    margin-top:12px;
+    font-family:'Pretendard', sans-serif;
+    font-size:14px;
+    font-weight:700;
+    color:rgba(255,255,255,.85);
+    cursor:pointer;
+    text-align:left;
+  }
+  .diag-more .chevron{
+    transition:transform .2s;
+    color:rgba(255,255,255,.55);
+    margin-left:10px;
+    flex-shrink:0;
+  }
+  .diag-more.open .chevron{transform:rotate(180deg);}
+  /* 펼친 영역의 마지막 여백은 카드 padding이 대신해요. .what-if가 뒤에 붙을 때의
+     간격은 .what-if의 margin-top이 만듭니다. */
+  #diagMore .diag-why{margin-bottom:0;}
 
   /* ===== 상환부담 신호등 ===== */
   .burden-card{
@@ -970,12 +1007,19 @@ window.GA_ID = 'G-NVTLEPG53G';
   .report .burden-card{border-left:none;border-top:none;}
   .report .burden-card.danger{background:#FFF8F8;}
 
-  .report-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
-  .rg-cell{padding:16px 20px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+  /* 2×2 지표 칸.
+     v21.15: 이 카드 안의 항목 라벨은 .report-hero .label · .funding-head · .burden-label이
+     모두 13px/700인데 .rg-k만 12px/600이라 혼자 튀었어요. 규격을 맞춥니다(원칙 34·38).
+     값은 영수증의 강조 행(.line-item.total .v / .loan .v)과 같은 17px/800입니다.
+     ⚠ 좌우 여백 20 → 16px: '10억 4,628만원'처럼 긴 값이 두 줄로 접히던 걸 줄입니다.
+     ⚠ grid-auto-rows:1fr — 그래도 접히는 값이 있으면 네 칸 높이가 전부 같아지도록 맞춥니다.
+        접힌 칸만 커져서 위아래 줄 높이가 달라 보이던 문제예요. */
+  .report-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;border-bottom:1px solid var(--border);}
+  .rg-cell{padding:16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
   .rg-cell:nth-child(2n){border-right:none;}
   .rg-cell:nth-child(n+3){border-bottom:none;}
-  .rg-k{font-size:12px;font-weight:600;color:var(--ink-faint);margin-bottom:6px;}
-  .rg-v{font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .rg-k{font-size:13px;font-weight:700;line-height:1.35;color:var(--ink-faint);margin-bottom:6px;}
+  .rg-v{font-size:17px;font-weight:800;line-height:1.35;color:var(--ink);font-variant-numeric:tabular-nums;}
 
   .report .receipt{border:none;border-radius:0;margin:0;box-shadow:none;}
   .report-foot{
@@ -1229,10 +1273,20 @@ window.GA_ID = 'G-NVTLEPG53G';
   <div class="wrap">
     <span class="hero-tag">2026.08 기준 · 회원가입 없음</span>
     <h1>이 집,<br><span>나 살 수 있어?</span></h1>
-    <p>은행이 얼마까지 빌려주는지는 <b>내 소득</b>이 정합니다.
-       필요한 현금과 매달 나갈 돈을 <b>추정</b>해 드려요.</p>
+    <!-- 첫 문장은 "우리가 뭘 계산한다"가 아니라 "혼자 하면 놓친다"에서 시작해요.
+         ⚠ 이전 문구('은행이 얼마까지 빌려주는지는 내 소득이 정합니다')는 계산과도 어긋났어요.
+            엔진은 LTV·DSR·구간한도·은행 자체한도 중 가장 작은 값을 쓰고, 소득은 그중 DSR 하나만
+            정합니다. 실제로는 구간한도나 LTV가 먼저 걸리는 경우가 흔해요.
+         ⚠ '진짜 드는 돈'은 수사가 아니라 영수증이 실제로 보여주는 값입니다.
+            영수증에서 그 항목을 빼면 첫 문장이 빈말이 돼요.
+         ⚠ 챙겨주는 말투는 쓰되 평가는 하지 않습니다 — '무리예요' 같은 판단은 안 써요(원칙 9). -->
+    <p>혼자 알아보면 꼭 빠지는 게 생겨요.
+       빠진 것까지 더해서 <b>진짜 드는 돈</b>을 같이 봐요.</p>
+    <!-- ⚠ '취득세·중개보수 포함'은 실제보다 좁았어요. totalNeeded에는 인테리어비와
+         기타비용(이사·법무사)도 들어갑니다. 항목을 늘어놓는 대신 묶는 말을 씁니다 —
+         '부대비용'은 04 접기 버튼('대출조건 · 기존부채 · 부대비용')에서 이미 쓰는 말이에요(원칙 57). -->
     <div class="hero-facts">
-      <span>💸 DSR 반영</span><span>🧾 취득세·중개보수 포함</span><span>📸 리포트 저장</span>
+      <span>💸 DSR 반영</span><span>🧾 세금·중개보수·부대비용까지</span><span>📸 리포트 저장</span>
     </div>
   </div>
 </div>
@@ -1324,7 +1378,7 @@ window.GA_ID = 'G-NVTLEPG53G';
             <select id="buySgg" onchange="onBuySgg()"></select>
           </div>
           <div class="zone-badge" id="zoneBadge">시·군·구를 고르면 규제지역인지 자동으로 판정해드려요.</div>
-          <button type="button" class="hint-toggle" onclick="toggleHintDetail(this,'직접 고르기 ▾','직접 고르기 접기 ▴')">직접 고르기 ▾</button>
+          <button type="button" class="hint-toggle" onclick="toggleHintDetail(this,'지역 구분 직접 고르기 ▾','지역 구분 접기 ▴')">지역 구분 직접 고르기 ▾</button>
           <div class="hint-detail">
           <div class="segmented sm three" id="zoneSeg">
             <button type="button" class="seg-btn active" data-val="reg"   onclick="pickSeg(this,'zone')"><b>규제지역</b><span>서울 전역·경기 15곳</span></button>
@@ -2327,7 +2381,12 @@ function renderZoneBadge(){
   const code = (document.getElementById('buySgg') || {}).value || '';
   const manual = !!(document.getElementById('zone') || {dataset:{}}).dataset.manual;
   const z = zoneVal();
-  badge.classList.toggle('reg', z === 'reg');
+  /* ⚠ 붉은 색은 "규제지역으로 판정됐다"는 뜻이에요. 아직 아무것도 고르지 않은 첫 화면에서는
+     #zone의 기본값이 'reg'라, 시·군·구를 고르기 전부터 붉은 상자가 켜져 있었습니다.
+     "고르면 판정해드려요"라는 안내에 판정 색이 붙어 있던 셈이에요.
+     시·군·구를 골랐거나 직접 고른 경우에만 색을 켭니다(원칙 38·42). */
+  const decided = !!code || manual;
+  badge.classList.toggle('reg', decided && z === 'reg');
   if(!code){
     badge.innerHTML = manual
       ? `<b>${zoneLabelOf(z)}</b>로 직접 골랐어요. 시·군·구를 고르면 자동으로 판정해드려요.`
@@ -2502,8 +2561,25 @@ const POLICY = {
      출처: 은행권 여신심사 운영기준 / 확인일 2026.08.05 */
   seomin: {ltv: 0.6, incomeCap: 90000000, priceCap: 900000000},
 
-  /* 집값 구간별 대출한도 — '수도권' 기준(규제지역이 아닌 인천·경기도 걸립니다)
-     출처: 국토교통부 2025.10.15 대책 / 확인일 2026.08.05 */
+  /* 집값 구간별 대출한도 — 기준은 **'수도권 또는 규제지역'**(합집합)입니다.
+     즉 ①수도권이면 규제지역이 아니어도(인천·경기 나머지) 걸리고,
+        ②수도권 밖이라도 규제지역이면 걸립니다. '그 외 지역'만 해당 없어요.
+     코드에서는 c.metro(= zone !== 'other')로 판정합니다. 현재 규제지역은 전부 수도권 안에 있어요.
+
+     ⚠ 보도자료의 "수도권·규제지역"을 교집합(수도권이면서 규제지역)으로 읽으면
+        인천·경기 비규제에서 한도가 실제보다 크게 나옵니다 — 유리한 쪽 오차라 특히 위험해요(원칙 28).
+        합집합인 근거 셋:
+        1) 같은 보도자료가 바로 다음 항목에서 "수도권 **및** 규제지역 내 주담대에 한해
+           스트레스 금리를 1.5%→3.0%"로 적습니다. `·`와 `및`을 같은 뜻으로 씁니다.
+        2) 10·15 시점 규제지역은 서울 전역+경기 12곳으로 전부 수도권 안이라,
+           교집합이면 "규제지역"과 같은 말이 됩니다. 앞 단어를 쓸 이유가 없어요.
+        3) 6·27 대책으로 6억 한도가 처음 생겼을 때 규제지역은 강남3구·용산 넷뿐이었는데,
+           인천·경기 비규제에도 6억 한도가 적용됐습니다. 교집합이면 설명되지 않아요.
+
+     출처: 관계부처 합동 「10·15 주택시장 안정화 대책」(2025.10.15 발표, 2025.10.16 시행)
+           — 수도권·규제지역에 적용되는 주택구입목적 주담대 한도를 집값 구간별로 차등 적용
+           대한민국 정책브리핑 6·27 대책 보도(2025.06.27) — 대비되는 말이 '지방'이지 '비규제'가 아님
+     확인일 2026.08.06 (재확인) */
   bandCap: [
     {upTo: 1500000000, cap: 600000000},
     {upTo: 2500000000, cap: 400000000},
@@ -3527,14 +3603,24 @@ function renderInsights(c, price, ctxBase, rate, years){
       extraNote += `<div class="what-if">🏚 방공제로 <b>${formatWon(c.roomCut)}</b>이 실행액에서 차감된 결과예요. MCI·MCG 보증에 가입하면 차감되지 않는 경우가 있어, 은행에 가입 가능 여부를 확인해보실 수 있어요.</div>`;
     }
 
+    /* 카드는 남기되 안에서 접습니다(원칙 43·47).
+       기본으로 보이는 건 "무엇이 한도를 정했나"의 답과 그 근거 숫자예요 —
+       제목 · 구간한도/DSR/LTV · 가장 작은 값 규칙까지.
+       접는 건 문단 두 개(설명, 방공제·주기형 안내)로, 카드 높이의 절반쯤을 차지합니다.
+       ⚠ 통째로 접지 않는 이유: 대출한도 계산기가 한도의 이유를 기본값으로 감추면 안 돼요. */
     diag.innerHTML = `
       <div class="diag-card">
         <div class="diag-tag">한도를 결정한 건</div>
         <div class="diag-title">${info.title}</div>
-        <div class="diag-why">${info.why}</div>
         <div class="limit-list">${rows}</div>
         <div class="limit-foot">여러 한도 중 <b>가장 작은 값</b>이 실제 대출한도가 돼요.</div>
-        ${extraNote}
+        <button type="button" class="diag-more" id="diagMoreToggle" onclick="toggleOptionalSection(this,'diagMore')">
+          <span>왜 이렇게 나왔는지</span><span class="chevron">▾</span>
+        </button>
+        <div id="diagMore" class="optional-section">
+          <div class="diag-why">${info.why}</div>
+          ${extraNote}
+        </div>
       </div>`;
   } else { diag.innerHTML = ''; }
 

@@ -599,7 +599,9 @@ t('토지거래허가 안내가 규제지역에서만', (() => {
 t('공유링크에 sgg 파라미터', html.indexOf("p.set('sgg'") !== -1);
 t('sgg로 시/도까지 역추적해 복원', html.indexOf("Object.keys(LAWD).find(k => LAWD[k].some(x => x[0] === code))") !== -1);
 t('sgg 없는 구버전 링크도 z로 동작', html.indexOf("if(p.has('z')) document.getElementById('zone').value = p.get('z');") !== -1);
-t('직접 고르기 토글 라벨 유지', html.indexOf("toggleHintDetail(this,'직접 고르기 ▾'") !== -1);
+/* v21.15: '직접 고르기'만으로는 무엇을 고르는 칸인지 열어 보기 전에 알 수 없었어요.
+   칸 label('사려는 집의 지역')과 이어지도록 '지역 구분'을 앞에 붙였습니다(원칙 57). */
+t('직접 고르기 토글이 대상 이름을 달고 있음', html.indexOf("toggleHintDetail(this,'지역 구분 직접 고르기 ▾'") !== -1);
 t('기존 toggleHintDetail 호출 호환', (() => {
   const btn = {textContent:'', nextElementSibling:{classList:{toggle(){return true;}}}};
   toggleHintDetail(btn);
@@ -1774,11 +1776,219 @@ console.log('\n=== v21.15 결과 화면 정리 ===');
   t('유의사항 본문은 접히지 않는다',
     disc.indexOf('disclaimer-item') < disc.indexOf('disclaimer-toggle'));
 
-  /* (4) 말투 — 특정 앱으로 좁히지 않는다 (원칙 9·44) */
+  /* (5) 한도 진단 카드 — 답과 근거는 남기고 설명만 접는다
+     ⚠ diag.innerHTML은 두 군데예요. 앞쪽은 연소득 미입력 '주의' 카드로,
+        세 줄짜리 경고 + 행동 버튼이라 접지 않습니다. 여기서 보는 건 뒤쪽 병목 진단입니다. */
+  const warnSrc = html.slice(html.indexOf("<div class=\"diag-tag\">주의</div>") - 300,
+                             html.indexOf('const info = BINDING_COPY[c.binding];'));
+  t('연소득 미입력 주의 카드는 접지 않는다', warnSrc.indexOf('diag-more') === -1);
+
+  const diagSrc = html.slice(html.indexOf('const info = BINDING_COPY[c.binding];'),
+                             html.indexOf('/* (3) 상환부담 신호등'));
+  const iBtn = diagSrc.indexOf('class="diag-more"');
+  ['diag-tag', 'diag-title', 'limit-list', 'limit-foot'].forEach(k => {
+    t('접기 버튼 위에 남는다 — ' + k, diagSrc.indexOf(k) !== -1 && diagSrc.indexOf(k) < iBtn);
+  });
+  ['diag-why', '${extraNote}'].forEach(k => {
+    t('접기 버튼 아래로 들어간다 — ' + k, diagSrc.indexOf(k) > iBtn);
+  });
+  t('접는 자리는 기존 optional-section을 재사용 (진단 카드)',
+    diagSrc.indexOf('id="diagMore" class="optional-section"') !== -1);
+  t('접기·펴기는 기존 toggleOptionalSection을 쓴다 (새 함수 없음)',
+    diagSrc.indexOf("toggleOptionalSection(this,'diagMore')") !== -1);
+  /* ⚠ 어두운 카드 위에 파란 .section-toggle을 쓰면 한 화면에 색이 어긋나요(원칙 38).
+     .diag-more는 그 톤만 바꾼 것이라, 크기·굵기는 .section-toggle과 같아야 합니다(원칙 34). */
+  t('.diag-more가 정의돼 있다', /\.diag-more\{[^}]*\}/.test(html));
+  const diagBtnCss = (html.match(/\.diag-more\{[^}]*\}/) || [''])[0];
+  const secBtnCss  = (html.match(/\.section-toggle\{[^}]*\}/) || [''])[0];
+  t('접기 버튼 두 종류의 글자 크기·굵기가 같다',
+    /font-size:14px/.test(diagBtnCss) && /font-weight:700/.test(diagBtnCss)
+    && /font-size:14px/.test(secBtnCss) && /font-weight:700/.test(secBtnCss));
+  t('어두운 카드 안에서는 파란 토글을 쓰지 않는다',
+    diagSrc.indexOf('class="section-toggle"') === -1);
+  t('진단 카드 접기 제목도 한 줄 길이',
+    (diagSrc.match(/class="diag-more"[^>]*>\s*<span>([^<]*)</) || [, ''])[1].length <= 20,
+    (diagSrc.match(/class="diag-more"[^>]*>\s*<span>([^<]*)</) || [, ''])[1]);
+
+  /* (7) 04 지역 칸 — 열어 보기 전에도 무엇을 고르는 칸인지 알 수 있다 (원칙 57) */
+  t('직접 고르기 버튼이 무엇을 고르는지 이름에 있다',
+    html.indexOf(">지역 구분 직접 고르기 ▾</button>") !== -1);
+  t('접기 문구도 같은 이름을 쓴다',
+    html.indexOf("'지역 구분 직접 고르기 ▾','지역 구분 접기 ▴'") !== -1);
+  t('이름 없는 "직접 고르기"가 남아 있지 않다',
+    html.indexOf("'직접 고르기 ▾'") === -1);
+
+  /* (8) 구간별 대출한도의 적용 범위 — '수도권 또는 규제지역' (원칙 26·33)
+     ⚠ 규제지역만으로 좁히면 인천·경기 비규제에서 한도가 실제보다 크게 나옵니다.
+        결과를 유리하게 만드는 오차라 특히 위험해요(원칙 28). */
+  const bandSrc = html.slice(html.indexOf('function bankLimits'), html.indexOf('function bankLimits') + 900);
+  t('구간한도를 c.metro로 판정한다 (규제지역만으로 좁히지 않음)',
+    /if\(c\.metro\)\{[\s\S]{0,200}POLICY\.bandCap/.test(bandSrc));
+  t('c.metro는 규제지역과 수도권 비규제를 모두 포함한다',
+    html.indexOf("function isMetro(){ return zoneVal() !== 'other'; }") !== -1);
+  const bandDef = html.slice(html.indexOf('/* 집값 구간별 대출한도'), html.indexOf('bandCap: ['));
+  t('구간한도에 기준·출처·확인일이 함께 적혀 있다 (원칙 33)',
+    /수도권 또는 규제지역/.test(bandDef) && /출처:/.test(bandDef) && /확인일/.test(bandDef));
+  /* ⚠ "수도권·규제지역"을 교집합으로 읽는 오독이 반복됩니다. 판별 근거를 주석에 남겨둡니다.
+     지우면 다음 사람이 같은 자리에서 다시 헤매고, 좁게 고치면 결과가 유리한 쪽으로 틀어져요. */
+  t('합집합인 판별 근거가 주석에 남아 있다',
+    /합집합/.test(bandDef) && /및/.test(bandDef) && /6·27/.test(bandDef));
+
+  /* (9) 말투 — 특정 앱으로 좁히지 않는다 (원칙 9·44) */
   t('화면 문구에 특정 메신저 이름이 없다', html.indexOf('카톡') === -1,
     (html.match(/.{10}카톡.{10}/g) || []).slice(0, 2).join(' | '));
   t('텍스트 복사 버튼 이름에서 용도 제한을 뺐다',
     html.indexOf('📋 요약 텍스트 복사</button>') !== -1);
+})();
+
+console.log('\n=== v21.15 타이포 스케일 전수 검사 (원칙 34·45) ===');
+(() => {
+  /* 목적: :root 주석의 스케일 밖 값이 하나라도 새로 들어오면 여기서 걸린다.
+     문단을 하나씩 고치지 않고 규칙 하나로 전수 적용합니다(원칙 45). */
+  /* ⚠ 주석을 걷어내고 봅니다. 주석에 규칙을 설명해두면(".rent-summary의 .grand는 22px로
+     올리지 않습니다" 같은) 그 설명 문장 자체가 검사에 걸려요. 같은 함정에 두 번 빠졌습니다. */
+  const css = html.slice(html.indexOf('<style>'), html.indexOf('</style>')).replace(/\/\*[\s\S]*?\*\//g, '');
+  const allowedSize = [11, 12, 13, 14, 15, 16, 17, 19, 22, 26, 31];
+  const sizes = [...new Set((css.match(/font-size:\s*[\d.]+px/g) || [])
+    .map(s => parseFloat(s.replace(/[^\d.]/g, ''))))];
+  const badSize = sizes.filter(v => !allowedSize.includes(v));
+  t('글자 크기가 모두 스케일 안에 있다', badSize.length === 0, badSize.join(', '));
+  /* ⚠ 0.5px 단위는 금지입니다(원칙 34). 위 목록이 정수뿐이라 자동으로 걸립니다. */
+  t('0.5px 단위 글자 크기가 없다', sizes.every(v => Number.isInteger(v)), sizes.filter(v => !Number.isInteger(v)).join(', '));
+
+  const allowedLh = ['1.2', '1.35', '1.55', '1.65'];
+  const badLh = [...new Set(css.match(/line-height:\s*[\d.]+(?![\d.a-z%])/g) || [])]
+    .map(s => s.replace(/[^\d.]/g, '')).filter(v => !allowedLh.includes(v));
+  t('행간이 모두 스케일 안에 있다 (1.2·1.35·1.55·1.65)', badLh.length === 0, badLh.join(', '));
+
+  const badWeight = [...new Set(css.match(/font-weight:\s*\d+/g) || [])]
+    .map(s => s.replace(/\D/g, '')).filter(v => !['400', '500', '600', '700', '800'].includes(v));
+  t('굵기가 400~800의 정해진 단계만 쓴다', badWeight.length === 0, badWeight.join(', '));
+
+  /* 리포트 카드 안 '항목 라벨'은 한 규격이어야 합니다. .rg-k만 12px/600으로 튀었어요. */
+  const rule = sel => (css.match(new RegExp(sel.replace(/[.]/g, '\\.') + '\\{[^}]*\\}')) || [''])[0];
+  const spec = sel => {
+    const r = rule(sel);
+    return [(r.match(/font-size:\s*(\d+)px/) || [, '-'])[1], (r.match(/font-weight:\s*(\d+)/) || [, '-'])[1]].join('/');
+  };
+  t('리포트 카드 항목 라벨이 한 규격 (13px/700)',
+    ['.rg-k', '.burden-label', '.funding-head'].every(s => spec(s) === '13/700'),
+    ['.rg-k', '.burden-label', '.funding-head'].map(s => s + '=' + spec(s)).join(' | '));
+  t('지표 칸 값이 영수증 강조 행과 같은 규격 (17px/800)',
+    spec('.rg-v') === '17/800' && spec('.line-item.total .v') === '17/800',
+    '.rg-v=' + spec('.rg-v') + ' | .line-item.total .v=' + spec('.line-item.total .v'));
+  /* ⚠ 값이 두 줄로 접히는 칸이 있어도 네 칸 높이는 같아야 합니다. */
+  t('2×2 지표 칸 높이가 서로 같다', /\.report-grid\{[^}]*grid-auto-rows:1fr/.test(css));
+
+  /* 영수증에서 강조된 행(.loan/.sub/.total/.grand)의 라벨은 한 굵기여야 합니다.
+     .grand만 지정이 없어 기본값 500으로 떨어져, 가장 강조된 행의 라벨이 제일 얇았어요. */
+  const kWeight = cls => ((css.match(new RegExp('\\.line-item\\.' + cls + ' \\.k\\{[^}]*\\}')) || [''])[0]
+    .match(/font-weight:\s*(\d+)/) || [, '-'])[1];
+  t('강조 행 라벨이 모두 같은 굵기 (700)',
+    ['loan', 'sub', 'total', 'grand'].every(c => kWeight(c) === '700'),
+    ['loan', 'sub', 'total', 'grand'].map(c => c + '=' + kWeight(c)).join(' | '));
+  t('일반 행 라벨은 그대로 500 (위계가 사라지지 않음)',
+    /\.line-item \.k\{[^}]*font-weight:500/.test(css));
+
+  /* 결론 행의 값은 영수증에서 가장 큰 숫자여야 합니다.
+     .loan .v가 17px이라 19px과는 2px 차이뿐이어서 "가장 큰 숫자"로 안 읽혔어요. */
+  t('매매 영수증 결론 행 값이 한 단계 더 크다 (22px)',
+    /#receiptLines \.line-item\.grand \.v\{font-size:22px;\}/.test(css));
+  t('그 값이 대출 행 값(17px)보다 크다',
+    /\.line-item\.loan \.v\{[^}]*font-size:17px/.test(css));
+  /* ⚠ 전월세 요약 상자의 .grand는 라벨이 '2년 총비용 차이 (전세−월세)'처럼 길어서
+     값을 키우면 한 줄에 안 들어가요. #receiptLines로 범위를 좁혀 그쪽엔 닿지 않게 합니다. */
+  t('키우는 규칙이 매매 영수증으로만 한정된다', /#receiptLines /.test(css));
+  const rentBlock = html.slice(html.lastIndexOf("document.getElementById('rentReceiptLines').innerHTML ="));
+  t('전월세 요약 상자는 다른 칸에서 그려진다 (규칙이 닿지 않음)',
+    rentBlock.indexOf('rent-summary') !== -1
+    && html.slice(html.indexOf('id="receiptLines"'), html.indexOf('id="receiptLines"') + 2000).indexOf('rent-summary') === -1);
+
+  /* 영수증 숫자의 크기 위계: 일반 15 < 강조(대출·소계·소계합) 17 < 결론 22.
+     ⚠ 결론이 19px일 때는 대출값 17px과 2px 차이뿐이라 "가장 큰 숫자"로 안 읽혔어요. */
+  const sizeOf = sel => ((css.match(new RegExp(sel.replace(/[.#]/g, c => '\\' + c) + '\\{[^}]*\\}')) || [''])[0]
+    .match(/font-size:\s*(\d+)px/) || [, '-'])[1];
+  t('결론 행 값이 강조 행 값보다 확실히 크다',
+    Number(sizeOf('#receiptLines .line-item.grand .v')) - Number(sizeOf('.line-item.loan .v')) >= 4,
+    '결론=' + sizeOf('#receiptLines .line-item.grand .v') + ' | 대출=' + sizeOf('.line-item.loan .v'));
+  /* ⚠ 전월세 요약 상자는 라벨이 길어 값을 키우면 줄이 넘칩니다. 그쪽까지 올리지 않습니다. */
+  t('전월세 요약 상자는 키우지 않는다',
+    css.indexOf('#receiptLines .line-item.grand .v') !== -1
+    && !/\.rent-summary[^{]*\.grand[^{]*\{[^}]*font-size:22px/.test(css));
+})();
+
+console.log('\n=== v21.15 첫 화면 안내 문구 (원칙 9) ===');
+(() => {
+  /* 목적 ①: 첫 문장이 계산과 어긋나지 않는다.
+     엔진은 LTV·DSR·구간한도·은행 자체한도 중 가장 작은 값을 쓰고, 소득은 DSR 하나만 정해요.
+     "소득이 정합니다"는 구간한도·LTV가 먼저 걸리는 흔한 경우를 설명하지 못합니다. */
+  t('소득 하나가 한도를 정한다고 단정하지 않는다',
+    html.indexOf('내 소득</b>이 정합니다') === -1);
+
+  /* 목적 ②: 첫 문장이 약속한 것을 결과 화면이 실제로 보여준다.
+     '진짜 드는 돈' = 영수증. 아래 항목 중 하나라도 빠지면 첫 문장이 빈말이 됩니다(원칙 58). */
+  const hero = html.slice(html.indexOf('id="heroSection"'), html.indexOf('class="hero-facts"'));
+  t('첫 문장이 "혼자 하면 놓친다"에서 시작한다',
+    hero.indexOf('혼자 알아보면 꼭 빠지는 게 생겨요') !== -1);
+  t('두 번째 줄이 결과로 받아친다', hero.indexOf('<b>진짜 드는 돈</b>') !== -1);
+  const receiptSrc = html.slice(html.indexOf("`<div class=\"receipt-section-label finance\">거래·대출</div>`"),
+                                html.indexOf('lastShareText = buildSummaryText'));
+  t('영수증이 "빠지는 것"을 실제로 채운다 — 취득세·중개보수',
+    receiptSrc.indexOf('취득세(교육세·농특세 포함)') !== -1 && receiptSrc.indexOf('중개보수') !== -1);
+  t('영수증이 대출을 빼고 내 돈까지 보여준다',
+    receiptSrc.indexOf('loanTypeLabel(c.loanType)') !== -1 && receiptSrc.indexOf('receiptTail') !== -1);
+
+  /* ⚠ 챙겨주는 말투는 쓰되 평가·지시는 하지 않습니다(원칙 9).
+     검사 대상은 **화면에 보이는 문장**이에요. 주석까지 훑으면 '무리예요 같은 말은 안 써요'라고
+     적어둔 주의 문구에 스스로 걸립니다. 주석을 걷어내고 <p> 안만 봅니다. */
+  const heroSentence = (hero.replace(/<!--[\s\S]*?-->/g, '').match(/<p>([\s\S]*?)<\/p>/) || [, ''])[1];
+  t('첫 문장을 실제로 집어냈다', heroSentence.indexOf('진짜 드는 돈') !== -1, heroSentence.trim());
+  t('첫 문장에 평가하는 말이 없다',
+    !/무리|위험해요|안 돼요|하세요|해야/.test(heroSentence),
+    (heroSentence.match(/무리|위험해요|안 돼요|하세요|해야/g) || []).join(', '));
+  t('DSR 반영 표시는 그대로 남는다', html.indexOf('💸 DSR 반영') !== -1);
+
+  /* 목적 ③: 포함한다고 적은 것을 실제로 다 더한다.
+     '취득세·중개보수 포함'은 인테리어비·기타비용을 빠뜨린 좁은 표현이었어요. */
+  t('포함 범위를 좁게 적지 않는다', html.indexOf('🧾 취득세·중개보수 포함') === -1);
+  t('부대비용까지 포함한다고 적는다', html.indexOf('부대비용까지') !== -1);
+  const totalLine = (html.match(/const totalNeeded = [^;]+;/) || [''])[0];
+  t('총 소요금액에 세금·중개보수·인테리어·기타비용이 다 들어간다',
+    /totalTax/.test(totalLine) && /brokerFee/.test(totalLine)
+    && /interiorCost/.test(totalLine) && /etcCost/.test(totalLine), totalLine);
+  /* ⚠ '부대비용'은 04 접기 버튼에서 이미 쓰는 말이에요. 같은 것을 두 이름으로 부르지 않습니다(원칙 57). */
+  t('같은 개념을 04와 같은 이름으로 부른다', html.indexOf('부대비용 <span') !== -1 || html.indexOf('· 부대비용') !== -1);
+})();
+
+console.log('\n=== v21.15 판정 뱃지 색 (원칙 38·42) ===');
+(() => {
+  /* 목적: 붉은 색은 "규제지역으로 판정됐다"는 뜻이다.
+     아직 고르지 않은 상태에는 켜지지 않는다 — #zone 기본값이 'reg'라 그냥 두면 켜져 있었다. */
+  const badge = el('zoneBadge');
+  el('buySgg').value = '';
+  el('zone').value = 'reg';
+  delete el('zone').dataset.manual;
+  renderZoneBadge();
+  t('아무것도 안 골랐으면 판정 색이 꺼져 있다', !badge.classList.contains('reg'), badge.innerHTML);
+  t('그때도 안내 문구는 나온다', badge.innerHTML.indexOf('자동으로 판정') !== -1);
+
+  el('zone').dataset.manual = '1';
+  renderZoneBadge();
+  t('직접 규제지역으로 골랐으면 색이 켜진다', badge.classList.contains('reg'));
+
+  delete el('zone').dataset.manual;
+  el('zone').value = 'other';
+  renderZoneBadge();
+  t('그 외 지역이면 색이 꺼진다', !badge.classList.contains('reg'));
+
+  /* 시·군·구로 판정된 경우 — 강남구는 규제지역 */
+  el('buySido').value = '서울특별시'; onBuySido();
+  const gangnam = (LAWD['서울특별시'].find(x => x[1].indexOf('강남') === 0) || [])[0];
+  el('buySgg').value = gangnam; onBuySgg();
+  renderZoneBadge();
+  t('시·군·구로 규제지역 판정되면 색이 켜진다', badge.classList.contains('reg'), badge.innerHTML);
+
+  el('buySgg').value = ''; el('zone').value = 'reg'; delete el('zone').dataset.manual;
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
