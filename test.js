@@ -1483,5 +1483,21 @@ console.log('\n=== v21.9 ㊹ 대출 없이 계산할 때 질문 흐름 ===');
   t('대출이 없으면 DSR 미반영 경고를 띄우지 않음', diagSrc.indexOf('!ctxBase.noLoan') !== -1);
 })();
 
+console.log('\n=== v21.9 ㊾ 계산 불가일 때 직전 결과 지우기 (원칙 30) ===');
+(() => {
+  /* 목적: "보유자금을 입력해주세요"가 뜬 화면에 직전 계산의 금액이 남지 않는다. */
+  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint','reportGrid'].forEach(id => {
+    el(id).innerHTML = '이전 계산 값';
+  });
+  clearInsights();
+  t('리포트 지표 칸도 비운다', el('reportGrid').innerHTML === '', el('reportGrid').innerHTML);
+  t('자금 구성·진단·부담·안내도 비운다',
+    ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint']
+      .every(id => el(id).innerHTML === ''));
+
+  const src = html.slice(html.indexOf('function clearInsights'), html.indexOf('function renderFallbackNote'));
+  t('지우는 목록에 reportGrid가 들어 있음', src.indexOf("'reportGrid'") !== -1);
+})();
+
 console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);

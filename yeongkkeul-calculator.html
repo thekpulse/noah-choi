@@ -3638,7 +3638,10 @@ function renderDuties(loanType){
 }
 
 function clearInsights(){
-  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint'].forEach(id=>{
+  /* 계산 불가 상태로 빠질 때 이전 결과를 남기지 않습니다(원칙 30).
+     ⚠ reportGrid를 빼먹으면 "보유자금을 입력해주세요" 아래에 직전 계산의
+        내 돈·대출금액이 그대로 남아 사실과 어긋나는 화면이 됩니다. */
+  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint','reportGrid'].forEach(id=>{
     const el = document.getElementById(id); if(el) el.innerHTML = '';
   });
 }
