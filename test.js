@@ -1574,8 +1574,8 @@ console.log('\n=== v21.12 ㊲ 04 전용 판 — 컨트롤 교체와 부제 ===')
   t('.row2.inline은 가로 배치', /\.row2\.inline\{[^}]*flex-direction:row/.test(html));
   t('줄바꿈시키지 않는다 — 줄바꿈하면 다시 위아래가 됨',
     /\.row2\.inline\{(?![^}]*flex-wrap)[^}]*\}/.test(html));
-  t('시군구 칸이 시/도 칸보다 넓음 (긴 이름 우선)',
-    /select:first-child\{flex:0 1 34%/.test(html) && /select:last-child\{flex:1 1 66%/.test(html));
+  t('두 칸 모두 이름이 들어갈 폭을 가짐',
+    /select:first-child\{flex:0 1 44%/.test(html) && /select:last-child\{flex:1 1 56%/.test(html));
   /* 잘려도 어느 구인지 알 방법이 남아 있어야 합니다 — 바로 아래 뱃지가 이름을 다시 적습니다. */
   t('판정 뱃지가 고른 시군구 이름을 그대로 다시 적는다',
     html.indexOf('const name = (document.getElementById(\'buySgg\').selectedOptions[0]') !== -1 &&
@@ -1624,93 +1624,19 @@ console.log('\n=== v21.12 ㊲ 04 전용 판 — 컨트롤 교체와 부제 ===')
   t('체크를 풀면 되돌아옴 (원칙 42)', el('situationSub').innerHTML === SITUATION_SUB.loan);
 })();
 
-console.log('\n=== v21.13 ㉝ 결과 미리보기 상시 노출 ===');
+console.log('\n=== v21.14 ㉝ 미리보기 제거 확인 ===');
 (() => {
-  /* 목적: 계산 버튼을 누르기 전에도 고른 값이 숫자로 보인다.
-     단 미리보기와 본 결과가 어긋나서는 안 된다 — 같은 함수를 써야 한다(원칙 28·53). */
-
-  t('미리보기 자리가 입력 화면에 있다',
-    html.indexOf('id="previewBar"') !== -1 &&
-    html.indexOf('id="previewBar"') < html.indexOf('onclick="calculate()"'));
-
-  const src = html.slice(html.indexOf('function previewState'), html.indexOf('function renderPreview'));
-  t('본 결과와 같은 함수를 쓴다 — solveMaxPrice', src.indexOf('solveMaxPrice(') !== -1);
-  t('본 결과와 같은 함수를 쓴다 — calcCosts', src.indexOf('calcCosts(') !== -1);
-  t('본 결과와 같은 입력 조립을 쓴다 — buildCtxBase', src.indexOf('buildCtxBase()') !== -1);
-  t('미리보기가 따로 한도를 정하지 않는다 (POLICY 재해석 없음)', src.indexOf('POLICY.') === -1);
-
-  const live = html.slice(html.indexOf('function liveRecalc'), html.indexOf('function liveRecalc') + 320);
-  t('결과가 닫혀 있어도 미리보기는 갱신된다', /renderPreview\(\)/.test(live));
-  t('결과가 열려 있을 때만 본 계산을 돌린다', /if\(resultVisible\) calculate\(true\)/.test(live));
-
-  const setC = (eok) => { el('cashEok').value = String(eok); el('cashMan').value = '0'; };
-  const setP = (eok) => { el('priceEok').value = String(eok); el('priceMan').value = '0'; };
-  /* ⚠ DOM 스텁은 한 번 만든 칸을 계속 공유합니다. 앞 블록이 넣어둔 값이 남아 있으면
-     지역을 바꿔도 결과가 안 움직이는 것처럼 보여요(대출 상한이 고정되니까). 먼저 비웁니다. */
-  ['manualLoanCapEok','manualLoanCapMan','bankSelfCapEok','bankSelfCapMan',
-   'creditLoanEok','creditLoanMan','companyLoanEok','companyLoanMan',
-   'sellerFinancingEok','sellerFinancingMan','incomeEok','incomeMan',
-   'otherDebtMonthly','stressBp','childCount','fixedYears'].forEach(id => { el(id).value = ''; });
-  ['seominCheck','mciCovered','over85','firstTimeTaxCut','newlywed','newborn','dualIncome']
-    .forEach(id => { el(id).checked = false; });
-  el('roomDeduct').value = '5500'; el('rateType').value = 'variable';
-  el('rate').value = '5.4'; el('years').value = '30';
-  el('noLoanCheck').checked = false; toggleNoLoan();
-  el('zone').value = 'reg'; el('houseStatus').value = 'first';
-  el('pyeong').value = ''; el('interiorPerPyeong').value = '0'; el('etc').value = '0';
-
-  setMode('A'); setC(0);
-  let p = previewState();
-  t('보유자금이 없으면 준비 안 됨', p.ready === false && p.need === 'cash');
-  el('rate').value = '';
-  t('금리가 없으면 금리를 먼저 가리킨다', previewState().need === 'rate');
-  el('rate').value = '5.4';
-
-  setC(5);
-  p = previewState();
-  const ctx = buildCtxBase();
-  const truth = solveMaxPrice(500000000, ctx);
-  t('A모드는 최대 매매가를 보여준다', p.ready === true && p.mainLabel === '최대 매매가');
-  t('미리보기 금액이 본 계산과 정확히 같다', p.main === truth, p.main + ' vs ' + truth);
-  t('필요한 내 돈도 함께 보여준다', p.sub === calcCosts({...ctx, price: truth}).cashNeeded);
-  t('좁은 자리 이름 규칙을 지킨다 (㊻)', p.subLabel === '내 돈');
-  t('내 돈이 보유자금을 넘지 않는다 (원칙 28)', p.sub <= 500000000);
-
-  const regPrice = p.main;
-  el('zone').value = 'other';
-  const otherPrice = previewState().main;
-  t('지역을 바꾸면 미리보기 숫자가 달라진다', regPrice !== otherPrice, regPrice + ' → ' + otherPrice);
-  el('zone').value = 'reg';
-
-  el('noLoanCheck').checked = true; toggleNoLoan();
-  const first = previewState().main;
-  el('houseStatus').value = 'multi';
-  const multi = previewState().main;
-  t('대출이 없어도 보유 상황을 바꾸면 달라진다 (취득세)', first !== multi, first + ' → ' + multi);
-  el('houseStatus').value = 'first';
-  el('noLoanCheck').checked = false; toggleNoLoan();
-
-  setMode('B'); setP(0);
-  t('B모드에서 매매가가 없으면 준비 안 됨', previewState().need === 'price');
-  setP(8);
-  p = previewState();
-  t('B모드는 매매가와 내 돈을 보여준다', p.ready === true && p.mainLabel === '매매가');
-  t('B모드 내 돈이 본 계산과 같다',
-    p.sub === calcCosts({...buildCtxBase(), price: 800000000}).cashNeeded);
-  setMode('A');
-
-  el('previewBar').innerHTML = '이전 미리보기 8억원';
-  setC(0); renderPreview();
-  t('막히면 이전 숫자가 남지 않는다 (원칙 30)', el('previewBar').innerHTML.indexOf('8억') === -1);
-  t('막힌 자리는 빈 상태로 표시된다', el('previewBar').classList.contains('empty'));
-  setC(5); renderPreview();
-  t('다시 채우면 빈 상태가 풀린다', el('previewBar').classList.contains('empty') === false);
-  t('미리보기가 확정처럼 말하지 않는다', el('previewBar').innerHTML.indexOf('예상') !== -1);
-
-  /* 계산이 터져도 자리를 비워두지 않는다 — 빈 상자는 "미리보기가 어디 있냐"가 됩니다. */
-  t('예외가 나도 상자를 비워두지 않는다',
-    /try \{ p = previewState\(\); \}/.test(html) &&
-    /catch\(e\)\{[\s\S]{0,240}box\.innerHTML/.test(html));
+  /* 목적: 걷어낸 자리가 깨끗한지. 계산 로직은 하나도 안 건드렸는지.
+     미리보기는 본 계산 함수를 빌려 쓰기만 했으므로, 지우면 흔적이 남지 않아야 합니다(원칙 55). */
+  ['previewBar', 'preview-bar', 'previewState', 'renderPreview', 'PREVIEW_NEED', 'pv-cell', 'pv-need']
+    .forEach(name => t('흔적이 남지 않음 — ' + name, html.indexOf(name) === -1));
+  t('liveRecalc가 원래대로 돌아옴',
+    /function liveRecalc\(\)\{\s*if\(!resultVisible\) return;/.test(html));
+  t('왜 걷어냈는지 코드에 남아 있음 (다시 넣지 않도록)',
+    /61번/.test(html) && html.indexOf('미리보기(') !== -1);
+  /* 계산 쪽은 그대로여야 합니다 */
+  t('solveMaxPrice는 그대로', typeof solveMaxPrice === 'function');
+  t('calcCosts는 그대로', typeof calcCosts === 'function');
 })();
 
 console.log('\n=== v21.13-b 원칙 60 판 표시 ===');
@@ -1730,6 +1656,34 @@ console.log('\n=== v21.13-b 원칙 60 판 표시 ===');
 
   t('판 번호가 맨 앞에 오고 확인일이 뒤따름',
     /BUILD \+ ' · 정책 ' \+ LAST_VERIFIED/.test(html));
+})();
+
+console.log('\n=== v21.13-d 확인 결과 반영 ===');
+(() => {
+  /* 목적: 사용자가 화면에서 실제로 지적한 것들이 다시 생기지 않게 잠근다. */
+
+  // (1) 판 표시가 입력 화면에서도 보인다 — 전에는 결과 화면 footer 안에만 있었다
+  const step1 = html.slice(html.indexOf('data-step="1"'), html.indexOf('data-step="7"'));
+  t('판 표시가 입력 화면에도 있다', step1.indexOf('build-tag') !== -1);
+  t('판 표시 자리가 세 곳 (입력·결과·전월세)',
+    (html.match(/build-tag/g) || []).filter(x => true).length >= 3);
+
+  // (2) 줄 끝에서 갈라지면 안 되는 문구
+  t('"더 정확하게"가 줄 끝에서 갈라지지 않는다',
+    /<b style="white-space:nowrap;">"더 정확하게"<\/b>/.test(html));
+  t('중개보수 꼬리표가 줄 끝에서 갈라지지 않는다',
+    /중개보수 <span class="nowrap">\(중개수수료·VAT 포함\)<\/span>/.test(html));
+  t('nowrap 유틸이 정의돼 있다', /\.nowrap\{white-space:nowrap;\}/.test(html));
+
+  // (3) 방공제를 고르는 자리에서 뺀다 (㊺ 규칙 3 — 계산 내부 사정)
+  const badgeSrc = html.slice(html.indexOf('function renderZoneBadge'),
+                              html.indexOf('function renderZoneBadge') + 1400);
+  t('판정 뱃지에 방공제 금액을 적지 않는다', badgeSrc.indexOf('방공제 $') === -1);
+  t('판정 결과와 확인일은 그대로 남는다',
+    badgeSrc.indexOf('zoneLabelOf') !== -1 && badgeSrc.indexOf('LAST_VERIFIED') !== -1);
+  /* ⚠ 화면에서 뺐을 뿐 계산에서 뺀 게 아닙니다. 자동 세팅 경로는 그대로 있어야 합니다. */
+  t('방공제 자동 세팅은 그대로 (계산에서 뺀 게 아님)',
+    html.indexOf('roomDeductFromSgg(code)') !== -1);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
