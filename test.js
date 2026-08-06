@@ -50,7 +50,8 @@ js += '\n;globalThis.LAWD=LAWD; globalThis.SISE_MONTHS=SISE_MONTHS;'
    + 'globalThis.REG_SGG=REG_SGG; globalThis.ROOM_4800_SGG=ROOM_4800_SGG; globalThis.ROOM_2800_SGG=ROOM_2800_SGG;'
    + 'globalThis.POLICY=POLICY; globalThis.SISE_UI=SISE_UI; globalThis.siseState=siseState;'
    + 'globalThis.DSR_RATIO=DSR_RATIO; globalThis.DTI_RATIO=DTI_RATIO;'
-   + 'globalThis.POLICY_DEFS=POLICY_DEFS; globalThis.BINDING_COPY=BINDING_COPY;';
+   + 'globalThis.POLICY_DEFS=POLICY_DEFS; globalThis.BINDING_COPY=BINDING_COPY;'
+   + 'globalThis.SITUATION_SUB=SITUATION_SUB;';
 eval(js);
 
 let pass = 0, fail = 0;
@@ -1563,5 +1564,51 @@ console.log('\n=== v21.10 GA 연결 · 로그 개인정보 (원칙 36) ===');
   t('원 단위 숫자를 그대로 보내는 호출도 없음', numeric.length === 0, numeric.slice(0, 2).join(' | '));
 })();
 
-console.log('\n결과: ' + pass + ' 통과 / ' + fail + ' 실패\n');
+console.log('\n=== v21.12 \u327f 04 \uc804\uc6a9 \ud310 \u2014 \ucee8\ud2b8\ub864 \uad50\uccb4\uc640 \ubd80\uc81c ===');
+(() => {
+  /* \ubaa9\uc801: 04\ub97c \uac10\ucd94\uc9c0 \uc54a\uace0 \uc138\ub85c \uae38\uc774\ub9cc \uc904\uc778\ub2e4. \ub0b4\uc6a9\uc740 \ud558\ub098\ub3c4 \uc0ac\ub77c\uc9c0\uc9c0 \uc54a\ub294\ub2e4. */
+  const card = html.slice(html.indexOf('id="askSituation"'), html.indexOf('id="topSectionToggle"'));
+
+  // (1) \uc9c0\uc5ed \ub450 \uce78\uc744 \ud55c \uc30d\uc73c\ub85c
+  t('\uc2dc/\ub3c4\u2013\uc2dc\uad70\uad6c\uac00 \uac00\ub85c \ud55c \uc30d\uc73c\ub85c \ubb36\uc784', /class="row2 inline"[\s\S]{0,220}id="buySgg"/.test(card));
+  t('.row2.inline\uc740 \uac00\ub85c \ubc30\uce58', /\.row2\.inline\{[^}]*flex-direction:row/.test(html));
+  t('\ub450 select\uc774 \ud3ed\uc744 \ub098\ub220 \uac00\uc9d0 (\uae34 \uc2dc\uad70\uad6c\uba85 \uc624\ubc84\ud50c\ub85c\uc6b0 \ubc29\uc9c0)',
+    /\.row2\.inline > select\{[^}]*min-width:0/.test(html));
+
+  // (2) \uc8fc\ud0dd \ubcf4\uc720 \uc0c1\ud669 \u2014 \uc138\ub85c 4\uc904 \u2192 2\u00d72 \uaca9\uc790
+  t('choice-list \ucee8\ud2b8\ub864\uc774 \ub0a8\uc544 \uc788\uc9c0 \uc54a\uc74c', html.indexOf('choice-list') === -1);
+  t('.choice CSS\ub3c4 \uac19\uc774 \uc9c0\uc6e0\uc74c (\uc6d0\uce59 55)', /^\s*\.choice\{/m.test(html) === false);
+  t('pickChoice()\ub3c4 \uac19\uc774 \uc9c0\uc6e0\uc74c', html.indexOf('function pickChoice') === -1);
+  t('\uc8fc\ud0dd \ubcf4\uc720 \uc0c1\ud669\uc774 2\u00d72 \uaca9\uc790 \uc138\uadf8\uba3c\ud2b8', /class="segmented sm grid2" id="houseChoices"/.test(card));
+  t('.segmented.grid2\ub294 grid \u2014 \uc881\uc740 \ud654\uba74\uc5d0\uc11c \uc138\ub85c\ub85c \uc811\ud788\uc9c0 \uc54a\uc74c',
+    /\.segmented\.grid2\{[^}]*display:grid/.test(html));
+  t('\u2264400px\uc5d0\uc11c .segmented\ub97c \uc138\ub85c\ub85c \uc811\ub294 \uaddc\uce59\uc740 \uadf8\ub300\ub85c \uc788\uc74c (\uaca9\uc790\ub9cc \uc608\uc678)',
+    /@media \(max-width:400px\)\{[\s\S]{0,400}\.segmented\{flex-direction:column;\}/.test(html));
+
+  // (3) \uc9dd\uc774 \ub418\ub294 select\uacfc\uc758 \ub3d9\uae30\ud654 (\uc6d0\uce59 29)
+  const btns = card.match(/data-val="(first|none|oneDisposing|multi)"/g) || [];
+  t('\uc120\ud0dd\uc9c0 \uac1c\uc218\ub294 \uadf8\ub300\ub85c 4\uac1c (\u2467\uc640 \ucda9\ub3cc\ud558\uc9c0 \uc54a\uc74c)', btns.length === 4, btns.length + '\uac1c');
+  t('\ubaa8\ub450 \uc9dd select\ub85c\ub9cc \ub3d9\uae30\ud654\ud568', (card.match(/pickSeg\(this,'houseStatus'\)/g) || []).length === 4);
+  t('\uc9dd\uc774 \ub418\ub294 select\uc774 \uadf8\ub8f9 \ubc14\ub85c \ub2e4\uc74c\uc5d0 \uc624\ub294\uac00 (syncSegments \uc804\uc81c)',
+    /id="houseChoices"[\s\S]*?<\/div>\s*<select id="houseStatus" class="sr-only"/.test(card));
+  t('\ud56d\ubaa9\ubcc4 \uc124\uba85\uc740 \ud558\ub098\ub3c4 \uc548 \uc9c0\uc6c0', (card.match(/\uc138\ub300\uc6d0 \ubaa8\ub450|\uc608\uc804\uc5d0 \uc788\uc5c8\uc74c|\ud314\uae30\ub85c \ud558\uace0|\uc6d0\uce59\uc801\uc73c\ub85c \ubd88\uac00/g) || []).length === 4);
+  t('\uc811\uae30\ub97c \ub354 \ub298\ub9ac\uc9c0 \uc54a\uc74c (04 \uc548 hint-detail 2\uac1c \uc720\uc9c0)',
+    (card.match(/class="hint-detail"/g) || []).length === 2, (card.match(/class="hint-detail"/g) || []).length + '\uac1c');
+
+  // (4) \ub300\ucd9c \uc5c6\uc744 \ub54c 04 \ubd80\uc81c
+  t('\ubd80\uc81c\ub97c \uac12\uc5d0\uc11c \uc870\ub9bd\ud568 (\uc815\uc801 \ubb38\uc790\uc5f4 \uc544\ub2d8)', /id="situationSub"/.test(card));
+  t('\ub450 \ubb38\uc7a5\uc774 \uc11c\ub85c \ub2e4\ub984', SITUATION_SUB.loan !== SITUATION_SUB.noLoan);
+  t('\ub300\ucd9c\uc774 \uc5c6\uc73c\uba74 \ub300\ucd9c\ud55c\ub3c4\ub97c \ub9d0\ud558\uc9c0 \uc54a\uc74c', SITUATION_SUB.noLoan.indexOf('\ub300\ucd9c\ud55c\ub3c4') === -1);
+  t('\ub300\uc2e0 \ucde8\ub4dd\uc138\ub97c \ub9d0\ud568 (04\uac00 \ub0a8\ub294 \uc774\uc720)', SITUATION_SUB.noLoan.indexOf('\ucde8\ub4dd\uc138') !== -1);
+
+  const noLoan = el('noLoanCheck');
+  noLoan.checked = false; toggleNoLoan();
+  t('\ub300\ucd9c\uc744 \ubc1b\uc73c\uba74 \ub300\ucd9c\ud55c\ub3c4 \ubb38\uc7a5', el('situationSub').textContent === SITUATION_SUB.loan);
+  noLoan.checked = true; toggleNoLoan();
+  t('\ub300\ucd9c\uc774 \uc5c6\uc73c\uba74 \ucde8\ub4dd\uc138 \ubb38\uc7a5\uc73c\ub85c \ubc14\ub01c', el('situationSub').textContent === SITUATION_SUB.noLoan);
+  noLoan.checked = false; toggleNoLoan();
+  t('\uccb4\ud06c\ub97c \ud480\uba74 \ub418\ub3cc\uc544\uc634 (\uc6d0\uce59 42)', el('situationSub').textContent === SITUATION_SUB.loan);
+})();
+
+console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
 process.exit(fail ? 1 : 0);
