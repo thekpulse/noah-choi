@@ -1564,50 +1564,144 @@ console.log('\n=== v21.10 GA 연결 · 로그 개인정보 (원칙 36) ===');
   t('원 단위 숫자를 그대로 보내는 호출도 없음', numeric.length === 0, numeric.slice(0, 2).join(' | '));
 })();
 
-console.log('\n=== v21.12 \u327f 04 \uc804\uc6a9 \ud310 \u2014 \ucee8\ud2b8\ub864 \uad50\uccb4\uc640 \ubd80\uc81c ===');
+console.log('\n=== v21.12 ㉿ 04 전용 판 — 컨트롤 교체와 부제 ===');
 (() => {
-  /* \ubaa9\uc801: 04\ub97c \uac10\ucd94\uc9c0 \uc54a\uace0 \uc138\ub85c \uae38\uc774\ub9cc \uc904\uc778\ub2e4. \ub0b4\uc6a9\uc740 \ud558\ub098\ub3c4 \uc0ac\ub77c\uc9c0\uc9c0 \uc54a\ub294\ub2e4. */
+  /* 목적: 04를 감추지 않고 세로 길이만 줄인다. 내용은 하나도 사라지지 않는다. */
   const card = html.slice(html.indexOf('id="askSituation"'), html.indexOf('id="topSectionToggle"'));
 
-  // (1) \uc9c0\uc5ed \ub450 \uce78\uc744 \ud55c \uc30d\uc73c\ub85c
-  t('\uc2dc/\ub3c4\u2013\uc2dc\uad70\uad6c\uac00 \uac00\ub85c \ud55c \uc30d\uc73c\ub85c \ubb36\uc784', /class="row2 inline"[\s\S]{0,220}id="buySgg"/.test(card));
-  t('.row2.inline\uc740 \uac00\ub85c \ubc30\uce58', /\.row2\.inline\{[^}]*flex-direction:row/.test(html));
-  t('\ub450 select\uc774 \ud3ed\uc744 \ub098\ub220 \uac00\uc9d0 (\uae34 \uc2dc\uad70\uad6c\uba85 \uc624\ubc84\ud50c\ub85c\uc6b0 \ubc29\uc9c0)',
-    /\.row2\.inline > select\{[^}]*min-width:0/.test(html));
+  // (1) 지역 두 칸을 한 쌍으로
+  t('시/도–시군구가 가로 한 쌍으로 묶임', /class="row2 inline"[\s\S]{0,220}id="buySgg"/.test(card));
+  t('.row2.inline은 가로 배치', /\.row2\.inline\{[^}]*flex-direction:row/.test(html));
+  t('폭이 모자라면 줄바꿈 — 긴 시군구명이 잘리지 않음',
+    /\.row2\.inline\{[^}]*flex-wrap:wrap/.test(html));
+  t('시군구 칸이 시/도 칸보다 넓음 (`창원시 마산합포구`가 들어가야 함)',
+    /select:last-child\{flex:2 1 210px/.test(html) && /select:first-child\{flex:1 1 120px/.test(html));
 
-  // (2) \uc8fc\ud0dd \ubcf4\uc720 \uc0c1\ud669 \u2014 \uc138\ub85c 4\uc904 \u2192 2\u00d72 \uaca9\uc790
-  t('choice-list \ucee8\ud2b8\ub864\uc774 \ub0a8\uc544 \uc788\uc9c0 \uc54a\uc74c', html.indexOf('choice-list') === -1);
-  t('.choice CSS\ub3c4 \uac19\uc774 \uc9c0\uc6e0\uc74c (\uc6d0\uce59 55)', /^\s*\.choice\{/m.test(html) === false);
-  t('pickChoice()\ub3c4 \uac19\uc774 \uc9c0\uc6e0\uc74c', html.indexOf('function pickChoice') === -1);
-  t('\uc8fc\ud0dd \ubcf4\uc720 \uc0c1\ud669\uc774 2\u00d72 \uaca9\uc790 \uc138\uadf8\uba3c\ud2b8', /class="segmented sm grid2" id="houseChoices"/.test(card));
-  t('.segmented.grid2\ub294 grid \u2014 \uc881\uc740 \ud654\uba74\uc5d0\uc11c \uc138\ub85c\ub85c \uc811\ud788\uc9c0 \uc54a\uc74c',
+  // (2) 주택 보유 상황 — 세로 4줄 → 2×2 격자
+  t('choice-list 컨트롤이 남아 있지 않음', html.indexOf('choice-list') === -1);
+  t('.choice CSS도 같이 지웠음 (원칙 55)', /^\s*\.choice\{/m.test(html) === false);
+  t('pickChoice()도 같이 지웠음', html.indexOf('function pickChoice') === -1);
+  t('주택 보유 상황이 2×2 격자 세그먼트', /class="segmented sm grid2" id="houseChoices"/.test(card));
+  t('.segmented.grid2는 grid — 좁은 화면에서 세로로 접히지 않음',
     /\.segmented\.grid2\{[^}]*display:grid/.test(html));
-  t('\u2264400px\uc5d0\uc11c .segmented\ub97c \uc138\ub85c\ub85c \uc811\ub294 \uaddc\uce59\uc740 \uadf8\ub300\ub85c \uc788\uc74c (\uaca9\uc790\ub9cc \uc608\uc678)',
+  t('≤400px에서 .segmented를 세로로 접는 규칙은 그대로 있음 (격자만 예외)',
     /@media \(max-width:400px\)\{[\s\S]{0,400}\.segmented\{flex-direction:column;\}/.test(html));
 
-  // (3) \uc9dd\uc774 \ub418\ub294 select\uacfc\uc758 \ub3d9\uae30\ud654 (\uc6d0\uce59 29)
+  // (3) 짝이 되는 select과의 동기화 (원칙 29)
   const btns = card.match(/data-val="(first|none|oneDisposing|multi)"/g) || [];
-  t('\uc120\ud0dd\uc9c0 \uac1c\uc218\ub294 \uadf8\ub300\ub85c 4\uac1c (\u2467\uc640 \ucda9\ub3cc\ud558\uc9c0 \uc54a\uc74c)', btns.length === 4, btns.length + '\uac1c');
-  t('\ubaa8\ub450 \uc9dd select\ub85c\ub9cc \ub3d9\uae30\ud654\ud568', (card.match(/pickSeg\(this,'houseStatus'\)/g) || []).length === 4);
-  t('\uc9dd\uc774 \ub418\ub294 select\uc774 \uadf8\ub8f9 \ubc14\ub85c \ub2e4\uc74c\uc5d0 \uc624\ub294\uac00 (syncSegments \uc804\uc81c)',
+  t('선택지 개수는 그대로 4개 (⑧와 충돌하지 않음)', btns.length === 4, btns.length + '개');
+  t('모두 짝 select로만 동기화함', (card.match(/pickSeg\(this,'houseStatus'\)/g) || []).length === 4);
+  t('짝이 되는 select이 그룹 바로 다음에 오는가 (syncSegments 전제)',
     /id="houseChoices"[\s\S]*?<\/div>\s*<select id="houseStatus" class="sr-only"/.test(card));
-  t('\ud56d\ubaa9\ubcc4 \uc124\uba85\uc740 \ud558\ub098\ub3c4 \uc548 \uc9c0\uc6c0', (card.match(/\uc138\ub300\uc6d0 \ubaa8\ub450|\uc608\uc804\uc5d0 \uc788\uc5c8\uc74c|\ud314\uae30\ub85c \ud558\uace0|\uc6d0\uce59\uc801\uc73c\ub85c \ubd88\uac00/g) || []).length === 4);
-  t('\uc811\uae30\ub97c \ub354 \ub298\ub9ac\uc9c0 \uc54a\uc74c (04 \uc548 hint-detail 2\uac1c \uc720\uc9c0)',
-    (card.match(/class="hint-detail"/g) || []).length === 2, (card.match(/class="hint-detail"/g) || []).length + '\uac1c');
+  t('항목별 설명은 하나도 안 지움', (card.match(/세대원 모두|예전에 있었음|팔기로 하고|원칙적으로 불가/g) || []).length === 4);
+  t('접기를 더 늘리지 않음 (04 안 hint-detail 2개 유지)',
+    (card.match(/class="hint-detail"/g) || []).length === 2, (card.match(/class="hint-detail"/g) || []).length + '개');
 
-  // (4) \ub300\ucd9c \uc5c6\uc744 \ub54c 04 \ubd80\uc81c
-  t('\ubd80\uc81c\ub97c \uac12\uc5d0\uc11c \uc870\ub9bd\ud568 (\uc815\uc801 \ubb38\uc790\uc5f4 \uc544\ub2d8)', /id="situationSub"/.test(card));
-  t('\ub450 \ubb38\uc7a5\uc774 \uc11c\ub85c \ub2e4\ub984', SITUATION_SUB.loan !== SITUATION_SUB.noLoan);
-  t('\ub300\ucd9c\uc774 \uc5c6\uc73c\uba74 \ub300\ucd9c\ud55c\ub3c4\ub97c \ub9d0\ud558\uc9c0 \uc54a\uc74c', SITUATION_SUB.noLoan.indexOf('\ub300\ucd9c\ud55c\ub3c4') === -1);
-  t('\ub300\uc2e0 \ucde8\ub4dd\uc138\ub97c \ub9d0\ud568 (04\uac00 \ub0a8\ub294 \uc774\uc720)', SITUATION_SUB.noLoan.indexOf('\ucde8\ub4dd\uc138') !== -1);
+  // (4) 대출 없을 때 04 부제
+  t('부제를 값에서 조립함 (정적 문자열 아님)', /id="situationSub"/.test(card));
+  t('두 문장이 서로 다름', SITUATION_SUB.loan !== SITUATION_SUB.noLoan);
+  /* "이 두 가지"가 무엇인지 몰랐다는 지적. 아래 두 칸의 label 이름을 그대로 씁니다. */
+  ['사려는 집의 지역', '주택 보유 상황'].forEach(function(name){
+    t('부제가 「' + name + '」을 이름으로 가리킴',
+      SITUATION_SUB.loan.indexOf(name) !== -1 && SITUATION_SUB.noLoan.indexOf(name) !== -1);
+    t('그 이름이 실제 칸 label과 같음', card.indexOf('<label>' + name + '</label>') !== -1);
+  });
+  t('지시대명사로만 가리키지 않음',
+    SITUATION_SUB.loan.indexOf('이 두 가지가') === -1 && SITUATION_SUB.noLoan.indexOf('이 두 가지가') === -1);
+  t('대출이 없으면 대출한도를 말하지 않음', SITUATION_SUB.noLoan.indexOf('대출한도') === -1);
+  t('대신 취득세를 말함 (04가 남는 이유)', SITUATION_SUB.noLoan.indexOf('취득세') !== -1);
 
   const noLoan = el('noLoanCheck');
   noLoan.checked = false; toggleNoLoan();
-  t('\ub300\ucd9c\uc744 \ubc1b\uc73c\uba74 \ub300\ucd9c\ud55c\ub3c4 \ubb38\uc7a5', el('situationSub').textContent === SITUATION_SUB.loan);
+  t('대출을 받으면 대출한도 문장', el('situationSub').innerHTML === SITUATION_SUB.loan);
   noLoan.checked = true; toggleNoLoan();
-  t('\ub300\ucd9c\uc774 \uc5c6\uc73c\uba74 \ucde8\ub4dd\uc138 \ubb38\uc7a5\uc73c\ub85c \ubc14\ub01c', el('situationSub').textContent === SITUATION_SUB.noLoan);
+  t('대출이 없으면 취득세 문장으로 바뀜', el('situationSub').innerHTML === SITUATION_SUB.noLoan);
   noLoan.checked = false; toggleNoLoan();
-  t('\uccb4\ud06c\ub97c \ud480\uba74 \ub418\ub3cc\uc544\uc634 (\uc6d0\uce59 42)', el('situationSub').textContent === SITUATION_SUB.loan);
+  t('체크를 풀면 되돌아옴 (원칙 42)', el('situationSub').innerHTML === SITUATION_SUB.loan);
+})();
+
+console.log('\n=== v21.13 ㈝ 결과 미리보기 상시 노출 ===');
+(() => {
+  /* 목적: 계산 버튼을 누르기 전에도 고른 값이 숫자로 보인다.
+     단 미리보기와 본 결과가 어긋나서는 안 된다 — 같은 함수를 써야 한다(원칙 28·53). */
+
+  t('미리보기 자리가 입력 화면에 있다',
+    html.indexOf('id="previewBar"') !== -1 &&
+    html.indexOf('id="previewBar"') < html.indexOf('onclick="calculate()"'));
+
+  const src = html.slice(html.indexOf('function previewState'), html.indexOf('function renderPreview'));
+  t('본 결과와 같은 함수를 쓴다 — solveMaxPrice', src.indexOf('solveMaxPrice(') !== -1);
+  t('본 결과와 같은 함수를 쓴다 — calcCosts', src.indexOf('calcCosts(') !== -1);
+  t('본 결과와 같은 입력 조립을 쓴다 — buildCtxBase', src.indexOf('buildCtxBase()') !== -1);
+  t('미리보기가 따로 한도를 정하지 않는다 (POLICY 재해석 없음)', src.indexOf('POLICY.') === -1);
+
+  const live = html.slice(html.indexOf('function liveRecalc'), html.indexOf('function liveRecalc') + 320);
+  t('결과가 닫혀 있어도 미리보기는 갱신된다', /renderPreview\(\)/.test(live));
+  t('결과가 열려 있을 때만 본 계산을 돌린다', /if\(resultVisible\) calculate\(true\)/.test(live));
+
+  const setC = (eok) => { el('cashEok').value = String(eok); el('cashMan').value = '0'; };
+  const setP = (eok) => { el('priceEok').value = String(eok); el('priceMan').value = '0'; };
+  /* ⚠ DOM 스텁은 한 번 만든 칸을 계속 공유합니다. 앞 블록이 넣어둔 값이 남아 있으면
+     지역을 바꿔도 결과가 안 움직이는 것처럼 보여요(대출 상한이 고정되니까). 먼저 비웁니다. */
+  ['manualLoanCapEok','manualLoanCapMan','bankSelfCapEok','bankSelfCapMan',
+   'creditLoanEok','creditLoanMan','companyLoanEok','companyLoanMan',
+   'sellerFinancingEok','sellerFinancingMan','incomeEok','incomeMan',
+   'otherDebtMonthly','stressBp','childCount','fixedYears'].forEach(id => { el(id).value = ''; });
+  ['seominCheck','mciCovered','over85','firstTimeTaxCut','newlywed','newborn','dualIncome']
+    .forEach(id => { el(id).checked = false; });
+  el('roomDeduct').value = '5500'; el('rateType').value = 'variable';
+  el('rate').value = '5.4'; el('years').value = '30';
+  el('noLoanCheck').checked = false; toggleNoLoan();
+  el('zone').value = 'reg'; el('houseStatus').value = 'first';
+  el('pyeong').value = ''; el('interiorPerPyeong').value = '0'; el('etc').value = '0';
+
+  setMode('A'); setC(0);
+  let p = previewState();
+  t('보유자금이 없으면 준비 안 됨', p.ready === false && p.need === 'cash');
+  el('rate').value = '';
+  t('금리가 없으면 금리를 먼저 가리킨다', previewState().need === 'rate');
+  el('rate').value = '5.4';
+
+  setC(5);
+  p = previewState();
+  const ctx = buildCtxBase();
+  const truth = solveMaxPrice(500000000, ctx);
+  t('A모드는 최대 매매가를 보여준다', p.ready === true && p.mainLabel === '최대 매매가');
+  t('미리보기 금액이 본 계산과 정확히 같다', p.main === truth, p.main + ' vs ' + truth);
+  t('필요한 내 돈도 함께 보여준다', p.sub === calcCosts({...ctx, price: truth}).cashNeeded);
+  t('좁은 자리 이름 규칙을 지킨다 (㉻)', p.subLabel === '내 돈');
+  t('내 돈이 보유자금을 넘지 않는다 (원칙 28)', p.sub <= 500000000);
+
+  const regPrice = p.main;
+  el('zone').value = 'other';
+  const otherPrice = previewState().main;
+  t('지역을 바꾸면 미리보기 숫자가 달라진다', regPrice !== otherPrice, regPrice + ' → ' + otherPrice);
+  el('zone').value = 'reg';
+
+  el('noLoanCheck').checked = true; toggleNoLoan();
+  const first = previewState().main;
+  el('houseStatus').value = 'multi';
+  const multi = previewState().main;
+  t('대출이 없어도 보유 상황을 바꾸면 달라진다 (취득세)', first !== multi, first + ' → ' + multi);
+  el('houseStatus').value = 'first';
+  el('noLoanCheck').checked = false; toggleNoLoan();
+
+  setMode('B'); setP(0);
+  t('B모드에서 매매가가 없으면 준비 안 됨', previewState().need === 'price');
+  setP(8);
+  p = previewState();
+  t('B모드는 매매가와 내 돈을 보여준다', p.ready === true && p.mainLabel === '매매가');
+  t('B모드 내 돈이 본 계산과 같다',
+    p.sub === calcCosts({...buildCtxBase(), price: 800000000}).cashNeeded);
+  setMode('A');
+
+  el('previewBar').innerHTML = '이전 미리보기 8억원';
+  setC(0); renderPreview();
+  t('막히면 이전 숫자가 남지 않는다 (원칙 30)', el('previewBar').innerHTML.indexOf('8억') === -1);
+  t('막힌 자리는 빈 상태로 표시된다', el('previewBar').classList.contains('empty'));
+  setC(5); renderPreview();
+  t('다시 채우면 빈 상태가 풀린다', el('previewBar').classList.contains('empty') === false);
+  t('미리보기가 확정처럼 말하지 않는다', el('previewBar').innerHTML.indexOf('예상') !== -1);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');

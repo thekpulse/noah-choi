@@ -329,9 +329,14 @@ window.GA_ID = 'G-NVTLEPG53G';
   .row2{display:flex;flex-direction:column;gap:24px;margin-bottom:24px;}
   .row2 .field{margin-bottom:0;}
   /* 한 쌍으로 읽히는 칸(시/도–시군구)은 가로로 붙입니다.
-     기본 .row2는 세로 24px 간격이라 두 칸이 서로 다른 질문처럼 보였어요. */
-  .row2.inline{flex-direction:row;gap:8px;margin-bottom:10px;}
-  .row2.inline > select{flex:1;min-width:0;}
+     기본 .row2는 세로 24px 간격이라 두 칸이 서로 다른 질문처럼 보였어요.
+     ⚠ 폭이 모자라면 줄바꿈시킵니다. `창원시 마산합포구`처럼 긴 이름이 잘리면 안 돼요.
+        폼 글자는 16px 아래로 못 내리므로(원칙 34) 좁은 화면에서는 두 줄이 맞습니다.
+        그래도 간격이 24px → 8px이라 한 쌍으로 읽힙니다. */
+  .row2.inline{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .row2.inline > select{min-width:0;}
+  .row2.inline > select:first-child{flex:1 1 120px;}
+  .row2.inline > select:last-child{flex:2 1 210px;}
   .amount-row{display:flex;gap:10px;}
   .amount-row .input-suffix{flex:1;}
   .checkrow{
@@ -992,6 +997,27 @@ window.GA_ID = 'G-NVTLEPG53G';
 
   .calc-btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--border);}
 
+  /* ㉝ 미리보기 — 결과 화면의 축소판이 아니라 "지금 값이면 얼마인가" 한 줄입니다.
+     ⚠ 채워진 진한 블록은 영수증 총액 행 하나뿐이므로(원칙 10) 여기는 옅은 면으로 둡니다. */
+  .preview-bar{
+    margin-top:24px;padding:16px 18px;border-radius:var(--radius);
+    background:var(--primary-soft);border:1px solid #CFE9FF;
+  }
+  .preview-bar.empty{background:var(--fill);border-color:var(--border);}
+  .pv-cap{font-size:12px;font-weight:700;color:var(--ink-faint);margin-bottom:10px;}
+  .pv-rows{display:flex;gap:10px;}
+  .pv-cell{flex:1;min-width:0;}
+  .pv-cell span{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:3px;}
+  .pv-cell b{
+    display:block;font-size:19px;font-weight:800;color:var(--ink);
+    font-variant-numeric:tabular-nums;letter-spacing:-0.02em;
+  }
+  .pv-need{font-size:14px;line-height:1.65;color:var(--ink-soft);}
+  .pv-need b{color:var(--ink);font-weight:700;}
+  @media (max-width:400px){
+    .pv-cell b{font-size:17px;}
+  }
+
   @media (max-width:400px){
     .report-hero .amount{font-size:31px;letter-spacing:-0.025em;}
     .ask-q{font-size:17px;}
@@ -1300,7 +1326,7 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div class="ask-num">04</div>
       <div class="ask-body">
         <div class="ask-q">내 상황은 어떤가요?</div>
-        <div class="ask-sub" id="situationSub">이 두 가지가 대출한도를 가장 크게 좌우해요.</div>
+        <div class="ask-sub" id="situationSub"><b>사려는 집의 지역</b>과 <b>주택 보유 상황</b>이 대출한도를 가장 크게 좌우해요.</div>
 
         <div class="field">
           <label>사려는 집의 지역</label>
@@ -1590,6 +1616,10 @@ window.GA_ID = 'G-NVTLEPG53G';
         <span>접기</span><span class="chevron" style="transform:rotate(180deg);">▾</span>
       </button>
     </div>
+
+    <!-- ㉝ 결과 미리보기 — 계산 버튼을 누르기 전에도 고른 값이 숫자로 보입니다.
+         본 결과와 같은 함수를 쓰므로 여기 숫자와 결과 화면 숫자는 항상 같아요. -->
+    <div class="preview-bar" id="previewBar" aria-live="polite"></div>
 
     <div class="cta-lead">
       신용대출·사내대출이 있거나 인테리어 비용까지 보려면 위의 <b>"더 정확하게"</b>를 먼저 펼쳐주세요.
@@ -2362,12 +2392,77 @@ function syncSegments(){
   });
 }
 
-/* 결과가 열려 있을 때만 입력 변화를 즉시 반영 */
+/* ===== ㉝ 결과 미리보기 =====
+   계산 버튼을 누르기 전에는 화면에 숫자가 하나도 없었어요. 시군구를 바꿔도 아무 반응이 없었습니다.
+   ⚠ 본 결과와 **같은 함수**(solveMaxPrice·calcCosts)를 그대로 씁니다. 따로 계산하면
+      미리보기와 본 결과가 어긋나고, 그 오차는 유리한 쪽으로 나기 쉽습니다(원칙 28·53).
+   ⚠ 입력이 덜 찼으면 숫자를 비웁니다. 이전 값이 남으면 안 됩니다(원칙 30).
+   ⚠ 막힌 이유는 원인별로 나눕니다(원칙 39). 확인 못 한 원인을 단정하지 않습니다. */
+const PREVIEW_NEED = {
+  rate:  {name:'대출금리',  josa:'를'},
+  cash:  {name:'보유자금',  josa:'을'},
+  price: {name:'매매가격',  josa:'을'}
+};
+
+function previewState(){
+  const ctxBase = buildCtxBase();
+  const rate = parseFloat(document.getElementById('rate').value) || 0;
+  if(!ctxBase.noLoan && rate <= 0) return {ready:false, need:'rate'};
+
+  if(mode === 'A'){
+    const cash = getAmountManwon('cashEok','cashMan') * 10000;
+    if(cash <= 0) return {ready:false, need:'cash'};
+    const fixedCosts = ctxBase.pyeong*ctxBase.interiorPerPyeong*10000 + ctxBase.etc*10000;
+    if(fixedCosts >= cash) return {ready:false, reason:'cash_below_fixed_costs'};
+    const maxPrice = solveMaxPrice(cash, ctxBase);
+    if(maxPrice <= 0) return {ready:false, reason:'no_solution'};
+    const c = calcCosts({...ctxBase, price: maxPrice});
+    return {ready:true, mainLabel:'최대 매매가', main:maxPrice, subLabel:'내 돈', sub:c.cashNeeded};
+  }
+
+  const price = getAmountManwon('priceEok','priceMan') * 10000;
+  if(price <= 0) return {ready:false, need:'price'};
+  const c = calcCosts({...ctxBase, price});
+  return {ready:true, mainLabel:'매매가', main:price, subLabel:'내 돈', sub:c.cashNeeded};
+}
+
+function renderPreview(){
+  const box = document.getElementById('previewBar');
+  if(!box) return;
+  const p = previewState();
+
+  if(!p.ready){
+    box.classList.add('empty');
+    let msg;
+    if(p.reason === 'cash_below_fixed_costs'){
+      msg = '인테리어비와 기타비용의 합이 보유자금보다 커서 매매가를 계산할 수 없어요.';
+    } else if(p.reason === 'no_solution'){
+      msg = '지금 조건으로는 살 수 있는 매매가가 나오지 않아요.';
+    } else {
+      const n = PREVIEW_NEED[p.need];
+      msg = '<b>' + n.name + '</b>' + n.josa + ' 넣으면 예상 결과가 여기에 나와요.';
+    }
+    box.innerHTML = '<div class="pv-need">' + msg + '</div>';
+    return;
+  }
+
+  box.classList.remove('empty');
+  box.innerHTML =
+    '<div class="pv-cap">지금 입력값 기준 (예상)</div>' +
+    '<div class="pv-rows">' +
+      '<div class="pv-cell"><span>' + p.mainLabel + '</span><b>' + formatWon(p.main) + '</b></div>' +
+      '<div class="pv-cell"><span>' + p.subLabel + '</span><b>' + formatWon(p.sub) + '</b></div>' +
+    '</div>';
+}
+
+/* 결과가 열려 있을 때만 입력 변화를 즉시 반영 — 미리보기는 열려 있지 않아도 갱신합니다 */
 let liveTimer = null;
 function liveRecalc(){
-  if(!resultVisible) return;
   clearTimeout(liveTimer);
-  liveTimer = setTimeout(()=>calculate(true), 180);
+  liveTimer = setTimeout(()=>{
+    renderPreview();
+    if(resultVisible) calculate(true);
+  }, 180);
 }
 
 function resetAll(){
@@ -4079,14 +4174,16 @@ function showTool(name){
    ⚠ '집 정보'(평형)와 '세금 · 추가 자금원'은 남깁니다. 평형은 인테리어비에,
       회사 사내대출·매도인 근저당은 조달자금에 그대로 반영되기 때문이에요. */
 /* 04 부제 — 대출을 안 받으면 "대출한도를 좌우한다"가 사실이 아니게 됩니다(원칙 54).
-   그때 04가 필요한 이유는 취득세율이에요(원칙 53). 두 문장 모두 사실만 서술합니다(원칙 9). */
+   그때 04가 필요한 이유는 취득세율이에요(원칙 53). 두 문장 모두 사실만 서술합니다(원칙 9).
+   ⚠ "이 두 가지"라고만 쓰면 무엇을 가리키는지 알 수 없습니다.
+      아래 두 칸의 label과 **똑같은 이름**을 그대로 씁니다. 이름이 어긋나면 다시 못 알아봐요. */
 const SITUATION_SUB = {
-  loan:   '이 두 가지가 대출한도를 가장 크게 좌우해요.',
-  noLoan: '이 두 가지가 취득세율을 정해요.'
+  loan:   '<b>사려는 집의 지역</b>과 <b>주택 보유 상황</b>이 대출한도를 가장 크게 좌우해요.',
+  noLoan: '<b>사려는 집의 지역</b>과 <b>주택 보유 상황</b>이 취득세율을 정해요.'
 };
 function syncSituationSub(noLoan){
   const box = document.getElementById('situationSub');
-  if(box) box.textContent = noLoan ? SITUATION_SUB.noLoan : SITUATION_SUB.loan;
+  if(box) box.innerHTML = noLoan ? SITUATION_SUB.noLoan : SITUATION_SUB.loan;
 }
 
 function toggleNoLoan(){
@@ -4166,6 +4263,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 function syncAllUI(){
   syncSegments();
+  renderPreview();
   syncPyeong();
   syncIncomeEcho();
   toggleSeominField();
