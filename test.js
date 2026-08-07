@@ -412,23 +412,14 @@ console.log('\n=== v21 ⑨ 출처 표 · 영수증 · 문구 ===');
   .forEach(x => t('출처표 행: ' + x, html.indexOf('<td>' + x + '</td>') !== -1));
 t('모바일에서 출처 열을 숨기지 않음', html.indexOf('.src-table th:nth-child(3),.src-table td:nth-child(3){display:none;}') === -1);
 t('모바일 카드형 전환', html.indexOf('.src-table td:nth-child(3)::before{content:"출처 ";') !== -1);
-t('영수증 대출 행 강조 클래스', html.indexOf('.line-item.loan{') !== -1 && (html.match(/formatWon\(c\.mortgageLoan\), 'loan'\)/g) || []).length === 2);
+/* v21.28: 대출 행의 파란 블록(.line-item.loan)은 사라졌습니다.
+   주담대는 이제 '빌리는 돈' 그룹의 평범한 한 줄이고, 부호는 그룹 이름이 말해요.
+   → 검사도 "그 행이 예쁜가"가 아니라 "부호가 섞이지 않는가"를 봅니다(원칙 48). */
+t('영수증에서 대출에 마이너스 기호를 붙이지 않음',
+  html.indexOf("'-' + formatWon(c.mortgageLoan)") === -1);
+t('빌리는 돈 명세는 부호가 같아 minus 클래스를 안 씀',
+  (html.slice(html.indexOf('function fundLines'), html.indexOf('function fundLines') + 700).indexOf("'minus'")) === -1);
 t('소계 행 배경 구분', /\.line-item\.total\{[^}]*background:var\(--fill\)/.test(html));
-(() => {
-  /* ㊴ — 대출 행은 "채워진 진한 블록"이 되면 안 됩니다. 맨 아래 .grand와 역할이 겹쳐요. */
-  const seg = html.slice(html.indexOf('.line-item.loan{'), html.indexOf('.line-item.total{'));
-  t('파랑 배경 위 흰 글씨 아님 (원칙 10)',
-    seg.indexOf('#fff') === -1 && seg.indexOf('#FFF') === -1);
-  t('대출 행 배경은 연한 틴트 유지', seg.indexOf('background:var(--primary-soft)') !== -1);
-  t('대출 금액이 같은 파랑 계열 (원칙 38)',
-    seg.indexOf('.line-item.loan .v{color:var(--primary-dark)') !== -1);
-  t('라벨·금액이 같은 토큰을 씀 (하드코딩 색 없음)',
-    seg.indexOf('.line-item.loan .k{color:var(--primary-dark)') !== -1);
-  t('대출 금액에 골드(--accent) 안 씀 (원칙 38)', seg.indexOf('var(--accent)') === -1);
-  t('대출 금액 크기는 17px 유지', seg.indexOf('font-size:17px') !== -1);
-  /* 맨 아래 .grand(19px)가 계속 가장 큰 숫자여야 합니다. */
-  t('영수증에서 대출 행이 총액 행보다 크지 않음', seg.indexOf('font-size:19px') === -1);
-})();
 t('"지방" → "그 외 지역" 중립 표현', html.indexOf('<b>그 외 지역</b><span>수도권 밖</span>') !== -1);
 t('아파텔 표현 제거', html.indexOf('아파텔') === -1);
 
@@ -1457,9 +1448,14 @@ console.log('\n=== v21.9 ㊻ 결과 화면 중복 정리 ===');
     (html.replace(/내 돈\(자기자본\)/g, '').match(/.{6}자기자본.{6}/g) || []).slice(0, 3).join(' | '));
 
   // (2) 소계 이름이 섹션 라벨과 겹치지 않는가
-  t('입주 준비 비용 라벨이 두 번 나오지 않음',
-    html.indexOf('입주 준비 비용 합계') === -1 && html.indexOf('입주 준비 소계') !== -1);
-  t('거래·대출 소계가 소계임을 이름으로 드러냄', html.indexOf('거래·대출 소계') !== -1);
+  /* v21.28: '거래·대출' / '입주 준비 비용' 갈래가 사라졌습니다(부호 기준으로 재편).
+     소계 이름 검사 대신, 그 라벨들이 정말 없어졌는지를 봅니다(원칙 37). */
+  /* ⚠ 주석에 옛 이름이 남아 있어요(바꾼 이유를 적어둔 문장). 화면 문자열만 봅니다(원칙 66). */
+  const visible = html.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+  t('단계 기준 갈래 이름이 화면에서 사라짐',
+    visible.indexOf('거래·대출 소계') === -1 && visible.indexOf('입주 준비 소계') === -1);
+  t('「(전액 현금)」도 함께 사라짐 — 조달을 따로 세우면 저절로 보이는 사실',
+    visible.indexOf('입주 준비 비용 (전액 현금)') === -1);
 
   // (3) 월 상환액이 리포트 카드 안에서 두 번 나오지 않는가
   t('영수증의 월 상환액 블록이 사라짐',
@@ -1530,26 +1526,36 @@ console.log('\n=== v21.9 ㊾ 계산 불가일 때 직전 결과 지우기 (원�
 console.log('\n=== v21.9 ㊻-b 영수증 꼬리 정리 ===');
 (() => {
   /* 목적: 같은 금액이 연달아 반복되지 않는다. 채워진 블록이 여럿이 아니다(원칙 10). */
-  const c = {interiorCost: 0, etcCost: 0};
+  /* v21.28: executionBlock은 사라졌습니다. 갈래가 '단계'가 아니라 '부호'로 나뉘면서
+     입주 준비 비용은 독립 갈래가 아니라 '드는 돈' 안의 두 줄이 됐어요.
+     검사도 그에 맞춰 옮깁니다 — 목적("같은 금액이 연달아 반복되지 않는다")은 그대로(원칙 48). */
+  const cZero = {interiorCost: 0, etcCost: 0, tax: 42600000, brokerFee: 8520000,
+                 totalNeeded: 1342000000, totalFunding: 545000000, mortgageLoan: 545000000,
+                 loanType: 'bank', interiorBlocked: false};
+  const zeroHtml = buildReceipt(costLines(cZero, 1290880000), fundLines(cZero, {}), cZero, '');
+  t('입주 준비가 0이면 그 줄들이 아예 안 나온다',
+    zeroHtml.indexOf('인테리어비') === -1 && zeroHtml.indexOf('기타비용') === -1);
+  t('입주 준비가 0이면 시점 각주도 안 나온다', zeroHtml.indexOf('입주 시점에 들어요') === -1);
 
-  t('입주 준비가 0이면 그 섹션을 통째로 생략', executionBlock(c, 0, 800000000) === '');
-  t('입주 준비가 0이면 거래·대출 소계도 생략 (내 돈과 같은 값이라)',
-    executionBlock(c, 0, 800000000).indexOf('거래·대출 소계') === -1);
-
-  const withCost = executionBlock({interiorCost: 30000000, etcCost: 3000000}, 33000000, 800000000);
-  t('입주 준비가 있으면 두 소계가 모두 나옴',
-    withCost.indexOf('거래·대출 소계') !== -1 && withCost.indexOf('입주 준비 소계') !== -1);
-  t('인테리어비·기타비용 항목도 나옴',
+  const cCost = {...cZero, interiorCost: 30000000, etcCost: 3000000};
+  const withCost = buildReceipt(costLines(cCost, 1290880000), fundLines(cCost, {}), cCost, '');
+  t('입주 준비가 있으면 그 줄들이 나온다',
     withCost.indexOf('인테리어비') !== -1 && withCost.indexOf('기타비용') !== -1);
+  t('그때만 시점 각주가 붙는다', withCost.indexOf('입주 시점에 들어요') !== -1);
 
-  // 위계 — 소계는 채워진 블록이 아니다
-  t('소계는 sub, 채워진 블록(total/grand)이 아님',
-    withCost.indexOf("line-item sub") !== -1
-    && withCost.indexOf("line-item total") === -1
-    && withCost.indexOf("line-item grand") === -1);
-  t('sub 스타일에 배경을 깔지 않음',
-    /\.line-item\.sub\{[^}]*\}/.test(html)
-    && !/\.line-item\.sub\{[^}]*background/.test(html));
+  /* 부호가 섞이지 않는가 — 이 판의 핵심 */
+  const vals = h => (h.match(/<span class="v">([^<]*)<\/span>/g) || []).join(' ');
+  t('드는 돈 명세에 마이너스가 없다', vals(costLines(cCost, 1290880000)).indexOf('-') === -1);
+  t('빌리는 돈 명세에도 마이너스가 없다', vals(fundLines(cCost, {})).indexOf('-') === -1);
+  t('그룹이 둘뿐이다 (드는 돈 · 빌리는 돈)',
+    (withCost.match(/class="rc-group"/g) || []).length === 2);
+  t('합이 명세보다 앞에 온다',
+    withCost.indexOf('rc-head') < withCost.indexOf('rc-body'));
+  t('식을 한 번 말해준다', withCost.indexOf('드는 돈 − 빌리는 돈') !== -1);
+
+  // 위계 — 채워진 블록은 여전히 결론 하나뿐 (원칙 10)
+  t('그룹 머리는 채워진 블록이 아니다',
+    withCost.indexOf('line-item total') === -1 && withCost.indexOf('line-item grand') === -1);
 
   /* 채워진 블록 개수는 소스의 글자 수가 아니라 **그려진 결과**로 셉니다(원칙 48).
      v21.14까지는 소스에서 'grand'/'total' 문자열을 셌는데, 꼬리가 분기되면
@@ -1743,11 +1749,11 @@ console.log('\n=== v21.15 결과 화면 정리 ===');
   const blockCss = id => (html.match(new RegExp('\\.line-item\\.' + id + '\\{[^}]*\\}'))||[''])[0];
   const sideOf = css => [(css.match(/margin:[^;]*/)||[''])[0], (css.match(/padding:[^;]*/)||[''])[0]]
                         .map(s => (s.match(/-?\d+px/g)||[]).slice(-1)[0]).join('/');
-  t('grand·loan·total의 좌우 폭이 같다 (margin -10px / padding 10px)',
+  /* v21.28: .loan 블록은 사라졌어요(주담대가 '빌리는 돈' 그룹의 평범한 행이 됨). */
+  t('grand·total의 좌우 폭이 같다 (margin -10px / padding 10px)',
     sideOf(blockCss('grand')) === '-10px/10px'
-    && sideOf(blockCss('loan')) === '-10px/10px'
     && sideOf(blockCss('total')) === '-10px/10px',
-    ['grand', 'loan', 'total'].map(k => k + ':' + sideOf(blockCss(k))).join(' | '));
+    ['grand', 'total'].map(k => k + ':' + sideOf(blockCss(k))).join(' | '));
 
   /* ⚠ 같은 .grand가 전월세 요약 상자 안에도 있어요. 그쪽은 여백을 0으로 되돌려야
      세 줄의 글자가 나란히 섭니다(원칙 55 — 지운 자리가 만드는 새 중복·새 어긋남). */
@@ -1900,8 +1906,8 @@ console.log('\n=== v21.15 타이포 스케일 전수 검사 (원칙 34·45) ==='
   const kWeight = cls => ((css.match(new RegExp('\\.line-item\\.' + cls + ' \\.k\\{[^}]*\\}')) || [''])[0]
     .match(/font-weight:\s*(\d+)/) || [, '-'])[1];
   t('강조 행 라벨이 모두 같은 굵기 (700)',
-    ['loan', 'sub', 'total', 'grand'].every(c => kWeight(c) === '700'),
-    ['loan', 'sub', 'total', 'grand'].map(c => c + '=' + kWeight(c)).join(' | '));
+    ['total', 'grand'].every(c => kWeight(c) === '700'),
+    ['total', 'grand'].map(c => c + '=' + kWeight(c)).join(' | '));
   t('일반 행 라벨은 그대로 500 (위계가 사라지지 않음)',
     /\.line-item \.k\{[^}]*font-weight:500/.test(css));
 
@@ -1909,8 +1915,8 @@ console.log('\n=== v21.15 타이포 스케일 전수 검사 (원칙 34·45) ==='
      .loan .v가 17px이라 19px과는 2px 차이뿐이어서 "가장 큰 숫자"로 안 읽혔어요. */
   t('매매 영수증 결론 행 값이 한 단계 더 크다 (22px)',
     /#receiptLines \.line-item\.grand \.v\{font-size:22px;\}/.test(css));
-  t('그 값이 대출 행 값(17px)보다 크다',
-    /\.line-item\.loan \.v\{[^}]*font-size:17px/.test(css));
+  t('그 값이 그룹 합계 값(17px)보다 크다',
+    /\.rc-head \.rc-v\{[^}]*font-size:17px/.test(css));
   /* ⚠ 전월세 요약 상자의 .grand는 라벨이 '2년 총비용 차이 (전세−월세)'처럼 길어서
      값을 키우면 한 줄에 안 들어가요. #receiptLines로 범위를 좁혀 그쪽엔 닿지 않게 합니다. */
   t('키우는 규칙이 매매 영수증으로만 한정된다', /#receiptLines /.test(css));
@@ -1923,9 +1929,9 @@ console.log('\n=== v21.15 타이포 스케일 전수 검사 (원칙 34·45) ==='
      ⚠ 결론이 19px일 때는 대출값 17px과 2px 차이뿐이라 "가장 큰 숫자"로 안 읽혔어요. */
   const sizeOf = sel => ((css.match(new RegExp(sel.replace(/[.#]/g, c => '\\' + c) + '\\{[^}]*\\}')) || [''])[0]
     .match(/font-size:\s*(\d+)px/) || [, '-'])[1];
-  t('결론 행 값이 강조 행 값보다 확실히 크다',
-    Number(sizeOf('#receiptLines .line-item.grand .v')) - Number(sizeOf('.line-item.loan .v')) >= 4,
-    '결론=' + sizeOf('#receiptLines .line-item.grand .v') + ' | 대출=' + sizeOf('.line-item.loan .v'));
+  t('결론 행 값이 그룹 합계 값보다 확실히 크다',
+    Number(sizeOf('#receiptLines .line-item.grand .v')) - Number(sizeOf('.rc-head .rc-v')) >= 4,
+    '결론=' + sizeOf('#receiptLines .line-item.grand .v') + ' | 그룹합=' + sizeOf('.rc-head .rc-v'));
   /* ⚠ 전월세 요약 상자는 라벨이 길어 값을 키우면 줄이 넘칩니다. 그쪽까지 올리지 않습니다. */
   t('전월세 요약 상자는 키우지 않는다',
     css.indexOf('#receiptLines .line-item.grand .v') !== -1
@@ -1950,12 +1956,12 @@ console.log('\n=== v21.15 첫 화면 안내 문구 (원칙 9) ===');
   t('첫 문장이 "혼자 하면 놓친다"에서 시작한다',
     hero.indexOf('집값 말고도 <b>나가는 돈</b>, 사기 전엔 잘 몰라요') !== -1);
   t('두 번째 줄이 결과로 받아친다', hero.indexOf('<b>진짜 드는 돈</b>') !== -1);
-  const receiptSrc = html.slice(html.indexOf("`<div class=\"receipt-section-label finance\">거래·대출</div>`"),
-                                html.indexOf('lastShareText = buildSummaryText'));
+  const receiptSrc = html.slice(html.indexOf('function costLines'), html.indexOf('function buildCtxBase'));
   t('영수증이 "빠지는 것"을 실제로 채운다 — 취득세·중개보수',
-    receiptSrc.indexOf('취득세(교육세·농특세 포함)') !== -1 && receiptSrc.indexOf('중개보수') !== -1);
+    receiptSrc.indexOf('취득세') !== -1 && receiptSrc.indexOf('중개보수') !== -1);
   t('영수증이 대출을 빼고 내 돈까지 보여준다',
-    receiptSrc.indexOf('loanTypeLabel(c.loanType)') !== -1 && receiptSrc.indexOf('receiptTail') !== -1);
+    receiptSrc.indexOf('loanTypeLabel(c.loanType)') !== -1
+    && html.indexOf('receiptTail(c.cashNeeded, cash)') !== -1);
 
   /* ⚠ 챙겨주는 말투는 쓰되 평가·지시는 하지 않습니다(원칙 9).
      검사 대상은 **화면에 보이는 문장**이에요. 주석까지 훑으면 '무리예요 같은 말은 안 써요'라고
@@ -2234,7 +2240,8 @@ console.log('\n=== v21.22 색 규칙(62) ===');
 
   /* 규칙 ②③ — 연파랑 채움을 쓰는 자리를 전수로 센다 */
   const softFill = (css.match(/background:var\(--primary-soft\)/g) || []).length;
-  t('연파랑 채움은 정확히 다섯 자리 (선택됨 4 + 영수증 1)', softFill === 5, '실제 ' + softFill);
+  /* v21.28: 영수증 대출 행이 사라져 연파랑 채움은 「선택됨」 네 자리뿐입니다(원칙 37·72). */
+  t('연파랑 채움은 정확히 네 자리 — 전부 「선택됨」', softFill === 4, '실제 ' + softFill);
 
   const has = (sel, decl) => {
     const i = css.indexOf(sel);
@@ -2247,7 +2254,7 @@ console.log('\n=== v21.22 색 규칙(62) ===');
   t('선택됨 ③ 세그먼트', has('.seg-btn.active{', 'background:var(--primary-soft)'));
   t('선택됨 ④ 칩 — 진한 파랑+흰 글씨에서 내려왔다 (같은 뜻은 같은 모양)',
     has('.chip.active{', 'background:var(--primary-soft)') && !has('.chip.active{', 'color:#fff'));
-  t('값 강조는 영수증 대출 행 하나뿐', has('.line-item.loan{', 'background:var(--primary-soft)'));
+  t('연파랑은 이제 「선택됨」 한 뜻뿐이다 (원칙 62)', css.indexOf('.line-item.loan{') === -1);
 
   /* v21.26(84) — 규칙 ① 개정.
      v21.22는 진한 파랑 채움을 "다음으로 넘어가는 버튼"에 남겼는데, 화면을 보니
@@ -2318,7 +2325,7 @@ console.log('\n=== v21.22 색 규칙(62) ===');
     && css.indexOf('.hero p b{color:var(--primary-bright);') !== -1);
 
   /* 판 번호 */
-  t('판 번호가 v21.26', BUILD === 'v21.26', BUILD);
+  t('판 번호가 v21.28', BUILD === 'v21.28', BUILD);
 })();
 
 /* ===================================================================
@@ -2372,7 +2379,7 @@ console.log('\n=== v21.23 여백 스케일 전수 검사(원칙 74) ===');
     const i = cssNoCmt.indexOf(sel);
     return i !== -1 && cssNoCmt.slice(i, cssNoCmt.indexOf('}', i)).indexOf(decl) !== -1;
   };
-  t('영수증 소계 위 간격 9 → 8', spot('.line-item.sub{', 'margin-top:8px'));
+  t('영수증 그룹 사이 간격이 스케일 안에 있다', /\.rc-group\{margin-bottom:20px;\}/.test(cssNoCmt));
   t('영수증 워터마크 위 간격 18 → 16', spot('.receipt-watermark{', 'margin-top:16px'));
   t('푸터 위 간격 28 → 24', spot('footer{', 'margin-top:24px'));
   t('입력 되울림(.echo) 위 간격 7 → 8', spot('.echo{', 'margin-top:8px'));
@@ -2647,7 +2654,109 @@ console.log('\n=== v21.26 색 채널(84) ===');
     html.indexOf('판정에 쓰이는 <b>부부합산</b> 기준으로 넣어주세요') === -1);
 
   /* ---- (11) 판 번호 ---- */
-  t('판 번호가 v21.26 (색 채널)', BUILD === 'v21.26', BUILD);
+  t('판 번호가 v21.28 (부호 기준 영수증)', BUILD === 'v21.28', BUILD);
+})();
+
+/* ============================================================
+   v21.28 — 영수증을 부호로 가른다 · 인테리어비 의존
+   지적: "한 번에 눈에 안 들어온다 / 계속 생각해야 한다 / (전액 현금)이 왜 있는지 모르겠다 /
+          인테리어비를 골랐는데 반영이 안 된다" (2026.08.07)
+   ============================================================ */
+console.log('\n=== v21.28 부호 기준 영수증 · 인테리어 의존 ===');
+(() => {
+  const styleRaw = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1];
+  const css = styleRaw.replace(/\/\*[\s\S]*?\*\//g, '');
+  const bodyNoCmt = html.slice(html.indexOf('</style>')).replace(/<!--[\s\S]*?-->/g, '');
+  const rule = sel => (css.match(new RegExp(sel.replace(/[.+*?^$()[\]{}|\\]/g, '\\$&') + '\\{([^}]*)\\}')) || ['',''])[1];
+
+  const c = {tax: 42600000, brokerFee: 8520000, interiorCost: 0, etcCost: 3000000,
+             interiorBlocked: true, mortgageLoan: 545000000, loanType: 'bank',
+             totalNeeded: 1345000000, totalFunding: 545000000, cashNeeded: 800000000};
+  const built = buildReceipt(costLines(c, 1290880000), fundLines(c, {}), c,
+                             line('내 돈(자기자본)', '8억원', 'grand'));
+
+  /* ---- (1) 부호가 섞이지 않는가 — 이 판의 핵심 ---- */
+  const vals = h => (h.match(/<span class="v">([^<]*)<\/span>/g) || []).join(' ');
+  t('영수증 어느 값에도 마이너스가 없다', vals(built).indexOf('-') === -1 && vals(built).indexOf('−') === -1);
+  t('대출에 마이너스를 붙이던 코드가 없다', html.indexOf("'-' + formatWon(c.mortgageLoan)") === -1);
+  t('부호는 그룹 이름이 말한다', built.indexOf('드는 돈') !== -1 && built.indexOf('빌리는 돈') !== -1);
+  t('뺄셈은 맨 마지막에 한 번만 나온다',
+    (built.match(/드는 돈 − 빌리는 돈/g) || []).length === 1);
+
+  /* ---- (2) 답이 근거보다 먼저 오는가 ---- */
+  t('그룹은 둘뿐이다', (built.match(/class="rc-group"/g) || []).length === 2);
+  t('합(rc-head)이 명세(rc-body)보다 앞에 온다', built.indexOf('rc-head') < built.indexOf('rc-body'));
+  t('그룹 합계가 명세 값보다 크다',
+    Number((rule('.rc-head .rc-v').match(/font-size:(\d+)px/) || [0,0])[1])
+    > Number((rule('.rc-body .line-item').match(/font-size:(\d+)px/) || [0,0])[1]));
+  t('명세는 크기가 아니라 색·굵기로 뒤로 물린다 (원칙 81)',
+    /color:var\(--ink-soft\)/.test(rule('.rc-body .line-item .v'))
+    && /font-weight:600/.test(rule('.rc-body .line-item .v')));
+
+  /* ---- (3) 옛 구조가 정말 사라졌는가 (원칙 37) ---- */
+  t('.line-item.loan 블록이 사라졌다', css.indexOf('.line-item.loan{') === -1);
+  t('.line-item.sub 블록도 사라졌다', css.indexOf('.line-item.sub{') === -1);
+  t('.receipt-group(단계 그릇)도 사라졌다', css.indexOf('.receipt-group{') === -1);
+  t('executionBlock 함수가 사라졌다', html.indexOf('function executionBlock') === -1);
+
+  /* ---- (4) 활자 단계 — 늘리지 않았는가 (원칙 88) ---- */
+  const sizeOf = sel => Number((rule(sel).match(/font-size:(\d+)px/) || [0,0])[1]);
+  const grandV = Number((css.match(/#receiptLines \.line-item\.grand \.v\{font-size:(\d+)px;?\}/) || [0,0])[1]);
+  t('영수증 활자는 네 단계다 (12 주석 / 15 본문·그룹라벨 / 17 그룹합 / 22 결론)',
+    sizeOf('.rc-note') === 12 && sizeOf('.rc-eq') === 12
+    && sizeOf('.rc-head .rc-k') === 15 && sizeOf('.rc-body .line-item') === 15
+    && sizeOf('.rc-head .rc-v') === 17 && grandV === 22,
+    [sizeOf('.rc-note'), sizeOf('.rc-head .rc-k'), sizeOf('.rc-head .rc-v'), grandV].join('/'));
+  t('결론이 여전히 가장 큰 숫자다 (원칙 10)', grandV > sizeOf('.rc-head .rc-v'));
+
+  /* ---- (5) 색 — 위 막대와 같은 뜻은 같은 색 (원칙 38·58) ---- */
+  t('내 돈 점은 막대의 내 돈과 같은 색', /background:var\(--fund-1\)/.test(rule('.rc-dot.own')));
+  t('빌리는 돈 점은 막대의 주담대와 같은 색', /background:var\(--fund-2\)/.test(rule('.rc-dot.borrow')));
+  t('새 색을 만들지 않았다 (fund 계열 재사용)',
+    !/#[0-9A-Fa-f]{6}/.test(rule('.rc-dot.own') + rule('.rc-dot.borrow')));
+  t('결론 행에 내 돈 점이 붙는다',
+    /내 돈\(자기자본\)', `<i class="rc-dot own"><\/i>/.test(html));
+  t('빌리는 돈 머리에 주담대 점이 붙는다', built.indexOf('rc-dot borrow') !== -1);
+
+  /* ---- (6) 「(전액 현금)」이 담던 쓸모는 각주로 남는가 ---- */
+  t('입주 시점 정보가 각주로 남았다', built.indexOf('입주 시점에 들어요') !== -1);
+  t('대출로 못 채운다는 사실도 함께 말한다', built.indexOf('채울 수 없어요') !== -1);
+  const cNoExec = {...c, interiorCost: 0, etcCost: 0, interiorBlocked: false};
+  t('입주 준비 비용이 0이면 각주도 안 나온다',
+    buildReceipt(costLines(cNoExec, 1290880000), fundLines(cNoExec, {}), cNoExec, '')
+      .indexOf('입주 시점에 들어요') === -1);
+
+  /* ---- (7) 인테리어비 — 평형이 없으면 이유를 말한다 ---- */
+  t('calcCosts가 인테리어 미반영 상태를 값으로 내보낸다',
+    /const interiorBlocked = ctx\.interiorPerPyeong > 0 && !\(ctx\.pyeong > 0\)/.test(html)
+    && /interiorCost, etcCost, interiorBlocked/.test(html));
+  t('평형이 없으면 영수증이 이유를 말한다', built.indexOf('평형이 비어 있어') !== -1);
+  t('평형이 있으면 그 안내는 나오지 않는다',
+    buildReceipt(costLines(cNoExec, 1290880000), fundLines(cNoExec, {}), cNoExec, '')
+      .indexOf('평형이 비어 있어') === -1);
+  t('입력 화면에도 같은 안내가 있다', bodyNoCmt.indexOf('id="interiorPyeongNote"') !== -1);
+  t('단가를 만지면 안내가 갱신된다',
+    (bodyNoCmt.match(/syncInteriorNote\(\)/g) || []).length >= 5);
+  t('평형을 만져도 안내가 갱신된다',
+    /id="pyeong"[^>]*oninput="[^"]*syncInteriorNote\(\)/.test(bodyNoCmt));
+
+  el('interiorPerPyeong').value = '150';
+  el('pyeong').value = '';
+  syncInteriorNote();
+  t('단가만 있고 평형이 없으면 안내가 켜진다', el('interiorPyeongNote').style.display === 'block');
+  el('pyeong').value = '34';
+  syncInteriorNote();
+  t('평형을 넣으면 안내가 꺼진다', el('interiorPyeongNote').style.display === 'none');
+  el('interiorPerPyeong').value = '';
+  el('pyeong').value = '';
+  syncInteriorNote();
+  t('단가가 없으면 안내를 켜지 않는다', el('interiorPyeongNote').style.display === 'none');
+
+  /* ---- (8) 계산은 그대로 ---- */
+  t('인테리어비는 여전히 평형 × 단가',
+    /const interiorCost = ctx\.pyeong \* ctx\.interiorPerPyeong \* 10000;/.test(html));
+
+  t('판 번호가 v21.28 (부호 기준 영수증)', BUILD === 'v21.28', BUILD);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
