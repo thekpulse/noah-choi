@@ -1,5 +1,7 @@
 const fs = require('fs');
-const html = fs.readFileSync('yeongkkeul-calculator.html', 'utf8');
+/* 파일명을 인자로 받습니다 — 새 검사를 옛 판으로 돌려 "정말 걸리는지"
+   확인할 때 씁니다(원칙 51·76). 예: node test.js orig.html */
+const html = fs.readFileSync(process.argv[2] || 'yeongkkeul-calculator.html', 'utf8');
 
 // <script> 본문 추출 (외부 src 스크립트 제외)
 const m = html.match(/<script>([\s\S]*?)<\/script>/g);
@@ -489,7 +491,9 @@ t('금통위 후에는 경고 발생 (로직 검증)', (() => {
 t('bokNote가 문자열 반환', typeof bokNote() === 'string');
 t('기준값 확인일 · 90일 임계', LAST_VERIFIED === '2026-08-05' && STALE_DAYS === 90);
 t('배너 자리 존재', (html.match(/class="stale-banner"/g) || []).length >= 1);
-t('배너 CSS (파랑 배경 위 흰 글씨 아님)', html.indexOf('.stale-banner{') !== -1 && html.indexOf('background:#FFF4E5') !== -1);
+t('배너 CSS (v21.29: 갈색 없이 주황 좌측 바 + --ink 글자)',
+  html.indexOf('.stale-banner{') !== -1
+  && /\.stale-banner\{[^}]*border-left:4px solid var\(--judge-warn\)[^}]*color:var\(--ink\)/.test(html));
 t('renderStaleBanner 초기화에 포함', html.indexOf('renderStaleBanner();') !== -1);
 t('90일 경과 시 일수 표시', html.indexOf('일</b>이 지났습니다') !== -1);
 
@@ -922,7 +926,7 @@ const optBSub = (html.match(/<b>이 집 사려면, 얼마나 영끌해야 할까
 t('01 A모드 부제가 추정치임을 밝힘', optASub.indexOf('예상') !== -1, optASub);
 t('01 B모드 부제가 추정치임을 밝힘', optBSub.indexOf('예상') !== -1, optBSub);
 t('결과 히어로와 말이 어긋나지 않음',
-  html.indexOf('최대 구매 가능 매매가 (예상)') !== -1 && html.indexOf("'필요한 내 돈 (예상)'") !== -1);
+  html.indexOf('최대 구매 가능 매매가 (예상)') !== -1 && html.indexOf("'내가 내는 돈 (예상)'") !== -1);
 /* v21.16: '나 살 수 있어?'였던 자리는 이제 '이 집 살 수 있어?'입니다.
    ⚠ 예전 검사가 h1 주석 속 예전 문구에 우연히 걸려 계속 통과하고 있었어요 — 실제 헤드라인이
    아니라 설명 주석을 본 것이라 의미가 없었습니다. h1만 뽑아서 검사합니다(원칙 48). */
@@ -1441,11 +1445,13 @@ console.log('\n=== v21.9 ㊻ 결과 화면 중복 정리 ===');
      v21.15에서 A모드 꼬리가 두 갈래로 나뉘며 3 → 4가 됐어요.
      잠그는 건 개수가 아니라 "다른 이름을 새로 만들지 않았다"는 것입니다(원칙 48).
      아래 '자기자본 단독' 검사와 '없어진 이름' 검사가 그 목적을 함께 지킵니다. */
-  t('정식 자리는 "내 돈(자기자본)" 하나 — 다른 이름을 쓰지 않음',
-    (html.match(/내 돈\(자기자본\)/g) || []).length === 4, (html.match(/내 돈\(자기자본\)/g) || []).length);
-  t('"자기자본"만 단독으로 쓰는 자리가 없음',
-    !/[^(]자기자본(?!\))/.test(html.replace(/내 돈\(자기자본\)/g, '')),
-    (html.replace(/내 돈\(자기자본\)/g, '').match(/.{6}자기자본.{6}/g) || []).slice(0, 3).join(' | '));
+  /* v21.29(G-8): 이름 정본은 「내가 내는 돈」입니다. 「자기자본」은 첫 화면 금지어예요.
+     자리는 셋 — A모드 꼬리 두 분기 · B모드 꼬리. 리포트 지표 칸은 없앴습니다. */
+  t('정식 이름은 "내가 내는 돈" 하나 — 다른 이름을 쓰지 않음',
+    (html.match(/내가 내는 돈/g) || []).length >= 3, (html.match(/내가 내는 돈/g) || []).length);
+  t('"자기자본"이라는 말이 화면에서 사라졌다',
+    (html.replace(/\/\*[\s\S]*?\*\//g, '').match(/자기자본/g) || []).length === 0,
+    (html.replace(/\/\*[\s\S]*?\*\//g, '').match(/.{8}자기자본.{8}/g) || []).slice(0, 3).join(' | '));
 
   // (2) 소계 이름이 섹션 라벨과 겹치지 않는가
   /* v21.28: '거래·대출' / '입주 준비 비용' 갈래가 사라졌습니다(부호 기준으로 재편).
@@ -1466,9 +1472,11 @@ console.log('\n=== v21.9 ㊻ 결과 화면 중복 정리 ===');
     (card.match(/월 원리금 상환액|월 상환액/g) || []).length === 0, card.match(/월 원리금 상환액|월 상환액/g));
 
   // (4) 값 자체는 여전히 나온다 — 지표 칸에서
-  const gridSrc = html.slice(html.indexOf('function renderReportGrid'), html.indexOf('function renderInsights'));
-  t('월 상환액은 리포트 지표 칸에 남음', gridSrc.indexOf("k:'월 상환액'") !== -1);
-  t('내 돈(자기자본)도 리포트 지표 칸에 남음', gridSrc.indexOf("k:'내 돈(자기자본)'") !== -1);
+  /* v21.29: 지표 칸(.report-grid)을 없애고 그 값들을 정본 자리로 옮겼습니다(G-7). */
+  t('지표 칸 자체가 사라졌다', html.indexOf('renderReportGrid') === -1 && html.indexOf('report-grid{') === -1);
+  t('월 상환액은 상환 카드로 옮겨졌다', html.indexOf("<span class=\"burden-amt\">") !== -1);
+  t('내가 내는 돈은 영수증 결론 행이 정본 자리다',
+    /line\('내가 내는 돈'[\s\S]{0,120}'grand'\)/.test(html));
 })();
 
 console.log('\n=== v21.9 ㊹ 대출 없이 계산할 때 질문 흐름 ===');
@@ -1510,17 +1518,16 @@ console.log('\n=== v21.9 ㊹ 대출 없이 계산할 때 질문 흐름 ===');
 console.log('\n=== v21.9 ㊾ 계산 불가일 때 직전 결과 지우기 (원칙 30) ===');
 (() => {
   /* 목적: "보유자금을 입력해주세요"가 뜬 화면에 직전 계산의 금액이 남지 않는다. */
-  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint','reportGrid'].forEach(id => {
+  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint'].forEach(id => {
     el(id).innerHTML = '이전 계산 값';
   });
   clearInsights();
-  t('리포트 지표 칸도 비운다', el('reportGrid').innerHTML === '', el('reportGrid').innerHTML);
   t('자금 구성·진단·부담·안내도 비운다',
     ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint']
       .every(id => el(id).innerHTML === ''));
 
   const src = html.slice(html.indexOf('function clearInsights'), html.indexOf('function renderFallbackNote'));
-  t('지우는 목록에 reportGrid가 들어 있음', src.indexOf("'reportGrid'") !== -1);
+  t('죽은 지표 칸을 지우는 코드도 함께 없앴다 (원칙 37)', src.indexOf("'reportGrid'") === -1);
 })();
 
 console.log('\n=== v21.9 ㊻-b 영수증 꼬리 정리 ===');
@@ -1725,13 +1732,13 @@ console.log('\n=== v21.15 결과 화면 정리 ===');
   t('내 돈 = 보유자금이면 한 줄만 나온다',
     (same.match(/line-item/g) || []).length === 1);
   t('그 한 줄에 보유자금을 다시 적지 않는다', same.indexOf('보유자금') === -1);
-  t('그 한 줄은 "내 돈(자기자본)"이다', same.indexOf('내 돈(자기자본)') !== -1);
+  t('그 한 줄은 "내가 내는 돈"이다', same.indexOf('내가 내는 돈') !== -1);
 
   const left = receiptTail(304240000, 400000000);
   t('남는 돈이 있으면 세 줄이 나온다',
     (left.match(/line-item/g) || []).length === 3, (left.match(/line-item/g) || []).length);
   t('세 줄은 내 돈 · 남는 돈 · 보유자금 순서',
-    left.indexOf('내 돈(자기자본)') < left.indexOf('남는 돈')
+    left.indexOf('내가 내는 돈') < left.indexOf('남는 돈')
     && left.indexOf('남는 돈') < left.indexOf('보유자금'));
   t('남는 돈 금액이 맞다 (4억 − 3억424만 = 9,576만)', left.indexOf('9,576만원') !== -1,
     (left.match(/>[^<]*만원</g) || []).join(' '));
@@ -1805,7 +1812,7 @@ console.log('\n=== v21.15 결과 화면 정리 ===');
   t('연소득 미입력 주의 카드는 접지 않는다', warnSrc.indexOf('diag-more') === -1);
 
   const diagSrc = html.slice(html.indexOf('const info = BINDING_COPY[c.binding];'),
-                             html.indexOf('/* (3) 상환부담 신호등'));
+                             html.indexOf('/* (3) 상환 카드'));
   const iBtn = diagSrc.indexOf('class="diag-more"');
   ['diag-tag', 'diag-title', 'limit-list', 'limit-foot'].forEach(k => {
     t('접기 버튼 위에 남는다 — ' + k, diagSrc.indexOf(k) !== -1 && diagSrc.indexOf(k) < iBtn);
@@ -1893,13 +1900,12 @@ console.log('\n=== v21.15 타이포 스케일 전수 검사 (원칙 34·45) ==='
     return [(r.match(/font-size:\s*(\d+)px/) || [, '-'])[1], (r.match(/font-weight:\s*(\d+)/) || [, '-'])[1]].join('/');
   };
   t('리포트 카드 항목 라벨이 한 규격 (13px/700)',
-    ['.rg-k', '.burden-label', '.funding-head'].every(s => spec(s) === '13/700'),
-    ['.rg-k', '.burden-label', '.funding-head'].map(s => s + '=' + spec(s)).join(' | '));
-  t('지표 칸 값이 영수증 강조 행과 같은 규격 (17px/800)',
-    spec('.rg-v') === '17/800' && spec('.line-item.total .v') === '17/800',
-    '.rg-v=' + spec('.rg-v') + ' | .line-item.total .v=' + spec('.line-item.total .v'));
-  /* ⚠ 값이 두 줄로 접히는 칸이 있어도 네 칸 높이는 같아야 합니다. */
-  t('2×2 지표 칸 높이가 서로 같다', /\.report-grid\{[^}]*grid-auto-rows:1fr/.test(css));
+    ['.burden-label', '.funding-head'].every(s => spec(s) === '13/700'),
+    ['.burden-label', '.funding-head'].map(s => s + '=' + spec(s)).join(' | '));
+  /* v21.29: 지표 칸이 사라진 자리에서 리포트의 큰 숫자는 히어로와 상환 카드 둘뿐입니다. */
+  t('상환 카드의 큰 숫자는 금액 하나 (원칙 10)',
+    spec('.burden-amt') === '26/800' && !/\.burden-pct\{[^}]*font-size/.test(css),
+    '.burden-amt=' + spec('.burden-amt'));
 
   /* 영수증에서 강조된 행(.loan/.sub/.total/.grand)의 라벨은 한 굵기여야 합니다.
      .grand만 지정이 없어 기본값 500으로 떨어져, 가장 강조된 행의 라벨이 제일 얇았어요. */
@@ -2325,7 +2331,7 @@ console.log('\n=== v21.22 색 규칙(62) ===');
     && css.indexOf('.hero p b{color:var(--primary-bright);') !== -1);
 
   /* 판 번호 */
-  t('판 번호가 v21.28', BUILD === 'v21.28', BUILD);
+  t('판 번호가 v21.30', BUILD === 'v21.30', BUILD);
 })();
 
 /* ===================================================================
@@ -2623,7 +2629,7 @@ console.log('\n=== v21.26 색 채널(84) ===');
   const judgeStray = strayHex.filter(x => /^#(9A5B0A|FFF2E3|FFF6E8|FFFCF5|FDEBEC|FFE9EB|FFF8F8|E9FBF3|8FD0FF)$/i.test(x));
   t('판정 보조 톤이 토큰 밖에 흩어져 있지 않다', judgeStray.length === 0, judgeStray.join(', '));
   t('보조 톤 토큰 4종이 정의돼 있다',
-    ['--judge-warn-ink','--judge-safe-bg','--judge-warn-bg','--judge-danger-bg']
+    ['--judge-safe-bg','--judge-warn-bg','--judge-danger-bg']
       .every(n => new RegExp(n + ':\\s*#').test(css)));
   t('어두운 배경 위 강조 글자는 --primary-bright 하나뿐 (원칙 73)',
     css.slice(css.indexOf('*{box-sizing')).indexOf('#7CC4FF') === -1
@@ -2654,7 +2660,7 @@ console.log('\n=== v21.26 색 채널(84) ===');
     html.indexOf('판정에 쓰이는 <b>부부합산</b> 기준으로 넣어주세요') === -1);
 
   /* ---- (11) 판 번호 ---- */
-  t('판 번호가 v21.28 (부호 기준 영수증)', BUILD === 'v21.28', BUILD);
+  t('판 번호가 v21.30 (첫 화면 3초)', BUILD === 'v21.30', BUILD);
 })();
 
 /* ============================================================
@@ -2715,7 +2721,7 @@ console.log('\n=== v21.28 부호 기준 영수증 · 인테리어 의존 ===');
   t('새 색을 만들지 않았다 (fund 계열 재사용)',
     !/#[0-9A-Fa-f]{6}/.test(rule('.rc-dot.own') + rule('.rc-dot.borrow')));
   t('결론 행에 내 돈 점이 붙는다',
-    /내 돈\(자기자본\)', `<i class="rc-dot own"><\/i>/.test(html));
+    /내가 내는 돈', `<i class="rc-dot own"><\/i>/.test(html));
   t('빌리는 돈 머리에 주담대 점이 붙는다', built.indexOf('rc-dot borrow') !== -1);
 
   /* ---- (6) 「(전액 현금)」이 담던 쓸모는 각주로 남는가 ---- */
@@ -2756,7 +2762,214 @@ console.log('\n=== v21.28 부호 기준 영수증 · 인테리어 의존 ===');
   t('인테리어비는 여전히 평형 × 단가',
     /const interiorCost = ctx\.pyeong \* ctx\.interiorPerPyeong \* 10000;/.test(html));
 
-  t('판 번호가 v21.28 (부호 기준 영수증)', BUILD === 'v21.28', BUILD);
+  t('판 번호가 v21.30 (첫 화면 3초)', BUILD === 'v21.30', BUILD);
+})();
+
+
+/* ============================================================
+   v21.29 — G-7(같은 금액 2회 이하) · G-8(한 값에 이름 하나) · 갈색 퇴출
+   지적: "숫자가 위·중간·마지막에 또 나와서 길고 보기 힘들다 / 갈색이 눈에
+          안 들어오고 어우러지지 않는다" (2026.08.07)
+   ⚠ 이 블록은 화면에 **보이는 텍스트**만 봅니다(원칙 66·78 — 주석 먼저 제거).
+   ============================================================ */
+console.log('\n=== v21.29 G-7 중복 · G-8 이름 · 갈색 퇴출 ===');
+(() => {
+  const noCmt = html.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+  const styleRaw = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1];
+  const css = styleRaw.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  /* ---- (1) G-7 — 결과 화면을 실제로 조립해 같은 금액이 몇 번 나오는지 센다 ---- */
+  const ctx = {...baseCtx(), price: 0, noLoan: false, income: 70000000, incomeEntered: true,
+               rate: 4.2, years: 30, pyeong: 25, loanType: 'bank'};
+  const price = 579820000;
+  const c = calcCosts({...ctx, price});
+  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint'].forEach(id => el(id).innerHTML = '');
+  renderInsights(c, price, ctx, ctx.rate, ctx.years);
+  const screen = [
+    formatWon(price),                                   // 히어로 금액
+    el('fundingBarBox').innerHTML,
+    el('burdenBox').innerHTML,
+    el('bindingDiagnosis').innerHTML,
+    buildReceipt(costLines(c, price), fundLines(c, ctx), c,
+                 line('내가 내는 돈', formatWon(c.cashNeeded), 'grand'))
+  ].join(' ').replace(/<[^>]*>/g, ' ');
+
+  const money = screen.match(/(?:\d[\d,]*억\s?)?[\d,]+만?원|\d[\d,]*억원?/g) || [];
+  const tally = {};
+  money.forEach(m => { const k = m.trim(); tally[k] = (tally[k] || 0) + 1; });
+  const over = Object.keys(tally).filter(k => tally[k] > 2);
+  t('G-7 같은 금액이 한 화면에 3번 이상 나오지 않는다',
+    over.length === 0, over.map(k => k + ' ×' + tally[k]).join(' | '));
+  t('G-7 화면에 보이는 금액이 16개를 넘지 않는다',
+    money.length <= 16, money.length + '개: ' + money.join(' · '));
+
+  /* ---- (2) G-8 — 한 값을 부르는 이름이 하나인가 ---- */
+  /* 대출 실행액은 「빌리는 돈」 하나로 부릅니다. 예전엔 조달자금·주담대·대출금액·
+     빌리는 돈 네 이름이 같은 숫자에 붙어 있었어요. */
+  /* ⚠ 검사 범위는 **결과 화면**입니다. 입력 화면과 출처표에서 「주담대」는
+     상품 이름으로 쓰이는 게 맞아요 — 같은 금액에 붙는 다른 이름만 금지합니다. */
+  ['조달자금', '주담대', '대출금액', '내 돈(자기자본)'].forEach(nm => {
+    t('G-8 결과 화면에 「' + nm + '」이라는 옛 이름이 없다', screen.indexOf(nm) === -1);
+  });
+  t('G-8 부제·라벨 조립부에도 옛 이름이 없다',
+    ['조달자금', '내 돈(자기자본)'].every(nm =>
+      noCmt.slice(noCmt.indexOf('function renderInsights')).indexOf(nm) === -1));
+  t('G-8 대출 실행액의 이름은 「빌리는 돈」', screen.indexOf('빌리는 돈') !== -1);
+
+  /* ---- (3) 부제는 금액을 다시 적지 않는다 ---- */
+  const subs = noCmt.match(/getElementById\('resultSub'\)\.textContent = [^;]+;/g) || [];
+  t('결과 부제에 formatWon이 하나도 없다',
+    subs.length >= 2 && subs.every(x => x.indexOf('formatWon') === -1),
+    subs.filter(x => x.indexOf('formatWon') !== -1).join(' | '));
+
+  /* ---- (4) 자금 구성 막대는 비율만 말한다 ---- */
+  t('막대 범례에 금액이 없다',
+    (el('fundingBarBox').innerHTML.match(/만원|억원/g) || []).length === 0);
+
+  /* ---- (5) 갈색 퇴출 — 화면 색에서 갈색 계열이 사라졌는가 ---- */
+  const brown = /#(9A5B0A|7A4A10|5C3608|8C3A1E|7A2E14|5C2E0D|7A3E12|F0C68A|FFF4E5|FFF1EC)/gi;
+  t('CSS에 갈색 값이 없다', !brown.test(css), (css.match(brown) || []).join(', '));
+  t('본문 인라인 스타일에도 갈색이 없다',
+    !brown.test(noCmt.slice(noCmt.indexOf('</style>'))),
+    (noCmt.slice(noCmt.indexOf('</style>')).match(brown) || []).join(', '));
+  t('--judge-warn-ink 토큰 자체가 사라졌다', css.indexOf('--judge-warn-ink') === -1);
+  t('경고 진단 카드는 인라인 그라디언트가 아니라 클래스로 갈린다',
+    css.indexOf('.diag-card.warn{') !== -1
+    && noCmt.slice(noCmt.indexOf('</style>')).indexOf('linear-gradient(160deg,#') === -1);
+  t('경고는 면이 아니라 테두리·라벨이 말한다 (원칙 38)',
+    /\.diag-card\.warn\{[^}]*border-top:4px solid var\(--judge-warn\)/.test(css)
+    && /\.report-hero\.warn-box \.label\{color:var\(--judge-warn\);?\}/.test(css));
+
+  /* ---- (6) 상환 카드가 월 상환액의 유일한 자리인가 ---- */
+  t('상환 카드는 소득이 없어도 월 상환액을 보여준다', (() => {
+    el('burdenBox').innerHTML = '';
+    const ctxNoInc = {...ctx, income: 0, incomeEntered: false};
+    renderInsights(calcCosts({...ctxNoInc, price}), price, ctxNoInc, ctx.rate, ctx.years);
+    return el('burdenBox').innerHTML.indexOf('burden-amt') !== -1;
+  })(), el('burdenBox').innerHTML.slice(0, 80));
+
+  t('판 번호가 v21.30 (첫 화면 3초)', BUILD === 'v21.30', BUILD);
+})();
+
+
+/* ============================================================
+   v21.30 — 지침 2층 G 검사 (G-1 ~ G-5)
+   0번: "아무 배경지식이 없는 사람이 처음 3초 안에 답 한 줄을 얻는다."
+   직접 잴 수 없는 목표라, 대리 지표를 셉니다(원칙 74).
+   ⚠ 대상은 **접힌 기본 상태에서 보이는 것**뿐입니다.
+      접힌 영역과 계산 코드에는 금지어가 그대로 있어야 해요(원칙 66).
+   ============================================================ */
+console.log('\n=== v21.30 G-1~G-5 (첫 화면 3초) ===');
+(() => {
+  /* 결과 영역에서 optional-section 안쪽을 들어낸 = 접힌 기본 상태의 마크업 */
+  const resultRaw = html.slice(html.indexOf('<div id="result">'),
+                               html.indexOf('id="copyTextBtn"'));
+  const stripSection = (h) => {
+    let out = h, guard = 0;
+    while (out.indexOf('<div class="optional-section"') !== -1 && guard++ < 20) {
+      const a = out.indexOf('<div class="optional-section"');
+      let i = out.indexOf('>', a) + 1, depth = 1;
+      while (depth > 0 && i < out.length) {
+        const open = out.indexOf('<div', i), close = out.indexOf('</div>', i);
+        if (close === -1) break;
+        if (open !== -1 && open < close) { depth++; i = open + 4; }
+        else { depth--; i = close + 6; }
+      }
+      out = out.slice(0, a) + out.slice(i);
+    }
+    return out;
+  };
+  const folded = stripSection(resultRaw).replace(/<!--[\s\S]*?-->/g, '');
+  const foldedText = folded.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+  /* 첫 화면 = 접기 밖에 남은 **정적 마크업** + 그 자리에 JS가 채우는 **실제 값**.
+     ⚠ 정적 마크업만 세면 검사가 헛돕니다 — 금액은 전부 런타임에 들어가거든요.
+        그래서 실제로 렌더한 뒤, 그 칸이 접기 밖인지 안인지를 보고 셉니다(원칙 51). */
+  const ctx = {...baseCtx(), price: 0, noLoan: false, income: 70000000,
+               incomeEntered: true, rate: 4.2, years: 30, pyeong: 25, loanType: 'bank'};
+  const price = 579820000;
+  const c = calcCosts({...ctx, price});
+  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint','reportCond'].forEach(id => el(id).innerHTML = '');
+  renderAssumptions(ctx, c);
+  renderInsights(c, price, ctx, ctx.rate, ctx.years);
+  el('receiptLines').innerHTML = buildReceipt(costLines(c, price), fundLines(c, ctx), c,
+                                              line('내가 내는 돈', formatWon(c.cashNeeded), 'grand'));
+  el('resultLabel').textContent = '최대 구매 가능 매매가 (예상)';
+  el('resultAmount').textContent = formatWon(price);
+  el('resultSub').textContent = '가진 돈을 다 쓰고, 세금과 수수료까지 낸 기준이에요.';
+
+  const BOXES = ['resultLabel','resultAmount','resultSub','resultBinding','reportCond',
+                 'fundingBarBox','burdenBox','receiptLines','bindingDiagnosis'];
+  const outside = BOXES.filter(id => folded.indexOf('id="' + id + '"') !== -1);
+  const rendered = outside.map(id => (el(id).innerHTML || '') + ' ' + (el(id).textContent || '')).join(' ');
+  const firstScreen = (foldedText + ' ' + rendered).replace(/<[^>]*>/g, ' ');
+  t('첫 화면에 남는 칸이 답 관련 넷뿐이다',
+    outside.length <= 4, outside.join(', '));
+
+  /* ---- G-1 금액 개수 ≤ 6 ---- */
+  const money = firstScreen.match(/(?:\d[\d,]*억\s?)?[\d,]+만?원|\d[\d,]*억원?/g) || [];
+  t('G-1 접힌 첫 화면의 금액이 6개 이하', money.length <= 6, money.length + '개: ' + money.join(' · '));
+
+  /* ---- G-2 카드 수 ≤ 3 ---- */
+  /* ⚠ `class="report-top"` 같은 하이픈 이름에 걸리지 않게 뒤를 막습니다(원칙 79). */
+  const cardRe = /class="(report|card|diag-card|burden-card|funding-box|receipt)(?![-\w])/g;
+  const cards = (folded.match(cardRe) || []).concat(rendered.match(cardRe) || []);
+  t('G-2 접힌 첫 화면의 카드가 3개 이하', cards.length <= 3, cards.join(' | '));
+
+  /* ---- G-3 금지어 ---- */
+  const BAN = ['자기자본','DSR','LTV','방공제','중개보수','취득세','조달','소계','거치','원리금균등'];
+  const plains = Object.keys(BINDING_COPY).map(k => BINDING_COPY[k].plain || '').join(' ');
+  const hit = BAN.filter(b => (firstScreen + ' ' + plains).indexOf(b) !== -1);
+  t('G-3 첫 화면에 금지어가 없다', hit.length === 0, hit.join(', '));
+  /* 오탐 방지 — 접힌 안쪽과 계산 코드에는 그대로 있어야 합니다(원칙 66·76) */
+  t('G-3 오탐 아님: 접힌 안쪽에는 정확한 이름이 살아 있다',
+    BINDING_COPY['DSR'].title.indexOf('DSR') !== -1
+    && html.indexOf('중개보수 <span class="nowrap">') !== -1);
+
+  const filled = [
+    '최대 구매 가능 매매가 (예상)', '내가 내는 돈 (예상)',
+    '가진 돈을 다 쓰고, 세금과 수수료까지 낸 기준이에요.',
+    '집값에 세금과 수수료를 더하고, 빌리는 돈을 뺀 금액이에요.',
+    ...Object.keys(BINDING_COPY).map(k => BINDING_COPY[k].plain || '')
+  ].filter(Boolean);
+  /* ---- G-4 문장 40자 이하 ---- */
+  const long = filled.filter(x => x.length > 40);
+  t('G-4 첫 화면 문구가 모두 40자 이하', long.length === 0, long.join(' | '));
+
+  /* ---- G-5 접기는 표시만 바꾼다 ---- */
+  const before = JSON.stringify(calcCosts({...ctx, price}));
+  setResultDetail(true);
+  const after = JSON.stringify(calcCosts({...ctx, price}));
+  t('G-5 펼쳐도 계산 결과가 같다', before === after);
+  t('G-5 두 접기 영역이 한 버튼으로 같이 움직인다',
+    el('resultDetail')._cls.has('open') && el('resultDetail2')._cls.has('open'));
+  setResultDetail(false);
+  t('G-5 접으면 둘 다 닫힌다',
+    !el('resultDetail')._cls.has('open') && !el('resultDetail2')._cls.has('open'));
+
+  /* ---- 기본은 「접힘」인가 (1층 A) ---- */
+  t('마크업 기본 상태가 접힘이다 (open 클래스가 붙어 있지 않다)',
+    /<div class="optional-section" id="resultDetail">/.test(html)
+    && /<div class="optional-section" id="resultDetail2">/.test(html));
+  t('계산할 때마다 접힘으로 되돌린다 (원칙 42)',
+    /resultVisible = true;[\s\S]{0,300}setResultDetail\(false\);/.test(html));
+
+  /* ---- 이미지 저장은 접혀 있어도 온전한가 ---- */
+  t('캡처 전에 펼치고 끝나면 되돌린다',
+    /if\(elementId === 'captureAreaBuy' && !wasOpen\) setResultDetail\(true\);/.test(html)
+    && /finally \{[\s\S]{0,140}setResultDetail\(false\);/.test(html));
+  t('영수증·자금구성이 캡처 영역 안에 남아 있다',
+    resultRaw.indexOf('id="captureAreaBuy"') < resultRaw.indexOf('id="receiptLines"')
+    && resultRaw.indexOf('id="receiptLines"') < resultRaw.indexOf('class="report-foot"'));
+
+  /* ---- 면책은 접지 않는다 ---- */
+  t('면책 문구는 접기 밖에 남아 있다', foldedText.indexOf('금융·세무·투자 자문이 아닙니다') !== -1);
+  /* 의무 카드는 중요하지만 첫 화면의 두 질문에 직접 답하지 않아요(4층 관문 1). */
+  t('대출 후 의무 카드는 접기 안으로 들어갔다', foldedText.indexOf('대출받은 뒤에 지켜야 할 것') === -1);
+  t('그래도 지워지지는 않았다 (0번 경계선)', html.indexOf('id="dutyCard"') !== -1
+    && html.indexOf('renderDuties') !== -1);
+
+  t('판 번호가 v21.30 (첫 화면 3초)', BUILD === 'v21.30', BUILD);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
