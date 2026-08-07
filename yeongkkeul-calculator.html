@@ -76,7 +76,6 @@ window.GA_ID = 'G-NVTLEPG53G';
        ③ --primary-soft 채움+테두리 = 지금 선택된 것
                                       (.option-card.active / .loan-option:checked
                                        / .seg-btn.active / .chip.active)
-       ④ --primary-soft 채움        = 영수증 안의 값 강조 (.line-item.loan 하나뿐)
        ⑤ --primary-soft 링          = 포커스 (box-shadow — 채움과 채널이 다름)
        ⑥ --primary-bright           = 어두운 히어로 위의 강조 글자
        그 밖(펼치기·접기·조회·되돌리기 버튼·hover·뱃지·컨테이너)은
@@ -524,32 +523,51 @@ window.GA_ID = 'G-NVTLEPG53G';
   .line-item .k{color:var(--ink-soft);font-family:'Pretendard', sans-serif;font-weight:500;}
   .line-item .v{font-weight:700;white-space:nowrap;}
   .line-item.minus .v{color:var(--accent);}
-  /* 대출금액은 영수증에서 가장 큰 숫자인데 시선이 안 간다는 지적이 있어서
-     굵기·크기·배경으로 위계를 줬어요. 파랑 배경 위 흰 글씨는 쓰지 않아요(원칙 10).
-     맨 아래 .line-item.grand가 이미 진한 배경 + 흰 글씨라, 대출 행까지 채우면
-     "가장 중요한 줄"이 두 개가 돼요.
-     v21.5: 색은 같은 화면 그래프의 대출과 같은 --loan 계열로 맞춥니다.
-     이전에는 골드(--accent)여서 한 개념에 색이 둘이었어요(원칙 38).
-     v21.7: 그 --loan(#0091FF)이 연파랑 배경(#E5F4FF) 위에서 대비 2.9:1이라 글씨가
-     묻혔어요(㊴). 같은 파랑의 진한 톤(--primary-dark #0068BD)으로 내려 5.0:1을 얻습니다.
-     팔레트는 늘리지 않았어요. 크기는 17px 그대로 둡니다 — 19px로 올리면 맨 아래
-     .grand의 값과 같아져 "가장 큰 숫자"가 둘이 되고, 긴 라벨이 좁은 화면에서 줄바꿈돼요. */
-  .line-item.loan{
-    background:var(--primary-soft);
-    border-radius:10px;
-    margin:4px -10px;
-    padding:11px 10px;
+  /* v21.28: 영수증을 '단계'가 아니라 '부호'로 나눕니다.
+     ─ 왜 바꿨나 (실사용 지적, 2026.08.07: "한 번에 눈에 안 들어온다. 계속 생각해야 한다")
+       ① 한 열에 나가는 돈(+)과 들어오는 돈(−)이 섞여 있어서 합을 눈으로 못 따라갔어요.
+          「거래·대출 소계」는 매매가+취득세+중개보수−대출이라, 큰 뺄셈이 한가운데 묻힌
+          혼합부호 합이었습니다. 그래서 어디서 나온 숫자인지 알 수 없었어요.
+       ② 갈래 이름 「거래·대출」 자체가 반대되는 두 개념(비용·조달)을 한 이름에 묶고 있었어요.
+       ③ 「(전액 현금)」은 "이건 대출로 못 채운다"는 뜻인데, 한쪽 갈래에만 붙어 있어
+          비대칭이라 잡음으로 읽혔습니다. 조달을 따로 세우면 저절로 보이는 사실이라 지웠어요.
+     ─ 지금 구조: 드는 돈 − 빌리는 돈 = 내 돈. 각 열의 부호가 같아 눈으로 더할 수 있어요.
+     ─ 합은 명세 **앞**(그룹 머리)에 옵니다. 답을 먼저 보고, 근거는 원할 때 봅니다. */
+  .rc-group{margin-bottom:20px;}
+  .rc-head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    padding-bottom:10px;border-bottom:1.5px solid var(--ink);
   }
-  .line-item.loan .k{color:var(--primary-dark);font-weight:700;}
-  .line-item.loan .v{color:var(--primary-dark);font-size:17px;font-weight:800;}
-  /* 소계는 선으로만 구분해요. 채워진 블록이 여러 개면 "가장 중요한 줄"이 흐려져요(원칙 10). */
-  .line-item.sub{
-    border-top:1px solid var(--border);
-    margin-top:8px;
-    padding-top:12px;
+  .rc-head .rc-k{
+    font-family:'Pretendard', sans-serif;
+    font-size:15px;font-weight:800;color:var(--ink);
   }
-  .line-item.sub .k{color:var(--ink);font-weight:700;}
-  .line-item.sub .v{font-weight:700;}
+  .rc-head .rc-v{font-size:17px;font-weight:800;color:var(--ink);white-space:nowrap;}
+  /* 명세는 근거예요. 크기는 그대로 두고 **색과 굵기만** 낮춰 뒤로 물립니다(원칙 77·81).
+     크기를 더 만들면 "기준이 없다"는 문제가 되레 커져요(원칙 88). */
+  .rc-body{padding-top:2px;}
+  .rc-body .line-item{padding:7px 0;font-size:15px;}
+  .rc-body .line-item .v{color:var(--ink-soft);font-weight:600;}
+  .rc-note{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;color:var(--ink-faint);line-height:1.65;
+    margin-top:6px;
+  }
+  /* 결론 바로 위에 식을 적습니다. 숫자 셋의 관계를 문장으로 한 번 말해주는 자리예요. */
+  .rc-eq{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;font-weight:700;color:var(--ink-faint);
+    text-align:right;margin-bottom:2px;
+  }
+  /* 화면 위 자금 구성 막대와 **같은 색**을 씁니다. 같은 개념이 위아래에서 다른 색이면
+     두 그림이 남남이 돼요(원칙 38·58). 글자에 칠하지 않고 점으로 두는 건 --fund-2가
+     흰 배경에서 대비 3.3:1이라 본문 색으로는 못 쓰기 때문이에요. */
+  .rc-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;
+    margin-right:6px;vertical-align:middle;
+  }
+  .rc-dot.own{background:var(--fund-1);}
+  .rc-dot.borrow{background:var(--fund-2);}
   .line-item.total{
     border-top:1.5px solid var(--border);
     background:var(--fill);
@@ -1614,7 +1632,7 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div class="subsection-label">집 정보</div>
       <div class="field">
         <label>평형 <span class="opt-tag">선택</span></label>
-        <div class="input-suffix"><input type="number" id="pyeong" step="1" oninput="renderPolicyOptions(); syncPyeong(); liveRecalc();"><span>평</span></div>
+        <div class="input-suffix"><input type="number" id="pyeong" step="1" oninput="renderPolicyOptions(); syncPyeong(); syncInteriorNote(); liveRecalc();"><span>평</span></div>
         <div class="echo" id="pyeongEcho"></div>
         <div class="hint">부동산에서 "34평"처럼 부르는 <b>공급면적</b> 기준이에요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">넣으면 전용면적을 자동 환산해서 인테리어비와 정책대출 자격 판단에 반영해요.</div></div>
       </div>
@@ -1733,13 +1751,14 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div class="row2">
         <div class="field">
           <label>인테리어 단가</label>
-          <div class="input-suffix"><input type="text" inputmode="numeric" id="interiorPerPyeong" oninput="formatCommaInput(this); liveRecalc();"><span>만/평</span></div>
+          <div class="input-suffix"><input type="text" inputmode="numeric" id="interiorPerPyeong" oninput="formatCommaInput(this); syncInteriorNote(); liveRecalc();"><span>만/평</span></div>
           <div class="preset-chips">
-            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',80,event);liveRecalc();">기본 80만</button>
-            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',150,event);liveRecalc();">일반 150만</button>
-            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',250,event);liveRecalc();">고급 250만</button>
+            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',80,event);syncInteriorNote();liveRecalc();">기본 80만</button>
+            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',150,event);syncInteriorNote();liveRecalc();">일반 150만</button>
+            <button type="button" class="chip" onclick="setChipValue('interiorPerPyeong',250,event);syncInteriorNote();liveRecalc();">고급 250만</button>
           </div>
           <div class="hint">평당 단가(자재비+시공비 포함 턴키 견적 기준)예요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">기본은 도배·장판 위주, 일반은 주방·욕실 교체 포함, 고급은 전체 올수리 기준이에요.</div></div>
+          <div class="info-note" id="interiorPyeongNote" style="display:none;margin:8px 0 0;">ℹ️ 인테리어비는 <b>평형 × 단가</b>라 위쪽 「집 정보 → 평형」이 비어 있으면 0원이 돼요. <button type="button" class="link-btn" style="width:auto;display:inline;padding:0;margin:0;border:none;background:none;text-decoration:underline;" onclick="flagFieldError('pyeong',1)">평형 넣으러 가기</button></div>
         </div>
         <div class="field">
           <label>기타비용(이사·법무사)</label>
@@ -3503,6 +3522,11 @@ function calcCosts(ctx){
   brokerFee = brokerFee * POLICY.broker.vat;   // 중개보수는 부가세 10% 별도 (상한요율 기준, 실제는 협의 가능)
 
   const interiorCost = ctx.pyeong * ctx.interiorPerPyeong * 10000;
+  /* 인테리어비는 평형 × 단가입니다. 두 필드가 서로 다른 소절('집 정보' / '입주 준비 비용')에
+     떨어져 있고 평형이 '선택' 항목이라, 단가만 고르고 평형을 비워두면 곱의 한쪽이 0이라
+     조용히 0원이 됐어요. 사용자에겐 "골랐는데 반영이 안 된다"로 보입니다.
+     → 그 상태를 값으로 들고 나가서 입력·결과 양쪽에서 이유를 말해줍니다. */
+  const interiorBlocked = ctx.interiorPerPyeong > 0 && !(ctx.pyeong > 0);
   const etcCost = ctx.etc * 10000;
   const pyeongM2 = ctx.pyeong * POLICY.area.pyeongToM2; // 평형은 통상 공급면적 기준이라, 전용면적 추정 시 전용률(약 74%)을 적용한 근사치예요
 
@@ -3514,7 +3538,7 @@ function calcCosts(ctx){
   const cashNeeded = totalNeeded - totalFunding;
 
   return {
-    tax: totalTax, brokerFee, interiorCost, etcCost,
+    tax: totalTax, brokerFee, interiorCost, etcCost, interiorBlocked,
     mortgageLoan, loanType: loanResult.type, fellBack: loanResult.fellBack, fellBackReason: loanResult.fellBackReason, cappedByBank: loanResult.cappedByBank,
     binding: loanResult.binding, limits: loanResult.limits, roomCut: loanResult.roomCut,
     totalFunding, totalNeeded, cashNeeded
@@ -3568,6 +3592,17 @@ function syncPyeong(){
   // 농어촌특별세 체크박스 자동 연동 (사용자가 직접 건드린 뒤에는 존중)
   const cb = document.getElementById('over85');
   if(!cb.dataset.touched) cb.checked = m2 > POLICY.area.ruralTaxOverM2;
+}
+
+/* 인테리어 단가만 넣고 평형을 비워두면 인테리어비가 0원이 됩니다(곱의 한쪽이 0).
+   두 필드가 서로 다른 소절에 떨어져 있어 사용자가 그 의존을 알 방법이 없었어요.
+   → 그 상태일 때만 안내를 켭니다. 평형이 채워지면 조용히 사라져요. */
+function syncInteriorNote(){
+  const note = document.getElementById('interiorPyeongNote');
+  if(!note) return;
+  const perPyeong = numVal('interiorPerPyeong');
+  const pyeong = parseFloat(document.getElementById('pyeong').value) || 0;
+  note.style.display = (perPyeong > 0 && !(pyeong > 0)) ? 'block' : 'none';
 }
 
 function syncIncomeEcho(){
@@ -3803,9 +3838,6 @@ function line(k, v, cls){
   return `<div class="line-item ${cls||''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
 }
 
-/* 입주 준비 비용이 0이면 그 섹션을 통째로 생략합니다.
-   ⚠ 이때 '거래·대출 소계'도 같이 생략해요. 입주 준비가 0이면 그 소계가 곧 '내 돈'이라
-      같은 금액이 세 줄 연달아 나오기 때문입니다. 중복을 지우려다 만든 중복이었어요. */
 /* 영수증 꼬리 — A모드(가진 돈으로 살 수 있는 집) 전용.
    A모드는 "보유자금을 다 쓰는 지점"을 찾으므로 내 돈 = 보유자금이 되는 게 보통이고,
    그때 같은 금액이 두 줄 연달아 나오는 중복이 있었어요(원칙 55).
@@ -3819,19 +3851,71 @@ function line(k, v, cls){
    ⚠ 채워진 진한 블록은 어느 쪽 분기에서도 맨 아래 한 줄뿐입니다(원칙 10). */
 function receiptTail(cashNeeded, cashAvailable){
   const leftover = Math.max(0, Math.floor((cashAvailable - cashNeeded) / 10000) * 10000);
-  if(leftover <= 0) return line('내 돈(자기자본)', formatWon(cashNeeded), 'grand');
-  return line('내 돈(자기자본)', formatWon(cashNeeded), 'total')
+  if(leftover <= 0) return line('내 돈(자기자본)', `<i class="rc-dot own"></i>${formatWon(cashNeeded)}`, 'grand');
+  return line('내 돈(자기자본)', `<i class="rc-dot own"></i>${formatWon(cashNeeded)}`, 'total')
        + line('남는 돈', formatWon(leftover))
        + line('보유자금', formatWon(cashAvailable), 'grand');
 }
 
-function executionBlock(c, executionSubtotal, financeSubtotal){
-  if(!(executionSubtotal > 0)) return '';
-  return line('거래·대출 소계', formatWon(financeSubtotal), 'sub')
-    + `<div class="receipt-section-label" style="margin-top:16px;">입주 준비 비용 (전액 현금)</div>`
-    + line('인테리어비', formatWon(c.interiorCost))
-    + line('기타비용', formatWon(c.etcCost))
-    + line('입주 준비 소계', formatWon(executionSubtotal), 'sub');
+/* 그룹 하나(드는 돈 / 빌리는 돈)를 그립니다 — 합이 머리에, 명세가 몸통에.
+   합을 명세 뒤가 아니라 **앞**에 두는 게 이 판의 핵심입니다.
+   뒤에 두면 열 줄을 다 읽고 나서야 답이 나오는데, 대부분의 사람은 답만 알고 싶어요. */
+function receiptGroup(label, total, details, opts){
+  const o = opts || {};
+  return `<div class="rc-group">`
+    + `<div class="rc-head">`
+    +   `<span class="rc-k">${o.dot ? `<i class="rc-dot ${o.dot}"></i>` : ''}${label}</span>`
+    +   `<span class="rc-v">${formatWon(total)}</span>`
+    + `</div>`
+    + `<div class="rc-body">${details}${o.note ? `<div class="rc-note">${o.note}</div>` : ''}</div>`
+    + `</div>`;
+}
+
+/* 영수증 전체를 조립합니다 — 드는 돈 − 빌리는 돈 = 내 돈.
+   v21.27까지는 '거래·대출' / '입주 준비'라는 **단계**로 갈랐어요. 그런데 「거래·대출」은
+   나가는 돈과 들어오는 돈을 한 이름에 묶은 갈래여서, 그 소계가 혼합부호 합이 됐습니다.
+   숫자를 눈으로 못 따라가니 "계속 생각해야" 했어요(실사용 지적, 2026.08.07).
+   → 부호로 가릅니다. 각 그룹 안의 숫자는 부호가 같아서 그냥 더하면 되고,
+     뺄셈은 맨 마지막에 딱 한 번만 나옵니다.
+
+   ⚠ 「(전액 현금)」은 지웠습니다. 조달을 따로 세우면 인테리어·기타비용이 대출로 안 채워진다는
+      건 표에서 저절로 보여요. 대신 시점 정보("잔금 이후에 든다")만 각주로 남깁니다 —
+      옛 라벨이 실제로 담고 있던 쓸모는 그것이었어요.
+   ⚠ 빌리는 돈이 0이어도 그룹을 지우지 않습니다. 지우면 드는 돈과 내 돈이 같은 이유가
+      화면에서 사라져요. 「0원」이 그 이유입니다(원칙 39). */
+function buildReceipt(costDetails, fundDetails, c, tail){
+  const execCost = c.interiorCost + c.etcCost;
+  let note = '';
+  if(execCost > 0){
+    note = `이 중 <b>${formatWon(execCost)}</b>(인테리어·기타비용)은 잔금을 치른 뒤 입주 시점에 들어요. 주택담보대출로는 채울 수 없어요.`;
+  }
+  if(c.interiorBlocked){
+    note += `${note ? '<br>' : ''}ℹ️ 인테리어 단가를 넣으셨지만 <b>평형이 비어 있어 인테리어비가 0원</b>으로 계산됐어요. 인테리어비는 평형 × 단가라 둘 다 있어야 나와요. 「더 정확하게 → 집 정보 → 평형」에 평수를 넣어주세요.`;
+  }
+  return receiptGroup('드는 돈', c.totalNeeded, costDetails, {note})
+    + receiptGroup('빌리는 돈', c.totalFunding, fundDetails, {dot: 'borrow'})
+    + `<div class="rc-eq">드는 돈 − 빌리는 돈</div>`
+    + tail;
+}
+
+/* 드는 돈 명세 — 부호가 전부 같아요(전부 나가는 돈). 순서는 시점순입니다. */
+function costLines(c, price){
+  return line('집값', formatWon(price))
+    + line('취득세 <span class="nowrap">(교육세·농특세 포함)</span>', formatWon(c.tax))
+    + line('중개보수 <span class="nowrap">(중개수수료·VAT 포함)</span>', formatWon(c.brokerFee))
+    + (c.interiorCost > 0 || c.interiorBlocked ? line('인테리어비', formatWon(c.interiorCost)) : '')
+    + (c.etcCost > 0 ? line('기타비용 <span class="nowrap">(이사·법무사)</span>', formatWon(c.etcCost)) : '');
+}
+
+/* 빌리는 돈 명세 — 여기도 부호가 전부 같아서 마이너스 기호를 쓰지 않습니다.
+   v21.27까지는 대출에 `-`를 붙여 나가는 돈 사이에 끼워 넣었는데, 그게 합을 못 따라가게 한
+   가장 큰 원인이었어요. 이제 부호는 그룹 이름이 말합니다. */
+function fundLines(c, ctxBase){
+  let out = line(loanTypeLabel(c.loanType), formatWon(c.mortgageLoan));
+  if(ctxBase.creditLoan > 0)      out += line('신용대출', formatWon(ctxBase.creditLoan));
+  if(ctxBase.companyLoan > 0)     out += line('회사 사내대출', formatWon(ctxBase.companyLoan));
+  if(ctxBase.sellerFinancing > 0) out += line('매도인 근저당(셀러파이낸싱)', formatWon(ctxBase.sellerFinancing));
+  return out;
 }
 
 function buildCtxBase(){
@@ -4071,23 +4155,9 @@ function calculate(silent){
     document.getElementById('resultAmount').textContent = formatWon(maxPrice);
     document.getElementById('resultSub').textContent = `조달자금 ${formatWon(c.totalFunding)} 포함, 보유자금 ${formatWon(cash)} 기준`;
 
-    let extraLines = '';
-    if(ctxBase.creditLoan > 0) extraLines += line('신용대출', '-' + formatWon(ctxBase.creditLoan), 'minus');
-    if(ctxBase.companyLoan > 0) extraLines += line('회사 사내대출', '-' + formatWon(ctxBase.companyLoan), 'minus');
-    if(ctxBase.sellerFinancing > 0) extraLines += line('매도인 근저당(셀러파이낸싱)', '-' + formatWon(ctxBase.sellerFinancing), 'minus');
-
-    const financeSubtotal = maxPrice + c.tax + c.brokerFee - c.mortgageLoan - ctxBase.extraFunding;
-    const executionSubtotal = c.interiorCost + c.etcCost;
-
-    document.getElementById('receiptLines').innerHTML =
-      `<div class="receipt-section-label finance">거래·대출</div>` +
-      line('매매가격', formatWon(maxPrice)) +
-      line('취득세(교육세·농특세 포함)', formatWon(c.tax)) +
-      line('중개보수 <span class="nowrap">(중개수수료·VAT 포함)</span>', formatWon(c.brokerFee)) +
-      (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
-      extraLines +
-      executionBlock(c, executionSubtotal, financeSubtotal) +
-      receiptTail(c.cashNeeded, cash);
+    document.getElementById('receiptLines').innerHTML = buildReceipt(
+      costLines(c, maxPrice), fundLines(c, ctxBase), c,
+      receiptTail(c.cashNeeded, cash));
 
 
     lastShareText = buildSummaryText({
@@ -4125,23 +4195,9 @@ function calculate(silent){
     document.getElementById('resultAmount').textContent = formatWon(c.cashNeeded);
     document.getElementById('resultSub').textContent = `총 소요금액 ${formatWon(c.totalNeeded)} 중 조달자금 ${formatWon(c.totalFunding)} 제외`;
 
-    let extraLines2 = '';
-    if(ctxBase.creditLoan > 0) extraLines2 += line('신용대출', '-' + formatWon(ctxBase.creditLoan), 'minus');
-    if(ctxBase.companyLoan > 0) extraLines2 += line('회사 사내대출', '-' + formatWon(ctxBase.companyLoan), 'minus');
-    if(ctxBase.sellerFinancing > 0) extraLines2 += line('매도인 근저당(셀러파이낸싱)', '-' + formatWon(ctxBase.sellerFinancing), 'minus');
-
-    const financeSubtotal2 = price + c.tax + c.brokerFee - c.mortgageLoan - ctxBase.extraFunding;
-    const executionSubtotal2 = c.interiorCost + c.etcCost;
-
-    document.getElementById('receiptLines').innerHTML =
-      `<div class="receipt-section-label finance">거래·대출</div>` +
-      line('매매가격', formatWon(price)) +
-      line('취득세(교육세·농특세 포함)', formatWon(c.tax)) +
-      line('중개보수 <span class="nowrap">(중개수수료·VAT 포함)</span>', formatWon(c.brokerFee)) +
-      (c.mortgageLoan > 0 ? line(loanTypeLabel(c.loanType), '-' + formatWon(c.mortgageLoan), 'loan') : line(loanTypeLabel(c.loanType), '0원')) +
-      extraLines2 +
-      executionBlock(c, executionSubtotal2, financeSubtotal2) +
-      line('내 돈(자기자본)', formatWon(c.cashNeeded), 'grand');
+    document.getElementById('receiptLines').innerHTML = buildReceipt(
+      costLines(c, price), fundLines(c, ctxBase), c,
+      line('내 돈(자기자본)', `<i class="rc-dot own"></i>${formatWon(c.cashNeeded)}`, 'grand'));
 
 
     lastShareText = buildSummaryText({
@@ -4460,6 +4516,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 function syncAllUI(){
   syncSegments();
   syncPyeong();
+  syncInteriorNote();
   syncIncomeEcho();
   toggleSeominField();
 }
@@ -4682,7 +4739,7 @@ const LAST_VERIFIED = '2026-08-05';
    파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
    "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
    ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
-const BUILD = 'v21.26';
+const BUILD = 'v21.28';
 const STALE_DAYS = 90;
 
 function renderBuildTag(){
