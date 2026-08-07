@@ -157,7 +157,14 @@ console.log('\n=== v19 ① 고급설정 위치 ===');
   const iEnd    = html.indexOf('<span>접기</span>');
   t('더 정확하게 토글이 CTA보다 위', iToggle > 0 && iCta > 0 && iToggle < iCta, iToggle + ' < ' + iCta);
   t('optionalSection 전체가 CTA보다 위', iEnd > 0 && iEnd < iCta, iEnd + ' < ' + iCta);
-  t('CTA 위 안내문에 더 정확하게 언급', html.indexOf('cta-lead') !== -1 && html.indexOf('"더 정확하게"</b>를 먼저 펼쳐') !== -1);
+  /* v21.24: 안내가 별도 상자(.cta-lead)에서 토글 버튼 안으로 들어갔습니다.
+     목적("계산 전에 더 정확하게를 펼쳐야 하는 경우를 알린다")은 그대로라 자리만 옮겨 잠급니다(원칙 48). */
+  t('계산 전에 「더 정확하게」를 펼쳐야 하는 경우를 안내한다',
+    html.indexOf('신용대출·사내대출이 있거나 인테리어 비용까지 보려면') !== -1);
+  t('안내가 토글 버튼 안에 들어가 있다 (별도 상자 없음)',
+    html.indexOf('class="st-lead"') !== -1 && html.indexOf('class="cta-lead"') === -1);
+  t('"위의"라는 지시어를 더 이상 쓰지 않는다 (원칙 57)',
+    html.indexOf('위의 <b style="white-space:nowrap;">"더 정확하게"</b>') === -1);
 })();
 
 console.log('\n=== v19 ② 금액 억/만원 2칸 ===');
@@ -955,7 +962,7 @@ console.log('\n=== v21.6 고급설정 총량 상한 (원칙 43) ===');
     return out;
   }
   const sec = html.slice(html.indexOf('<div id="optionalSection"'),
-                         html.indexOf('<div class="cta-lead">'));
+                         html.indexOf('<button type="button" class="cta"'));
   const noDetail = stripBalanced(sec, '<div class="hint-detail"');
   const blocks = noDetail.match(/<div class="hint"[^>]*>[\s\S]*?<\/div>/g) || [];
   const texts = blocks.map(b => b.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
@@ -1688,8 +1695,8 @@ console.log('\n=== v21.13-d 확인 결과 반영 ===');
     (html.match(/build-tag/g) || []).filter(x => true).length >= 3);
 
   // (2) 줄 끝에서 갈라지면 안 되는 문구
-  t('"더 정확하게"가 줄 끝에서 갈라지지 않는다',
-    /<b style="white-space:nowrap;">"더 정확하게"<\/b>/.test(html));
+  /* v21.24: 이 문구가 본문 안에 인용될 때 갈라지는 걸 막던 검사였는데, 안내가 버튼 안으로
+     들어가면서 인용 자체가 없어졌습니다. 갈라질 문장이 사라졌으므로 검사도 함께 내립니다. */
   t('중개보수 꼬리표가 줄 끝에서 갈라지지 않는다',
     /중개보수 <span class="nowrap">\(중개수수료·VAT 포함\)<\/span>/.test(html));
   t('nowrap 유틸이 정의돼 있다', /\.nowrap\{white-space:nowrap;\}/.test(html));
@@ -1938,8 +1945,10 @@ console.log('\n=== v21.15 첫 화면 안내 문구 (원칙 9) ===');
      v21.20에서 "빠지는 게 생겨요"가 목적어 없이 헐렁하다는 지적을 받아 문구가 바뀌었어요 —
      목적은 그대로("혼자 하면 놓친다"에서 시작), 표현만 구체화했습니다(원칙 48). */
   const hero = html.slice(html.indexOf('id="heroSection"'), html.indexOf('</div>\n</div>\n<div class="compact-header"'));
+  /* v21.24: "나머지"가 가리키는 대상이 문장 안에 없어서(원칙 57) 구체어로 바꿨습니다.
+     목적("혼자 하면 놓친다"에서 시작)은 그대로입니다(원칙 48). */
   t('첫 문장이 "혼자 하면 놓친다"에서 시작한다',
-    hero.indexOf('집값만 보면 나머지를 놓치기 쉬워요') !== -1);
+    hero.indexOf('집값 말고도 <b>나가는 돈</b>, 사기 전엔 잘 몰라요') !== -1);
   t('두 번째 줄이 결과로 받아친다', hero.indexOf('<b>진짜 드는 돈</b>') !== -1);
   const receiptSrc = html.slice(html.indexOf("`<div class=\"receipt-section-label finance\">거래·대출</div>`"),
                                 html.indexOf('lastShareText = buildSummaryText'));
@@ -2044,7 +2053,7 @@ console.log('\n=== v21.17 첫 화면 재검토 (와이프 피드백) ===');
   t('04 안에서 두 필드를 모두 찾음', iHouse !== -1 && iRegion !== -1);
   t('주택 보유 상황이 지역보다 먼저 나온다', iHouse < iRegion, `house=${iHouse} region=${iRegion}`);
   t('소제목 어순도 새 화면 순서와 맞다 (원칙 57)',
-    askSituation.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+    askSituation.indexOf('주택 보유 상황과 사려는 집의 지역') !== -1);
   /* ⚠ 서민·실수요자 우대 칸은 지역(regulated)과 주택보유상황 둘 다에 의존하므로,
      어느 쪽을 먼저 두든 마지막 필드 뒤에 그대로 남아있어야 합니다. */
   const iSeomin = askSituation.indexOf('id="seominField"');
@@ -2118,28 +2127,32 @@ console.log('\n=== v21.19 02 부제 간결화 · 04 소제목 어순 동기화 =
      JS가 노출/숨김 시 다시 쓰는 SITUATION_SUB는 안 고쳐서 화면엔 옛 순서가 다시 나왔어요.
      같은 값을 두 자리(정적 기본값 · JS 재작성)에서 보여줄 땐 둘 다 맞아야 합니다(원칙 58). */
   t('SITUATION_SUB.loan도 주택 보유 상황이 먼저다',
-    SITUATION_SUB.loan.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+    SITUATION_SUB.loan.indexOf('주택 보유 상황과 사려는 집의 지역') !== -1);
   t('SITUATION_SUB.noLoan도 주택 보유 상황이 먼저다',
-    SITUATION_SUB.noLoan.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+    SITUATION_SUB.noLoan.indexOf('주택 보유 상황과 사려는 집의 지역') !== -1);
   /* 실제 화면에 반영되는지까지 — 함수를 직접 호출해 DOM에 쓰인 값을 확인 */
   syncSituationSub(false);
   t('대출 있음 상태에서 실제 DOM에도 새 어순이 반영된다',
-    el('situationSub').innerHTML.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+    el('situationSub').innerHTML.indexOf('주택 보유 상황과 사려는 집의 지역') !== -1);
   syncSituationSub(true);
   t('대출 없음 상태에서도 새 어순이 반영된다',
-    el('situationSub').innerHTML.indexOf('<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>') !== -1);
+    el('situationSub').innerHTML.indexOf('주택 보유 상황과 사려는 집의 지역') !== -1);
 })();
 
 console.log('\n=== v21.20 히어로 부제 임팩트 · 01 카드 대칭 ===');
 (() => {
-  const hero20 = html.slice(html.indexOf('id="heroSection"'), html.indexOf('</div>\n</div>\n<div class="compact-header"'));
+  /* ⚠ v21.24: 주석을 안 걷어내서 이 블록의 검사 하나가 "주석 덕분에" 통과하고 있었습니다.
+     v21.21에서 지운 "세금부터 수수료까지"가 그 결정을 설명하는 주석에 남아 있었거든요.
+     원칙 66은 부정 검사만 위험하다고 적혀 있었는데, 긍정 검사도 똑같이 속습니다(원칙 78). */
+  const hero20 = html.slice(html.indexOf('id="heroSection"'), html.indexOf('</div>\n</div>\n<div class="compact-header"'))
+                     .replace(/<!--[\s\S]*?-->/g, '');
 
   /* (1) 부제 — 목적어 없이 헐렁했던 문제와, <br> 없이 화면 폭에 맡겨 줄바꿈이
      예측 불가능했던 문제를 함께 고칩니다. */
-  t('부제에 구체적인 목적어가 있다 ("나머지를", "세금부터 수수료까지")',
-    hero20.indexOf('나머지를 놓치기 쉬워요') !== -1 && hero20.indexOf('세금부터 수수료까지') !== -1);
+  t('부제에 지시대명사가 아니라 구체어가 있다 (원칙 57)',
+    hero20.indexOf('나가는 돈') !== -1 && hero20.indexOf('나머지를') === -1);
   t('줄바꿈 지점을 <br>으로 못박았다 (화면 폭에 맡기지 않음)',
-    /집값만 보면 나머지를 놓치기 쉬워요\.<br>/.test(hero20));
+    /사기 전엔 잘 몰라요\.<br>/.test(hero20));
   /* ⚠ h1의 <br>과 같은 방식이어야 일관됩니다(원칙 44) */
   t('h1도 같은 방식(<br>)으로 줄바꿈을 못박고 있다 (일관성 확인)',
     /<h1>나,<br>/.test(hero20));
@@ -2293,7 +2306,201 @@ console.log('\n=== v21.22 색 규칙(62) ===');
     && css.indexOf('.hero p b{color:var(--primary-bright);') !== -1);
 
   /* 판 번호 */
-  t('판 번호가 v21.22', BUILD === 'v21.22', BUILD);
+  t('판 번호가 v21.25', BUILD === 'v21.25', BUILD);
+})();
+
+/* ===================================================================
+   v21.23 — 여백 스케일 전수 검사 (원칙 34·45·74)
+   글자·행간·모서리는 전수 검사가 있었는데 여백만 없어서, :root 주석의 스케일 밖 값이
+   조용히 8곳까지 새어 들어와 있었습니다. 검사가 없는 스케일은 지켜지지 않습니다.
+
+   ⚠ 검사 대상은 "블록 사이의 세로 간격"뿐입니다 — margin-top · margin-bottom · gap.
+      요소 안쪽 padding은 글자 크기를 따라가는 값이라 제외합니다(뱃지의 2·3·5px 등).
+      4px 미만의 광학 정렬 보정(.checkrow input의 1px)도 간격이 아니라 제외합니다.
+   ⚠ 원칙 66: CSS 주석과 HTML 주석을 먼저 걷어냅니다. :root 주석 안에 예시로 적은
+      "margin-top:1px"이 그대로 검사에 잡히기 때문입니다.
+   =================================================================== */
+console.log('\n=== v21.23 여백 스케일 전수 검사(원칙 74) ===');
+(() => {
+  const GAP = [4, 6, 8, 10, 12, 14, 16, 20, 24];
+  const styleRaw = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1];
+  const cssNoCmt  = styleRaw.replace(/\/\*[\s\S]*?\*\//g, '');
+  const bodyNoCmt = html.slice(html.indexOf('</style>')).replace(/<!--[\s\S]*?-->/g, '');
+
+  t('주석을 실제로 걷어냈다',
+    cssNoCmt.indexOf('블록 사이의 세로 간격') === -1 && cssNoCmt.length > 1000);
+
+  const collect = (src, where) => {
+    const out = [];
+    const re = /(margin-top|margin-bottom|gap)\s*:\s*(-?\d+)px/g;
+    let m;
+    while ((m = re.exec(src))) {
+      const v = Math.abs(parseInt(m[2], 10));
+      if (v < 4) continue;                    // 광학 정렬 보정은 간격이 아님
+      if (GAP.indexOf(v) === -1) out.push(where + ' ' + m[0]);
+    }
+    return out;
+  };
+
+  const badCss  = collect(cssNoCmt,  '[CSS]');
+  const badBody = collect(bodyNoCmt, '[인라인]');
+
+  t('CSS의 세로 간격이 모두 스케일 안에 있다', badCss.length === 0, badCss.join(', '));
+  t('인라인 style의 세로 간격도 모두 스케일 안에 있다', badBody.length === 0, badBody.join(', '));
+
+  /* 스케일이 어디에 적용되는지 문서화돼 있어야, 다음 사람이 padding까지 고치려 들지 않습니다 */
+  t('스케일의 적용 대상이 :root에 적혀 있다',
+    styleRaw.indexOf('블록 사이의 세로 간격') !== -1
+    && styleRaw.indexOf('margin-top · margin-bottom · gap') !== -1);
+  t('제외 대상(안쪽 padding·광학 보정)도 함께 적혀 있다',
+    styleRaw.indexOf('요소 안쪽 padding') !== -1 && styleRaw.indexOf('광학 정렬 보정') !== -1);
+
+  /* 이번에 고친 8곳 — 되돌아가면 위 전수 검사가 잡지만, 자리를 알아보기 쉽게 남깁니다 */
+  const spot = (sel, decl) => {
+    const i = cssNoCmt.indexOf(sel);
+    return i !== -1 && cssNoCmt.slice(i, cssNoCmt.indexOf('}', i)).indexOf(decl) !== -1;
+  };
+  t('영수증 소계 위 간격 9 → 8', spot('.line-item.sub{', 'margin-top:8px'));
+  t('영수증 워터마크 위 간격 18 → 16', spot('.receipt-watermark{', 'margin-top:16px'));
+  t('푸터 위 간격 28 → 24', spot('footer{', 'margin-top:24px'));
+  t('입력 되울림(.echo) 위 간격 7 → 8', spot('.echo{', 'margin-top:8px'));
+  t('히어로 칩 간격 7 → 8, 위 간격 18 → 16',
+    cssNoCmt.indexOf('.hero-facts{display:flex;flex-direction:column;gap:8px;margin-top:16px;}') !== -1);
+  t('문의 박스 위 간격 18 → 16', spot('.duty-contact{', 'margin-top:16px'));
+  t('월세 영수증 라벨 위 간격 18 → 16',
+    html.indexOf('class="receipt-section-label" style="margin-top:16px;"') !== -1);
+  t('맞벌이 체크행 위 간격 26 → 24',
+    bodyNoCmt.indexOf('class="checkrow" style="margin-top:24px;"') !== -1);
+
+  /* 광학 보정은 그대로 살아있어야 합니다 — 스케일에 맞춘다고 지우면 정렬이 깨져요 */
+  t('체크박스 광학 보정(1px)은 그대로 남아있다',
+    cssNoCmt.indexOf('.checkrow input{width:19px;height:19px;margin-top:1px') !== -1);
+})();
+
+/* ===================================================================
+   v21.24 — 실사용 관찰에서 나온 다섯 건
+   ⚠ 원칙 66·78: HTML 주석을 걷어낸 뒤 검사합니다. 이번 판의 주석에는 옛 문구가
+      설명용으로 그대로 적혀 있어서, 안 걷어내면 긍정·부정 검사가 둘 다 속습니다.
+   =================================================================== */
+console.log('\n=== v21.24 문구·굵기·강조 ===');
+(() => {
+  const clean = html.replace(/<!--[\s\S]*?-->/g, '');
+  /* 표식은 HTML 주석 안에만 있는 문장이어야 합니다.
+     스크립트 블록의 주석은 이 replace로 안 지워지기 때문입니다. */
+  t('HTML 주석을 실제로 걷어냈다',
+    clean.length > 1000 && clean.indexOf('실사용에서 개인 소득만 넣는 일이 확인됐어요') === -1);
+
+  /* (1) 히어로 부제 — 지시대명사 제거 */
+  const hero = clean.slice(clean.indexOf('id="heroSection"'), clean.indexOf('<div class="compact-header"'));
+  t('부제 첫 줄이 구체어로 시작한다', hero.indexOf('집값 말고도 <b>나가는 돈</b>, 사기 전엔 잘 몰라요') !== -1);
+  t('"나머지"라는 지시어가 사라졌다', hero.indexOf('나머지를 놓치기') === -1);
+  t('둘째 줄은 그대로 유지 (v21.21의 결정을 안 되돌림)', hero.indexOf('<b>진짜 드는 돈</b>') !== -1);
+  t('굵기는 두 줄에 하나씩만', (hero.match(/<b>/g) || []).length === 2);
+
+  /* (2) 계산 버튼 아래 — 가정(설명)이 먼저, 판 번호(각주)가 뒤 */
+  const iNote = clean.indexOf('금리 연 5.4% · 30년 원리금균등');
+  const iTag  = clean.indexOf('class="cta-note build-tag"');
+  t('금리 가정 설명이 판 번호보다 위에 있다', iNote > 0 && iTag > 0 && iNote < iTag, iNote + ' < ' + iTag);
+  t('여백도 아래쪽으로 따라 옮겼다', clean.indexOf('class="cta-note build-tag" style="margin-top:8px;"') !== -1);
+  t('판 번호는 여전히 입력 화면에 보인다 (원칙 60)', iTag !== -1);
+
+  /* (3) 03 소득 — 부부 합산 인지 */
+  const ask3 = clean.slice(clean.indexOf('id="askIncome"'), clean.indexOf('id="askSituation"'));
+  /* v21.25: 제목이 아니라 입력칸 라벨로 옮겼습니다 — 목적("부부 합산이라고 알린다")은
+     그대로고 자리만 입력 동선 위로 내렸습니다(원칙 48·82). */
+  t('부부 합산이 입력칸 라벨에 적혀 있다', ask3.indexOf('(부부 합산 · 세전)') !== -1);
+  t('제목에서는 뺐다 (라벨과 같은 말을 두 자리에서 안 함)',
+    ask3.indexOf('연소득은 얼마인가요?</div>') !== -1);
+  t('굵기가 배우자 합산에 붙어 있다', ask3.indexOf('<b>배우자 소득까지 합산</b>') !== -1);
+  t('배우자 합산이 첫 문장으로 올라왔다',
+    ask3.indexOf('기혼이면') < ask3.indexOf('세금 떼기 전'));
+  t('용어(세전·DSR)에는 굵기를 안 준다 (원칙 77)',
+    ask3.indexOf('<b>세금 떼기 전(세전)</b>') === -1 && ask3.indexOf('<b>갚을 능력(DSR)</b>') === -1);
+  t('DSR 설명 자체는 남아있다', ask3.indexOf('갚을 능력(DSR)') !== -1);
+
+  /* (4) 04 — 아래 라벨을 반복하던 굵기 제거. 정적 HTML과 JS 양쪽(원칙 68) */
+  const ask4 = clean.slice(clean.indexOf('id="askSituation"'), clean.indexOf('id="askSituation"') + 6000);
+  t('04 소제목에 굵기가 없다', ask4.indexOf('<b>주택 보유 상황</b>') === -1);
+  t('SITUATION_SUB 두 값에도 굵기가 없다',
+    SITUATION_SUB.loan.indexOf('<b>') === -1 && SITUATION_SUB.noLoan.indexOf('<b>') === -1);
+  t('문장 자체는 그대로 남아있다',
+    SITUATION_SUB.loan.indexOf('대출한도를 가장 크게 좌우해요') !== -1
+    && SITUATION_SUB.noLoan.indexOf('취득세율을 정해요') !== -1);
+
+  /* 원칙 77 전수 — ask-sub의 굵기가 바로 아래 label을 그대로 반복하지 않는다 */
+  const subs = clean.match(/class="ask-sub"[^>]*>([\s\S]*?)<\/div>/g) || [];
+  const echoed = [];
+  subs.forEach(sub => {
+    (sub.match(/<b>(.*?)<\/b>/g) || []).forEach(b => {
+      const txt = b.replace(/<\/?b>/g, '');
+      if (clean.indexOf('<label>' + txt + '</label>') !== -1) echoed.push(txt);
+    });
+  });
+  t('굵은 문구가 아래 라벨을 그대로 반복하지 않는다 (원칙 77)', echoed.length === 0, echoed.join(', '));
+
+  /* (5) 「더 정확하게」 — 별도 안내 상자를 버튼 안으로 */
+  t('별도 안내 상자(.cta-lead)가 사라졌다',
+    clean.indexOf('class="cta-lead"') === -1 && html.indexOf('.cta-lead{') === -1);
+  t('안내문이 토글 버튼 안에 있다',
+    /class="section-toggle two-line"[\s\S]{0,400}class="st-lead"/.test(clean));
+  t('"위의"라는 지시어가 사라졌다 (원칙 57)', clean.indexOf('위의 <b') === -1);
+  t('두 줄 토글만 .two-line을 단다 (다른 접기 버튼은 한 줄 유지)',
+    (clean.match(/section-toggle two-line/g) || []).length === 1);
+  t('색이 아니라 크기로 위계를 만든다 (원칙 38 — 파랑 채움 안 씀)',
+    html.indexOf('.section-toggle.two-line{align-items:flex-start;padding:16px;}') !== -1);
+
+  /* (6) margin 단축표기도 세로 간격이다 — v21.23 검사의 구멍이었음 */
+  const cssNoCmt = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1].replace(/\/\*[\s\S]*?\*\//g, '');
+  const GAP = [4, 6, 8, 10, 12, 14, 16, 20, 24];
+  const badShort = [];
+  let m; const re = /margin\s*:\s*([^;}]+)/g;
+  while ((m = re.exec(cssNoCmt))) {
+    const parts = m[1].trim().split(/\s+/);
+    [0, 2].forEach(i => {                       // 단축표기의 1·3번째가 위·아래 간격
+      if (!parts[i]) return;
+      const px = /^(-?\d+)px$/.exec(parts[i]);
+      if (!px) return;
+      const v = Math.abs(parseInt(px[1], 10));
+      if (v >= 4 && GAP.indexOf(v) === -1) badShort.push(m[0].trim());
+    });
+  }
+  t('margin 단축표기의 위·아래 간격도 스케일 안이다', badShort.length === 0, badShort.join(' / '));
+})();
+
+/* ===================================================================
+   v21.25 — 조건을 입력 동선 위로 (원칙 82)
+   제목·부제는 입력칸 "위쪽 설명글"이라 눈이 건너뜁니다. 실사용에서 배우자 소득을
+   빠뜨린 것도 설명글을 놓쳐서였습니다. 라벨(입력 직전) · 되울림(입력 직후) 두 자리로 옮깁니다.
+   =================================================================== */
+console.log('\n=== v21.25 입력 동선 ===');
+(() => {
+  const clean = html.replace(/<!--[\s\S]*?-->/g, '');
+  const ask3 = clean.slice(clean.indexOf('id="askIncome"'), clean.indexOf('id="askSituation"'));
+
+  t('입력칸 바로 위에 라벨이 생겼다', /<label for="incomeEok">/.test(ask3));
+  t('라벨이 amount-row보다 먼저 온다',
+    ask3.indexOf('<label for="incomeEok">') < ask3.indexOf('class="amount-row"'));
+  t('라벨이 부부 합산과 세전을 둘 다 말한다',
+    /<label for="incomeEok">[\s\S]{0,120}부부 합산 · 세전/.test(ask3));
+  t('라벨이 입력칸과 연결돼 있다 (for ↔ id)',
+    ask3.indexOf('for="incomeEok"') !== -1 && ask3.indexOf('id="incomeEok"') !== -1);
+
+  /* 되울림 — 값을 넣은 직후 전제를 되읽어준다. 실제 함수를 호출해 확인 */
+  el('incomeEok').value = '1'; el('incomeMan').value = '0';
+  syncIncomeEcho();
+  const echoTxt = el('incomeEcho').textContent;
+  t('되울림이 부부 합산으로 시작한다', echoTxt.indexOf('부부 합산 세전 월 약') === 0, echoTxt);
+  t('되울림의 기존 정보(DSR 상환한도)는 그대로다', echoTxt.indexOf('DSR 40% 기준 연 상환한도') !== -1);
+  el('incomeEok').value = ''; el('incomeMan').value = '';
+  syncIncomeEcho();
+  t('값이 없으면 되울림도 비어 있다 (원칙 42)', el('incomeEcho').textContent === '');
+
+  /* 세 자리가 서로 다른 말을 한다 — 같은 말을 두 번 하지 않는다(원칙 43) */
+  t('제목은 조건을 말하지 않는다', ask3.indexOf('연소득은 얼마인가요?</div>') !== -1);
+  t('부제는 "왜"를, 라벨은 "무엇을"을 맡는다',
+    ask3.indexOf('<b>배우자 소득까지 합산</b>') !== -1 && ask3.indexOf('(부부 합산 · 세전)') !== -1);
+  t('"부부 합산"이 같은 화면에 두 번까지만 나온다 (라벨 · 되울림)',
+    (ask3.match(/부부 합산/g) || []).length === 1);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
