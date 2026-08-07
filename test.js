@@ -2230,7 +2230,7 @@ console.log('\n=== v21.22 색 규칙(62) ===');
   const styleRaw = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1];
   const css = styleRaw.replace(/\/\*[\s\S]*?\*\//g, '');   // ← 원칙 66
   t('CSS 블록을 찾았고 주석을 걷어냈다',
-    css.length > 1000 && css.indexOf('파랑 사용 규칙') === -1);
+    css.length > 1000 && css.indexOf('색 사용 규칙') === -1);
 
   /* 규칙 ②③ — 연파랑 채움을 쓰는 자리를 전수로 센다 */
   const softFill = (css.match(/background:var\(--primary-soft\)/g) || []).length;
@@ -2249,11 +2249,23 @@ console.log('\n=== v21.22 색 규칙(62) ===');
     has('.chip.active{', 'background:var(--primary-soft)') && !has('.chip.active{', 'color:#fff'));
   t('값 강조는 영수증 대출 행 하나뿐', has('.line-item.loan{', 'background:var(--primary-soft)'));
 
-  /* 규칙 ① — 진한 파랑 채움은 "다음으로 넘어가는 버튼" + 진행 막대만 */
+  /* v21.26(84) — 규칙 ① 개정.
+     v21.22는 진한 파랑 채움을 "다음으로 넘어가는 버튼"에 남겼는데, 화면을 보니
+     메인 CTA(.cta)는 검정이었고 파랑은 「처음부터」(초기화)에 붙어 있었어요.
+     규칙이 가리키던 자리와 실제 자리가 달랐습니다. 실행은 --ink 채움으로 통일합니다.
+     ⚠ 이 검사는 "파랑이 세 자리"라는 *표현*이 아니라
+        "파랑을 진하게 채우지 않는다"는 *목적*을 잠급니다(원칙 48). */
   const hardFill = (css.match(/background:var\(--primary\)/g) || []).length;
-  t('진한 파랑 채움은 세 자리뿐 (계산 버튼·다음 버튼·진행 막대)', hardFill === 3, '실제 ' + hardFill);
-  t('계산 버튼은 진한 파랑 유지', has('button.calc-btn{', 'background:var(--primary)'));
-  t('다음 버튼도 진한 파랑 유지', has('.step-nav .btn-next{', 'background:var(--primary)'));
+  t('진한 파랑 채움은 한 자리도 없다 (규칙 ① 개정)', hardFill === 0, '실제 ' + hardFill);
+  t('실행 버튼은 --ink 채움', has('button.calc-btn{', 'background:var(--ink)'));
+  t('메인 CTA도 --ink 채움', has('.cta{', 'background:var(--ink)'));
+  t('「처음부터」는 채우지 않는다 (되돌리기는 강조 대상이 아님)',
+    has('.step-nav .btn-next{', 'background:var(--surface)')
+    && !has('.step-nav .btn-next{', 'var(--primary)'));
+  t('결과 화면의 메인 행동은 「입력 수정」', has('.step-nav .btn-back{', 'background:var(--ink)'));
+  t('약한 것이 왼쪽, 강한 것이 오른쪽',
+    html.indexOf('class="btn-next" onclick="resetAll()"') <
+    html.indexOf('class="btn-back" onclick="goToStep(1)"'));
 
   /* 규칙 — 펼치기·접기·실행 버튼은 채우지 않는다 */
   [['.hint-toggle{', '펼치기 알약'],
@@ -2280,7 +2292,7 @@ console.log('\n=== v21.22 색 규칙(62) ===');
    ['.funding-ratio{', '자금 비율']].forEach(([sel, name]) => {
     t('뱃지는 회색: ' + name, has(sel, 'background:var(--fill)'));
   });
-  t('자금 비율은 위험할 때만 색이 켜진다', has('.funding-ratio.hot{', 'background:#FFE9EB'));
+  t('자금 비율은 위험할 때만 색이 켜진다', has('.funding-ratio.hot{', 'background:var(--judge-danger-bg)'));
 
   /* 규칙 — 컨테이너는 파랑으로 감싸지 않는다 */
   t('문의 박스는 회색 컨테이너', has('.duty-contact{', 'background:var(--fill)'));
@@ -2306,7 +2318,7 @@ console.log('\n=== v21.22 색 규칙(62) ===');
     && css.indexOf('.hero p b{color:var(--primary-bright);') !== -1);
 
   /* 판 번호 */
-  t('판 번호가 v21.25', BUILD === 'v21.25', BUILD);
+  t('판 번호가 v21.26', BUILD === 'v21.26', BUILD);
 })();
 
 /* ===================================================================
@@ -2501,6 +2513,141 @@ console.log('\n=== v21.25 입력 동선 ===');
     ask3.indexOf('<b>배우자 소득까지 합산</b>') !== -1 && ask3.indexOf('(부부 합산 · 세전)') !== -1);
   t('"부부 합산"이 같은 화면에 두 번까지만 나온다 (라벨 · 되울림)',
     (ask3.match(/부부 합산/g) || []).length === 1);
+})();
+
+/* ===================================================================
+   v21.26 — 색 채널 (원칙 84)
+
+   62(v21.22)는 --primary-soft라는 **토큰 하나**만 셌습니다. 같은 #0091FF를
+   가리키는 다른 이름 셋(--loan · --ok · --finance)은 셈에 안 들어갔고,
+   그래서 판정 4단 한가운데에 브랜드 파랑이 남아 있었어요.
+
+   이제 세 채널로 나눠 세고, **토큰이 아니라 색값**을 기준으로 잠급니다.
+   ⚠ 주석 제거가 선행돼야 합니다(원칙 66·78) — :root 주석에 규칙을 적어뒀어요.
+   =================================================================== */
+console.log('\n=== v21.26 색 채널(84) ===');
+(() => {
+  const styleRaw = (html.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1];
+  const css = styleRaw.replace(/\/\*[\s\S]*?\*\//g, '');
+  t('주석을 실제로 걷어냈다', css.indexOf('채널 A. 조작') === -1 && css.length > 1000);
+
+  /* ---- (1) 폐기한 토큰이 되살아나지 않는가 (전수) ---- */
+  const retired = ['--own','--loan','--extra','--safe','--ok','--warn',
+                   '--danger2','--success','--finance','--finance-soft'];
+  const alive = retired.filter(n =>
+    new RegExp('var\\(' + n + '\\)').test(css) ||
+    new RegExp(n + '\\s*:').test(css));
+  t('채널을 안 밝힌 옛 토큰이 하나도 없다', alive.length === 0, alive.join(', '));
+
+  /* ---- (2) 같은 색값을 두 토큰이 나눠 갖지 않는가 ----
+     62가 놓친 뿌리가 바로 이것입니다. 이름만 세면 다시 놓쳐요(원칙 71·84). */
+  const root = css.slice(css.indexOf(':root{'), css.indexOf('*{box-sizing'));
+  const byHex = {};
+  (root.match(/--[a-z0-9-]+:\s*#[0-9A-Fa-f]{6}/g) || []).forEach(d => {
+    const [name, hex] = d.split(/:\s*/);
+    (byHex[hex.toUpperCase()] = byHex[hex.toUpperCase()] || []).push(name);
+  });
+  const shared = Object.keys(byHex).filter(k => byHex[k].length > 1);
+  t('리터럴 색값을 두 토큰이 나눠 갖지 않는다',
+    shared.length === 0, shared.map(k => k + '→' + byHex[k].join('+')).join(' | '));
+
+  /* ---- (3) 채널 B 판정 4단 — 파랑이 끼면 안 된다 ---- */
+  const judge = {};
+  ['safe','ok','warn','danger'].forEach(k => {
+    const m = root.match(new RegExp('--judge-' + k + ':\\s*([^;]+);'));
+    judge[k] = m ? m[1].trim() : null;
+  });
+  t('판정 4단이 모두 정의돼 있다', Object.values(judge).every(Boolean), JSON.stringify(judge));
+  t('판정색에 브랜드 파랑이 없다 (v21.26 전에는 --ok가 #0091FF였어요)',
+    !Object.values(judge).some(v => /#0091FF/i.test(v) || /--primary\b/.test(v)),
+    JSON.stringify(judge));
+  t('판정 "양호"가 금색 계열이다', /#C79100/i.test(judge.ok || ''), judge.ok);
+  t('판정 4단을 쓰는 자리는 카드 2종뿐 (.burden-card / .safety-card)',
+    ['burden','safety'].every(c =>
+      ['safe','ok','warn','danger'].every(k =>
+        css.indexOf('.' + c + '-card.' + k + '{border-left-color:var(--judge-' + k + ')') !== -1)));
+  t('판정 전에는 색이 켜져 있지 않다 (원칙 63)',
+    /\.burden-card\{[^}]*border-left:4px solid var\(--border\)/.test(css)
+    && /\.safety-card\{[^}]*border-left:4px solid var\(--border\)/.test(css));
+
+  /* ---- (4) 채널 C 구성 그래프 — 채널 A·B의 색을 쓰지 않는다 ---- */
+  const fundSegs = ['own','loan','extra','mine','left','prior'];
+  const bad = fundSegs.filter(s => {
+    const m = css.match(new RegExp('\\.seg-' + s + '\\{background:var\\((--[a-z0-9-]+)\\)'));
+    return !m || !/^--fund-/.test(m[1]);
+  });
+  t('구성 그래프 6종이 모두 --fund-* 를 쓴다', bad.length === 0, bad.join(', '));
+  t('진할수록 내 것 — 내 돈·내 보증금이 --fund-1',
+    css.indexOf('.seg-own{background:var(--fund-1)') !== -1
+    && css.indexOf('.seg-mine{background:var(--fund-1)') !== -1);
+  t('연할수록 부수적 — 추가 자금원·남는 여유가 --fund-3',
+    css.indexOf('.seg-extra{background:var(--fund-3)') !== -1
+    && css.indexOf('.seg-left{background:var(--fund-3)') !== -1);
+  t('보라(#8B5CF6)가 사라졌다', css.indexOf('8B5CF6') === -1);
+
+  /* ---- (5) 원칙 10 개정 — 결론은 하나, 다만 "채움"이 아니라 "가장 강조된 줄" ---- */
+  t('영수증 결론 행은 채움이 아니라 테두리다',
+    /\.line-item\.grand\{[^}]*background:transparent/.test(css)
+    && /\.line-item\.grand\{[^}]*border:2px solid var\(--ink\)/.test(css));
+  t('결론 행 값은 여전히 영수증에서 가장 큰 숫자다',
+    /#receiptLines \.line-item\.grand \.v\{font-size:22px;\}/.test(css));
+  t('전월세 요약 상자도 같은 규칙 (검정 채움 아님)',
+    /\.rent-summary\{[^}]*background:var\(--surface\)/.test(css)
+    && /\.rent-summary\{[^}]*border:2px solid var\(--ink\)/.test(css));
+  t('요약 상자 안에서는 결론 행이 테두리를 다시 그리지 않는다',
+    /\.rent-summary \.line-item\{[^}]*border:none/.test(css));
+
+  /* ---- (6) --ink 채움은 "행동 버튼"과 "결론 카드"에만 ---- */
+  const inkFill = (css.match(/background:var\(--ink\)/g) || []).length;
+  t('--ink 진한 채움은 정확히 네 자리 (.cta · .calc-btn · .btn-back · .ask-num)',
+    inkFill === 4, '실제 ' + inkFill);
+  t('그 네 자리가 무엇인지 못박는다',
+    /\.cta\{[^}]*background:var\(--ink\)/.test(css)
+    && /button\.calc-btn\{[^}]*background:var\(--ink\)/.test(css)
+    && /\.step-nav \.btn-back\{[^}]*background:var\(--ink\)/.test(css)
+    && /\.ask-num\{[^}]*background:var\(--ink\)/.test(css));
+  t('실행 버튼의 --ink는 인라인으로 다시 적지 않는다 (원칙 58)',
+    html.indexOf('class="calc-btn" style="background:var(--ink)') === -1);
+
+  /* ---- (6-b) 판정의 보조 톤도 토큰이다 (원칙 73) ----
+     같은 뜻인데 값이 흩어져 있으면, 하나만 고치고 나머지를 놓칩니다.
+     v21.26 전에는 경고 글자색이 4곳, 위험 배경이 세 값으로 흩어져 있었어요. */
+  const strayHex = (css.slice(css.indexOf('*{box-sizing')).match(/#[0-9A-Fa-f]{6}/g) || []);
+  const judgeStray = strayHex.filter(x => /^#(9A5B0A|FFF2E3|FFF6E8|FFFCF5|FDEBEC|FFE9EB|FFF8F8|E9FBF3|8FD0FF)$/i.test(x));
+  t('판정 보조 톤이 토큰 밖에 흩어져 있지 않다', judgeStray.length === 0, judgeStray.join(', '));
+  t('보조 톤 토큰 4종이 정의돼 있다',
+    ['--judge-warn-ink','--judge-safe-bg','--judge-warn-bg','--judge-danger-bg']
+      .every(n => new RegExp(n + ':\\s*#').test(css)));
+  t('어두운 배경 위 강조 글자는 --primary-bright 하나뿐 (원칙 73)',
+    css.slice(css.indexOf('*{box-sizing')).indexOf('#7CC4FF') === -1
+    && /\.diag-why b\{color:var\(--primary-bright\)/.test(css));
+
+  /* ---- (7) 뱃지는 전부 회색 ---- */
+  t('경고 뱃지도 회색으로 내려왔다',
+    /\.tag-warn\{[^}]*background:var\(--fill\)/.test(css)
+    && /\.tag-warn\{[^}]*color:var\(--ink-soft\)/.test(css));
+
+  /* ---- (8) 붉은색은 판정에만 — 권유는 회색 ---- */
+  t('권유용 .info-note가 있다', /\.info-note\{[^}]*background:var\(--fill\)/.test(css));
+  t('"체크하면 반영해드려요"는 붉은 상자가 아니다',
+    html.indexOf('<div class="info-note">ℹ️ <b>무주택 세대주</b>에 체크하고') !== -1);
+
+  /* ---- (9) 죽은 진행 막대가 정말 사라졌는가 (원칙 37) ---- */
+  t('진행 막대 마크업이 없다', html.indexOf('id="progressDots"') === -1);
+  t('진행 막대 CSS도 같이 지웠다', css.indexOf('.progress .dot') === -1);
+  t('호출부는 살아 있다 (goToStep이 깨지지 않게)', html.indexOf('renderProgress()') !== -1);
+
+  /* ---- (10) 원칙 82를 두 탭에 적용했는가 ---- */
+  const rentAsk = html.slice(html.indexOf('id="rentIncome"') - 400, html.indexOf('id="rentIncome"') + 200);
+  t('전월세 연소득도 라벨이 조건을 말한다 (원칙 82)',
+    /<label for="rentIncome">[\s\S]{0,140}부부 합산 · 세전/.test(rentAsk));
+  t('두 탭의 소득 라벨이 같은 형태다 (원칙 58)',
+    (html.match(/\(부부 합산 · 세전\)<\/span>/g) || []).length === 2);
+  t('전월세 부제에서 같은 말을 반복하지 않는다 (원칙 43)',
+    html.indexOf('판정에 쓰이는 <b>부부합산</b> 기준으로 넣어주세요') === -1);
+
+  /* ---- (11) 판 번호 ---- */
+  t('판 번호가 v21.26 (색 채널)', BUILD === 'v21.26', BUILD);
 })();
 
 console.log('\n\uacb0\uacfc: ' + pass + ' 통과 / ' + fail + ' 실패\n');
