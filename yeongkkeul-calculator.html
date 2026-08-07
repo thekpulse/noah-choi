@@ -112,7 +112,6 @@ window.GA_ID = 'G-NVTLEPG53G';
     /* 판정의 보조 톤 — 흰 배경 위 글자용 진한 톤과, 카드·상자용 옅은 배경.
        v21.26 전에는 #9A5B0A가 4곳, 위험 배경이 #FDEBEC·#FFE9EB·#FFF8F8 세 값으로
        흩어져 있었어요. 같은 뜻이면 값도 하나입니다(원칙 73). */
-    --judge-warn-ink:#9A5B0A;
     --judge-safe-bg:#E9FBF3;
     --judge-warn-bg:#FFF6E8;
     --judge-danger-bg:#FDEBEC;
@@ -880,10 +879,17 @@ window.GA_ID = 'G-NVTLEPG53G';
     background:linear-gradient(160deg,var(--ink-deep),#1C2838);
     color:#fff;border-radius:var(--radius);padding:20px;margin-bottom:14px;
   }
+  /* v21.29: 경고용 진단 카드는 갈색 그라디언트였어요. 어두운 면은 하나로 두고,
+     주황 상단 바와 주황 태그로만 갈래를 표시합니다. 판정은 면적이 아니라
+     테두리·라벨로 말합니다(원칙 38·63). */
+  .diag-card.warn{border-top:4px solid var(--judge-warn);}
   .diag-tag{
     font-size:12px;font-weight:700;letter-spacing:.02em;
     color:rgba(255,255,255,.55);margin-bottom:6px;
   }
+  .diag-card.warn .diag-tag{color:var(--judge-warn);}
+  /* 어두운 카드 안에 놓이는 버튼 — 흰 면에 검정 글자 */
+  .calc-btn.on-dark{background:#fff;color:var(--ink);}
   .diag-title{font-size:19px;font-weight:800;margin-bottom:8px;}
   .diag-why{font-size:14px;line-height:1.65;color:rgba(255,255,255,.8);margin-bottom:16px;}
   .diag-why b{color:var(--primary-bright);}
@@ -937,7 +943,7 @@ window.GA_ID = 'G-NVTLEPG53G';
      간격은 .what-if의 margin-top이 만듭니다. */
   #diagMore .diag-why{margin-bottom:0;}
 
-  /* ===== 상환부담 신호등 ===== */
+  /* ===== 상환 카드 (월 상환액 + 부담 판정) ===== */
   .burden-card{
     background:var(--surface);border:1px solid var(--border);
     border-left:4px solid var(--border);
@@ -949,12 +955,17 @@ window.GA_ID = 'G-NVTLEPG53G';
   .burden-card.danger{border-left-color:var(--judge-danger);background:var(--judge-danger-bg);}
   .burden-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
   .burden-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
-  .burden-pct{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-size:26px;font-weight:700;letter-spacing:-0.02em;}
+  /* v21.29: 이 카드의 큰 숫자는 **금액**입니다. 예전에는 비율이 26px 판정색이었는데,
+     사람이 먼저 찾는 값은 "매달 얼마"예요. 비율은 게이지가 이미 그리고 있어서
+     숫자까지 크게 할 이유가 없습니다(원칙 10 — 한 갈래에 강조 하나). */
+  .burden-amt{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--ink);}
+  .burden-ratio{font-size:13px;color:var(--ink-soft);margin-bottom:10px;}
+  .burden-pct{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-weight:800;}
   .burden-card.safe .burden-pct{color:var(--judge-safe);}
   .burden-card.ok .burden-pct{color:var(--judge-ok);}
   .burden-card.warn .burden-pct{color:var(--judge-warn);}
   .burden-card.danger .burden-pct{color:var(--judge-danger);}
-  .burden-gauge{height:7px;border-radius:6px;background:var(--fill);overflow:hidden;margin-bottom:12px;}
+  .burden-gauge{height:7px;border-radius:6px;background:var(--fill);overflow:hidden;margin-bottom:8px;}
   .burden-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.22,1,.36,1);}
   .burden-card.safe .burden-fill{background:var(--judge-safe);}
   .burden-card.ok .burden-fill{background:var(--judge-ok);}
@@ -1012,19 +1023,24 @@ window.GA_ID = 'G-NVTLEPG53G';
   .cta:active{transform:scale(.985);}
   .cta-note{font-size:12px;color:var(--ink-faint);text-align:center;line-height:1.65;margin-bottom:24px;}
   /* 선택 섹션 토글과 CTA가 붙어 보인다는 지적이 있어서 사이에 안내문과 여백을 뒀어요(원칙 22는 유지). */
+  /* v21.29: 갈색 글자(#7A4A10·#5C3608)와 갈색 배경(#FFF4E5·#F0C68A)을 걷어냅니다.
+     경고는 **면과 바**가 말하고, 글자는 --ink로 둡니다. 갈색 글자는 흰 배경에서
+     대비가 5:1 언저리라 눈에 잘 들어오지 않았어요(실사용 지적 2026.08.07).
+     같은 규칙을 .zone-badge.reg / .report-hero.warn-box / .diag-card.warn에도 씁니다. */
   .stale-banner{
     margin:16px 0 4px;padding:12px 14px;border-radius:10px;
-    background:#FFF4E5;border:1px solid #F0C68A;
-    font-size:13px;line-height:1.65;color:#7A4A10;
+    background:var(--judge-warn-bg);border:1px solid var(--border);
+    border-left:4px solid var(--judge-warn);
+    font-size:13px;line-height:1.65;color:var(--ink);
   }
-  .stale-banner b{color:#5C3608;}
+  .stale-banner b{font-weight:800;}
   .zone-badge{
     margin-top:8px;padding:10px 13px;border-radius:10px;
     background:var(--fill);font-size:13px;line-height:1.65;color:var(--ink-soft);
   }
   .zone-badge b{color:var(--ink);}
-  .zone-badge.reg{background:#FFF1EC;color:#8C3A1E;}
-  .zone-badge.reg b{color:#7A2E14;}
+  .zone-badge.reg{background:var(--judge-warn-bg);color:var(--ink);border-left:4px solid var(--judge-warn);}
+  .zone-badge.reg b{color:var(--ink);font-weight:800;}
   /* v21.24: .cta-lead(별도 안내 상자)를 없애고 .section-toggle 안으로 넣었어요.
      두 줄이 되는 토글만 .two-line을 답니다 — 다른 접기 버튼은 한 줄 그대로입니다. */
   .section-toggle.two-line{align-items:flex-start;padding:16px;}
@@ -1089,12 +1105,31 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-size:31px;font-weight:800;letter-spacing:-0.03em;line-height:1.2;
     font-variant-numeric:tabular-nums;margin-bottom:8px;
   }
+  /* v21.30: 답 바로 아래 한 줄 — "무엇이 이 숫자를 정했나".
+     정확한 이름(DSR·LTV·방공제)은 첫 화면에 쓰지 않습니다(G-3). 펼치면 나와요. */
+  .hero-binding{
+    display:inline-block;margin-top:14px;padding:6px 12px;border-radius:20px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+    font-size:13px;color:rgba(255,255,255,.92);line-height:1.55;
+  }
+  .hero-binding:empty{display:none;}
+  /* 「자세히 보기」 — 강조하지 않습니다. 회색 테두리 + 파란 글자(채널 A의 그 밖). */
+  .result-more{
+    width:100%;margin:0 0 14px;padding:14px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    font-family:inherit;font-size:15px;font-weight:700;color:var(--primary-dark);cursor:pointer;
+  }
+  .result-more .chevron{transition:transform .2s ease;font-size:12px;}
+  .result-more.open .chevron{transform:rotate(180deg);}
   .report-hero .sub{font-size:13px;color:rgba(255,255,255,.62);line-height:1.65;}
   .report-cond{
     margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);
     font-size:11px;color:rgba(255,255,255,.45);line-height:1.65;
   }
-  .report-hero.warn-box{background:linear-gradient(165deg,#5C2E0D,#7A3E12);}
+  /* v21.29: 갈색 그라디언트를 지우고 어두운 면 하나로 통일합니다.
+     '경고'는 배경색이 아니라 라벨 색과 문장이 말해요(원칙 38 — 위계는 색이 마지막). */
+  .report-hero.warn-box .label{color:var(--judge-warn);}
   .report-hero.warn-box .amount{font-size:22px;}
 
   .report .funding-box, .report .burden-card{
@@ -1104,19 +1139,6 @@ window.GA_ID = 'G-NVTLEPG53G';
   .report .burden-card{border-left:none;border-top:none;}
   .report .burden-card.danger{background:var(--judge-danger-bg);}
 
-  /* 2×2 지표 칸.
-     v21.15: 이 카드 안의 항목 라벨은 .report-hero .label · .funding-head · .burden-label이
-     모두 13px/700인데 .rg-k만 12px/600이라 혼자 튀었어요. 규격을 맞춥니다(원칙 34·38).
-     값은 영수증의 강조 행(.line-item.total .v / .loan .v)과 같은 17px/800입니다.
-     ⚠ 좌우 여백 20 → 16px: '10억 4,628만원'처럼 긴 값이 두 줄로 접히던 걸 줄입니다.
-     ⚠ grid-auto-rows:1fr — 그래도 접히는 값이 있으면 네 칸 높이가 전부 같아지도록 맞춥니다.
-        접힌 칸만 커져서 위아래 줄 높이가 달라 보이던 문제예요. */
-  .report-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;border-bottom:1px solid var(--border);}
-  .rg-cell{padding:16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
-  .rg-cell:nth-child(2n){border-right:none;}
-  .rg-cell:nth-child(n+3){border-bottom:none;}
-  .rg-k{font-size:13px;font-weight:700;line-height:1.35;color:var(--ink-faint);margin-bottom:6px;}
-  .rg-v{font-size:17px;font-weight:800;line-height:1.35;color:var(--ink);font-variant-numeric:tabular-nums;}
 
   .report .receipt{border:none;border-radius:0;margin:0;box-shadow:none;}
   .report-foot{
@@ -1243,7 +1265,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   .duty-item:last-child{border-bottom:none;}
   .duty-tag{
     flex:0 0 auto;align-self:flex-start;
-    padding:4px 9px;border-radius:8px;background:var(--judge-warn-bg);color:var(--judge-warn-ink);
+    padding:4px 9px;border-radius:8px;background:var(--judge-warn-bg);color:var(--ink);
     font-size:11px;font-weight:800;white-space:nowrap;
   }
   .duty-body{flex:1;min-width:0;}
@@ -1292,7 +1314,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     padding:10px 12px;margin-top:10px;
   }
   .sise-note.info{background:var(--surface);color:var(--ink-soft);}
-  .sise-note.warn{background:var(--judge-warn-bg);color:var(--judge-warn-ink);}
+  .sise-note.warn{background:var(--judge-warn-bg);color:var(--ink);border-left:4px solid var(--judge-warn);}
   .sise-note.err{background:var(--judge-danger-bg);color:var(--danger);}
   .sise-note.ok{background:var(--judge-safe-bg);color:#0B7A4B;}
   .sise-note b{font-weight:800;}
@@ -1330,8 +1352,8 @@ window.GA_ID = 'G-NVTLEPG53G';
     margin-top:8px;font-size:12px;line-height:1.65;color:var(--ink-soft);font-weight:600;
   }
 
-  .src-table td.unverified{color:var(--judge-warn-ink);}
-  .src-table td.unverified b{color:var(--judge-warn-ink);}
+  .src-table td.unverified{color:var(--ink);background:var(--judge-warn-bg);}
+  .src-table td.unverified b{color:var(--ink);font-weight:800;}
 
   .segmented.four .seg-btn{padding:12px 6px;text-align:center;}
   .segmented.four .seg-btn b{font-size:13px;}
@@ -1831,17 +1853,23 @@ window.GA_ID = 'G-NVTLEPG53G';
           <div class="label" id="resultLabel">최대 구매 가능 매매가</div>
           <div class="amount" id="resultAmount">0원</div>
           <div class="sub" id="resultSub"></div>
-          <div class="report-cond" id="reportCond"></div>
+          <!-- 한도가 무엇에 걸렸는지 한 줄로. 정확한 이름(DSR·LTV)은 펼친 뒤에 나옵니다(1층 D). -->
+          <div class="hero-binding" id="resultBinding"></div>
         </div>
 
-        <div id="fundingBarBox"></div>
-        <div id="burdenBox"></div>
+        <!-- v21.30: 기본은 「접힘」입니다(1층 A).
+             첫 화면에 남는 건 답 한 줄과 그 답이 무엇에 걸렸는지 한 줄뿐이에요.
+             나머지는 전부 이 안에 있습니다 — 지우는 게 아니라 접는 것입니다(0번 경계선).
+             ⚠ 이미지 저장 때는 강제로 펼쳤다가 원래대로 되돌립니다. -->
+        <div class="optional-section" id="resultDetail">
+          <div class="report-cond" id="reportCond"></div>
+          <div id="fundingBarBox"></div>
+          <div id="burdenBox"></div>
 
-        <div class="report-grid" id="reportGrid"></div>
-
-        <div class="receipt">
-          <div class="receipt-title">돈이 어디로 가는지</div>
-          <div id="receiptLines"></div>
+          <div class="receipt">
+            <div class="receipt-title">돈이 어디로 가는지</div>
+            <div id="receiptLines"></div>
+          </div>
         </div>
 
         <div class="report-foot">
@@ -1849,6 +1877,10 @@ window.GA_ID = 'G-NVTLEPG53G';
           <span class="report-by">made by 노아초이</span>
         </div>
       </div>
+
+      <button type="button" class="result-more" id="resultMoreToggle" onclick="toggleResultDetail(this)">
+        <span>자세히 보기</span><span class="chevron">▾</span>
+      </button>
 
       <div id="babyRateHint"></div>
       <div id="fallbackNote"></div>
@@ -1863,8 +1895,11 @@ window.GA_ID = 'G-NVTLEPG53G';
       </div>
       <button class="calc-btn ghost" style="margin-bottom:20px;" onclick="copySummaryText()" id="copyTextBtn">📋 요약 텍스트 복사</button>
 
-      <div id="bindingDiagnosis"></div>
-
+      <!-- v21.30: 「대출받은 뒤 지켜야 할 것」도 접기 안입니다.
+           중요하지 않아서가 아니라, 첫 화면이 답해야 하는 두 질문
+           (얼마짜리 집 / 돈이 얼마나)에 직접 답하지 않기 때문이에요(4층 관문 1). -->
+      <div class="optional-section" id="resultDetail2">
+        <div id="bindingDiagnosis"></div>
       <div class="card duty-card" id="dutyCard" style="display:none;">
         <h2>대출받은 뒤에 지켜야 할 것</h2>
         <div class="hint" style="margin-bottom:16px;">정책대출은 실행 후에도 지켜야 할 의무가 있어요. 어기면 <b>기한이익이 상실돼 대출금을 한꺼번에 갚아야 할 수 있어요.</b> 한도만큼이나 중요한 부분이라 따로 정리했어요.</div>
@@ -1875,6 +1910,7 @@ window.GA_ID = 'G-NVTLEPG53G';
           <div class="duty-contact-row"><span>자산심사 상담</span><b>자산심사 상담센터 1551-3119</b></div>
           <div class="duty-contact-row"><span>신청·조회</span><b>기금e든든 / 기금 수탁은행 지점</b></div>
         </div>
+      </div>
       </div>
 
       <!-- 곁가지 카드는 제목 줄만 남기고 접습니다. 결과를 확인하는 데 꼭 필요한 건
@@ -3616,15 +3652,18 @@ function syncIncomeEcho(){
 }
 
 /* ===== 결과 인사이트: 병목 진단 · 자금구성 · 상환부담 ===== */
+/* plain — **첫 화면**에 쓰는 한 줄입니다. 정확한 이름(DSR·LTV·구간한도)은
+   title·why에 그대로 두고, 펼친 뒤에 보여줘요(1층 D · G-3 금지어).
+   ⚠ plain을 고칠 땐 G-3 금지어가 섞이지 않았는지 확인하세요 — test.js가 셉니다. */
 const BINDING_COPY = {
-  'LTV':      {title:'집값 대비 대출비율(LTV)', why:'지역과 주택 보유 상황에 따라 집값의 몇 %까지 빌릴 수 있는지가 정해져 있어요. 그 비율이 먼저 걸린 경우예요.'},
-  'DSR':      {title:'소득 대비 상환능력(DSR)', why:'집값 기준(LTV)보다 <b>상환능력 기준(DSR)</b>이 먼저 걸렸어요. 연소득이 늘거나 기존 대출이 줄면 한도가 올라가는 구조예요.'},
-  'DTI':      {title:'정책대출 상환능력(DTI)', why:'정책대출은 DSR 대신 DTI 60%가 적용되는데, 여기에 걸렸어요.'},
-  '구간한도': {title:'수도권 구간별 대출한도', why:`집값 구간별 상한(${bandCapRanges()})에 걸렸어요. 규제지역이 아니어도 수도권이면 적용돼요. LTV로는 더 가능해도 이 상한을 넘을 수 없어요.`},
-  '토허구역':  {title:'토지거래허가구역 실거주 의무', why:'해당 없음'},
-  '은행자체한도': {title:'은행이 자체적으로 정한 한도', why:'정부 규제와 별개로 은행이 스스로 정한 상한이에요. 은행을 바꾸면 달라질 수 있어요.'},
-  '상품한도': {title:'정책대출 상품 자체의 최대한도', why:'디딤돌·보금자리론은 상품별 최대 대출금액이 정해져 있어요.'},
-  'manual':   {title:'직접 입력한 대출금액', why:'입력하신 금액이 계산된 한도보다 작아서, 그 값을 기준으로 계산했어요.'}
+  'LTV':      {plain:'집값에 비해 빌릴 수 있는 몫이 먼저 찼어요', title:'집값 대비 대출비율(LTV)', why:'지역과 주택 보유 상황에 따라 집값의 몇 %까지 빌릴 수 있는지가 정해져 있어요. 그 비율이 먼저 걸린 경우예요.'},
+  'DSR':      {plain:'소득에 비해 갚을 수 있는 몫이 먼저 찼어요', title:'소득 대비 상환능력(DSR)', why:'집값 기준(LTV)보다 <b>상환능력 기준(DSR)</b>이 먼저 걸렸어요. 연소득이 늘거나 기존 대출이 줄면 한도가 올라가는 구조예요.'},
+  'DTI':      {plain:'소득에 비해 갚을 수 있는 몫이 먼저 찼어요', title:'정책대출 상환능력(DTI)', why:'정책대출은 DSR 대신 DTI 60%가 적용되는데, 여기에 걸렸어요.'},
+  '구간한도': {plain:'수도권 집값 구간별 상한이 먼저 걸렸어요', title:'수도권 구간별 대출한도', why:`집값 구간별 상한(${bandCapRanges()})에 걸렸어요. 규제지역이 아니어도 수도권이면 적용돼요. LTV로는 더 가능해도 이 상한을 넘을 수 없어요.`},
+  '토허구역':  {plain:'실거주 의무가 있는 구역이에요', title:'토지거래허가구역 실거주 의무', why:'해당 없음'},
+  '은행자체한도': {plain:'은행이 스스로 정한 상한이 먼저 걸렸어요', title:'은행이 자체적으로 정한 한도', why:'정부 규제와 별개로 은행이 스스로 정한 상한이에요. 은행을 바꾸면 달라질 수 있어요.'},
+  '상품한도': {plain:'이 상품의 최대 대출금액이 먼저 걸렸어요', title:'정책대출 상품 자체의 최대한도', why:'디딤돌·보금자리론은 상품별 최대 대출금액이 정해져 있어요.'},
+  'manual':   {plain:'직접 정하신 대출금액을 기준으로 계산했어요', title:'직접 입력한 대출금액', why:'입력하신 금액이 계산된 한도보다 작아서, 그 값을 기준으로 계산했어요.'}
 };
 
 function renderAssumptions(ctxBase, c){
@@ -3659,22 +3698,32 @@ function renderAssumptions(ctxBase, c){
   }
 }
 
-/* 리포트 핵심지표 4칸 */
-function renderReportGrid(c, price, ctxBase, rate, years){
-  const g = document.getElementById('reportGrid');
-  if(!g) return;
-  const monthly = monthlyPaymentCalc(c.mortgageLoan, rate, years);
-  const totalInterest = monthly * years * 12 - c.mortgageLoan;
-  const cells = [
-    {k:'대출금액', v: formatWon(c.mortgageLoan)},
-    {k:'내 돈(자기자본)', v: formatWon(c.cashNeeded)},
-    {k:'월 상환액', v: formatWon(monthly)},
-    {k:`총 이자(${years}년)`, v: c.mortgageLoan > 0 ? formatWon(Math.max(0,totalInterest)) : '0원'}
-  ];
-  g.innerHTML = cells.map(x=>`<div class="rg-cell"><div class="rg-k">${x.k}</div><div class="rg-v">${x.v}</div></div>`).join('');
+/* v21.29 — 리포트 지표칸(.report-grid)은 없앴습니다.
+   네 칸이 담던 값은 전부 다른 자리에 이미 있었어요:
+     대출금액 → 영수증 「빌리는 돈」 그룹 머리
+     내 돈    → 영수증 결론 행
+     월 상환액·총 이자 → 상환 카드
+   같은 금액을 두 자리에서 각각 다른 이름으로 부르던 게 화면이 길어지고
+   따라가기 어려웠던 직접 원인입니다(G-7·G-8, 실사용 지적 2026.08.07).
+   ⚠ 함수는 지웠고 호출부·clearInsights 목록에서도 함께 뺐습니다(원칙 37).
+*/
+
+/* 첫 화면의 두 번째 줄 — 답 바로 아래 "무엇이 이 숫자를 정했나" 한 줄.
+   답(금액) 하나만 있으면 그 숫자를 의심할 실마리가 없고, 근거를 다 펼치면
+   답이 묻힙니다. 그 사이를 한 줄이 메웁니다(1층 B). */
+function setHeroBinding(c, ctxBase){
+  const box = document.getElementById('resultBinding');
+  if(!box) return;
+  if(ctxBase.noLoan){ box.textContent = '대출 없이 전액 현금으로 계산했어요'; return; }
+  if(!ctxBase.incomeEntered || ctxBase.income <= 0){
+    box.textContent = '연소득을 넣으면 더 정확해져요'; return;
+  }
+  const copy = BINDING_COPY[c.binding];
+  box.textContent = (copy && c.mortgageLoan > 0 && copy.plain) ? copy.plain : '';
 }
 
 function renderInsights(c, price, ctxBase, rate, years){
+  setHeroBinding(c, ctxBase);
   /* (1) 자금 구성 스택바 */
   const barBox = document.getElementById('fundingBarBox');
   const own = Math.max(0, c.cashNeeded);
@@ -3695,10 +3744,13 @@ function renderInsights(c, price, ctxBase, rate, years){
           <div class="seg seg-loan"  style="width:${pct(loan)}%"></div>
           <div class="seg seg-extra" style="width:${pct(extra)}%"></div>
         </div>
+        <!-- v21.29(G-7·G-8): 범례에 있던 세 금액은 아래 영수증의 같은 이름 아래
+             그대로 다시 나오던 값이에요. 막대는 **비율**을 말하는 도구이므로
+             여기서는 이름과 색만 남깁니다. 이름도 영수증과 같은 말로 맞춥니다. -->
         <div class="funding-legend">
-          <span><i class="dot dot-own"></i>내 돈 ${formatWon(own)}</span>
-          <span><i class="dot dot-loan"></i>주담대 ${formatWon(loan)}</span>
-          ${extra > 0 ? `<span><i class="dot dot-extra"></i>기타 조달 ${formatWon(extra)}</span>` : ''}
+          <span><i class="dot dot-own"></i>내가 내는 돈</span>
+          <span><i class="dot dot-loan"></i>빌리는 돈</span>
+          ${extra > 0 ? `<span><i class="dot dot-extra"></i>기타 조달</span>` : ''}
         </div>
       </div>`;
   } else { barBox.innerHTML = ''; }
@@ -3737,13 +3789,16 @@ function renderInsights(c, price, ctxBase, rate, years){
   // 단 대출이 없으면 LTV도 DSR도 쓰지 않으므로, 이 경고는 사실과 맞지 않습니다.
   if(!ctxBase.noLoan && (!ctxBase.incomeEntered || ctxBase.income <= 0)){
     diag.innerHTML = `
-      <div class="diag-card" style="background:linear-gradient(160deg,#7A3E12,#5C2E0D);">
+      <div class="diag-card warn">
         <div class="diag-tag">주의</div>
         <div class="diag-title">지금은 집값 기준(LTV)만 반영된 결과예요</div>
         <div class="diag-why">은행은 집값뿐 아니라 <b>소득 대비 상환능력(DSR)</b>도 함께 봐요. 연소득을 넣으면 두 기준을 모두 반영한 값으로 다시 계산해드릴게요.</div>
-        <button type="button" class="calc-btn" style="margin-bottom:0;background:#fff;color:#5C2E0D;" onclick="flagFieldError('income',1)">연소득 넣고 계산하기</button>
+        <button type="button" class="calc-btn on-dark" style="margin-bottom:0;" onclick="flagFieldError('income',1)">연소득 넣고 계산하기</button>
       </div>`;
-    document.getElementById('burdenBox').innerHTML = '';
+    /* v21.29: 여기서 burdenBox를 비우면 월 상환액이 화면에서 통째로 사라져요.
+       예전엔 리포트 지표 칸이 그 값을 들고 있었지만 그 칸은 없앴습니다.
+       비율·판정 없이 금액만 보여주는 판으로 렌더합니다(원칙 39). */
+    renderBurden(c, ctxBase, rate, years);
     return;
   }
 
@@ -3799,9 +3854,35 @@ function renderInsights(c, price, ctxBase, rate, years){
       </div>`;
   } else { diag.innerHTML = ''; }
 
-  /* (3) 상환부담 신호등 — 영끌계산기의 존재 이유 */
+  /* (3) 상환 카드 — 월 상환액의 **정본 자리**이자 상환부담 판정
+     v21.28까지는 월 상환액·총 이자가 리포트 지표칸(.report-grid)에 따로 있었고,
+     이 카드는 비율만 말했어요. 같은 141만원이 두 자리에 나뉘어 있던 셈입니다(G-7).
+     → 지표칸을 없애고 여기로 모읍니다. 이 카드가 "매달 얼마"의 유일한 자리예요.
+     ⚠ 소득이 없어도 렌더합니다. 예전엔 소득이 없으면 카드가 통째로 사라져
+        월 상환액이 화면에서 없어졌어요(원칙 39 — 없는 이유를 말해야 합니다). */
+  renderBurden(c, ctxBase, rate, years);
+}
+
+/* 상환 카드 — 월 상환액의 유일한 자리(G-7).
+   소득이 있으면 부담 판정(게이지·비율·메시지)까지, 없으면 금액만 보여줍니다. */
+function renderBurden(c, ctxBase, rate, years){
   const burden = document.getElementById('burdenBox');
+  if(!burden) return;
   const monthly = monthlyPaymentCalc(c.mortgageLoan, rate, years);
+  if(monthly > 0 && !(ctxBase.income > 0)){
+    const stressMonthlyNo = monthlyPaymentCalc(c.mortgageLoan, rate + 1, years);
+    const totalInterestNo = Math.max(0, monthly * years * 12 - c.mortgageLoan);
+    burden.innerHTML = `
+      <div class="burden-card">
+        <div class="burden-head">
+          <span class="burden-label">매달 갚는 돈</span>
+          <span class="burden-amt">${formatWon(monthly)}</span>
+        </div>
+        <div class="burden-msg">연소득을 넣으면 이 금액이 소득에서 얼마를 차지하는지 함께 보여드려요.</div>
+        <div class="burden-stress">금리가 1%p 오르면 <b>${formatWon(stressMonthlyNo)}</b> (+${formatWon(stressMonthlyNo - monthly)})<br>${years}년 동안 낼 이자 <b>${formatWon(totalInterestNo)}</b></div>
+      </div>`;
+    return;
+  }
   if(ctxBase.income > 0 && monthly > 0){
     const monthlyIncome = ctxBase.income / 12;
     const ratio = monthly / monthlyIncome * 100;
@@ -3821,15 +3902,20 @@ function renderInsights(c, price, ctxBase, rate, years){
     }
 
     const stressMonthly = monthlyPaymentCalc(c.mortgageLoan, rate + 1, years);
+    const totalInterest = Math.max(0, monthly * years * 12 - c.mortgageLoan);
+    /* 큰 숫자는 하나뿐입니다(원칙 10). 예전엔 비율이 26px 판정색이었는데,
+       사람이 먼저 알고 싶은 건 "매달 얼마"예요. 비율은 게이지와 뱃지가 말합니다.
+       스트레스 줄에서 현재 월 상환액(→ 앞부분)은 뺐어요 — 바로 위에 있는 값입니다(G-7). */
     burden.innerHTML = `
       <div class="burden-card ${level}">
         <div class="burden-head">
-          <span class="burden-label">세전 월소득 대비 원리금</span>
-          <span class="burden-pct">${ratio.toFixed(0)}%</span>
+          <span class="burden-label">매달 갚는 돈</span>
+          <span class="burden-amt">${formatWon(monthly)}</span>
         </div>
         <div class="burden-gauge"><div class="burden-fill" style="width:${Math.min(100, ratio)}%"></div></div>
+        <div class="burden-ratio">세전 월소득의 <b class="burden-pct">${ratio.toFixed(0)}%</b></div>
         <div class="burden-msg">${msg}</div>
-        <div class="burden-stress">금리가 1%p 오르면 월 ${formatWon(monthly)} → <b>${formatWon(stressMonthly)}</b> (+${formatWon(stressMonthly - monthly)})</div>
+        <div class="burden-stress">금리가 1%p 오르면 <b>${formatWon(stressMonthly)}</b> (+${formatWon(stressMonthly - monthly)})<br>${years}년 동안 낼 이자 <b>${formatWon(totalInterest)}</b></div>
       </div>`;
   } else { burden.innerHTML = ''; }
 }
@@ -3851,8 +3937,8 @@ function line(k, v, cls){
    ⚠ 채워진 진한 블록은 어느 쪽 분기에서도 맨 아래 한 줄뿐입니다(원칙 10). */
 function receiptTail(cashNeeded, cashAvailable){
   const leftover = Math.max(0, Math.floor((cashAvailable - cashNeeded) / 10000) * 10000);
-  if(leftover <= 0) return line('내 돈(자기자본)', `<i class="rc-dot own"></i>${formatWon(cashNeeded)}`, 'grand');
-  return line('내 돈(자기자본)', `<i class="rc-dot own"></i>${formatWon(cashNeeded)}`, 'total')
+  if(leftover <= 0) return line('내가 내는 돈', `<i class="rc-dot own"></i>${formatWon(cashNeeded)}`, 'grand');
+  return line('내가 내는 돈', `<i class="rc-dot own"></i>${formatWon(cashNeeded)}`, 'total')
        + line('남는 돈', formatWon(leftover))
        + line('보유자금', formatWon(cashAvailable), 'grand');
 }
@@ -3892,8 +3978,16 @@ function buildReceipt(costDetails, fundDetails, c, tail){
   if(c.interiorBlocked){
     note += `${note ? '<br>' : ''}ℹ️ 인테리어 단가를 넣으셨지만 <b>평형이 비어 있어 인테리어비가 0원</b>으로 계산됐어요. 인테리어비는 평형 × 단가라 둘 다 있어야 나와요. 「더 정확하게 → 집 정보 → 평형」에 평수를 넣어주세요.`;
   }
+  /* v21.29(G-7): 조달처가 하나뿐이면 명세 한 줄의 값이 그룹 합과 **같은 숫자**예요.
+     같은 금액이 두 줄 연달아 나오던 자리입니다. 이때는 금액을 지우고
+     "무엇으로 빌리는지"만 각주로 남깁니다 — 명세가 담던 정보는 이름뿐이었어요. */
+  let fundBody = fundDetails, fundNote = '';
+  if((fundDetails.match(/class="line-item/g) || []).length === 1){
+    fundNote = (fundDetails.match(/<span class="k">([\s\S]*?)<\/span>/) || ['',''])[1];
+    fundBody = '';
+  }
   return receiptGroup('드는 돈', c.totalNeeded, costDetails, {note})
-    + receiptGroup('빌리는 돈', c.totalFunding, fundDetails, {dot: 'borrow'})
+    + receiptGroup('빌리는 돈', c.totalFunding, fundBody, {dot: 'borrow', note: fundNote})
     + `<div class="rc-eq">드는 돈 − 빌리는 돈</div>`
     + tail;
 }
@@ -4021,9 +4115,9 @@ function renderDuties(loanType){
 
 function clearInsights(){
   /* 계산 불가 상태로 빠질 때 이전 결과를 남기지 않습니다(원칙 30).
-     ⚠ reportGrid를 빼먹으면 "보유자금을 입력해주세요" 아래에 직전 계산의
-        내 돈·대출금액이 그대로 남아 사실과 어긋나는 화면이 됩니다. */
-  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint','reportGrid'].forEach(id=>{
+     ⚠ 하나라도 빼먹으면 "보유자금을 입력해주세요" 아래에 직전 계산의
+        자금 구성·한도 진단이 그대로 남아 사실과 어긋나는 화면이 됩니다. */
+  ['fundingBarBox','bindingDiagnosis','burdenBox','babyRateHint'].forEach(id=>{
     const el = document.getElementById(id); if(el) el.innerHTML = '';
   });
 }
@@ -4103,6 +4197,9 @@ function calculate(silent){
   document.getElementById('compareCard').style.display = 'none';
   const _dc = document.getElementById('dutyCard'); if(_dc) _dc.style.display = 'none';
   resultVisible = true;
+  /* 새로 계산하면 언제나 접힌 상태에서 시작합니다 — 이전 세션의 펼침이
+     남아 있으면 "기본은 접힘"이 사실이 아니게 돼요(원칙 42·1층 A). */
+  setResultDetail(false);
   if(!silent) goToStep(7);
   renderAssumptions(ctxBase);
 
@@ -4147,13 +4244,14 @@ function calculate(silent){
     const c = calcCosts({...ctxBase, price: maxPrice});
     renderFallbackNote(c);
     renderInsights(c, maxPrice, ctxBase, rate, years);
-    renderReportGrid(c, maxPrice, ctxBase, rate, years);
     renderCompare(ctxBase, maxPrice);
     renderDuties(c.loanType);
 
     document.getElementById('resultLabel').textContent = '최대 구매 가능 매매가 (예상)';
     document.getElementById('resultAmount').textContent = formatWon(maxPrice);
-    document.getElementById('resultSub').textContent = `조달자금 ${formatWon(c.totalFunding)} 포함, 보유자금 ${formatWon(cash)} 기준`;
+    /* v21.29(G-7): 여기 있던 조달자금·보유자금 두 금액은 아래 영수증에 그대로 다시
+       나오던 값이에요. 부제는 이 숫자가 **어떤 전제 위에 있는지**만 말합니다. */
+    document.getElementById('resultSub').textContent = '가진 돈을 다 쓰고, 세금과 수수료까지 낸 기준이에요.';
 
     document.getElementById('receiptLines').innerHTML = buildReceipt(
       costLines(c, maxPrice), fundLines(c, ctxBase), c,
@@ -4167,7 +4265,7 @@ function calculate(silent){
       monthly: monthlyPaymentCalc(c.mortgageLoan, rate, years)
     });
 
-    shareSummary = `최대 구매 가능 매매가 ${formatWon(maxPrice)} · 내 돈 ${formatWon(c.cashNeeded)} 필요`;
+    shareSummary = `최대 구매 가능 매매가 ${formatWon(maxPrice)} · 내가 내는 돈 ${formatWon(c.cashNeeded)}`;
     track('calc_buy', {mode:'A', zone: zoneVal(), house_status: ctxBase.houseStatus,
                        loan_type: c.loanType, binding: c.binding || '-',
                        income_entered: ctxBase.incomeEntered ? 1 : 0});
@@ -4188,16 +4286,16 @@ function calculate(silent){
     const c = calcCosts({...ctxBase, price});
     renderFallbackNote(c);
     renderInsights(c, price, ctxBase, rate, years);
-    renderReportGrid(c, price, ctxBase, rate, years);
     renderCompare(ctxBase, price);
     renderDuties(c.loanType);
-    document.getElementById('resultLabel').textContent = '필요한 내 돈 (예상)';
+    document.getElementById('resultLabel').textContent = '내가 내는 돈 (예상)';
     document.getElementById('resultAmount').textContent = formatWon(c.cashNeeded);
-    document.getElementById('resultSub').textContent = `총 소요금액 ${formatWon(c.totalNeeded)} 중 조달자금 ${formatWon(c.totalFunding)} 제외`;
+    /* v21.29(G-7): 총 소요금액·조달자금은 영수증의 두 그룹 머리와 같은 값이에요. */
+    document.getElementById('resultSub').textContent = '집값에 세금과 수수료를 더하고, 빌리는 돈을 뺀 금액이에요.';
 
     document.getElementById('receiptLines').innerHTML = buildReceipt(
       costLines(c, price), fundLines(c, ctxBase), c,
-      line('내 돈(자기자본)', `<i class="rc-dot own"></i>${formatWon(c.cashNeeded)}`, 'grand'));
+      line('내가 내는 돈', `<i class="rc-dot own"></i>${formatWon(c.cashNeeded)}`, 'grand'));
 
 
     lastShareText = buildSummaryText({
@@ -4207,7 +4305,7 @@ function calculate(silent){
       monthly: monthlyPaymentCalc(c.mortgageLoan, rate, years)
     });
 
-    shareSummary = `필요한 내 돈 ${formatWon(c.cashNeeded)} · 매매가 ${formatWon(price)} 기준`;
+    shareSummary = `내가 내는 돈 ${formatWon(c.cashNeeded)} · 매매가 ${formatWon(price)} 기준`;
     track('calc_buy', {mode:'B', zone: zoneVal(), house_status: ctxBase.houseStatus,
                        loan_type: c.loanType, binding: c.binding || '-',
                        income_entered: ctxBase.incomeEntered ? 1 : 0});
@@ -4347,7 +4445,16 @@ async function saveResultAsImage(elementId, buttonId, filename){
   btn.disabled = true;
   try{
     const el = document.getElementById(elementId);
-    const canvas = await html2canvas(el, {backgroundColor: '#F7F8FA', scale: 2, useCORS: true});
+    /* v21.30: 리포트 카드가 접혀 있으면 히어로만 담긴 빈 이미지가 나와요.
+       캡처 동안만 펼치고, 끝나면 사용자가 보던 상태로 되돌립니다. */
+    const wasOpen = isResultDetailOpen();
+    if(elementId === 'captureAreaBuy' && !wasOpen) setResultDetail(true);
+    let canvas;
+    try{
+      canvas = await html2canvas(el, {backgroundColor: '#F7F8FA', scale: 2, useCORS: true});
+    } finally {
+      if(elementId === 'captureAreaBuy' && !wasOpen) setResultDetail(false);
+    }
     canvas.toBlob(async (blob) => {
       if(!blob){
         btn.textContent = '⚠ 실패, 다시 시도해주세요';
@@ -4522,6 +4629,37 @@ function syncAllUI(){
 }
 
 /* 인자 없이 부르면 예전처럼 #optionalSection을 엽니다(기존 호출부 그대로). */
+/* v21.30 — 결과 「자세히 보기」.
+   접기 영역이 둘로 나뉜 건 캡처 영역(리포트 카드) 안팎에 걸쳐 있기 때문이에요.
+   버튼은 하나이고, 두 영역은 항상 같은 상태를 유지합니다(원칙 58). */
+const RESULT_DETAIL_IDS = ['resultDetail', 'resultDetail2'];
+
+function setResultDetail(open){
+  RESULT_DETAIL_IDS.forEach(id => {
+    const sec = document.getElementById(id);
+    if(sec) sec.classList.toggle('open', open);
+  });
+  const btn = document.getElementById('resultMoreToggle');
+  if(btn){
+    btn.classList.toggle('open', open);
+    const label = btn.querySelector('span');
+    if(label) label.textContent = open ? '접기' : '자세히 보기';
+  }
+  return open;
+}
+
+function toggleResultDetail(btn){
+  const sec = document.getElementById('resultDetail');
+  const open = !(sec && sec.classList.contains('open'));
+  setResultDetail(open);
+  track('result_detail', {open: open ? 1 : 0});
+}
+
+function isResultDetailOpen(){
+  const sec = document.getElementById('resultDetail');
+  return !!(sec && sec.classList.contains('open'));
+}
+
 function toggleOptionalSection(btn, targetId){
   const section = document.getElementById(targetId || 'optionalSection');
   if(!section) return;
@@ -4739,7 +4877,7 @@ const LAST_VERIFIED = '2026-08-05';
    파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
    "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
    ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
-const BUILD = 'v21.28';
+const BUILD = 'v21.30';
 const STALE_DAYS = 90;
 
 function renderBuildTag(){
@@ -5033,7 +5171,7 @@ function renderRentDiag(safety, priority, deposit, priorDebt, isUnregistered, tr
   const box = document.getElementById('rentDiagBox');
   if(!box) return;
   if(isUnregistered || trustOwned){
-    box.innerHTML = `<div class="diag-card" style="background:linear-gradient(160deg,#7A3E12,#5C2E0D);">
+    box.innerHTML = `<div class="diag-card warn">
       <div class="diag-tag">가장 먼저 확인할 것</div>
       <div class="diag-title">${isUnregistered ? '미등기 물건이에요' : '신탁등기 물건이에요'}</div>
       <div class="diag-why">${isUnregistered
@@ -5061,8 +5199,8 @@ function renderRentDiag(safety, priority, deposit, priorDebt, isUnregistered, tr
     danger: {tag:'가장 먼저 확인할 것', title:'보증금 전액 회수가 어려울 수 있어요'}
   }[safety.level];
   const bg = (safety.level === 'warn' || safety.level === 'danger')
-    ? ' style="background:linear-gradient(160deg,#7A3E12,#5C2E0D);"' : '';
-  box.innerHTML = `<div class="diag-card"${bg}>
+    ? ' warn' : '';
+  box.innerHTML = `<div class="diag-card${bg}">
     <div class="diag-tag">${T.tag}</div>
     <div class="diag-title">${T.title}</div>
     <div class="diag-why">선순위 채권과 내 보증금을 합치면 시세의 <b>${safety.ratio.toFixed(0)}%</b>예요. ${safety.msg}</div>
@@ -5685,7 +5823,7 @@ function applySisePrice(which, k){
     note += '<br>매매가를 넣는 모드(<b>그 집은 얼마인가요?</b>)로 바꿨어요. 가진 돈 기준으로 다시 보려면 위에서 되돌릴 수 있어요.';
   }
   if(sel.spread >= 0.2 && which === 'med'){
-    note += '<br><span style="color:var(--judge-warn-ink);">거래 편차가 큰 단지예요. 이 집의 층·향·수리 상태를 보고 값을 조정해주세요.</span>';
+    note += '<br><span style="color:var(--ink);font-weight:700;">거래 편차가 큰 단지예요. 이 집의 층·향·수리 상태를 보고 값을 조정해주세요.</span>';
   }
   const srcEl = document.getElementById(u.source);
   if(srcEl) srcEl.innerHTML = '<div class="sise-src">' + note + '</div>';
