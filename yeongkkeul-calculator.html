@@ -48,7 +48,14 @@ window.GA_ID = 'G-NVTLEPG53G';
        자간   본문은 지정하지 않음(normal). 한글에 음수 자간을 주면 조밀해져 읽기 나빠져요.
               19px 이상 큰 글씨만 em 단위로 -0.02em ~ -0.03em
        모서리 6 / 8 / 10 / 12 / 16(--radius) / 20 px
-       여백   4 / 6 / 8 / 10 / 12 / 14 / 16 / 20 / 24 px */
+       여백   4 / 6 / 8 / 10 / 12 / 14 / 16 / 20 / 24 px
+              ⚠ 이 스케일이 적용되는 대상은 **블록 사이의 세로 간격**입니다.
+                 대상: margin-top · margin-bottom · gap (CSS와 인라인 style 양쪽)
+                 제외 ① 요소 안쪽 padding — 뱃지·칩·버튼의 안쪽 여백은 글자 크기를 따라가므로
+                       2·3·5·11px 같은 값이 정상입니다. 세로 리듬과 무관해요.
+                 제외 ② 4px 미만의 광학 정렬 보정 — 예: .checkrow input의 margin-top:1px은
+                       19px 체크박스를 14px 글자 첫 줄에 맞추는 보정이지 간격이 아닙니다.
+                 → v21.23부터 test.js가 이 대상을 전수 검사합니다(원칙 74). */
     --bg:#F7F8FA;
     --surface:#FFFFFF;
     --ink:#191F28;
@@ -182,7 +189,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   .progress{
     display:flex;
     gap:6px;
-    margin:26px 0 24px;
+    margin:24px 0;
   }
   .progress .dot{
     flex:1;
@@ -518,7 +525,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   /* 소계는 선으로만 구분해요. 채워진 블록이 여러 개면 "가장 중요한 줄"이 흐려져요(원칙 10). */
   .line-item.sub{
     border-top:1px solid var(--border);
-    margin-top:9px;
+    margin-top:8px;
     padding-top:12px;
   }
   .line-item.sub .k{color:var(--ink);font-weight:700;}
@@ -527,7 +534,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     border-top:1.5px solid var(--border);
     background:var(--fill);
     border-radius:10px;
-    margin:9px -10px 0;
+    margin:8px -10px 0;
     padding:12px 10px;
     font-size:16px;
     font-weight:700;
@@ -596,7 +603,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-size:11px;
     color:var(--ink-faint);
     opacity:.7;
-    margin-top:18px;
+    margin-top:16px;
     letter-spacing:.02em;
   }
 
@@ -632,7 +639,7 @@ window.GA_ID = 'G-NVTLEPG53G';
 
   footer{
     text-align:center;
-    margin-top:28px;
+    margin-top:24px;
   }
   .footer-title{
     font-size:12px;
@@ -756,7 +763,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-size:11px;font-weight:700;vertical-align:middle;
   }
   .echo{
-    margin-top:7px;padding:8px 11px;border-radius:10px;
+    margin-top:8px;padding:8px 11px;border-radius:10px;
     background:var(--fill);color:var(--ink-soft);
     font-size:13px;font-weight:600;line-height:1.55;
   }
@@ -962,11 +969,15 @@ window.GA_ID = 'G-NVTLEPG53G';
   .zone-badge b{color:var(--ink);}
   .zone-badge.reg{background:#FFF1EC;color:#8C3A1E;}
   .zone-badge.reg b{color:#7A2E14;}
-  .cta-lead{
-    margin:26px 0 12px;padding:12px 14px;
-    background:var(--fill);border-radius:10px;
-    font-size:13px;line-height:1.65;color:var(--ink-soft);text-align:center;
+  /* v21.24: .cta-lead(별도 안내 상자)를 없애고 .section-toggle 안으로 넣었어요.
+     두 줄이 되는 토글만 .two-line을 답니다 — 다른 접기 버튼은 한 줄 그대로입니다. */
+  .section-toggle.two-line{align-items:flex-start;padding:16px;}
+  .section-toggle .st-text{display:flex;flex-direction:column;gap:6px;text-align:left;}
+  .section-toggle .st-title{font-size:14px;font-weight:700;color:var(--primary-dark);}
+  .section-toggle .st-lead{
+    font-size:13px;font-weight:400;line-height:1.65;color:var(--ink-soft);
   }
+  .section-toggle.two-line .chevron{margin-top:2px;}
   .cta-lead b{color:var(--ink);}
   .opt-tag{
     display:inline-block;margin-left:5px;padding:1px 6px;border-radius:6px;
@@ -1093,7 +1104,7 @@ window.GA_ID = 'G-NVTLEPG53G';
      세 번째 칩을 뺀 것만으로는 안 고쳐진 문제였습니다(v21.17에서 놓친 부분).
      내용 길이와 무관하게 폭이 맞으려면, 나란히 두지 말고 세로로 쌓아 둘 다 같은 폭(전체 폭)을
      쓰게 합니다. 화면 폭이 달라져도 항상 맞습니다 — 글자 줄바꿈 계산에 기대지 않아요. */
-  .hero-facts{display:flex;flex-direction:column;gap:7px;margin-top:18px;}
+  .hero-facts{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
   .hero-facts span{
     padding:6px 11px;border-radius:10px;background:var(--surface);
     border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--ink-soft);
@@ -1185,7 +1196,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-size:12px;line-height:1.65;color:var(--ink-faint);
   }
   .duty-contact{
-    margin-top:18px;padding:15px;border-radius:12px;
+    margin-top:16px;padding:15px;border-radius:12px;
     background:var(--fill);border:1px solid var(--border);
   }
   .duty-contact-title{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;}
@@ -1317,7 +1328,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     <!-- v21.21: "세금부터 수수료까지"가 바로 아래 칩("세금·중개보수·부대비용까지 챙겨요")과
          같은 내용을 다시 나열해서 겹쳤어요. 부제는 세부 항목을 열거하지 않고 넘기고,
          칩이 그 역할을 전담합니다(원칙 55 — 지운 자리가 새 중복을 안 만드는지 확인). -->
-    <p>집값만 보면 나머지를 놓치기 쉬워요.<br>
+    <p>집값 말고도 <b>나가는 돈</b>, 사기 전엔 잘 몰라요.<br>
        집 살 때 <b>진짜 드는 돈</b>을 같이 봐요.</p>
     <!-- v21.17: 칩이 세 개일 때 세 번째('리포트 저장')가 혼자 다음 줄로 떨어져 줄이 안 맞았어요.
          그리고 '리포트 저장'은 사용자에게 주는 값이 아니라 기능 나열이라 뺍니다.
@@ -1408,10 +1419,19 @@ window.GA_ID = 'G-NVTLEPG53G';
     <div class="ask" id="askIncome">
       <div class="ask-num">03</div>
       <div class="ask-body">
+        <!-- v21.24: 실사용에서 개인 소득만 넣는 일이 확인됐어요. 배우자 합산이 세 문장 중 두 번째에
+             있었고 굵기는 용어("세전"·"DSR")에 붙어 있어서 시선이 그쪽으로 갔습니다.
+             제목에 (부부 합산)을 넣고, 굵기를 놓치면 결과가 달라지는 곳으로 옮깁니다(원칙 77).
+             소득을 적게 넣으면 한도가 실제보다 작게 나오므로 원칙 28과도 연결됩니다. -->
         <div class="ask-q">연소득은 얼마인가요?</div>
-        <div class="ask-sub"><b>세금 떼기 전(세전)</b> 금액이에요. 기혼이면 배우자 소득까지 합산해주세요.
-          은행은 집값뿐 아니라 <b>갚을 능력(DSR)</b>으로도 한도를 정하기 때문에 꼭 필요해요.</div>
+        <div class="ask-sub">기혼이면 <b>배우자 소득까지 합산</b>해주세요. 세금 떼기 전(세전) 금액이고요.
+          은행은 집값뿐 아니라 갚을 능력(DSR)으로도 한도를 정하기 때문에 꼭 필요해요.</div>
+        <!-- v21.25: 제목·부제는 입력칸 위쪽 "설명글"이라 눈이 건너뜁니다. 실사용에서 놓친 것도
+             설명글이었어요. 조건은 입력 동선 위에 놓아야 합니다 — 03만 입력칸 라벨이 없었습니다.
+             제목의 (부부 합산)은 뺐어요. 라벨과 같은 말을 두 자리에서 하면 라벨이 정보를 잃습니다
+             (원칙 43·77 — 04에서 방금 지운 것과 같은 형태). -->
         <div class="field">
+          <label for="incomeEok">연소득 <span style="font-weight:600;opacity:.75;">(부부 합산 · 세전)</span></label>
           <div class="amount-row"><div class="input-suffix"><input type="number" id="incomeEok" step="1" min="0" oninput="renderPolicyOptions(); syncIncomeEcho(); liveRecalc();"><span>억</span></div><div class="input-suffix"><input type="text" inputmode="numeric" id="incomeMan" oninput="formatCommaInput(this); renderPolicyOptions(); syncIncomeEcho(); liveRecalc();"><span>만원</span></div></div>
           <div class="echo" id="incomeEcho"></div>
         </div>
@@ -1423,7 +1443,7 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div class="ask-num">04</div>
       <div class="ask-body">
         <div class="ask-q">내 상황은 어떤가요?</div>
-        <div class="ask-sub" id="situationSub"><b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>이 대출한도를 가장 크게 좌우해요.</div>
+        <div class="ask-sub" id="situationSub">주택 보유 상황과 사려는 집의 지역이 대출한도를 가장 크게 좌우해요.</div>
 
         <!-- v21.17: '주택 보유 상황'을 지역보다 먼저 놓습니다. 취득세율을 정하는 값이라
              지역보다 판단이 더 즉각적이고(원칙 15의 연장 — 도달 순서를 실제 결정 순서에 맞춤),
@@ -1502,8 +1522,14 @@ window.GA_ID = 'G-NVTLEPG53G';
     </div>
 
     <!-- 고급 설정 -->
-    <button type="button" class="section-toggle" id="topSectionToggle" onclick="toggleOptionalSection(this)">
-      <span>더 정확하게 — 대출조건 · 기존부채 · 부대비용 <span style="font-weight:600;opacity:.75;">(선택)</span></span><span class="chevron">▾</span>
+    <!-- v21.24: 버튼 바로 아래에 "위의 '더 정확하게'를 먼저 펼쳐주세요"라는 안내 상자가 따로 있었어요.
+         버튼이 스스로 눈에 띄면 필요 없었을 안내입니다. 안내문을 버튼 안으로 넣어 버튼의 덩치를
+         키웁니다 — 색이 아니라 크기로 위계를 만듭니다(원칙 38). "위의"라는 지시어도 사라져요(원칙 57). -->
+    <button type="button" class="section-toggle two-line" id="topSectionToggle" onclick="toggleOptionalSection(this)">
+      <span class="st-text">
+        <span class="st-title">더 정확하게 — 대출조건 · 기존부채 · 부대비용 <span style="font-weight:600;opacity:.75;">(선택)</span></span>
+        <span class="st-lead">신용대출·사내대출이 있거나 인테리어 비용까지 보려면 여기를 펼쳐주세요.</span>
+      </span><span class="chevron">▾</span>
     </button>
     <div id="optionalSection" class="optional-section">
 
@@ -1603,7 +1629,7 @@ window.GA_ID = 'G-NVTLEPG53G';
           <div class="hint">은행은 실제 금리보다 높은 금리를 가정해 한도를 계산해요.<button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">자세히 ▾</button><div class="hint-detail">은행연합회 공시(2026.06.30) 표에 따라 지역·대출유형별로 자동 반영하고, 직접 바꾸셔도 돼요. 이 금리는 한도 계산용이고 실제로 내는 이자가 아니에요.</div></div>
         </div>
         <div class="field">
-          <div class="checkrow" style="margin-top:26px;">
+          <div class="checkrow" style="margin-top:24px;">
             <input type="checkbox" id="mciCovered" onchange="liveRecalc()">
             <label for="mciCovered">MCI·MCG 보증 가입 예정</label>
           </div>
@@ -1717,15 +1743,15 @@ window.GA_ID = 'G-NVTLEPG53G';
       </button>
     </div>
 
-    <div class="cta-lead">
-      신용대출·사내대출이 있거나 인테리어 비용까지 보려면 위의 <b style="white-space:nowrap;">"더 정확하게"</b>를 먼저 펼쳐주세요.
-    </div>
     <button type="button" class="cta" onclick="calculate()">내 예산 계산하기</button>
-    <div class="cta-note build-tag" style="margin-bottom:8px;"></div>
+    <!-- v21.24: 판 번호·정책 기준일은 "누가 만든 언제 판인지"를 밝히는 각주고, 금리 가정은
+         "지금 누를 버튼이 무엇을 전제하는지"입니다. 각주가 위에 있어서 순서가 뒤바뀌어 있었어요.
+         판 번호는 그대로 보이므로 원칙 60은 유지됩니다. -->
     <div class="cta-note">
       금리 연 5.4% · 30년 원리금균등 상환을 기본 가정으로 계산해요.
       이 금리는 시장 평균이 아니라 <b>임의로 정한 기본값</b>이고, 결과 화면에서 바로 바꿀 수 있어요.
     </div>
+    <div class="cta-note build-tag" style="margin-top:8px;"></div>
 
   </div>
 
@@ -3511,7 +3537,9 @@ function syncIncomeEcho(){
   const echo = document.getElementById('incomeEcho');
   if(inc <= 0){ echo.textContent = ''; return; }
   const monthly = inc / 12;
-  echo.textContent = `세전 월 약 ${formatWon(monthly)} · DSR 40% 기준 연 상환한도 ${formatWon(inc * 0.4)}`;
+  /* v21.25: 값을 넣은 "직후"에 전제를 한 번 더 되읽어줍니다. 설명글은 건너뛰어도
+     이 줄은 방금 친 숫자 바로 아래에 나타나서 눈에 걸립니다. */
+  echo.textContent = `부부 합산 세전 월 약 ${formatWon(monthly)} · DSR 40% 기준 연 상환한도 ${formatWon(inc * 0.4)}`;
 }
 
 /* ===== 결과 인사이트: 병목 진단 · 자금구성 · 상환부담 ===== */
@@ -4305,8 +4333,10 @@ function showTool(name){
    ⚠ "이 두 가지"라고만 쓰면 무엇을 가리키는지 알 수 없습니다.
       아래 두 칸의 label과 **똑같은 이름**을 그대로 씁니다. 이름이 어긋나면 다시 못 알아봐요. */
 const SITUATION_SUB = {
-  loan:   '<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>이 대출한도를 가장 크게 좌우해요.',
-  noLoan: '<b>주택 보유 상황</b>과 <b>사려는 집의 지역</b>이 취득세율을 정해요.'
+  /* v21.24: 굵은 두 덩이가 바로 아래 라벨("주택 보유 상황"·"사려는 집의 지역")을 그대로 반복해서
+     정보가 없었어요. 굵기는 놓치면 결과가 달라지는 곳에만 씁니다(원칙 77). */
+  loan:   '주택 보유 상황과 사려는 집의 지역이 대출한도를 가장 크게 좌우해요.',
+  noLoan: '주택 보유 상황과 사려는 집의 지역이 취득세율을 정해요.'
 };
 function syncSituationSub(noLoan){
   const box = document.getElementById('situationSub');
@@ -4614,7 +4644,7 @@ const LAST_VERIFIED = '2026-08-05';
    파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
    "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
    ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
-const BUILD = 'v21.22';
+const BUILD = 'v21.25';
 const STALE_DAYS = 90;
 
 function renderBuildTag(){
@@ -4859,7 +4889,7 @@ function calculateRent(){
     `<div class="line-item total"><span class="k">${termYears}년 총비용</span><span class="v">${formatWon(jeonseTotal)}</span></div>` +
     (jeonseRatio !== null ? `<div class="line-item ${jeonseRatio > 80 ? 'minus' : ''}"><span class="k">전세가율 (÷매매시세)</span><span class="v">${jeonseRatio.toFixed(1)}%</span></div>` : '') +
 
-    `<div class="receipt-section-label" style="margin-top:18px;">월세로 산다면</div>` +
+    `<div class="receipt-section-label" style="margin-top:16px;">월세로 산다면</div>` +
     `<div class="line-item"><span class="k">월세보증금</span><span class="v">${formatWon(wolseDeposit)}</span></div>` +
     `<div class="line-item"><span class="k">중개보수 (VAT 포함)</span><span class="v">${formatWon(wolseBrokerFee)}</span></div>` +
     `<div class="line-item total"><span class="k">계약할 때 필요한 현금</span><span class="v">${formatWon(wolseCashNeeded)}</span></div>` +
