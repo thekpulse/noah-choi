@@ -61,40 +61,68 @@ window.GA_ID = 'G-NVTLEPG53G';
     --ink:#191F28;
     --ink-soft:#6B7684;
     --ink-faint:#78828E;
-    /* ===== 파랑 사용 규칙 (v21.22, 원칙 38·62) =====
-       연파랑 하나가 15곳에서 선택됨·펼치기·포커스·값 강조·뱃지·hover·컨테이너를
-       전부 가리키고 있었어요. 아래 다섯 자리 밖에서는 파랑을 쓰지 않습니다.
-       ① --primary 채움(흰 글씨)   = 다음으로 넘어가는 버튼. 한 화면에 하나
-                                     (.calc-btn / .step-nav .btn-next)
-       ② --primary-soft 채움+테두리 = 지금 선택된 것
-                                     (.option-card.active / .loan-option:checked
-                                      / .seg-btn.active / .chip.active)
-       ③ --primary-soft 채움        = 영수증 안의 값 강조 (.line-item.loan 하나뿐)
-       ④ --primary-soft 링          = 포커스 (box-shadow — 배경 채움과 채널이 다름)
-       ⑤ --primary-bright           = 어두운 히어로 위의 강조 글자
-       ⑥ --primary 막대            = 진행 표시 점 (.progress .dot.done — 글자 없는 상태 막대)
-       그 밖(펼치기·접기·실행 버튼·hover·뱃지·컨테이너)은 회색 테두리 + 파란 글자,
-       또는 --fill + --ink-soft로 둡니다. */
+    /* ===== 색 사용 규칙 (v21.26, 원칙 38·62·84) =====
+       v21.22에서 연파랑 15곳을 정리했는데, 그때는 --primary-soft라는 **토큰 하나**만
+       셌어요. 같은 #0091FF를 가리키는 다른 이름 셋(--loan·--ok·--finance)은
+       셈에 안 들어갔고, 그래서 판정 4단 한가운데에 브랜드 파랑이 남아 있었습니다.
+       이제 색은 **세 채널**로 나눠 씁니다. 채널이 다르면 팔레트도 다릅니다.
+
+       ── 채널 A. 조작 — 사용자가 누르고 고르는 것 ──
+       ① --ink 채움(흰 글씨)        = 메인 행동 버튼. 한 화면에 하나
+                                      (.cta / .calc-btn / .step-nav .btn-back)
+       ② --ink 채움(카드)           = 결론을 담는 카드 (.hero / .report-hero / .limit-card)
+                                      ⚠ 버튼과 형태·크기가 완전히 달라 섞이지 않아요.
+                                         영수증 '줄'에는 쓰지 않습니다(원칙 10).
+       ③ --primary-soft 채움+테두리 = 지금 선택된 것
+                                      (.option-card.active / .loan-option:checked
+                                       / .seg-btn.active / .chip.active)
+       ④ --primary-soft 채움        = 영수증 안의 값 강조 (.line-item.loan 하나뿐)
+       ⑤ --primary-soft 링          = 포커스 (box-shadow — 채움과 채널이 다름)
+       ⑥ --primary-bright           = 어두운 히어로 위의 강조 글자
+       그 밖(펼치기·접기·조회·되돌리기 버튼·hover·뱃지·컨테이너)은
+       회색 테두리 + 파란 글자, 또는 --fill + --ink-soft로 둡니다.
+       ⚠ 되돌리기(「처음부터」)는 강조 대상이 아닙니다. 채우지 않아요.
+       ⚠ --primary의 **진한 채움은 어디에도 없습니다.** 파랑은 연한 채움·글자·테두리로만.
+
+       ── 채널 B. 판정 — 결과가 어느 구간인지 ──
+       --judge-safe → --judge-ok → --judge-warn → --judge-danger
+       초록 → 금색 → 주황 → 빨강. **색상이 순차로 이동**하므로 색약에서도 순서가 읽혀요.
+       (v21.26 전에는 --ok가 --primary와 같은 파랑이라 채널 A·C와 겹쳤습니다)
+       ⚠ 판정은 색만으로 말하지 않습니다. 숫자와 문장을 항상 함께 보여줘요.
+       ⚠ 안내 상자도 이 채널을 씁니다 — .success-note(안전) / .fallback-note(위험).
+          판정이 아닌 **권유**는 .info-note(회색)입니다. 붉은색을 권유에 쓰지 않아요.
+
+       ── 채널 C. 구성 — 돈이 어디서 왔는지 ──
+       --fund-1(진함) → --fund-2 → --fund-3(연함) 한 계열의 명도 3단.
+       **진할수록 내 것, 연할수록 부수적.** 위험한 몫만 --fund-risk(빨강).
+       자금 구성 막대와 보증금 안전 막대가 같은 규칙을 씁니다.
+       ⚠ 채널 A·B의 색을 그래프에 쓰지 않습니다. 그래서 회색 계열입니다. */
     --primary:#0091FF;
     --primary-soft:#E5F4FF;
     --primary-dark:#0068BD;
     --primary-bright:#7CC4FF;   /* 어두운 배경 위에서만 쓰는 밝은 파랑 */
     --accent:#C8862E;
-    --finance:#0091FF;
-    --finance-soft:#E5F4FF;
-    --success:#0EA968;
     --danger:#F04452;
     --border:#E5E8EB;
     --fill:#F2F4F6;
     --radius:16px;
-    /* 결과 인사이트용 의미색 */
-    --own:#0EA968;
-    --loan:#0091FF;
-    --extra:#8B5CF6;
-    --safe:#0EA968;
-    --ok:#0091FF;
-    --warn:#E8890C;
-    --danger2:#F04452;
+    /* 채널 B — 판정 4단 */
+    --judge-safe:#0EA968;
+    --judge-ok:#C79100;
+    --judge-warn:#E8890C;
+    /* 판정의 보조 톤 — 흰 배경 위 글자용 진한 톤과, 카드·상자용 옅은 배경.
+       v21.26 전에는 #9A5B0A가 4곳, 위험 배경이 #FDEBEC·#FFE9EB·#FFF8F8 세 값으로
+       흩어져 있었어요. 같은 뜻이면 값도 하나입니다(원칙 73). */
+    --judge-warn-ink:#9A5B0A;
+    --judge-safe-bg:#E9FBF3;
+    --judge-warn-bg:#FFF6E8;
+    --judge-danger-bg:#FDEBEC;
+    --judge-danger:var(--danger);   /* 같은 빨강 — 값을 두 번 적지 않아요(원칙 73) */
+    /* 채널 C — 구성 그래프 (명도 3단 + 위험) */
+    --fund-1:#274C77;
+    --fund-2:#6096BA;
+    --fund-3:#A3C1DA;
+    --fund-risk:var(--danger);
     --ink-deep:#0D1421;
   }
   *{box-sizing:border-box;}
@@ -185,20 +213,6 @@ window.GA_ID = 'G-NVTLEPG53G';
     text-wrap:balance;
   }
 
-  /* PROGRESS */
-  .progress{
-    display:flex;
-    gap:6px;
-    margin:24px 0;
-  }
-  .progress .dot{
-    flex:1;
-    height:5px;
-    background:var(--border);
-    border-radius:6px;
-  }
-  .progress .dot.done{background:var(--primary);}
-  .progress .dot.now{background:var(--primary-dark);}
   .step-label{
     font-size:12px;
     font-weight:700;
@@ -336,7 +350,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
   input.input-error, select.input-error{
     border-color:var(--danger) !important;
-    box-shadow:0 0 0 3px #FDEBEC !important;
+    box-shadow:0 0 0 3px var(--judge-danger-bg) !important;
     animation:shake .3s;
   }
   @keyframes shake{
@@ -404,10 +418,12 @@ window.GA_ID = 'G-NVTLEPG53G';
   .loan-option-name{font-size:14px;font-weight:700;margin-bottom:6px;}
   .loan-option-meta{font-size:13px;color:var(--ink-soft);line-height:1.65;}
 
+  /* v21.26(84): 파랑 진한 채움을 없앴어요. 규칙 ①에 따라 실행 버튼은 --ink 채움입니다.
+     전월세 탭 「이미지로 저장/공유」에 인라인으로 붙어 있던 --ink가 이걸로 흡수돼요(원칙 58). */
   button.calc-btn{
     width:100%;
     padding:16px;
-    background:var(--primary);
+    background:var(--ink);
     border:none;
     border-radius:12px;
     color:#fff;
@@ -418,7 +434,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     margin-bottom:16px;
     transition:transform .1s ease, background .15s;
   }
-  button.calc-btn:active{background:var(--primary-dark);transform:scale(0.98);}
+  button.calc-btn:active{background:var(--ink-deep);transform:scale(0.98);}
   .share-btn-row{display:flex;gap:10px;margin-bottom:16px;}
   #captureAreaBuy, #captureAreaRent{
     padding:20px 14px 14px;
@@ -454,19 +470,23 @@ window.GA_ID = 'G-NVTLEPG53G';
     border:none;
     transition:transform .1s ease, background .15s;
   }
+  /* v21.26(84): 결과 화면에서 가장 파란 버튼이 「처음부터」(초기화)였어요.
+     규칙 ①은 "메인 행동"인데 되돌리는 버튼에 붙어 있던 셈입니다.
+     결과 화면의 메인 행동은 「입력 수정」이라 위계를 맞바꾸고, 마크업 순서도 뒤집어
+     약한 것이 왼쪽·강한 것이 오른쪽에 오게 했어요. 클래스 이름은 그대로 둡니다(원칙 69). */
   .step-nav .btn-next{
-    flex:2;
-    background:var(--primary);
-    color:#fff;
-  }
-  .step-nav .btn-next:active{background:var(--primary-dark);transform:scale(0.97);}
-  .step-nav .btn-back{
     flex:1;
     background:var(--surface);
     color:var(--ink-soft);
     border:1.5px solid var(--border) !important;
   }
-  .step-nav .btn-back:active{background:var(--bg);transform:scale(0.97);}
+  .step-nav .btn-next:active{background:var(--bg);transform:scale(0.97);}
+  .step-nav .btn-back{
+    flex:2;
+    background:var(--ink);
+    color:#fff;
+  }
+  .step-nav .btn-back:active{background:var(--ink-deep);transform:scale(0.97);}
   /* keep room at the bottom of scrollable content so the sticky bar never covers it */
   .step{padding-bottom:90px;}
 
@@ -545,19 +565,25 @@ window.GA_ID = 'G-NVTLEPG53G';
      margin -10px + padding 10px이면 블록 가장자리는 나란히 서고,
      글자는 여백 없는 일반 행과 같은 줄에 정렬돼요. 이전에는 여기만 20px이라
      맨 아래 줄이 위 블록보다 좁아 보였습니다. */
+  /* v21.26(원칙 10 개정): 검정 채움 → 굵은 테두리.
+     ① "내 돈 블록이 너무 크다"는 지적의 근본 처방입니다 — 슬래브가 사라져요.
+     ② 검정 채움을 버튼·결론 카드에만 남겨, 검정이 다섯 뜻으로 번지는 걸 막습니다.
+     ③ 원칙 10이 잠그려던 건 "채움"이라는 수단이 아니라 "결론은 하나"라는 목적이었어요.
+        테두리로도 그 목적은 지켜집니다(원칙 48). */
   .line-item.grand{
-    background:var(--ink);
-    color:#fff;
+    background:transparent;
+    color:var(--ink);
+    border:2px solid var(--ink);
     margin:12px -10px 0;
-    padding:16px 10px;
-    border-radius:var(--radius);
-    font-size:17px;
+    padding:12px 10px;
+    border-radius:12px;
+    font-size:16px;
   }
   /* v21.15: 강조 행의 라벨은 .loan/.sub/.total 모두 700인데 여기만 지정이 없어
      기본값 500으로 떨어져 있었어요. 가장 강조된 행의 라벨이 제일 얇았던 셈입니다.
      색은 그대로 낮춰 둡니다 — 위계는 값이 흰색 19px/800으로 이미 잡고 있어요(원칙 38). */
-  .line-item.grand .k{color:#B8C0CC;font-weight:700;}
-  .line-item.grand .v{color:#fff;font-size:19px;}
+  .line-item.grand .k{color:var(--ink-soft);font-weight:700;}
+  .line-item.grand .v{color:var(--ink);font-size:19px;}
   /* 매매 영수증의 결론 행만 한 단계 더 키웁니다.
      .loan .v가 17px이라 19px과는 2px 차이뿐이어서 "가장 큰 숫자"로 읽히지 않았어요.
      ⚠ 전월세 요약 상자(.rent-summary)의 .grand는 올리지 않습니다. 그쪽 라벨이
@@ -567,7 +593,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     font-family:'Pretendard', sans-serif;
     font-size:12px;
     color:var(--danger);
-    background:#FDEBEC;
+    background:var(--judge-danger-bg);
     border-radius:10px;
     padding:10px 12px;
     margin-bottom:12px;
@@ -576,8 +602,20 @@ window.GA_ID = 'G-NVTLEPG53G';
   .success-note{
     font-family:'Pretendard', sans-serif;
     font-size:12px;
-    color:var(--success);
-    background:#E9FBF3;
+    color:var(--judge-safe);
+    background:var(--judge-safe-bg);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:12px;
+    line-height:1.65;
+  }
+  /* v21.26(84): 붉은 .fallback-note가 "요건 밖"(판정)과 "이걸 체크하면 더 정확해요"(권유)
+     두 가지에 함께 쓰이고 있었어요. 권유는 판정이 아니므로 색을 켜지 않습니다(원칙 63). */
+  .info-note{
+    font-family:'Pretendard', sans-serif;
+    font-size:12px;
+    color:var(--ink-soft);
+    background:var(--fill);
     border-radius:10px;
     padding:10px 12px;
     margin-bottom:12px;
@@ -719,22 +757,22 @@ window.GA_ID = 'G-NVTLEPG53G';
     border-bottom:1px dashed var(--border);
   }
   .receipt-section-label.finance{
-    color:var(--finance);
+    color:var(--primary-dark);
     border-bottom-color:#C8D9EA;
   }
+  /* v21.26: 매매 영수증의 .grand와 같은 규칙을 씁니다 — 검정 채움 대신 굵은 테두리.
+     이 상자 안 세 줄 중 결론은 맨 아래 .grand 한 줄이고, 나머지 둘은 그 근거예요. */
   .rent-summary{
-    background:var(--ink);
-    color:#fff;
+    background:var(--surface);
+    border:2px solid var(--ink);
+    color:var(--ink);
     margin:16px 0 0;
-    padding:14px 20px;
+    padding:14px 16px;
     border-radius:var(--radius);
   }
-  /* ⚠ 이 안에도 .line-item.grand가 하나 있어요(총비용 차이 행).
-     .grand의 좌우 -10px 여백이 여기까지 따라오면 이 줄만 좌우로 삐져나가
-     위 두 줄과 글자가 어긋납니다. 상자 안에서는 여백을 0으로 되돌립니다. */
-  .rent-summary .line-item{padding:6px 0;margin:0;border-bottom:none;}
-  .rent-summary .k{color:#B8C0CC;font-family:'Pretendard', sans-serif;font-weight:500;}
-  .rent-summary .v{color:#fff;font-weight:700;}
+  .rent-summary .line-item{padding:6px 0;margin:0;border:none;}
+  .rent-summary .k{color:var(--ink-soft);font-family:'Pretendard', sans-serif;font-weight:500;}
+  .rent-summary .v{color:var(--ink);font-weight:700;}
   .compare-row{
     padding:12px 0;
     border-bottom:1px solid var(--border);
@@ -798,15 +836,15 @@ window.GA_ID = 'G-NVTLEPG53G';
     padding:3px 10px;border-radius:20px;background:var(--fill);
     color:var(--ink-soft);font-size:12px;font-weight:800;
   }
-  .funding-ratio.hot{background:#FFE9EB;color:var(--danger2);}
+  .funding-ratio.hot{background:var(--judge-danger-bg);color:var(--judge-danger);}
   .funding-bar{
     display:flex;height:15px;border-radius:8px;overflow:hidden;
     background:var(--fill);margin-bottom:12px;
   }
   .funding-bar .seg{transition:width .5s cubic-bezier(.22,1,.36,1);}
-  .seg-own{background:var(--own);}
-  .seg-loan{background:var(--loan);}
-  .seg-extra{background:var(--extra);}
+  .seg-own{background:var(--fund-1);}
+  .seg-loan{background:var(--fund-2);}
+  .seg-extra{background:var(--fund-3);}
   .funding-legend{
     display:flex;flex-wrap:wrap;gap:8px 16px;
     font-size:13px;font-weight:600;color:var(--ink-soft);
@@ -815,9 +853,9 @@ window.GA_ID = 'G-NVTLEPG53G';
     display:inline-block;width:8px;height:8px;border-radius:50%;
     margin-right:5px;vertical-align:middle;
   }
-  .dot-own{background:var(--own);}
-  .dot-loan{background:var(--loan);}
-  .dot-extra{background:var(--extra);}
+  .dot-own{background:var(--fund-1);}
+  .dot-loan{background:var(--fund-2);}
+  .dot-extra{background:var(--fund-3);}
 
   /* ===== 병목 진단 카드 ===== */
   .diag-card{
@@ -830,7 +868,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
   .diag-title{font-size:19px;font-weight:800;margin-bottom:8px;}
   .diag-why{font-size:14px;line-height:1.65;color:rgba(255,255,255,.8);margin-bottom:16px;}
-  .diag-why b{color:#8FD0FF;}
+  .diag-why b{color:var(--primary-bright);}
   .limit-list{
     background:rgba(255,255,255,.07);border-radius:12px;
     padding:5px 13px;margin-bottom:12px;
@@ -850,7 +888,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     background:rgba(143,208,255,.13);border:1px solid rgba(143,208,255,.22);
     font-size:13px;line-height:1.65;color:rgba(255,255,255,.92);
   }
-  .what-if b{color:#8FD0FF;}
+  .what-if b{color:var(--primary-bright);}
   /* 어두운 진단 카드 안에서 쓰는 접기 버튼.
      .section-toggle은 파란 배경 + 파란 테두리라 이 카드 위에서는 톤이 안 맞아요.
      구조(전체폭 · 좌우 끝 정렬 · 셰브런)와 크기(14px/700)는 그대로 가져오고 색만 바꿉니다.
@@ -884,26 +922,26 @@ window.GA_ID = 'G-NVTLEPG53G';
   /* ===== 상환부담 신호등 ===== */
   .burden-card{
     background:var(--surface);border:1px solid var(--border);
-    border-left:4px solid var(--ok);
+    border-left:4px solid var(--border);
     border-radius:var(--radius);padding:18px;margin-bottom:14px;
   }
-  .burden-card.safe{border-left-color:var(--safe);}
-  .burden-card.ok{border-left-color:var(--ok);}
-  .burden-card.warn{border-left-color:var(--warn);}
-  .burden-card.danger{border-left-color:var(--danger2);background:#FFF8F8;}
+  .burden-card.safe{border-left-color:var(--judge-safe);}
+  .burden-card.ok{border-left-color:var(--judge-ok);}
+  .burden-card.warn{border-left-color:var(--judge-warn);}
+  .burden-card.danger{border-left-color:var(--judge-danger);background:var(--judge-danger-bg);}
   .burden-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
   .burden-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
   .burden-pct{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;font-size:26px;font-weight:700;letter-spacing:-0.02em;}
-  .burden-card.safe .burden-pct{color:var(--safe);}
-  .burden-card.ok .burden-pct{color:var(--ok);}
-  .burden-card.warn .burden-pct{color:var(--warn);}
-  .burden-card.danger .burden-pct{color:var(--danger2);}
+  .burden-card.safe .burden-pct{color:var(--judge-safe);}
+  .burden-card.ok .burden-pct{color:var(--judge-ok);}
+  .burden-card.warn .burden-pct{color:var(--judge-warn);}
+  .burden-card.danger .burden-pct{color:var(--judge-danger);}
   .burden-gauge{height:7px;border-radius:6px;background:var(--fill);overflow:hidden;margin-bottom:12px;}
   .burden-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.22,1,.36,1);}
-  .burden-card.safe .burden-fill{background:var(--safe);}
-  .burden-card.ok .burden-fill{background:var(--ok);}
-  .burden-card.warn .burden-fill{background:var(--warn);}
-  .burden-card.danger .burden-fill{background:var(--danger2);}
+  .burden-card.safe .burden-fill{background:var(--judge-safe);}
+  .burden-card.ok .burden-fill{background:var(--judge-ok);}
+  .burden-card.warn .burden-fill{background:var(--judge-warn);}
+  .burden-card.danger .burden-fill{background:var(--judge-danger);}
   .burden-msg{font-size:14px;line-height:1.65;color:var(--ink);margin-bottom:8px;}
   .burden-stress{
     font-size:13px;color:var(--ink-soft);padding-top:8px;
@@ -983,9 +1021,11 @@ window.GA_ID = 'G-NVTLEPG53G';
     display:inline-block;margin-left:5px;padding:1px 6px;border-radius:6px;
     background:var(--fill);color:var(--ink-faint);font-size:11px;font-weight:700;vertical-align:middle;
   }
+  /* v21.26(84): 62에서 뱃지를 전부 회색으로 내렸는데 이 하나만 주황으로 남아 있었어요.
+     파랑만 세었기 때문입니다. 판정이 아니라 정적 라벨이라 회색이 맞습니다. */
   .tag-warn{
     display:inline-block;margin-left:6px;padding:2px 7px;border-radius:6px;
-    background:#FFF2E3;color:#9A5B0A;font-size:11px;font-weight:700;vertical-align:middle;
+    background:var(--fill);color:var(--ink-soft);font-size:11px;font-weight:700;vertical-align:middle;
   }
 
   /* ============ 결과: 가정 바 ============ */
@@ -1044,7 +1084,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     border-bottom:1px solid var(--border);
   }
   .report .burden-card{border-left:none;border-top:none;}
-  .report .burden-card.danger{background:#FFF8F8;}
+  .report .burden-card.danger{background:var(--judge-danger-bg);}
 
   /* 2×2 지표 칸.
      v21.15: 이 카드 안의 항목 라벨은 .report-hero .label · .funding-head · .burden-label이
@@ -1078,7 +1118,7 @@ window.GA_ID = 'G-NVTLEPG53G';
     background:var(--fill);color:var(--ink-soft);font-size:11px;font-weight:800;vertical-align:middle;
   }
   .cmp-delta{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
-  .cmp-delta.up{color:var(--success);}
+  .cmp-delta.up{color:var(--judge-safe);}
   .cmp-delta.down{color:var(--danger);}
   .cmp-track{height:9px;border-radius:6px;background:var(--fill);overflow:hidden;margin-bottom:8px;}
   .cmp-fill{height:100%;border-radius:6px;background:var(--border);transition:width .5s cubic-bezier(.22,1,.36,1);}
@@ -1177,7 +1217,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
   .inline-btn:active{transform:scale(.96);}
 
-  .duty-card{border-left:4px solid var(--warn);}
+  .duty-card{border-left:4px solid var(--judge-warn);}
   .duty-item{
     display:flex;gap:12px;padding:15px 0;
     border-bottom:1px solid var(--border);
@@ -1185,7 +1225,7 @@ window.GA_ID = 'G-NVTLEPG53G';
   .duty-item:last-child{border-bottom:none;}
   .duty-tag{
     flex:0 0 auto;align-self:flex-start;
-    padding:4px 9px;border-radius:8px;background:#FFF2E3;color:#9A5B0A;
+    padding:4px 9px;border-radius:8px;background:var(--judge-warn-bg);color:var(--judge-warn-ink);
     font-size:11px;font-weight:800;white-space:nowrap;
   }
   .duty-body{flex:1;min-width:0;}
@@ -1234,9 +1274,9 @@ window.GA_ID = 'G-NVTLEPG53G';
     padding:10px 12px;margin-top:10px;
   }
   .sise-note.info{background:var(--surface);color:var(--ink-soft);}
-  .sise-note.warn{background:#FFF6E8;color:#9A5B0A;}
-  .sise-note.err{background:#FDEBEC;color:var(--danger);}
-  .sise-note.ok{background:#E9FBF3;color:#0B7A4B;}
+  .sise-note.warn{background:var(--judge-warn-bg);color:var(--judge-warn-ink);}
+  .sise-note.err{background:var(--judge-danger-bg);color:var(--danger);}
+  .sise-note.ok{background:var(--judge-safe-bg);color:#0B7A4B;}
   .sise-note b{font-weight:800;}
   .sise-note a{color:inherit;font-weight:800;}
   .sise-pick{margin-top:12px;}
@@ -1269,11 +1309,11 @@ window.GA_ID = 'G-NVTLEPG53G';
   }
   .sise-apply button:active{transform:scale(.98);}
   .sise-src{
-    margin-top:8px;font-size:12px;line-height:1.65;color:var(--success);font-weight:600;
+    margin-top:8px;font-size:12px;line-height:1.65;color:var(--ink-soft);font-weight:600;
   }
 
-  .src-table td.unverified{color:#9A5B0A;}
-  .src-table td.unverified b{color:#9A5B0A;}
+  .src-table td.unverified{color:var(--judge-warn-ink);}
+  .src-table td.unverified b{color:var(--judge-warn-ink);}
 
   .segmented.four .seg-btn{padding:12px 6px;text-align:center;}
   .segmented.four .seg-btn b{font-size:13px;}
@@ -1282,31 +1322,31 @@ window.GA_ID = 'G-NVTLEPG53G';
   /* ===== 보증금 안전 진단 ===== */
   .safety-card{
     background:var(--surface);border:1px solid var(--border);
-    border-left:4px solid var(--ok);border-radius:var(--radius);
+    border-left:4px solid var(--border);border-radius:var(--radius);
     padding:18px;margin-bottom:16px;
   }
-  .safety-card.safe{border-left-color:var(--safe);}
-  .safety-card.ok{border-left-color:var(--ok);}
-  .safety-card.warn{border-left-color:var(--warn);background:#FFFCF5;}
-  .safety-card.danger{border-left-color:var(--danger2);background:#FFF8F8;}
+  .safety-card.safe{border-left-color:var(--judge-safe);}
+  .safety-card.ok{border-left-color:var(--judge-ok);}
+  .safety-card.warn{border-left-color:var(--judge-warn);background:var(--judge-warn-bg);}
+  .safety-card.danger{border-left-color:var(--judge-danger);background:var(--judge-danger-bg);}
   .safety-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:10px;}
   .safety-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
   .safety-pct{font-size:26px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
-  .safety-card.safe .safety-pct{color:var(--safe);}
-  .safety-card.ok .safety-pct{color:var(--ok);}
-  .safety-card.warn .safety-pct{color:var(--warn);}
-  .safety-card.danger .safety-pct{color:var(--danger2);}
+  .safety-card.safe .safety-pct{color:var(--judge-safe);}
+  .safety-card.ok .safety-pct{color:var(--judge-ok);}
+  .safety-card.warn .safety-pct{color:var(--judge-warn);}
+  .safety-card.danger .safety-pct{color:var(--judge-danger);}
   .safety-bar{display:flex;height:15px;border-radius:8px;overflow:hidden;background:var(--fill);margin-bottom:12px;}
   .safety-bar .seg{transition:width .5s cubic-bezier(.22,1,.36,1);}
-  .seg-prior{background:var(--danger2);}
-  .seg-mine{background:var(--loan);}
-  .seg-left{background:var(--own);}
+  .seg-prior{background:var(--fund-risk);}
+  .seg-mine{background:var(--fund-1);}
+  .seg-left{background:var(--fund-3);}
   /* 안전카드는 v21.3부터 막대그래프 전용이라 legend가 카드의 마지막 줄이에요 */
   .safety-legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;font-weight:600;color:var(--ink-soft);}
   .safety-legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;}
-  .dot-prior{background:var(--danger2);}
-  .dot-mine{background:var(--loan);}
-  .dot-left{background:var(--own);}
+  .dot-prior{background:var(--fund-risk);}
+  .dot-mine{background:var(--fund-1);}
+  .dot-left{background:var(--fund-3);}
 </style>
 </head>
 <body>
@@ -1346,7 +1386,6 @@ window.GA_ID = 'G-NVTLEPG53G';
 
 <div class="wrap">
   <div class="stale-banner" style="display:none;"></div>
-  <div class="progress" id="progressDots"></div>
 
   <!-- ===== 입력: 단일 스크린 ===== -->
   <div class="step active" data-step="1">
@@ -1853,8 +1892,8 @@ window.GA_ID = 'G-NVTLEPG53G';
     </div>
 
     <div class="step-nav">
-      <button class="btn-back" onclick="goToStep(1)">입력 수정</button>
       <button class="btn-next" onclick="resetAll()">처음부터</button>
+      <button class="btn-back" onclick="goToStep(1)">입력 수정</button>
     </div>
 
     <div class="disclaimer">
@@ -2050,12 +2089,12 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div class="hint" style="margin-top:0;margin-bottom:16px;">전세자금대출 한도·금리와 월세 세액공제를 판정할 때 쓰는 정보예요. 비워두면 두 가지 모두 계산에서 빠져요.</div>
 
       <div class="field">
-        <label>연소득 (세전) <span class="opt-tag">선택</span></label>
+        <label for="rentIncome">연소득 <span style="font-weight:600;opacity:.75;">(부부 합산 · 세전)</span> <span class="opt-tag">선택</span></label>
         <div class="input-suffix">
           <input type="text" inputmode="numeric" id="rentIncome" oninput="formatCommaInput(this); calculateRent();">
           <span>만원</span>
         </div>
-        <div class="hint">버팀목전세자금 판정에 쓰이는 <b>부부합산</b> 기준으로 넣어주세요. 버팀목은 5천만원 이하(2자녀 6천만·신혼 7.5천만) 요건이 있고, 소득 구간에 따라 금리도 달라져요.
+        <div class="hint">버팀목전세자금은 5천만원 이하(2자녀 6천만·신혼 7.5천만) 요건이 있고, 소득 구간에 따라 금리도 달라져요.
           <button type="button" class="hint-toggle" onclick="toggleHintDetail(this)">월세 세액공제는 기준이 달라요 ▾</button>
           <div class="hint-detail">버팀목은 <b>부부합산 연소득</b>, 월세 세액공제는 <b>본인 총급여</b> 기준이에요. 맞벌이라면 두 숫자가 달라서 판정이 갈릴 수 있어요. 아래 "무주택 세대주"에 체크하면 본인 총급여를 따로 넣는 칸이 나와요.</div>
         </div>
@@ -2204,7 +2243,7 @@ window.GA_ID = 'G-NVTLEPG53G';
       <div id="rentSafetyBox"></div>
       <div id="rentFallbackNote"></div>
 
-      <button class="calc-btn" id="imageBtnRent" onclick="saveResultAsImage('captureAreaRent','imageBtnRent','영끌계산기_전월세비교')" style="background:var(--ink);">📸 이미지로 저장/공유</button>
+      <button class="calc-btn" id="imageBtnRent" onclick="saveResultAsImage('captureAreaRent','imageBtnRent','영끌계산기_전월세비교')">📸 이미지로 저장/공유</button>
       <button class="calc-btn" id="copyBtnRent" onclick="copyRentSummary()" style="background:var(--fill);color:var(--ink);border:1px solid var(--border);">📋 결과를 텍스트로 복사</button>
       <button class="calc-btn" id="linkBtnRent" onclick="copyRentLink()" style="background:var(--fill);color:var(--ink);border:1px solid var(--border);">🔗 링크로 공유 (입력값 그대로 열려요)</button>
 
@@ -2260,11 +2299,10 @@ let loanChoice = 'bank';
 let lastShareText = '';
 let shareSummary = '';
 
-function renderProgress(){
-  const el = document.getElementById('progressDots');
-  if(!el) return;
-  el.innerHTML = '';
-}
+/* v21.26(원칙 37): 4스텝 → 1스크린으로 바꾸면서 점만 비우고 껍데기를 안 지웠어요.
+   빈 div가 margin:24px 0을 그대로 차지해 히어로와 01 사이가 떠 보였습니다.
+   호출부(goToStep)는 그대로 두고 함수만 빈 껍데기로 남깁니다. */
+function renderProgress(){ /* 진행 막대는 v21.26에서 제거됐어요 */ }
 
 function goToStep(n){
   currentStep = n;
@@ -3991,7 +4029,7 @@ function calculate(silent){
     document.getElementById('resultAmount').textContent = '대출금리를 입력해주세요';
     document.getElementById('resultSub').textContent = '금리가 0%면 월 상환액이 실제와 크게 달라져요. 아래 버튼으로 금리를 넣어주시면 계산해드릴게요.';
     document.getElementById('receiptLines').innerHTML = '';
-    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'rate\',1)">입력 화면으로 가기</button>';
+    document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="margin-bottom:0;" onclick="flagFieldError(\'rate\',1)">입력 화면으로 가기</button>';
     track('calc_blocked', {tool:'buy', reason:'no_rate'});
     return;
   }
@@ -4005,7 +4043,7 @@ function calculate(silent){
       document.getElementById('resultSub').textContent = '지금 가진 돈을 넣어주시면 계산해드릴게요.';
       document.getElementById('receiptLines').innerHTML = '';
       clearInsights();
-      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
       track('calc_blocked', {tool:'buy', reason:'no_cash'});
       return;
     }
@@ -4017,7 +4055,7 @@ function calculate(silent){
       document.getElementById('resultSub').textContent = '인테리어비와 기타비용의 합이 보유자금보다 커서, 매매가를 계산할 수 없는 상태예요. 입력값을 한 번 확인해보시겠어요?';
       document.getElementById('receiptLines').innerHTML = '';
       clearInsights();
-      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="margin-bottom:0;" onclick="flagFieldError(\'cashEok\',1)">입력 화면으로 가기</button>';
       track('calc_blocked', {tool:'buy', reason:'cash_below_fixed_costs'});
       return;
     }
@@ -4073,7 +4111,7 @@ function calculate(silent){
       document.getElementById('resultSub').textContent = '사려는 집의 가격을 넣어주시면 계산해드릴게요.';
       document.getElementById('receiptLines').innerHTML = '';
       clearInsights();
-      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="background:var(--ink);margin-bottom:0;" onclick="flagFieldError(\'priceEok\',1)">입력 화면으로 가기</button>';
+      document.getElementById('fallbackNote').innerHTML = '<button class="calc-btn" style="margin-bottom:0;" onclick="flagFieldError(\'priceEok\',1)">입력 화면으로 가기</button>';
       track('calc_blocked', {tool:'buy', reason:'no_price'});
       return;
     }
@@ -4644,7 +4682,7 @@ const LAST_VERIFIED = '2026-08-05';
    파일명이 매번 같아 다운로드 폴더에 여러 개가 쌓이면, 무엇을 올렸는지 알 방법이 없었어요.
    "안 바뀐 것 같다"는 지적이 캐시 때문인지 다른 파일 때문인지도 가르지 못했습니다.
    ⚠ 판을 낼 때마다 여기만 고치면 두 탭 하단에 자동 반영됩니다(원칙 46). */
-const BUILD = 'v21.25';
+const BUILD = 'v21.26';
 const STALE_DAYS = 90;
 
 function renderBuildTag(){
@@ -4808,7 +4846,7 @@ function calculateRent(){
     fallback += `<div class="success-note">✅ <b>월세액 세액공제</b>가 반영됐어요 — 연 ${taxCreditInfo.rate}%, ${termYears}년간 총 ${formatWon(wolseTaxCreditTotal)} 만큼 월세 비용에서 빠졌어요.
       <div class="mini-note">국세청 기준(2025년 귀속분): 무주택 세대주 + 총급여 8,000만원 이하 + 국민주택규모(85㎡ 이하)·기준시가 4억원 이하 주택. 연 1,000만원까지만 공제 대상이에요. 이 계산기는 주택 조건은 충족한다고 가정했어요 — 오피스텔·고시원도 조건에 포함될 수 있어요.</div></div>`;
   } else if(wolseMonthly > 0 && !noHouseHousehold){
-    fallback += `<div class="fallback-note">ℹ️ <b>무주택 세대주</b>에 체크하고 연소득을 넣으면 월세 세액공제(연 15~17%)를 반영해드려요. 결과가 꽤 달라질 수 있어요.</div>`;
+    fallback += `<div class="info-note">ℹ️ <b>무주택 세대주</b>에 체크하고 연소득을 넣으면 월세 세액공제(연 15~17%)를 반영해드려요. 결과가 꽤 달라질 수 있어요.</div>`;
   } else if(noHouseHousehold && taxCreditBase > 80000000){
     fallback += `<div class="fallback-note">ℹ️ 총급여 ${formatWon(taxCreditBase)}${selfSalaryWon > 0 ? '(본인 총급여 기준)' : '(연소득 입력값 기준)'}은 8,000만원을 넘어서 월세 세액공제 대상이 아니에요.${selfSalaryWon === 0 ? ' 부부합산으로 넣으셨다면, <b>본인 총급여</b>를 따로 입력하면 판정이 달라질 수 있어요.' : ''}</div>`;
   } else if(noHouseHousehold && taxCreditBase === 0 && wolseMonthly > 0){
@@ -5590,7 +5628,7 @@ function applySisePrice(which, k){
     note += '<br>매매가를 넣는 모드(<b>그 집은 얼마인가요?</b>)로 바꿨어요. 가진 돈 기준으로 다시 보려면 위에서 되돌릴 수 있어요.';
   }
   if(sel.spread >= 0.2 && which === 'med'){
-    note += '<br><span style="color:#9A5B0A;">거래 편차가 큰 단지예요. 이 집의 층·향·수리 상태를 보고 값을 조정해주세요.</span>';
+    note += '<br><span style="color:var(--judge-warn-ink);">거래 편차가 큰 단지예요. 이 집의 층·향·수리 상태를 보고 값을 조정해주세요.</span>';
   }
   const srcEl = document.getElementById(u.source);
   if(srcEl) srcEl.innerHTML = '<div class="sise-src">' + note + '</div>';
