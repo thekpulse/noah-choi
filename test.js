@@ -1,7 +1,7 @@
 /* ===================================================================
    영끌계산기 — 회귀 테스트 (v22.5용)
    실행:  node test.js
-          node test.js /경로/yeongkkeul-calculator-v22.html
+          node test.js /경로/yeongkkeul-calculator.html
 
    ⚠ 구 test.js(888개)는 DOM id에 묶여 있어 새 본체에 붙지 않습니다.
      이 파일은 **계산 엔진만** 봅니다(지침 v4 9장의 1단계).
@@ -13,7 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const FILE = process.argv[2] || path.join(__dirname, 'yeongkkeul-calculator-v22.html');
+const FILE = process.argv[2] || path.join(__dirname, 'yeongkkeul-calculator.html');
 
 /* ── 엔진 적재 ────────────────────────────────────────────────── */
 let UI = '';   /* 화면 코드 — 단위 경계 검사(19장)에 씁니다 */
@@ -364,6 +364,20 @@ HYGIENE.forEach(([name, over]) => {
   tt('면책에서 화재보험료 문구 삭제', !/화재보험료/.test(UI));
   tt('면책에 국민주택채권 매입비 명시', /국민주택채권 매입비/.test(UI));
 
+  /* 기존 부채 입력 — 빠지면 여력이 실제보다 크게 나옵니다(원칙 28).
+     v22를 대표 화면으로 올리는 필수 조건이었습니다. */
+  /* v23.3: 기존 부채 입력을 없애고 소득만으로 DSR을 봅니다.
+     그만큼 한도가 과대해지므로 면책 문구가 반드시 살아 있어야 합니다. */
+  tt('기존 부채 입력이 없다', !/id="inDebt"|debtMonthly/.test(fs.readFileSync(FILE,'utf8')));
+  tt('소득은 여전히 필수다', /id==='income'\)\s*return\s*!!S\.income/.test(UI));
+  tt('DSR 면책 문구가 있다', /본 DSR 한도는 소득만을 기준으로 산출/.test(UI));
+  tt('한도 안내에도 기존 대출 경고가 있다', /지금 갚고 있는 대출이 있다면/.test(UI));
+  tt('정책대출 미반영을 면책에 밝힌다', /정책대출을 받을 수 있다면/.test(UI));
+
+  /* 전월세는 본체에서 완전히 빠졌다 (2026.08.08 결정) */
+  tt('본체에 전월세 노출 없음',
+     !/href="\/rent"|id="outRent"/.test(fs.readFileSync(FILE,'utf8')));
+
   /* 하단 여백 안정화 — 빈 공간을 바닥에 몰지 않는다 */
   const css2 = fs.readFileSync(FILE,'utf8');
   tt('퍼널이 화면 높이를 채운다', /\.funnel\{[^}]*min-height:calc\(100dvh/.test(css2));
@@ -389,6 +403,11 @@ HYGIENE.forEach(([name, over]) => {
   const A=val(f1), B=val(f2);
   const la=lum(A), lb=lum(B);
   const cr=(la!==null&&lb!==null) ? (Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05) : 0;
+  tt('영문 킥 문구 삭제', !/PREMIUM ASSET SIMULATION|brandmark/.test(fs.readFileSync(FILE,'utf8')));
+  tt('타이틀 세로선이 있다', /\.headline::before\{[^}]*width:4px/.test(fs.readFileSync(FILE,'utf8')));
+  tt('CTA가 「결과 확인하기」', /'결과 확인하기'/.test(UI));
+  tt('단위가 값에 붙어 있다', /\.mfield\{[^}]*gap:0/.test(fs.readFileSync(FILE,'utf8')));
+  tt('단정적 문구 제거', !/가장 완벽한 집/.test(fs.readFileSync(FILE,'utf8')));
   tt('자금 구성 막대 두 조각이 다른 색 (원칙 94)',
      !!A && !!B && A.toLowerCase() !== B.toLowerCase(), f1+'='+A+' / '+f2+'='+B);
   /* 🔴 「다르기만」 하면 부족합니다. #1D1D1F와 #112A46은 다르지만 대비가 1.16:1이라
