@@ -343,7 +343,7 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 재계산이 스크롤을 옮기지 않는가 (원칙 92) */
   tt('showResult에 keepScroll 인자가 있다', /function\s+showResult\s*\(\s*keepScroll/.test(UI));
-  tt('결과 안 조작은 showResult(true)로 부른다', (UI.match(/showResult\(true\)/g) || []).length >= 5,
+  tt('결과 안 조작은 showResult(true)로 부른다', (UI.match(/showResult\(true\)/g) || []).length >= 4,
      (UI.match(/showResult\(true\)/g) || []).length + '곳');
 
   /* 선택 비용은 꺼진 채로 시작하는가 (원칙 95) */
@@ -379,7 +379,7 @@ HYGIENE.forEach(([name, over]) => {
      !/href="\/rent"|id="outRent"/.test(fs.readFileSync(FILE,'utf8')));
 
   /* 하단 여백 안정화 — 빈 공간을 바닥에 몰지 않는다 */
-  const css2 = fs.readFileSync(FILE,'utf8');
+  const css2 = fs.readFileSync(FILE,'utf8'), html2 = css2;
   tt('퍼널이 화면 높이를 채운다', /\.funnel\{[^}]*min-height:calc\(100dvh/.test(css2));
   tt('퍼널이 세로 flex다', /\.funnel\{[^}]*flex-direction:column/.test(css2));
   tt('「답한 것」이 바닥으로 밀린다', /\.answered\{[^}]*margin-top:auto/.test(css2));
@@ -407,6 +407,63 @@ HYGIENE.forEach(([name, over]) => {
   tt('타이틀 세로선이 있다', /\.headline::before\{[^}]*width:4px/.test(fs.readFileSync(FILE,'utf8')));
   tt('CTA가 「결과 확인하기」', /'결과 확인하기'/.test(UI));
   tt('단위가 값에 붙어 있다', /\.mfield\{[^}]*gap:0/.test(fs.readFileSync(FILE,'utf8')));
+
+  /* 게이지 어댑티브 컬러 — 임계값을 40/60으로 되돌리면 세 색 중 하나만 나타납니다 */
+  tt('게이지 임계가 40 / 60이다',
+     /ratio<0\.40\s*\?\s*'ok'\s*:\s*ratio<0\.60\s*\?\s*'mid'/.test(UI));
+  tt('게이지가 DSR 상한 40%를 만석으로 봐다', /ratio\/0\.40\*100/.test(UI));
+  tt('퍼센트 글자도 단계색을 따른다', /tileBurden'\)\.className='tile-v '\+band/.test(UI));
+
+  /* 「부담」은 클수록 무거운 지표라 초록으로 시작하면 의미가 어긋납니다.
+     레드 계열 안에서 옆고 → 진함으로 가야 합니다. */
+  const RED = /^#(?:[89ABCDEF][0-9A-F]|7F)/i;
+  const okv = (css2.match(/--ok:\s*(#[0-9A-Fa-f]{6})/)||[])[1] || '';
+  tt('부담 낮음이 레드 계열이다 (초록 금지)',
+     !!okv && parseInt(okv.slice(1,3),16) > parseInt(okv.slice(3,5),16), okv);
+  tt('단계가 옆고 → 진함 순서다', (()=>{
+     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
+     const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
+       return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+     return L(g('ok')) > L(g('warn')) && L(g('warn')) > L(g('bad'));
+  })());
+  tt('영수증 아래 안내 박스가 없다', !/receiptTip/.test(css2));
+
+  /* v23.5 문구·구조 락 */
+  tt('「여력」이 어디에도 없다', !/여력/.test(fs.readFileSync(FILE,'utf8')));
+  tt('방공제 안내가 한도 아코디언 안으로 이동', /id="roomTip"/.test(fs.readFileSync(FILE,'utf8')));
+  tt('아코디언은 2종 (부대비용 · 한도)',
+     (fs.readFileSync(FILE,'utf8').match(/class="disc"/g)||[]).length === 2);
+  tt('「다른 집값으로 계산하기」가 없다',
+     !/priceToggle|다른 집값으로 계산/.test(fs.readFileSync(FILE,'utf8')));
+  tt('안내 박스와 접기 버튼이 가리된다',
+     /\.tip\{[^}]*background:transparent/.test(fs.readFileSync(FILE,'utf8'))
+     && /\.disc\{[^}]*background:var\(--card\)/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 아코디언을 지우다 고아 </div>가 남아 #result가 일찍 닫혔고,
+     인테리어·다음걸음 카드가 첫 화면으로 새어 나왔습니다. 구조를 센다. */
+  const RES = html2.slice(html2.indexOf('<section class="result"'), html2.indexOf('</section>'));
+  tt('result 안 div 개횡수 균형',
+     (RES.match(/<div/g)||[]).length === (RES.match(/<\/div>/g)||[]).length,
+     (RES.match(/<div/g)||[]).length + ' / ' + (RES.match(/<\/div>/g)||[]).length);
+  tt('인테리어·다음걸음이 result 안에 있다',
+     RES.includes('id="outInterior"') && RES.includes('id="outSave"'));
+  tt('result 안 카드가 3개', (RES.match(/<div class="card[ "]/g)||[]).length === 3,
+     (RES.match(/<div class="card[ "]/g)||[]).length + '개');
+
+  tt('첫 화면 오버랩이 없다 (밴드 끝선이 깔끔하게)',
+     /\.app\.hero-on \.funnel > \.q\{[^}]*margin-top:20px/.test(fs.readFileSync(FILE,'utf8')));
+  tt('보유 라벨이 명사형', /생애 최초[\s\S]{0,400}1주택 이상/.test(UI));
+  tt('규제 도달 문구가 전문형', /비율\(LTV\) 최대 한도에 도달/.test(UI)
+     && /규제\(DSR\) 최대 한도에 도달/.test(UI));
+  tt('실거래가 링크가 국토부', /rt\.molit\.go\.kr/.test(UI) && !/hogangnono/.test(UI));
+  tt('임시 도메인 표기', /출시-후-도메인-연결-예정/.test(UI));
+  tt('헤더 밴드가 퍼널 높이를 푸는다',
+     /\.app\.hero-on \.funnel\{[^}]*min-height:0/.test(fs.readFileSync(FILE,'utf8')));
+
+  /* 입력 첫 화면 네이비 밴드 */
+  tt('입력 01 네이비 밴드가 있다',
+     /\.brand\{background:var\(--espresso\)/.test(fs.readFileSync(FILE,'utf8')));
+  tt('밴드는 01에서만 켜진다', /classList\.toggle\('hero-on',\s*S\.step===0\)/.test(UI));
+  tt('결과에서는 밴드가 꺼진다', /classList\.remove\('hero-on'\)/.test(UI));
   tt('단정적 문구 제거', !/가장 완벽한 집/.test(fs.readFileSync(FILE,'utf8')));
   tt('자금 구성 막대 두 조각이 다른 색 (원칙 94)',
      !!A && !!B && A.toLowerCase() !== B.toLowerCase(), f1+'='+A+' / '+f2+'='+B);
