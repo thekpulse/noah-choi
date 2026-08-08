@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v23.3 · 정책 2026.08.05 -->
+<!-- BUILD v23.8 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    색 — hex 18 + rgba 5 = 23 (G-6 상한 26)
@@ -30,8 +30,9 @@
   --bronze:#112A46; --bronze-hi:#8FA6BF; --bronze-soft:#EFEDE8;
   --ink:#1D1D1F; --ink-2:#3D3A35; --ink-3:#6B665E; --ink-4:#A39D93;
   --line:#E5E4E0; --fill:#EFEDE8;
-  --ok:#4A6B53;
-  --bad:#B3453A;
+  --ok:#C4837C;        /* 부담 낮음 — 톤다운 로즈 */
+  --bad:#7F2420;       /* 부담 높음 — 딥 버간디 */
+  --warn:#B33A3A;      /* 부담 중간 — 브릭 레드 */
   --glass:rgba(255,255,255,.10);
   --glass-line:rgba(255,255,255,.20);
   --glass-2:rgba(255,255,255,.16);
@@ -63,7 +64,12 @@ input{font-family:inherit;font-variant-numeric:inherit}
 
 .app{max-width:480px;margin:0 auto;min-height:100dvh;position:relative;padding-bottom:var(--dock)}
 .app.no-dock{padding-bottom:0}
-.appbar{position:sticky;top:0;z-index:20;background:var(--bg);height:56px;display:flex;align-items:center;padding:0 10px}
+.appbar{position:sticky;top:0;z-index:20;background:var(--bg);height:56px;display:flex;
+  align-items:center;padding:0 10px;transition:background .2s}
+.app.hero-on .appbar{background:var(--espresso)}
+.app.hero-on .appbar .barlabel{color:var(--warm-silver)}
+.app.hero-on .progress{background:transparent}
+.app.hero-on .progress i{background:var(--warm-silver)}
 .iconbtn{width:40px;height:40px;border-radius:var(--r-m);display:grid;place-items:center;color:var(--ink-2)}
 .iconbtn:hover{background:var(--fill)}
 .barlabel{font-size:var(--t6);font-weight:700;color:var(--ink-3);margin-left:4px}
@@ -71,7 +77,19 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .progress i{display:block;height:100%;width:0;background:var(--espresso);transition:width .34s cubic-bezier(.22,1,.36,1)}
 
 /* ── 브랜드 ─────────────────────────────────── */
-.brand{padding:10px 24px 0}
+/* 입력 01 상단 밴드 — 좌우 끝까지 차는 딥 네이비.
+   ⚠ 지침 6-4「다크 면은 화면에 두지 않는다」는 **결과 화면** 규칙입니다.
+     여기는 입력 첫 화면의 헤더 밴드라 적용 대상이 아닙니다. */
+.brand{background:var(--espresso);padding:34px 24px 36px;margin:0}
+.brand .headline{color:var(--card)}
+.brand .headline::before{background:var(--warm-silver)}
+.brand .subline{color:var(--warm-silver)}
+/* 🔴 밴드가 화면 위쪽을 이미 먹었으므로 퍼널은 min-height를 푸니다.
+   안 풀면 페이지가 1.5배로 늘어나 하단이 통째로 비어 보입니다. */
+.app.hero-on .funnel{padding-top:0;min-height:0;padding-bottom:24px}
+.app.hero-on .funnel > .q{background:var(--card);border:var(--hair);border-radius:var(--r-xl);
+  padding:24px;margin-top:20px;box-shadow:var(--sh)}
+.app.hero-on .funnel > .q .moneycard{background:transparent;border:0;box-shadow:none;padding:0;margin-top:20px}
 /* 세로선 — 에디토리얼 리포트의 구조적 킥. 장식 문구 없이 모양으로만 임팩트를 냅니다. */
 .headline{position:relative;font-size:var(--t2);line-height:1.35;font-weight:900;
   letter-spacing:-.05em;margin:0;padding-left:18px}
@@ -89,6 +107,7 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .eyebrow{font-size:var(--t7);font-weight:800;color:var(--espresso);letter-spacing:.1em;margin:0 0 12px}
 .q-title{font-size:var(--t2);line-height:1.3;font-weight:800;letter-spacing:-.04em;margin:0}
 .q-sub{font-size:var(--t6);color:var(--ink-3);margin:14px 0 0}
+.q-sub.oneline{white-space:nowrap;font-size:clamp(11px,3.5vw,var(--t6));letter-spacing:-.03em}
 
 .moneycard{margin-top:28px;background:var(--card);border:var(--hair);border-radius:var(--r-xl);padding:var(--pad);
   box-shadow:var(--sh);transition:box-shadow .22s}
@@ -149,7 +168,7 @@ input{font-family:inherit;font-variant-numeric:inherit}
   padding:5px;border-radius:var(--r-m)}
 .seg button{padding:13px 4px;border-radius:10px;font-size:var(--t7);font-weight:700;color:var(--ink-3);transition:.14s}
 .seg button.is-on{background:var(--card);color:var(--ink);box-shadow:var(--sh)}
-.blockhead{margin:34px 0 0;font-size:var(--t6);font-weight:800}
+.blockhead{margin:34px 0 0;font-size:15px;font-weight:700;color:#4A5568;letter-spacing:-.02em}
 .subtoggle{margin-top:24px;display:flex;align-items:center;gap:11px;font-size:var(--t6);font-weight:600;color:var(--ink-3)}
 .subtoggle input{width:20px;height:20px;accent-color:var(--espresso);margin:0}
 
@@ -187,7 +206,7 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .rhead-why{display:flex;gap:8px;margin:16px 0 0;font-size:var(--t6);font-weight:600;
   color:var(--ink-2);line-height:1.5}
 .rhead-why::before{content:'';flex:none;width:3px;border-radius:2px;background:var(--espresso);align-self:stretch}
-.rhead-why.bad::before{background:var(--bad)}
+.rhead-why.bad::before{background:var(--warn)}
 .condbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
 .condchip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:var(--r-pill);
   background:var(--card);border:var(--hair);font-size:var(--t7);font-weight:700;color:var(--ink-2);
@@ -204,9 +223,10 @@ input{font-family:inherit;font-variant-numeric:inherit}
 
 .card{margin-top:var(--gap);background:var(--card);border:var(--hair);border-radius:var(--r-xl);padding:var(--pad);box-shadow:var(--sh)}
 .card-title{font-size:var(--t4);font-weight:800;line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}
-.tip{margin-top:18px;padding:16px 18px;border-radius:var(--r-m);background:var(--fill);
-  font-size:var(--t7);line-height:1.75;color:var(--ink-2)}
-.tip b{color:var(--ink);font-weight:800}
+/* 안내 박스는 수수하게, 접기 버튼은 누를 수 있게 — 둘을 갈라 놓습니다 */
+.tip{margin-top:18px;padding:14px 0 14px 16px;border-radius:0;background:transparent;
+  border-left:3px solid var(--line);font-size:var(--t7);line-height:1.75;color:var(--ink-3)}
+.tip b{color:var(--ink-2);font-weight:800}
 .tip.info{background:transparent;border:1px solid rgba(17,42,70,.20);color:var(--ink-2)}
 
 .stack{height:12px;border-radius:var(--r-pill);overflow:hidden;display:flex;background:var(--fill);margin-top:16px}
@@ -229,7 +249,10 @@ input{font-family:inherit;font-variant-numeric:inherit}
 
 .gauge{height:8px;border-radius:var(--r-pill);background:var(--fill);margin-top:14px;overflow:hidden}
 .gauge i{display:block;height:100%;transition:width .55s cubic-bezier(.22,1,.36,1)}
-.gauge i.ok{background:var(--ok)} .gauge i.mid{background:var(--ink-3)} .gauge i.bad{background:var(--bad)}
+/* 부담 게이지 — 레드 계열 농도 3단. 「부담」은 클수록 무거운 지표라
+   초록으로 시작하면 의미가 어긋납니다. 옆고 → 진함으로 갑니다. */
+.gauge i.ok{background:var(--ok)} .gauge i.mid{background:var(--warn)} .gauge i.bad{background:var(--bad)}
+.tile-v.ok{color:var(--ok)} .tile-v.mid{color:var(--warn)} .tile-v.bad{color:var(--bad)}
 
 .limitrow{display:flex;align-items:center;gap:12px;padding:10px 0}
 .limitrow .k{font-size:var(--t7);color:var(--ink-4);min-width:80px;flex:none}
@@ -239,12 +262,15 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .limitrow.bind .bar i{background:var(--espresso)}
 .limitrow.bind .k,.limitrow.bind .v{color:var(--ink);font-weight:800}
 
-.disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;
-  padding:16px 18px;border-radius:var(--r-m);background:var(--fill);font-size:var(--t6);font-weight:700;color:var(--ink-2)}
+.disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;
+  padding:17px 18px;border-radius:var(--r-m);background:var(--card);border:var(--hair);
+  font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
+.disc:hover{border-color:var(--espresso)}
+.disc[aria-expanded="true"]{background:var(--fill);border-color:var(--fill)}
 .disc .caret{transition:transform .22s;font-size:var(--t7);color:var(--ink-4)}
 .disc[aria-expanded="true"] .caret{transform:rotate(180deg)}
 .costbox{display:none;margin-top:12px;margin-bottom:8px} .costbox.open{display:block}
-.costrow{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--fill)}
+.costrow{display:flex;align-items:center;gap:12px;padding:18px 0;border-bottom:1px solid var(--fill)}
 .costrow:last-of-type{border-bottom:0}
 .costrow .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:600;color:var(--ink-2)}
 .costrow .nm small{display:block;font-size:var(--t7);font-weight:500;color:var(--ink-4);margin-top:3px;line-height:1.5}
@@ -329,7 +355,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r
   <div class="progress"><i id="bar"></i></div>
 
   <header class="brand" id="brand">
-    <h1 class="headline">내 예산에 맞춘<br>예상 매수 시나리오</h1>
+    <h1 class="headline">내 예산에 맞춘<br>예상 집 매수 시나리오</h1>
     <p class="subline">단 세 번의 입력으로 집을 사기 위한 현실적인 예산을 확인하세요.</p>
   </header>
 
@@ -360,7 +386,6 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r
     <div class="card">
       <h2 class="card-title">이 집을 살 때 실제로 드는 돈</h2>
       <div id="receipt"></div>
-      <div class="tip" id="receiptTip"></div>
 
       <button class="disc" id="costToggle" aria-expanded="false" aria-controls="costBox">
         <span>부대비용 상세 설정</span><span class="caret">▾</span></button>
@@ -373,20 +398,11 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r
       </div>
 
       <button class="disc" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
-        <span>무엇이 한도를 정했나요</span><span class="caret">▾</span></button>
+        <span>대출 한도 산출 기준</span><span class="caret">▾</span></button>
       <div class="costbox" id="limitBox">
         <div id="limits"></div>
         <div class="tip" id="limitTip"></div>
-      </div>
-
-      <button class="disc" id="priceToggle" aria-expanded="false" aria-controls="priceBox">
-        <span>다른 집값으로 계산하기</span><span class="caret">▾</span></button>
-      <div class="costbox" id="priceBox">
-        <div class="mgrid">
-          <div class="mfield"><input id="pEok" inputmode="decimal" placeholder="0" aria-label="집값 억"><span>억</span></div>
-          <div class="mfield"><input id="pMan" inputmode="numeric" placeholder="0" aria-label="집값 만"><span>만</span></div>
-        </div>
-        <div class="chips"><button class="chip is-clear" id="priceClear">예상 여력으로 되돌리기</button></div>
+        <div class="tip" id="roomTip"></div>
       </div>
     </div>
 
@@ -405,8 +421,8 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r
     <div class="card">
       <h2 class="card-title">다음 걸음</h2>
       <button class="mini" id="outNaver"><div class="txt"><b id="outNaverT"></b><span id="outNaverS"></span></div><span class="arw">↗</span></button>
-      <button class="mini" id="outHogang"><div class="txt"><b id="outHogangT"></b><span>최근 실거래가와 시세 흐름을 봐요</span></div><span class="arw">↗</span></button>
-      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b><span>카톡·인스타에 그대로 올릴 수 있어요</span></div><span class="arw">↓</span></button>
+      <button class="mini" id="outHogang"><div class="txt"><b id="outHogangT"></b><span>국토교통부 실거래가 공개시스템에서 확인해요</span></div><span class="arw">↗</span></button>
+      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b><span>메신저와 SNS 어디든 바로 공유할 수 있어요</span></div><span class="arw">↓</span></button>
       <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 복사하기</b><span>카톡에 붙여넣기 좋게 한 줄로 정리해요</span></div><span class="arw">⧉</span></button>
     </div>
 
@@ -912,7 +928,7 @@ function existingAnnualDebt(ctx){
   return sum;
 }
 
-/* 연간 상환여력 안에서 빌릴 수 있는 원금을 역산 */
+/* 연간 상환능력 안에서 빌릴 수 있는 원금을 역산 */
 function loanFromCapacity(annualCapacity, ratePct, years){
   if(annualCapacity <= 0) return 0;
   const perUnit = annualPayment(1000000, ratePct, years) / 1000000;
@@ -1198,17 +1214,17 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v23.3 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v23.8 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
-const SERVICE_URL = 'https://yeongkkeul.vercel.app';
+const SERVICE_URL = 'https://[출시-후-도메인-연결-예정]';
 
 const D = { rate:5.4, years:30, rateType:'variable', fixedYears:0 };
 const INTERIOR = [ {v:0,label:'안 함'}, {v:80,label:'기본'}, {v:150,label:'일반'}, {v:250,label:'고급'} ];
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
-            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, priceOverride:null, costOpen:false, limitOpen:false, priceOpen:false,
+            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, priceOverride:null, costOpen:false, limitOpen:false,
             legal:{on:true,v:65}, move:{on:false,v:175}, appl:{on:false,v:500} };
 
 const $ = id => document.getElementById(id);
@@ -1219,7 +1235,7 @@ const richWon = won => formatWon(won).replace(/(억원|만원|억|원)/g, '<i cl
 const richPct = n => n + '<i class="u">%</i>';
 
 /* 표시용 라운딩 — 항상 내림입니다.
-   올림하면 실제보다 여력이 커 보여서 사용자에게 유리한 쪽으로 틀어집니다(원칙 28). */
+   올림하면 실제보다 예산이 커 보여서 사용자에게 유리한 쪽으로 틀어집니다(원칙 28). */
 function approx(won){
   const unit = won >= 100000000 ? 1000000 : 100000;   /* 1억 이상은 100만원, 아래는 10만원 단위 */
   return Math.floor(won / unit) * unit;
@@ -1247,7 +1263,7 @@ const LAST = STEPS.length - 1;
 /* 대출을 안 쓰면 소득 심사가 없으므로 2단계를 통째로 건너뜁니다 */
 const visible = () => S.noLoan ? [0,2] : [0,1,2];
 const posOf = i => visible().indexOf(i);
-const HOUSE = { first:'생애 첫 집', none:'무주택', multi:'한 채 이상' };
+const HOUSE = { first:'생애 최초', none:'무주택', multi:'1주택 이상' };
 
 /* ── 입력 단위 —
    현금·집값은 '억'(소수 2자리까지), 연소득은 '만원'.
@@ -1261,8 +1277,8 @@ function renderQuestion(){
   let h='';
   if(st.id==='cash'){
     h = eye + `<h2 class="q-title">지금 모은 돈이 얼마인가요?</h2>
-      <p class="q-sub">집을 사는 데 바로 쓸 수 있는 현금이에요</p>
-      ${moneyCard('cash', S.cash, '금액을 넣으면 예상 여력이 바로 나와요')}
+      <p class="q-sub oneline">주담대를 제외하고 끌어모을 수 있는 모든 자금이에요.</p>
+      ${moneyCard('cash', S.cash, '금액을 넣으면 예상 예산이 바로 나와요')}
       <div class="chips">
         ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}
         <button class="chip is-clear" data-add="0">지우기</button></div>
@@ -1288,9 +1304,9 @@ function renderQuestion(){
       <div class="pane" id="regionPane">${regionPane()}</div>
       <p class="blockhead">지금 집이 있으세요?</p>
       <div class="seg" id="houseSeg">
-        <button data-house="first" class="${S.houseStatus==='first'?'is-on':''}">처음 사요</button>
-        <button data-house="none"  class="${S.houseStatus==='none'?'is-on':''}">지금 없어요</button>
-        <button data-house="multi" class="${S.houseStatus==='multi'?'is-on':''}">한 채 이상</button>
+        <button data-house="first" class="${S.houseStatus==='first'?'is-on':''}">생애 최초</button>
+        <button data-house="none"  class="${S.houseStatus==='none'?'is-on':''}">무주택</button>
+        <button data-house="multi" class="${S.houseStatus==='multi'?'is-on':''}">1주택 이상</button>
       </div>
       <p class="q-sub" id="houseEcho"></p>`;
   }
@@ -1380,7 +1396,7 @@ function bind(){
   const box=$('qBox'), id=STEPS[S.step].id, eokEl=$('inEok'), manEl=$('inMan');
   if(eokEl){
     const field = id==='income' ? 'income' : 'cash';
-    const hint = field==='income' ? '은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봐요' : '금액을 넣으면 예상 여력이 바로 나와요';
+    const hint = field==='income' ? '은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봐요' : '금액을 넣으면 예상 예산이 바로 나와요';
     const onSync = m => {
       $('readout').textContent = m ? '' : hint;   /* 값이 있으면 비웁니다 */
       syncCta();
@@ -1407,8 +1423,9 @@ function bind(){
   if(seg) seg.querySelectorAll('[data-house]').forEach(b=>b.onclick=()=>{
     S.houseStatus=b.dataset.house;
     seg.querySelectorAll('button').forEach(x=>x.classList.toggle('is-on', x===b));
-    $('houseEcho').textContent = b.dataset.house==='multi' ? '집이 있으면 취득세가 무거워지고 대출이 크게 줄어요.'
-      : b.dataset.house==='first' ? '생애최초 기준이라 더 많이 빌릴 수 있어요.' : '';
+    $('houseEcho').textContent = b.dataset.house==='multi'
+      ? '다주택자는 취득세가 중과되며, 대출 한도가 크게 축소될 수 있습니다.'
+      : b.dataset.house==='first' ? '생애최초 기준이 적용돼 대출 한도가 늘어납니다.' : '';
     syncCta();
   });
   bindPane();
@@ -1422,7 +1439,7 @@ function bindPane(){
 function ready(){
   const id=STEPS[S.step].id;
   if(id==='cash') return !!S.cash;
-  if(id==='income') return !!S.income;   /* 소득은 필수 — 비우면 DSR이 안 걸려 여력이 과대해집니다(원칙 28) */
+  if(id==='income') return !!S.income;   /* 소득은 필수 — 비우면 DSR이 안 걸려 예산이 과대해집니다(원칙 28) */
   if(id==='region') return !!S.sgg && !!S.houseStatus;
   return false;
 }
@@ -1447,6 +1464,7 @@ function render(){
   $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
   $('app').classList.remove('no-dock');
   $('brand').hidden = S.step!==0;
+  $('app').classList.toggle('hero-on', S.step===0);
   $('backBtn').hidden = posOf(S.step)===0;
   $('barLabel').textContent='영끌계산기';
   $('bar').style.width = (posOf(S.step)/visible().length*100)+'%';
@@ -1475,17 +1493,17 @@ function bindingShort(c){
   if(S.noLoan) return ['대출 없이, 가진 돈만으로 계산했어요',''];
   if((c.limits||{}).LTV===0 || c.mortgageLoan<=0)
     return ['이 조건에서는 주택담보대출이 나오지 않아요','bad'];
-  const B={ DSR:['지금 소득으로 감당할 수 있는 만큼까지 잡았어요','bad'],
-    DTI:['지금 소득으로 감당할 수 있는 만큼까지 잡았어요','bad'],
-    LTV:['집값 대비 빌릴 수 있는 비율이 먼저 찼어요',''],
-    '구간한도':['정부 규제로 대출 상한이 먼저 걸렸어요','bad'],
-    '상품한도':['상품 자체 상한이 먼저 걸렸어요','bad'],
-    '은행자체한도':['은행이 정한 상한이 먼저 걸렸어요','bad'],
-    manual:['은행이 정한 상한이 먼저 걸렸어요','bad'] };
+  const B={ DSR:['소득 대비 대출 규제(DSR) 최대 한도에 도달했어요','bad'],
+    DTI:['소득 대비 대출 규제(DSR) 최대 한도에 도달했어요','bad'],
+    LTV:['주택담보대출 비율(LTV) 최대 한도에 도달했어요',''],
+    '구간한도':['정부 규제의 집값 구간별 상한에 도달했어요','bad'],
+    '상품한도':['상품별 대출 상한에 도달했어요','bad'],
+    '은행자체한도':['은행 자체 한도에 도달했어요','bad'],
+    manual:['은행 자체 한도에 도달했어요','bad'] };
   return B[c.binding] || ['한도가 정해졌어요',''];
 }
 function bindingTip(c, price){
-  if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 여력이 크게 올라가요.`;
+  if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 예산이 크게 올라가요.`;
   const L=c.limits||{};
   if(L.LTV===0 || c.mortgageLoan<=0)
     return `<b>규제지역에서 집이 이미 있으면 주택담보대출이 막혀요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요. 「지금 없어요」로 바꾸거나 규제지역 밖을 보면 달라져요.`;
@@ -1495,7 +1513,7 @@ function bindingTip(c, price){
     return `<b>정부 규제 기준이에요.</b> 수도권에서는 집값 구간에 따라 대출 상한이 따로 붙어요. 위 막대의 「정부 상한」이 그 값이에요.`;
   if(c.binding==='LTV'){
     const pct = price>0 ? Math.round(L.LTV/price*100) : 0;
-    return `<b>집값 대비 비율이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요. 생애최초·비규제지역일수록 이 비율이 높아져요.`;
+    return `<b>주택담보대출 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요. 생애최초·비규제지역일수록 이 비율이 높아집니다.`;
   }
   return `<b>여러 기준 중 가장 작은 값이 한도가 돼요.</b>`;
 }
@@ -1512,7 +1530,7 @@ function showResult(keepScroll){
   const isOverride = S.priceOverride!=null;
   const headline = isOverride ? Math.max(0,c.cashNeeded) : price;
 
-  $('heroLabel').textContent = isOverride ? '이 집을 사려면 준비해야 할 현금은' : '현재 조건으로 예상되는 매수 여력은';
+  $('heroLabel').textContent = isOverride ? '이 집을 사려면 준비해야 할 현금은' : '현재 조건으로 예상되는 매수 가능 금액은';
   $('heroAmount').innerHTML = richWon(approx(headline));
   $('heroTail').textContent = '수준이에요';
   const pill=$('heroPill'); pill.className='rhead-why '+tone; pill.querySelector('span').textContent=short;
@@ -1531,7 +1549,8 @@ function showResult(keepScroll){
     <button class="textbtn" id="restartBtn">처음부터 다시 계산하기</button>`;
   $('restartBtn').onclick = restart;
 
-  $('funnel').hidden=true; $('brand').hidden=true; $('result').hidden=false; $('dock').hidden=true;
+  $('funnel').hidden=true; $('brand').hidden=true; $('app').classList.remove('hero-on');
+  $('result').hidden=false; $('dock').hidden=true;
   $('app').classList.add('no-dock'); $('backBtn').hidden=false;
   $('barLabel').textContent='결과'; $('bar').style.width='100%';
   if(!keepScroll) window.scrollTo(0,0);
@@ -1558,10 +1577,9 @@ function renderCondBar(price){
   });
 }
 
-/* 접기 3종 — 부대비용 · 한도 · 다른 집값 */
+/* 접기 2종 — 부대비용 · 한도 */
 function renderDiscs(){
-  [['costToggle','costBox','costOpen'],['limitToggle','limitBox','limitOpen'],
-   ['priceToggle','priceBox','priceOpen']].forEach(([t,b,k])=>{
+  [['costToggle','costBox','costOpen'],['limitToggle','limitBox','limitOpen']].forEach(([t,b,k])=>{
     const tog=$(t), box=$(b);
     box.classList.toggle('open', !!S[k]);
     tog.setAttribute('aria-expanded', String(!!S[k]));
@@ -1583,11 +1601,20 @@ function renderBento(c){
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
   $('tileMonthlySub').textContent = m>0 ? `연 ${D.rate}% · ${D.years}년` : '빌리는 돈이 없어요';
   const g=$('gauge');
-  if(!S.income || m<=0){ $('tileBurden').innerHTML='—'; g.setAttribute('hidden',''); return; }
+  if(!S.income || m<=0){ $('tileBurden').className='tile-v'; $('tileBurden').innerHTML='—';
+    g.setAttribute('hidden',''); return; }
   g.removeAttribute('hidden');
   const ratio=m*12/man(S.income), pct=Math.min(100,Math.round(ratio*100));
+  /* ⚠ 임계 40 / 60은 지시안 그대로입니다.
+     다만 한도는 스트레스 금리(6.9%)로 잡고 상환액은 실제 금리(5.4%)로 계산하므로,
+     DSR 40%를 꿈 채워도 화면 부담률은 최대 34%입니다.
+     즉 실제로는 거의 항상 세이지로 나옵니다. 상세 입력(기존 부채·금리)이 붙으면
+     부담률이 올라가 머스터드·브릭레드가 살아납니다. */
+  const band = ratio<0.40 ? 'ok' : ratio<0.60 ? 'mid' : 'bad';
+  $('tileBurden').className='tile-v '+band;
   $('tileBurden').innerHTML=richPct(pct);
-  g.innerHTML=`<i class="${ratio<0.25?'ok':ratio<0.35?'mid':'bad'}" style="width:${pct}%"></i>`;
+  /* 게이지는 은행 상한 40%를 만석으로 봅니다 */
+  g.innerHTML=`<i class="${band}" style="width:${Math.min(100,Math.round(ratio/0.40*100))}%"></i>`;
 }
 function renderReceipt(c, price){
   let h = row('집값', formatWon(price))
@@ -1598,10 +1625,6 @@ function renderReceipt(c, price){
   if(c.mortgageLoan>0) h += row('주택담보대출','-'+formatWon(c.mortgageLoan),'minus');
   h += row('내가 준비할 현금', richWon(Math.max(0,c.cashNeeded)),'total');
   $('receipt').innerHTML=h;
-  $('receiptTip').innerHTML = (c.roomCut>0
-    ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자를 보호하려고 은행이 미리 떼어두는 금액이라, 승인된 한도보다 실제로 나오는 돈이 조금 줄어요. `
-    : `집값 외에 세금과 수수료가 따로 들어요. `)
-    + `이 영수증은 위 요약과 달리 반올림하지 않은 값이에요.`;
 }
 function renderCostBox(c){
   $('costLead').textContent = '취득세와 중개보수는 법정 기준이라 끄거나 고칠 수 없어요. 금액은 위 영수증에 있어요.';
@@ -1627,6 +1650,10 @@ function renderLimits(c, price){
       <span class="v">${formatWon(L[k])}</span></div>`).join('');
   }
   $('limitTip').innerHTML = bindingTip(c, price);
+  $('roomTip').innerHTML = c.roomCut>0
+    ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자를 보호하려고 은행이 미리 떼어두는 금액이라, 승인된 한도보다 실제로 나오는 돈이 그만큼 줄어듭니다.`
+    : '';
+  $('roomTip').hidden = !(c.roomCut>0);
 }
 function countTo(el, to){
   const from=el._v||0; el._v=to; el.innerHTML=richWon(to);
@@ -1669,17 +1696,10 @@ function renderOutlinks(price){
   $('outNaverS').textContent=`네이버 부동산에서 이 예산대를 봐요`;
   $('outHogangT').textContent=`${region} 실거래가 확인하기`;
   $('outNaver').onclick  = e => { e.preventDefault(); go(`https://new.land.naver.com/search?sk=${q}`); };
-  $('outHogang').onclick = e => { e.preventDefault(); go(`https://hogangnono.com/search?q=${q}`); };
+  $('outHogang').onclick = e => { e.preventDefault(); go('https://rt.molit.go.kr/'); };
   $('outSave').onclick   = e => { e.preventDefault(); saveImage(); };
 
   $('outCopy').onclick   = e => { e.preventDefault(); copySummary(); };
-  const pe=$('pEok'), pm=$('pMan');
-  attachEokMan(pe, pm, ()=>S.priceOverride, v=>{S.priceOverride=v;}, null);
-  [pe,pm].forEach(el=>{
-    el.onchange = () => showResult(true);
-    el.onkeydown = e => { if(e.key==='Enter'){ el.blur(); showResult(true); } };
-  });
-  $('priceClear').onclick = e => { e.preventDefault(); S.priceOverride=null; pe.clearAll(); showResult(true); };
 }
 function go(url){ window.open(url,'_blank','noopener'); }
 
@@ -1688,7 +1708,7 @@ function renderReport(v){
   const {c, headline, isOverride} = v;
   const m = monthlyPaymentCalc(c.mortgageLoan, D.rate, D.years);
   $('rCond').textContent = `${regionLabel()} · ${HOUSE[S.houseStatus]}` + (S.cash?` · 현금 ${formatWon(man(S.cash))}`:'');
-  $('rLabel').textContent = isOverride ? '준비해야 할 현금은' : '현재 조건으로 예상되는 매수 여력';
+  $('rLabel').textContent = isOverride ? '준비해야 할 현금은' : '현재 조건으로 예상되는 매수 가능 금액';
   /* 「11억 1,900만원 선」 — 단위 span을 새로 열지 않고 마지막 것에 이어 붙입니다 */
   $('rAmount').innerHTML = richWon(approx(headline)).replace(/<\/i>$/, ' 선</i>');
   $('rLines').innerHTML =
@@ -1697,14 +1717,16 @@ function renderReport(v){
     (m>0 ? `<div class="report-line"><span class="k">매달 갚는 돈</span><span class="v">${formatWon(m)}</span></div>` : '') +
     (S.income ? `<div class="report-line"><span class="k">소득 대비 부담</span><span class="v">${Math.round(m*12/man(S.income)*100)}%</span></div>` : '') +
     (c.mortgageLoan>0 ? `<div class="report-line"><span class="k">무엇이 정했나</span><span class="v">${LNAME[c.binding]||'—'}</span></div>` : '');
-  $('rNote').textContent = '※ 공공 기준을 적용한 단순 시뮬레이션 추정치입니다. 실제 한도와 세금은 은행 심사·물건에 따라 달라집니다. · 2026.08.05 기준';
+  /* 긴 면책과 기준일은 이미지에서 뺀니다. 단, 이미지가 단독으로 돌 때를 위해
+     짧은 한 줄은 남깁니다 — 완전히 빼면 방어가 사라집니다. */
+  $('rNote').textContent = '※ 단순 시뮬레이션 추정치입니다.';
 }
 function summaryText(){
   if(!LASTVIEW) return '';
   const {headline, isOverride} = LASTVIEW;
   const head = isOverride
     ? `[영끌자금 리포트] ${regionLabel()}에서 이 집을 사려면 현금 ${approxWon(headline)} 선이 필요해요!`
-    : `[영끌자금 리포트] 현금 ${formatWon(man(S.cash))}으로 ${regionLabel()} 예상 매수 여력은 약 ${approxWon(headline)} 선이에요! 💡`;
+    : `[영끌자금 리포트] 현금 ${formatWon(man(S.cash))}으로 ${regionLabel()} 예상 매수 가능 금액은 약 ${approxWon(headline)} 선이에요! 💡`;
   return `${head}\n(※ 단순 시뮬레이션 추정치)\n${SERVICE_URL}`;
 }
 async function copySummary(){
@@ -1745,7 +1767,7 @@ async function saveImage(){
 
 function restart(){
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
-    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,priceOverride:null,costOpen:false,limitOpen:false,priceOpen:false});
+    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,priceOverride:null,costOpen:false,limitOpen:false});
   render(); window.scrollTo(0,0);
 }
 
@@ -1764,7 +1786,7 @@ window.__selfcheck = function(){
     '--line':'#E5E4E0','--fill':'#EFEDE8'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.3 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.8 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
@@ -1796,8 +1818,11 @@ window.__selfcheck = function(){
   /* G-1 · G-3 — 첫 뷰포트 */
   const hero=document.querySelector('.rhead'), ht=hero.textContent;
   ok('G-1 첫 뷰포트 금액 ≤ 6', (ht.match(moneyRe)||[]).length<=6, (ht.match(moneyRe)||[]).join(' '));
-  const BAN=['자기자본','DSR','LTV','방공제','중개보수','취득세','조달','소계','거치','원리금균등'];
+  /* v23.5: LTV·DSR은 한글 설명을 붙이면 허용합니다. 단독은 여전히 금지(원칙 0). */
+  const BAN=['자기자본','방공제','중개보수','취득세','조달','소계','거치','원리금균등'];
   const hit=BAN.filter(b=>ht.includes(b));
+  if(ht.includes('LTV') && !ht.includes('비율(LTV)')) hit.push('LTV(단독)');
+  if(ht.includes('DSR') && !ht.includes('규제(DSR)')) hit.push('DSR(단독)');
   ok('G-3 첫 화면 금지어 0', hit.length===0, hit.join(',')||'없음');
 
   /* G-7 — 같은 금액 반복 */
