@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v23.11 · 정책 2026.08.05 -->
+<!-- BUILD v23.16 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    색 — hex 18 + rgba 5 = 23 (G-6 상한 26)
@@ -24,26 +24,26 @@
      채널 C 제휴 = --bronze 전용. 조작에는 절대 쓰지 않습니다.
      ⚠ 파랑을 폐지하면 조작 채널이 비므로 브론즈로 메우고 싶어지는데,
        그러면 5차에서 지적된 「노란색이 광고인지 액션인지 모르겠다」가 그대로 재발합니다. */
-  --bg:#F2F4F7; --card:#FFFFFF;              /* 웜 펄 바탕 · 순백 카드 */
-  --grad-1:#0B1C30; --grad-2:#112A46;        /* 공유 리포트 전용 */
-  --espresso:#112A46; --espresso-2:#0B1C30;  /* 채널 A 조작 — 미드나잇 네이비 */
-  --navy-lift:#8FA6BF;                        /* 다크 면 위 보조 글자 */
-  --warm-silver:#D1CEC7;
-  --lime:#C3D64A;      /* 톤다운 라임 — 핵심 수치·주요 조작 */
-  --lime-deep:#8F9F2C;
-  --lime-tint:#F3F7DE;                      /* 막대 두 번째 조각 — 대비 9.26:1 */
-  --bronze:#112A46; --bronze-hi:#8FA6BF; --bronze-soft:#F1F3F6;
-  --ink:#1D1D1F; --ink-2:#3D3A35; --ink-3:#6B665E; --ink-4:#A39D93;
-  --line:#E7E9ED; --fill:#F1F3F6;
+  --bg:#F2F4F6; --card:#FFFFFF;              /* 웜 펄 바탕 · 순백 카드 */
+  --grad-1:#000000; --grad-2:#191F28;        /* 공유 리포트 전용 */
+  --espresso:#191F28; --espresso-2:#000000;  /* 채널 A 조작 — 미드나잇 네이비 */
+  --navy-lift:#8B95A1;                        /* 다크 면 위 보조 글자 */
+  --warm-silver:#B0B8C1;
+  --green:#00CA71;      /* 포인트 — 면·테두리용 */
+  --green-ink:#00794A;  /* 포인트 — 글자용. #00CA71은 흰 바탕 위 2.17:1로 못 읽힙니다 */
+  --green-tint:#E8F9F0;
+  --bronze:#191F28; --bronze-hi:#8B95A1; --bronze-soft:#F2F4F6;
+  --ink:#191F28; --ink-2:#333D4B; --ink-3:#4E5968; --ink-4:#8B95A1;
+  --line:#E5E8EB; --fill:#F2F4F6;
   --ok:#C4837C;        /* 부담 낮음 — 톤다운 로즈 */
   --bad:#7F2420;       /* 부담 높음 — 딥 버간디 */
   --warn:#B33A3A;      /* 부담 중간 — 브릭 레드 */
   --glass:rgba(255,255,255,.10);
   --glass-line:rgba(255,255,255,.20);
   --glass-2:rgba(255,255,255,.16);
-  --sh:0 12px 32px -8px rgba(17,42,70,.10);
-  --hair:1px solid #E7E9ED;
-  --sh-lift:0 20px 48px -12px rgba(17,42,70,.16);
+  --sh:0 4px 20px rgba(0,0,0,.03);
+  --hair:1px solid #E5E8EB;
+  --sh-lift:0 10px 30px rgba(0,0,0,.06);
 
   --d1:50px; --t1:28px; --t2:25px; --t3:20px; --t4:17px; --t5:16px; --t6:14px; --t7:12.5px;
   --r-m:14px; --r-l:20px; --r-xl:26px; --r-pill:999px;
@@ -77,24 +77,28 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .app.no-dock{padding-bottom:0}
 .appbar{position:sticky;top:0;z-index:20;background:var(--bg);height:56px;display:flex;
   align-items:center;padding:0 10px;transition:background .2s}
-.app.hero-on .appbar{background:var(--espresso)}
-.app.hero-on .appbar .barlabel{color:var(--warm-silver)}
-.app.hero-on .progress{background:transparent}
-.app.hero-on .progress i{background:var(--lime)}
+.app.hero-on .appbar{background:var(--bg)}
+.app.hero-on .appbar .barlabel{color:var(--ink-3)}
+.app.hero-on .progress{background:var(--line)}
+.app.hero-on .progress i{background:var(--green)}
 .iconbtn{width:40px;height:40px;border-radius:var(--r-m);display:grid;place-items:center;color:var(--ink-2)}
 .iconbtn:hover{background:var(--fill)}
 .barlabel{font-size:var(--t6);font-weight:700;color:var(--ink-3);margin-left:4px}
 .progress{position:sticky;top:56px;z-index:20;height:2px;background:var(--line)}
-.progress i{display:block;height:100%;width:0;background:var(--lime-deep);transition:width .34s cubic-bezier(.22,1,.36,1)}
+.progress i{display:block;height:100%;width:0;background:var(--green);transition:width .34s cubic-bezier(.22,1,.36,1)}
 
 /* ── 브랜드 ─────────────────────────────────── */
 /* 입력 01 상단 밴드 — 좌우 끝까지 차는 딥 네이비.
    ⚠ 지침 6-4「다크 면은 화면에 두지 않는다」는 **결과 화면** 규칙입니다.
      여기는 입력 첫 화면의 헤더 밴드라 적용 대상이 아닙니다. */
-.brand{background:var(--espresso);padding:34px 24px 36px;margin:0}
-.brand .headline{color:var(--card)}
-.brand .headline::before{background:var(--warm-silver)}
-.brand .subline{color:var(--warm-silver)}
+/* 🔴 v23.14 — 넓은 어두운 면을 걷어냈습니다.
+   지적은 「네이비 색」이 아니라 「넓은 면적」이었는데,
+   v23.13에서 색만 블랙으로 바꾸고 면적을 그대로 둔 것이 오류였습니다.
+   레퍼런스처럼 바탕은 밝게, 라임을 액센트 면으로 씁니다. */
+.brand{background:var(--bg);padding:30px 24px 4px;margin:0}
+.brand .headline{color:var(--ink)}
+.brand .headline::before{background:var(--green)}
+.brand .subline{color:var(--ink-3)}
 /* 🔴 밴드가 화면 위쪽을 이미 먹었으므로 퍼널은 min-height를 푸니다.
    안 풀면 페이지가 1.5배로 늘어나 하단이 통째로 비어 보입니다. */
 .app.hero-on .funnel{padding-top:0;min-height:0;padding-bottom:24px}
@@ -157,15 +161,15 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .chip:active{transform:scale(.94)}
 .chip.pop{animation:pop .34s cubic-bezier(.34,1.56,.64,1)}
 @keyframes pop{0%{transform:scale(1)}38%{transform:scale(1.12)}100%{transform:scale(1)}}
-.chip.is-on{background:var(--lime-tint);color:var(--ink);border:1.5px solid var(--lime-deep);box-shadow:none}
+.chip.is-on{background:var(--card);color:var(--green-ink);border:2px solid var(--green);font-weight:800;box-shadow:none}
 .chip.is-clear{color:var(--ink-4);font-weight:600;box-shadow:none;background:none;border:0}
 
 .zonegrid{margin-top:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .zonecard{padding:20px 6px;border:var(--hair);border-radius:var(--r-l);background:var(--card);box-shadow:var(--sh);
   text-align:center;transition:.14s}
-.zonecard.is-on{background:var(--lime-tint);border:1.5px solid var(--lime-deep)}
+.zonecard.is-on{background:var(--card);border:2px solid var(--green)}
 .zonecard b{display:block;font-size:var(--t6);font-weight:700}
-.zonecard.is-on b{color:var(--ink)}
+.zonecard.is-on b{color:var(--green-ink)}
 .pane{margin-top:26px}
 .pane-title{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px;letter-spacing:.02em}
 .taggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -178,10 +182,11 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .seg{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
   padding:5px;border-radius:var(--r-m)}
 .seg button{padding:13px 4px;border-radius:10px;font-size:var(--t7);font-weight:700;color:var(--ink-3);transition:.14s}
-.seg button.is-on{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--lime-deep)}
+.seg button.is-on{background:var(--card);color:var(--green-ink);font-weight:800;box-shadow:inset 0 0 0 2px var(--green)}
 .blockhead{margin:34px 0 0;font-size:15px;font-weight:700;color:var(--ink-2);letter-spacing:-.02em}
-.debtlink{margin-top:22px;padding:0;font-size:var(--t7);font-weight:700;color:var(--espresso);
-  text-decoration:underline;text-underline-offset:4px;letter-spacing:-.02em}
+.debtlink{margin-top:30px;padding:0;font-size:var(--t7);font-weight:600;color:var(--ink-3);
+  letter-spacing:-.02em;transition:color .12s}
+.debtlink:hover{color:var(--ink)}
 .debtbox{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
 .debtbox.open{display:block}
 .subtoggle{margin-top:24px;display:flex;align-items:center;gap:11px;font-size:var(--t6);font-weight:600;color:var(--ink-3)}
@@ -204,9 +209,11 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .dockrow{display:flex;gap:8px;padding:8px;border-radius:999px;background:var(--card);box-shadow:var(--sh-lift)}
 .cta.back{flex:0 0 84px;width:auto;background:var(--fill);border:0;color:var(--ink-3)}
 .cta.back:hover{color:var(--ink);background:var(--line)}
-.cta{width:100%;height:54px;border-radius:999px;background:var(--espresso);color:var(--card);
+/* CTA — 흰 글자를 쓰려면 #00CA71(2.17:1)은 못 씁니다.
+   흰 글자가 가능한 가장 밝은 그린이 #00794A(5.48:1)입니다. */
+.cta{width:100%;height:54px;border-radius:999px;background:var(--green-ink);color:#FFFFFF;
   font-size:var(--t5);font-weight:800;letter-spacing:-.01em;transition:background .14s,transform .12s}
-.cta:hover{background:var(--espresso-2)}
+.cta:hover{background:#005C38}
 .cta:active{transform:scale(.985)}
 .cta:disabled{background:var(--line);color:var(--ink-4);cursor:default;transform:none}
 .cta.ghost{background:var(--fill);color:var(--ink-3)}
@@ -220,25 +227,29 @@ input{font-family:inherit;font-variant-numeric:inherit}
 /* 🔴 마커는 금액 span에만 걸어야 합니다.
    문단 전체에 걸면 오른쪽 「수준이에요」까지 덮어버립니다(v23.10 수정). */
 /* 얄은 마커 — 떡칠한 형광펜이 아니라 밑줄처럼 깔립니다 */
-.rhead-amount > span{position:relative;display:inline;
-  background:linear-gradient(to top, var(--lime) 0 .22em, transparent .22em);
-  padding-bottom:.02em}
+/* 형광펜 없음. 금액은 그린 글자 자체로 꿂합니다.
+   #00CA71은 배경 대비 1.97:1로 큰 글자에도 부족해 #00794A(4.97:1)를 씁니다. */
+.rhead-amount > span{color:var(--green-ink)}
+.rhead-amount .u{color:var(--ink-2);font-weight:400}
 .rhead-amount{position:relative;display:inline-block;
-  font-size:clamp(32px,11vw,var(--d1));line-height:1.12;font-weight:800;
-  letter-spacing:-.04em;margin:8px 0 0}
+  font-size:clamp(32px,11vw,var(--d1));line-height:1.1;font-weight:900;
+  letter-spacing:-.05em;margin:8px 0 0}
 .rhead-amount > span{white-space:nowrap}
-.u{font-style:normal;font-size:.82em;font-weight:500;letter-spacing:-.01em;margin-left:.04em}
-.rhead-tail{display:inline-block;position:relative;z-index:2;font-style:normal;font-size:var(--t4);font-weight:300;
+.u{font-style:normal;font-size:.72em;font-weight:300;color:var(--ink-3);letter-spacing:-.01em;margin-left:.05em}
+.rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:300;color:var(--ink-3);
   color:var(--ink-3);letter-spacing:-.02em;margin-left:7px;vertical-align:baseline}
 .rhead-why{display:flex;gap:8px;margin:16px 0 0;font-size:var(--t6);font-weight:600;
   color:var(--ink-2);line-height:1.5}
 .rhead-why::before{content:'';flex:none;width:3px;border-radius:2px;background:var(--espresso);align-self:stretch}
 .rhead-why.bad::before{background:var(--warn)}
 .condbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
-.condchip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:var(--r-pill);
-  background:var(--card);border:var(--hair);font-size:var(--t7);font-weight:700;color:var(--ink-2);
-  letter-spacing:-.02em;transition:.12s}
-.condchip:hover{border-color:var(--espresso);color:var(--espresso)}
+.condchip{display:inline-flex;align-items:center;gap:6px;padding:9px 11px 9px 13px;border-radius:var(--r-pill);
+  background:var(--card);border:0;font-size:var(--t7);font-weight:700;color:var(--ink-2);
+  letter-spacing:-.02em;transition:.12s;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.condchip:hover{border-color:var(--ink);color:var(--ink)}
+.condchip:active{background:var(--fill);transform:scale(.97)}
+.condchip .cc{font-size:9px;color:var(--ink-4);font-weight:400;margin-left:1px}
+.condchip:hover .cc{color:var(--ink)}
 .condchip u{text-decoration:none;color:var(--ink-4);font-weight:600}
 .bento{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:var(--gap)}
 .tile{background:var(--card);border-radius:var(--r-l);padding:var(--pad);box-shadow:var(--sh)}
@@ -258,18 +269,18 @@ input{font-family:inherit;font-variant-numeric:inherit}
 
 .stack{height:12px;border-radius:var(--r-pill);overflow:hidden;display:flex;background:var(--fill);margin-top:16px}
 .stack i{height:100%;display:block;transition:width .55s cubic-bezier(.22,1,.36,1)}
-.stack i.f1{background:var(--espresso)} .stack i.f2{background:var(--warm-silver)}
+.stack i.f1{background:var(--ink)} .stack i.f2{background:var(--green)}
 .stack i.f1 + i.f2{box-shadow:inset 2px 0 0 var(--card)}
 .legend{margin-top:16px;display:flex;gap:22px}
 .legend div{display:flex;align-items:center;gap:8px;font-size:var(--t7);color:var(--ink-3)}
 .legend span{width:8px;height:8px;border-radius:3px;flex:none}
-.legend .f1{background:var(--espresso)} .legend .f2{background:var(--warm-silver)}
+.legend .f1{background:var(--ink)} .legend .f2{background:var(--green)}
 .legend b{font-size:var(--t6);font-weight:800;color:var(--ink)}
 
 .line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;font-size:var(--t6)}
 .line .v{white-space:nowrap}
 .line .k{color:var(--ink-3);font-weight:300} .line .v{font-weight:700;color:var(--ink-2)}
-.line.minus .v{color:var(--espresso)}
+.line.minus .v{color:var(--ink)}
 .line.total{border-top:1px solid var(--line);margin-top:12px;padding-top:20px}
 .line.total .k{font-size:var(--t5);font-weight:800;color:var(--ink)}
 .line.total .v{font-size:var(--t3);font-weight:800;letter-spacing:-.04em}
@@ -293,10 +304,10 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .limitrow.bind .k,.limitrow.bind .v{color:var(--ink);font-weight:800}
 
 .disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;
-  padding:17px 18px;border-radius:var(--r-m);background:var(--card);border:var(--hair);
+  padding:17px 18px;border-radius:var(--r-m);background:var(--fill);border:0;
   font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
-.disc:hover{border-color:var(--espresso)}
-.disc[aria-expanded="true"]{background:var(--fill);border-color:var(--fill)}
+.disc:hover{background:var(--line)}
+.disc[aria-expanded="true"]{background:var(--line)}
 .disc .caret{transition:transform .22s;font-size:var(--t7);color:var(--ink-4)}
 .disc[aria-expanded="true"] .caret{transform:rotate(180deg)}
 .costbox{display:none;margin-top:12px;margin-bottom:8px} .costbox.open{display:block}
@@ -320,12 +331,20 @@ input{font-family:inherit;font-variant-numeric:inherit}
 .slider-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
 .slider-head .k{font-size:var(--t7);font-weight:700;color:var(--ink-4)}
 .slider-head .v{font-size:var(--t3);font-weight:800}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:var(--r-pill);
-  background:var(--fill);outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:var(--r-pill);
-  background:var(--card);border:3px solid var(--espresso);box-shadow:var(--sh-lift);cursor:pointer}
-input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r-pill);background:var(--card);
-  border:3px solid var(--espresso);cursor:pointer}
+/* 슬라이더 — 브라우저 기본 스타일을 전부 덮습니다.
+   채워진 구간은 JS가 --fill-pct를 갱신해 그립니다. */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:var(--r-pill);
+  outline:none;cursor:pointer;
+  background:linear-gradient(to right, var(--green) 0 var(--fill-pct,0%), var(--line) var(--fill-pct,0%) 100%)}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:var(--r-pill);background:transparent}
+input[type=range]::-moz-range-track{height:6px;border-radius:var(--r-pill);background:var(--line)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:var(--r-pill);background:var(--green)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-10px;
+  border-radius:var(--r-pill);background:var(--green);border:3px solid #FFFFFF;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;transition:transform .12s}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.12)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r-pill);background:var(--green);
+  border:3px solid #FFFFFF;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer}
 .tweak + .tweak{margin-top:26px}
 .tweak-label{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px}
 .quote-k{font-size:var(--t7);font-weight:700;color:var(--ink-3);margin:0}
@@ -340,21 +359,28 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r
 .mini .txt b{display:block;font-size:var(--t6);font-weight:700;color:var(--ink);line-height:1.45}
 .mini .txt span{display:block;margin-top:4px;font-size:var(--t7);font-weight:300;color:var(--ink-3);line-height:1.5}
 .mini .arw{flex:none;font-size:var(--t6);color:var(--ink-4)}
-.mini.amber{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--espresso)}
-.mini.amber .txt b,.mini.amber .arw{color:var(--espresso)}
-.mini.amber .txt span{color:var(--ink-3)}
-.mini.amber:hover{background:var(--fill)}
+.mini.amber{background:var(--card);box-shadow:inset 0 0 0 2px var(--green)}
+.mini.amber .txt b,.mini.amber .arw{color:var(--green-ink)}
+.mini.amber .txt span{color:var(--ink-2)}
+.mini.amber:hover{background:var(--green-tint)}
 .mini.sm{padding:16px 18px;margin-top:16px;background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.sm em{font-size:var(--t5)} .mini.sm .txt b{font-size:var(--t7)}
 
-.trust{display:flex;align-items:flex-start;gap:10px;margin-top:var(--gap);padding:18px 20px;border-radius:var(--r-m);
-  background:var(--fill);font-size:var(--t7);line-height:1.7;font-weight:500;color:var(--ink-3)}
-.restart-cta{width:100%;height:58px;margin-top:var(--gap);border-radius:var(--r-m);
-  background:var(--espresso);color:var(--card);box-shadow:var(--sh-lift);
+/* 둘러싸던 회색 박스를 걷어냈습니다 — 가짜 버튼처럼 보였습니다 */
+.trust{margin:26px 0 0;padding:0;background:none;text-align:center;
+  font-size:12px;line-height:1.7;font-weight:400;color:var(--ink-3);
+  word-break:keep-all;overflow-wrap:anywhere}
+.reedit-cta{width:100%;height:54px;margin-top:var(--gap);border-radius:var(--r-m);
+  background:var(--fill);color:var(--ink);font-size:var(--t6);font-weight:700;
+  letter-spacing:-.02em;transition:.14s}
+.reedit-cta:hover{background:var(--line)}
+.restart-cta{width:100%;height:58px;margin-top:10px;border-radius:var(--r-m);
+  background:var(--espresso);color:#FFFFFF;box-shadow:var(--sh-lift);
   font-size:var(--t5);font-weight:800;letter-spacing:-.02em;transition:.14s}
 .restart-cta:hover{background:var(--espresso-2)}
-.foot{padding:20px 8px 0;font-size:var(--t7);line-height:1.85;color:var(--ink-4)}
-.foot .legal{display:block;margin-bottom:10px;color:var(--ink-3);font-weight:600}
+.foot{padding:8px 12px 0;text-align:center;font-size:12px;line-height:1.7;color:var(--ink-3)}
+.foot .legal{display:block;margin:0;color:var(--ink-3);font-weight:400;
+  word-break:keep-all;overflow-wrap:anywhere}
 .textbtn{display:inline-block;margin-top:14px;padding:11px 18px;border-radius:10px;
   background:var(--fill);color:var(--ink);font-size:var(--t7);font-weight:700;
   letter-spacing:-.02em;transition:background .14s}
@@ -463,7 +489,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:var(--r
 
 
     <div id="restartWrap"></div>
-    <div class="trust"><span id="trustText"></span></div>
+    <p class="trust" id="trustText"></p>
     <p class="foot" id="footNote"></p>
   </section>
 </div>
@@ -1254,7 +1280,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v23.11 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v23.16 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1621,18 +1647,23 @@ function showResult(keepScroll){
   LASTVIEW = {c, price, headline, isOverride, short};
   renderReport(LASTVIEW);
 
-  $('trustText').textContent = '2026.08.05 확인 기준 · 스트레스 DSR · 취득세 · 지방교육세 · 농어촌특별세 · 중개보수 상한요율을 반영해 계산했어요.';
-  $('footNote').innerHTML = `<span class="legal">※ 본 결과는 공공 기준을 적용한 단순 시뮬레이션 추정치이며, 실제 한도 및 세금은 은행 심사 및 물건에 따라 달라질 수 있습니다.</span>
-    <span class="legal">※ 본 DSR 한도는 입력하신 소득과 기존 대출만을 기준으로 산출되었으므로, 정확한 대출 가능 금액은 반드시 은행 상담을 통해 확인하시기 바랍니다.</span>
-    시중은행 주담대 기준이에요 — <b>디딤돌·보금자리론 같은 정책대출을 받을 수 있다면 한도가 더 늘어나요.</b> 금리 연 ${D.rate}% · ${D.years}년 원리금균등 기준이고, 국민주택채권 매입비는 아직 계산에 넣지 않았어요.
-    입력한 값은 어디에도 저장하지 않아요.<br>
-`;
-  $('restartWrap').innerHTML = '<button class="restart-cta" id="restartBtn">처음부터 다시 계산하기</button>';
+  $('trustText').textContent = '스트레스 DSR · 취득세 · 지방교육세 · 중개보수 상한요율 기준 반영';
+  $('footNote').innerHTML = `<span class="legal">※ 본 결과는 단순 시뮬레이션 추정치이며, 실제 대출 한도와 세금은 은행 심사 및 물건에 따라 달라질 수 있습니다.</span>`;
+  /* 2-Track — 위: 조건만 고치기(세컨더리) / 아래: 처음부터(메인) */
+  $('restartWrap').innerHTML =
+    '<button class="reedit-cta" id="reeditBtn">이전 단계로 · 조건 수정</button>' +
+    '<button class="restart-cta" id="restartBtn">처음부터 다시 계산하기</button>';
   $('restartBtn').onclick = restart;
+  $('reeditBtn').onclick = () => {
+    S.step = STEPS.length - 1;          /* 03 지역 선택으로 */
+    S.lockedPrice = null;
+    $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
+    $('app').classList.remove('no-dock'); render(); window.scrollTo(0,0);
+  };
 
   $('funnel').hidden=true; $('brand').hidden=true; $('app').classList.remove('hero-on');
   $('result').hidden=false; $('dock').hidden=true;
-  $('app').classList.add('no-dock');
+  $('app').classList.add('no-dock'); $('dock').hidden=true;   /* 결과에서는 플로팅 바를 걸지 않습니다 */
   $('barLabel').textContent='결과'; $('bar').style.width='100%';
   if(!keepScroll) window.scrollTo(0,0);
 }
@@ -1650,7 +1681,7 @@ function renderCondBar(price){
   }
   if(py) items.push(['<u>평형</u> '+py, -1]);
   $('condBar').innerHTML = items.map(([t,i])=>
-    i>=0  ? `<button class="condchip" data-step="${i}">${t}</button>`
+    i>=0  ? `<button class="condchip" data-step="${i}">${t}<b class="cc">▾</b></button>`
     : `<span class="condchip">${t}</span>`).join('');
   $('condBar').querySelectorAll('[data-step]').forEach(b=>b.onclick=e=>{
     e.preventDefault(); S.step=+b.dataset.step; S.lockedPrice=null;
@@ -1733,7 +1764,10 @@ function renderLimits(c, price){
       <span class="k">${LNAME[k]||k}</span><span class="bar"><i style="width:${max>0?Math.round(L[k]/max*100):0}%"></i></span>
       <span class="v">${formatWon(L[k])}</span></div>`).join('');
   }
-  $('limitTip').innerHTML = bindingTip(c, price);
+  $('limitTip').innerHTML = bindingTip(c, price)
+    + `<br><br>※ 본 DSR 한도는 입력하신 소득과 기존 대출만을 기준으로 산출되었으므로, 정확한 금액은 은행 상담으로 확인해 주세요.`
+    + `<br>※ 시중은행 주담대 기준이에요 — 디딛돌·보금자리론 같은 정책대출을 받을 수 있다면 한도가 더 늘어나요.`
+    + `<br>※ 금리 연 ${D.rate}% · ${D.years}년 원리금균등 기준이고, 국민주택채권 매입비는 아직 넣지 않았어요.`;
   $('roomTip').innerHTML = c.roomCut>0
     ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자를 보호하려고 은행이 미리 떼어두는 금액이라, 승인된 한도보다 실제로 나오는 돈이 그만큼 줄어듭니다.`
     : '';
@@ -1749,8 +1783,12 @@ function countTo(el, to){
 }
 function renderPkg(){
   const r=$('pyeongRange');
-  r.value=S.pyeong; $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'모름';
-  r.oninput = () => { S.itTouched=true; S.pyeong=+r.value;
+  /* 채워진 구간을 CSS 변수로 그립니다(브라우저 기본 트랙 대체) */
+  const paintTrack = () => r.style.setProperty('--fill-pct',
+    ((r.value - r.min) / (r.max - r.min) * 100) + '%');
+  r.value=S.pyeong; paintTrack();
+  $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'모름';
+  r.oninput = () => { S.itTouched=true; S.pyeong=+r.value; paintTrack();
     $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'모름'; refreshPkg(); };
   r.onchange = () => showResult(true);
   $('interiorChips').innerHTML = INTERIOR.map(o=>
@@ -1865,12 +1903,12 @@ window.__selfcheck = function(){
   const moneyRe=/(?:\d[\d,]*억\s?)?[\d,]+만원|\d[\d,]*억원/g;
 
   /* 🔒 디자인 락 — 토큰이 바뀌었으면 여기서 걸립니다 */
-  const LOCK = {'--bg':'#F2F4F7','--card':'#FFFFFF','--grad-1':'#0B1C30','--grad-2':'#112A46',
-    '--espresso':'#112A46','--espresso-2':'#0B1C30','--ink':'#1D1D1F',
-    '--line':'#E7E9ED','--fill':'#F1F3F6'};
+  const LOCK = {'--bg':'#F2F4F6','--card':'#FFFFFF','--grad-1':'#000000','--grad-2':'#191F28',
+    '--espresso':'#191F28','--espresso-2':'#000000','--ink':'#191F28',
+    '--line':'#E5E8EB','--fill':'#F2F4F6'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.11 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.16 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
