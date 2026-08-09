@@ -368,10 +368,15 @@ HYGIENE.forEach(([name, over]) => {
      v22를 대표 화면으로 올리는 필수 조건이었습니다. */
   /* v23.3: 기존 부채 입력을 없애고 소득만으로 DSR을 봅니다.
      그만큼 한도가 과대해지므로 면책 문구가 반드시 살아 있어야 합니다. */
-  tt('기존 부채 입력이 없다', !/id="inDebt"|debtMonthly/.test(fs.readFileSync(FILE,'utf8')));
+  /* v23.11: 기존 부채 입력을 다시 넣었습니다(과대 오차 최대 1억 2,927만원). */
+  tt('기존 부채 입력칸이 있다', /id="inDebt"/.test(fs.readFileSync(FILE,'utf8')));
+  tt('기존 부채가 엔진으로 간다',
+     /otherDebtMonthly:\(S\.debtMonthly\|\|0\)\*10000/.test(UI));
+  tt('기본은 접혀 있다 (피로도 관리)', /debtOpen:false/.test(UI));
+  tt('조건 칩에 갚는 대출이 노출', /갚는 대출<\/u>/.test(UI));
   tt('소득은 여전히 필수다', /id==='income'\)\s*return\s*!!S\.income/.test(UI));
-  tt('DSR 면책 문구가 있다', /본 DSR 한도는 소득만을 기준으로 산출/.test(UI));
-  tt('한도 안내에도 기존 대출 경고가 있다', /지금 갚고 있는 대출이 있다면/.test(UI));
+  tt('DSR 면책 문구가 있다', /본 DSR 한도는 입력하신 소득과 기존 대출만을 기준/.test(UI));
+  tt('한도 안내가 부채 입력 여부를 반영', /갚는 대출을 반영한 값이에요/.test(UI));
   tt('정책대출 미반영을 면책에 밝힌다', /정책대출을 받을 수 있다면/.test(UI));
 
   /* 전월세는 본체에서 완전히 빠졌다 (2026.08.08 결정) */
@@ -458,6 +463,31 @@ HYGIENE.forEach(([name, over]) => {
   tt('임시 도메인 표기', /출시-후-도메인-연결-예정/.test(UI));
   tt('헤더 밴드가 퍼널 높이를 푸는다',
      /\.app\.hero-on \.funnel\{[^}]*min-height:0/.test(fs.readFileSync(FILE,'utf8')));
+
+  /* 🔴 v23.9 — 부대비용이 집값을 흔들던 버그.
+     집값을 한 번만 정하고(lockedPrice) 이후 비용은 더하기만 합니다. */
+  tt('집값이 잠긴다 (lockedPrice)', /if\(S\.lockedPrice==null\)\s*S\.lockedPrice\s*=\s*solveMaxPrice/.test(UI));
+  tt('결과에서는 solveMaxPrice를 다시 부르지 않는다',
+     (UI.match(/solveMaxPrice/g)||[]).length === 1, (UI.match(/solveMaxPrice/g)||[]).length + '곳');
+  tt('퍼널을 다시 통과하면 재산정', /S\.lockedPrice=null/.test(UI));
+  tt('가진 돈 초과 안내가 있다', /class="overnote"/.test(UI));
+
+  /* v23.10 — 마커가 오른쪽 텍스트를 덮던 버그 · 플로팅 독 · 칩 틴트 */
+  tt('마커가 금액 span에만 걸린다',
+     /\.rhead-amount > span\{[^}]*linear-gradient/.test(css2) && !/rhead-amount::after/.test(css2));
+  tt('플로팅 독', /\.dockrow\{[^}]*border-radius:999px/.test(css2));
+  tt('재계산 CTA가 솔리드', /\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
+  tt('칩 선택이 틴트+테두리', /\.chip\.is-on\{background:var\(--lime-tint\)/.test(css2));
+  tt('카드 테두리 대신 그림자', !/\.card\{[^}]*border:var\(--hair\)/.test(css2));
+
+  /* v23.9 — 자동 포커스 금지 · 네비 분리 · 재계산 CTA · 다크모드 차단 */
+  tt('진입 시 자동 포커스 없음', !/setTimeout\(\(\)=>\s*\w*El?\.focus/.test(UI));
+  tt('상단은 홈, 하단은 이전/다음',
+     /id="homeBtn"/.test(css2) && /id="prevBtn"/.test(css2) && !/id="backBtn"/.test(css2));
+  tt('재계산이 풀폭 CTA', /class="restart-cta"/.test(UI));
+  tt('다크모드 차단', /name="color-scheme" content="light"/.test(css2)
+     && /:root\{[\s\S]{0,80}color-scheme:light/.test(css2));
+  tt('라임 액센트 도입', /--lime:#C3D64A/.test(css2));
 
   /* 입력 첫 화면 네이비 밴드 */
   tt('입력 01 네이비 밴드가 있다',
