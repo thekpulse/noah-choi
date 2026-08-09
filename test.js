@@ -292,7 +292,7 @@ HYGIENE.forEach(([name, over]) => {
   const html = fs.readFileSync(FILE, 'utf8');
   tt('__selfcheck 존재', /window\.__selfcheck\s*=/.test(html));
   ['디자인 락','G-6','G-1','G-3','G-7','넘침','영수증 합계','대출 ≤ 집값','다크 카드','결과 블록',
-   'G-13','G-14']
+   'G-13','G-14','G-15']
     .forEach(k => tt('__selfcheck 항목: ' + k, html.includes(k)));
 })();
 
@@ -459,6 +459,30 @@ HYGIENE.forEach(([name, over]) => {
   /* 죽은 .mrow 규칙이 금액 자간을 -.04em으로 되돌리던 두 번째 정의였습니다. */
   tt('죽은 .mrow 규칙이 없다', !/^\.mrow[\s{]/m.test(css2));
 
+  /* v23.19 — 타이틀·금액은 900 고정, 행간 1.1~1.2 */
+  tt('타이틀·금액이 900이다', (()=>{
+     const want=['\\.headline\\{[^}]*font-weight:900',
+                 '\\.q-title\\{[^}]*font-weight:900',
+                 '\\.mfield input\\{[^}]*font-weight:900',
+                 '\\.rhead-amount\\{[^}]*font-weight:900',
+                 '\\.tile-v\\{[^}]*font-weight:900'];
+     return want.every(r=>new RegExp(r).test(css2));
+  })());
+  tt('타이틀·금액 행간이 1.1~1.2', (()=>{
+     const sel=['\\.headline\\{','\\.q-title\\{','\\.mfield input\\{','\\.rhead-amount\\{','\\.tile-v\\{'];
+     return sel.every(x=>{
+       const m=css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'));
+       return m && +m[1]>=1.1 && +m[1]<=1.2;
+     });
+  })());
+  /* v23.19 — 다음 걸음 2×2 · 부채칸 1단 */
+  tt('다음 걸음이 2×2 바둑판',
+     /\.minigrid\{[^}]*grid-template-columns:1fr 1fr/.test(css2)
+     && /class="minigrid"/.test(fs.readFileSync(FILE,'utf8')));
+  tt('부채 입력칸이 1단 100%',
+     /\.debtcard \.mfield\{width:100%\}/.test(css2)
+     && !/id="inDebt"[\s\S]{0,300}visibility:hidden/.test(fs.readFileSync(FILE,'utf8')));
+
   /* 질문 → 입력 카드 간격은 01(히어로 카드 안)과 02·03이 같아야 합니다. */
   /* ⚠ `.app.hero-on .funnel > .q .moneycard{` 도 `.moneycard{`를 품습니다.
         줄머리로 앵커하지 않으면 같은 규칙을 두 번 읽고 항상 통과합니다. */
@@ -537,10 +561,10 @@ HYGIENE.forEach(([name, over]) => {
   tt('결과에서 플로팅 바를 숨긴다', /\$\('dock'\)\.hidden=true/.test(UI));
   tt('2-Track — 조건 수정 버튼이 있다', /id="reeditBtn"/.test(UI));
   /* v23.18 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다. */
-  tt('되돌아가기가 버튼 덩어리다 (흰 면 + 테두리 + 그림자)',
+  tt('되돌아가기가 버튼 덩어리다 (흰 면 + 하드 보더 + 오프셋 섀도우)',
      /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
-     && /\.reedit-cta\{[^}]*border:1px solid var\(--line\)/.test(css2)
-     && /\.reedit-cta\{[^}]*box-shadow:var\(--sh\)/.test(css2));
+     && /\.reedit-cta\{[^}]*border:var\(--hair\)/.test(css2)
+     && /\.reedit-cta\{[^}]*box-shadow:var\(--hard-sm\)/.test(css2));
   tt('되돌아가기 문구에 방향 표시가 있다', /←\s*이전 단계로 돌아가기/.test(UI));
   tt('조건 수정은 03단계로 간다', /S\.step = STEPS\.length - 1/.test(UI));
   tt('조건 칩에 ▾ 아이콘', /<b class="cc">\u25be<\/b>|class="cc">▾/.test(UI));
@@ -554,7 +578,18 @@ HYGIENE.forEach(([name, over]) => {
   tt('플로팅 독', /\.dockrow\{[^}]*border-radius:999px/.test(css2));
   tt('재계산 CTA가 솔리드', /\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
 
-  tt('카드 테두리 대신 그림자', !/\.card\{[^}]*border:var\(--hair\)/.test(css2));
+  /* 🔴 v23.19에서 뒤집었습니다. v22.2~v23.18의 근거는 「흰 배경 위 흰 카드가 뭉개진다」였고
+     처방이 그림자였습니다. 지금은 --bg(#EAEADF)와 --card(#F8F7F7)가 1.06:1이라
+     분리의 근거가 **테두리 하나뿐**입니다. 지우면 카드가 통째로 사라집니다(원칙 97). */
+  tt('카드가 하드 보더로 분리된다',
+     /\.card\{[^}]*border:var\(--hair\)/.test(css2)
+     && /\.tile\{[^}]*border:var\(--hair\)/.test(css2)
+     && /\.moneycard\{[^}]*border:var\(--hair\)/.test(css2));
+  tt('--hair가 1px 검정이다', /--hair:1px solid #000000/.test(css2));
+  tt('퍼지는 그림자 토큰 폐기', !/--sh:|--sh-lift:/.test(css2));
+  tt('퍼지는 그림자 참조 0', !/var\(--sh\)|var\(--sh-lift\)/.test(css2));
+  tt('입체감은 오프셋 하드 섀도우로만',
+     /--hard:3px 3px 0 #000000/.test(css2) && /--hard-sm:2px 2px 0 #000000/.test(css2));
 
   /* v23.9 — 자동 포커스 금지 · 네비 분리 · 재계산 CTA · 다크모드 차단 */
   tt('진입 시 자동 포커스 없음', !/setTimeout\(\(\)=>\s*\w*El?\.focus/.test(UI));
@@ -565,17 +600,21 @@ HYGIENE.forEach(([name, over]) => {
      && /:root\{[\s\S]{0,80}color-scheme:light/.test(css2));
   /* v23.14: 넓은 어두운 면을 걷어내고 라임을 액센트 면으로 씁니다. */
   /* v23.17 — 마이크로 컴포넌트 네이티브화 */
-  tt('세그먼트에 테두리 없음 · 그림자로 띄운다',
-     !/\.seg button\.is-on\{[^}]*inset 0 0 0 2px/.test(css2)
-     && /\.seg button\.is-on\{[^}]*box-shadow:0 2px 8px/.test(css2));
+  /* v23.19 — 선택은 라임 채움 하나로만 말합니다. 0-오프셋 링은 안쪽 테두리와 같아 금지. */
+  tt('세그먼트 선택은 라임 채움 + 검정 글자',
+     /\.seg button\.is-on\{background:var\(--green\);color:var\(--ink\)/.test(css2));
+  tt('세그먼트 선택에 안쪽 링이 없다',
+     !/\.seg button\.is-on\{[^}]*inset 0 0 0/.test(css2)
+     && !/\.seg button\.is-on\{[^}]*box-shadow:0 0 0/.test(css2));
   tt('체크박스가 직접 그려졌다 (appearance:none)',
      /\.subtoggle input\{[^}]*appearance:none/.test(css2)
      && /\.subtoggle input:checked::after/.test(css2));
   tt('accent-color 의존 없음', !/accent-color\s*:/.test(css2));
   /* ⚠ [\s\S]*? 는 규칙 밖까지 넘어갑니다. 규칙 안([^}]*)으로 가둡니다. */
-  tt('스위치 손잡이가 전용 그림자',
-     /\.sw::after\{[^}]*box-shadow:0 3px 8px/.test(css2)
-     && !/\.sw::after\{[^}]*box-shadow:var\(--sh\)/.test(css2));
+  tt('스위치 손잡이가 하드 보더로 선다',
+     /\.sw::after\{[^}]*border:var\(--hair\)/.test(css2)
+     && !/\.sw::after\{[^}]*box-shadow/.test(css2));
+  tt('스위치 켜짐이 라임', /\.sw\.on\{background:var\(--green\)\}/.test(css2));
 
   /* v23.16 — 그린 브랜드 · 카드 분리 · 슬라이더 커스텀 */
   tt('세로선이 그린', /\.brand \.headline::before\{background:var\(--green\)/.test(css2));
@@ -590,11 +629,23 @@ HYGIENE.forEach(([name, over]) => {
      const a=L(g('green')), b=L(g('espresso'));
      return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
   })());
+  /* v23.19 — 호버는 반전입니다. 검정 면 + 라임 글자. 라임끼리 겹치지 않습니다. */
   tt('CTA 호버에서 글자가 배경에 묻히지 않는다',
-     /\.cta:hover\{background:var\(--green-ink\);color:var\(--card\)/.test(css2));
-  tt('금액 글자가 그린', /\.rhead-amount > span\{color:var\(--green-ink\)/.test(css2));
-  tt('배경과 카드가 분리된다 (배경 연그레이)', /--bg:#F2F4F6/.test(css2));
-  tt('카드에 테두리가 없다', !/\.card\{[^}]*border:/.test(css2));
+     /\.cta:hover\{background:var\(--espresso\);color:var\(--green\)/.test(css2));
+  /* 🔴 v23.19 — 네온 라임은 밝은 면 위에서 1.26:1이라 글자로 못 씁니다.
+     금액은 퓨어 블랙으로 두고 강조는 크기·굵기로만 냅니다. */
+  tt('금액 글자가 퓨어 블랙', /\.rhead-amount > span\{color:var\(--ink\)\}/.test(css2));
+  tt('금액이 900 · 행간 1.1대',
+     /\.rhead-amount\{[^}]*line-height:1\.1[^}]*font-weight:900/.test(css2));
+  tt('배경이 웜 베이지', /--bg:#EAEADF/.test(css2));
+  tt('카드가 오프 화이트', /--card:#F8F7F7/.test(css2));
+  /* 🔴 원칙 97 — 같은 값을 가진 토큰 둘은 문맥이 바뀌면 하나가 사라집니다. */
+  tt('배경 · 카드 · 입력면이 서로 다른 값', (()=>{
+     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'').toUpperCase();
+     const v=[g('bg'),g('card'),g('fill')];
+     return v.every(Boolean) && new Set(v).size===3;
+  })());
+  /* ⏹ 「카드에 테두리가 없다」는 v23.19에서 폐기했습니다 — 위 '카드가 하드 보더로 분리된다'로 대체. */
   tt('슬라이더가 커스텀되었다', /--fill-pct/.test(css2)
      && /::-webkit-slider-thumb\{[^}]*background:var\(--green\)/.test(css2));
   tt('02 링크 밑줄 없음', !/\.debtlink\{[^}]*text-decoration/.test(css2));
@@ -603,21 +654,32 @@ HYGIENE.forEach(([name, over]) => {
      /\.trust\{[^}]*background:none[^}]*text-align:center/.test(css2));
 
   /* v23.15: 라임 → 핀테크 그린. 면·테두리와 글자 색을 나눕니다. */
-  tt('그린 포인트 도입', /--green:#00CA71/.test(css2));
-  tt('글자용 그린이 따로 있다 (대비 5.48:1)', /--green-ink:#00794A/.test(css2));
+  tt('네온 라임 도입', /--green:#C6EF4E/.test(css2));
+  tt('판정용 진한 라임이 따로 있다', /--green-ink:#4D7C0F/.test(css2));
+  tt('판정용 라임이 카드 위에서 읽힌다 (≥4.5:1)', (()=>{
+     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
+     const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
+       return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+     const a=L(g('green-ink')), b=L(g('card'));
+     return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
+  })());
+  /* ⚠ 원칙 62 — 라임이 조작(A)과 판정(B)을 겸하면 신호가 죽습니다. 두 값은 달라야 합니다. */
+  tt('조작 라임과 판정 라임이 다른 값', !/--green:(#[0-9A-Fa-f]{6})[\s\S]{0,200}--green-ink:\1/.test(css2));
   tt('라임 잔재 없음', !/--lime/.test(css2));
   tt('형광펜 하이라이트 삭제', !/linear-gradient\(to top, var\(--/.test(css2));
   /* v23.18 — 2px 안쪽 테두리 폐기. 선택 언어를 「흰 면 + 그린 글자 + 바깥 그림자」 하나로 통일합니다.
      ⚠ border를 0으로 지우면 미선택(1px hair)과 상자 크기가 어긋나 줄이 흔들립니다. */
-  tt('칩 선택이 흰 바탕+그린 글자+떠 있는 그림자',
-     /\.chip\.is-on\{background:var\(--card\);color:var\(--green-ink\);border:1px solid transparent/.test(css2)
-     && /\.chip\.is-on\{[^}]*box-shadow:var\(--sh-lift\)/.test(css2));
+  /* v23.19 — 선택 언어를 「라임 면 + 검정 글자 + 검정 테두리 + 하드 섀도우」로 통일합니다. */
+  tt('칩 선택이 라임 면 + 검정 글자 + 하드 섀도우',
+     /\.chip\.is-on\{background:var\(--green\);color:var\(--ink\);border:var\(--hair\)/.test(css2)
+     && /\.chip\.is-on\{[^}]*box-shadow:var\(--hard-sm\)/.test(css2));
   tt('선택 상태에 2px 안쪽 테두리가 없다',
      !/\.(chip|zonecard)\.is-on\{[^}]*border:2px/.test(css2));
   tt('지역 카드 선택도 같은 언어',
-     /\.zonecard\.is-on\{[^}]*border:1px solid transparent;box-shadow:var\(--sh-lift\)/.test(css2));
-  tt('세그먼트 선택 글자도 그린',
-     /\.seg button\.is-on\{background:var\(--card\);color:var\(--green-ink\)/.test(css2));
+     /\.zonecard\.is-on\{background:var\(--green\);border:var\(--hair\);box-shadow:var\(--hard-sm\)/.test(css2));
+  /* 선택해도 테두리 두께는 변하지 않아야 합니다 — 굵어지면 상자가 커져 줄이 흔들립니다(원칙 34). */
+  tt('선택 상태에 2px 테두리가 없다',
+     !/\.(chip|zonecard)\.is-on\{[^}]*border:2px/.test(css2));
   tt('날짜 하드코딩이 화면 문구에 없다',
      !/textContent\s*=\s*'[^']*2026\.08\.05/.test(UI) && !/innerHTML\s*=\s*`[^`]*2026\.08\.05/.test(UI));
   tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.05/.test(css2));
