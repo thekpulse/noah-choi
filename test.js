@@ -263,7 +263,11 @@ HYGIENE.forEach(([name, over]) => {
 /* ═══ 15. 정책 수치 신선도 (원칙 31) ═══════════════════════ */
 (() => {
   const html = fs.readFileSync(FILE, 'utf8');
-  const m = html.match(/(\d{4})[.\-](\d{2})[.\-](\d{2})\s*(?:확인\s*)?기준/);
+  /* v23.15: 화면에서 날짜를 뻐습니다(관리 지옥).
+     대신 HTML 주석·POLICY 주석의 확인일로 신선도를 봅니다. */
+  const m = html.match(/(\d{4})[.\-](\d{2})[.\-](\d{2})\s*(?:확인\s*)?(?:기준|$)/m)
+         || html.match(/확인일[:\s]*(\d{4})[.\-](\d{2})[.\-](\d{2})/)
+         || html.match(/BUILD[^>]*?(\d{4})\.(\d{2})\.(\d{2})/);
   tt('정책 확인일 표기 존재', !!m, m ? m[0] : '없음');
   if (m) {
     const days = (Date.now() - new Date(+m[1], +m[2]-1, +m[3])) / 864e5;
@@ -441,8 +445,7 @@ HYGIENE.forEach(([name, over]) => {
   tt('「다른 집값으로 계산하기」가 없다',
      !/priceToggle|다른 집값으로 계산/.test(fs.readFileSync(FILE,'utf8')));
   tt('안내 박스와 접기 버튼이 가리된다',
-     /\.tip\{[^}]*background:transparent/.test(fs.readFileSync(FILE,'utf8'))
-     && /\.disc\{[^}]*background:var\(--card\)/.test(fs.readFileSync(FILE,'utf8')));
+     /\.tip\{[^}]*background:transparent/.test(css2) && /\.disc\{[^}]*background:var\(--fill\)/.test(css2));
   /* 🔴 아코디언을 지우다 고아 </div>가 남아 #result가 일찍 닫혔고,
      인테리어·다음걸음 카드가 첫 화면으로 새어 나왔습니다. 구조를 센다. */
   const RES = html2.slice(html2.indexOf('<section class="result"'), html2.indexOf('</section>'));
@@ -472,12 +475,21 @@ HYGIENE.forEach(([name, over]) => {
   tt('퍼널을 다시 통과하면 재산정', /S\.lockedPrice=null/.test(UI));
   tt('가진 돈 초과 안내가 있다', /class="overnote"/.test(UI));
 
+  /* v23.13 — 결과에서 플로팅 바 숨김 · 2-Track · 면책 한 줄 */
+  tt('결과에서 플로팅 바를 숨긴다', /\$\('dock'\)\.hidden=true/.test(UI));
+  tt('2-Track — 조건 수정 버튼이 있다', /id="reeditBtn"/.test(UI));
+  tt('조건 수정은 03단계로 간다', /S\.step = STEPS\.length - 1/.test(UI));
+  tt('조건 칩에 ▾ 아이콘', /<b class="cc">\u25be<\/b>|class="cc">▾/.test(UI));
+  tt('면책은 한 줄만', (UI.match(/class=\\"legal\\"|class="legal"/g)||[]).length === 1,
+     (UI.match(/class="legal"/g)||[]).length + '줄');
+  tt('DSR·정책대출 안내는 한도 아코디언으로', /limitTip'\)\.innerHTML = bindingTip[\s\S]{0,300}본 DSR 한도/.test(UI));
+
   /* v23.10 — 마커가 오른쪽 텍스트를 덮던 버그 · 플로팅 독 · 칩 틴트 */
-  tt('마커가 금액 span에만 걸린다',
-     /\.rhead-amount > span\{[^}]*linear-gradient/.test(css2) && !/rhead-amount::after/.test(css2));
+  tt('형광펜 마커가 없다 (v23.15)',
+     !/rhead-amount::after/.test(css2) && !/\.rhead-amount > span\{[^}]*linear-gradient/.test(css2));
   tt('플로팅 독', /\.dockrow\{[^}]*border-radius:999px/.test(css2));
   tt('재계산 CTA가 솔리드', /\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
-  tt('칩 선택이 틴트+테두리', /\.chip\.is-on\{background:var\(--lime-tint\)/.test(css2));
+
   tt('카드 테두리 대신 그림자', !/\.card\{[^}]*border:var\(--hair\)/.test(css2));
 
   /* v23.9 — 자동 포커스 금지 · 네비 분리 · 재계산 CTA · 다크모드 차단 */
@@ -487,11 +499,35 @@ HYGIENE.forEach(([name, over]) => {
   tt('재계산이 풀폭 CTA', /class="restart-cta"/.test(UI));
   tt('다크모드 차단', /name="color-scheme" content="light"/.test(css2)
      && /:root\{[\s\S]{0,80}color-scheme:light/.test(css2));
-  tt('라임 액센트 도입', /--lime:#C3D64A/.test(css2));
+  /* v23.14: 넓은 어두운 면을 걷어내고 라임을 액센트 면으로 씁니다. */
+  /* v23.16 — 그린 브랜드 · 카드 분리 · 슬라이더 커스텀 */
+  tt('세로선이 그린', /\.brand \.headline::before\{background:var\(--green\)/.test(css2));
+  tt('CTA가 그린 배경 + 흰 글자', /\.cta\{[^}]*background:var\(--green-ink\);color:#FFFFFF/.test(css2));
+  tt('금액 글자가 그린', /\.rhead-amount > span\{color:var\(--green-ink\)/.test(css2));
+  tt('배경과 카드가 분리된다 (배경 연그레이)', /--bg:#F2F4F6/.test(css2));
+  tt('카드에 테두리가 없다', !/\.card\{[^}]*border:/.test(css2));
+  tt('슬라이더가 커스텀되었다', /--fill-pct/.test(css2)
+     && /::-webkit-slider-thumb\{[\s\S]*?background:var\(--green\)/.test(css2));
+  tt('02 링크 밑줄 없음', !/\.debtlink\{[^}]*text-decoration/.test(css2));
+  tt('영수증 대출액이 블랙', /\.line\.minus \.v\{color:var\(--ink\)/.test(css2));
+  tt('하단 회색 박스 제거 · 중앙 정렬',
+     /\.trust\{[^}]*background:none[^}]*text-align:center/.test(css2));
+
+  /* v23.15: 라임 → 핀테크 그린. 면·테두리와 글자 색을 나눕니다. */
+  tt('그린 포인트 도입', /--green:#00CA71/.test(css2));
+  tt('글자용 그린이 따로 있다 (대비 5.48:1)', /--green-ink:#00794A/.test(css2));
+  tt('라임 잔재 없음', !/--lime/.test(css2));
+  tt('형광펜 하이라이트 삭제', !/linear-gradient\(to top, var\(--/.test(css2));
+  tt('칩 선택이 흰 바탕+그린 테두리+그린 글자',
+     /\.chip\.is-on\{background:var\(--card\);color:var\(--green-ink\);border:2px solid var\(--green\)/.test(css2));
+  tt('날짜 하드코딩이 화면 문구에 없다',
+     !/textContent\s*=\s*'[^']*2026\.08\.05/.test(UI) && !/innerHTML\s*=\s*`[^`]*2026\.08\.05/.test(UI));
+  tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.05/.test(css2));
 
   /* 입력 첫 화면 네이비 밴드 */
-  tt('입력 01 네이비 밴드가 있다',
-     /\.brand\{background:var\(--espresso\)/.test(fs.readFileSync(FILE,'utf8')));
+  tt('입력 01에 넓은 어두운 면이 없다',
+     /\.brand\{background:var\(--bg\)/.test(css2));
+  tt('상단바도 밝다', /\.app\.hero-on \.appbar\{background:var\(--bg\)/.test(css2));
   tt('밴드는 01에서만 켜진다', /classList\.toggle\('hero-on',\s*S\.step===0\)/.test(UI));
   tt('결과에서는 밴드가 꺼진다', /classList\.remove\('hero-on'\)/.test(UI));
   tt('단정적 문구 제거', !/가장 완벽한 집/.test(fs.readFileSync(FILE,'utf8')));
