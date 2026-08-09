@@ -291,7 +291,8 @@ HYGIENE.forEach(([name, over]) => {
 (() => {
   const html = fs.readFileSync(FILE, 'utf8');
   tt('__selfcheck 존재', /window\.__selfcheck\s*=/.test(html));
-  ['디자인 락','G-6','G-1','G-3','G-7','넘침','영수증 합계','대출 ≤ 집값','다크 카드','결과 블록']
+  ['디자인 락','G-6','G-1','G-3','G-7','넘침','영수증 합계','대출 ≤ 집값','다크 카드','결과 블록',
+   'G-13','G-14']
     .forEach(k => tt('__selfcheck 항목: ' + k, html.includes(k)));
 })();
 
@@ -374,6 +375,22 @@ HYGIENE.forEach(([name, over]) => {
      그만큼 한도가 과대해지므로 면책 문구가 반드시 살아 있어야 합니다. */
   /* v23.11: 기존 부채 입력을 다시 넣었습니다(과대 오차 최대 1억 2,927만원). */
   tt('기존 부채 입력칸이 있다', /id="inDebt"/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v23.18 — .mfield의 배경(--fill)은 --bg와 같은 값입니다.
+     흰 카드(.moneycard) 밖에 두면 회색 박스가 통째로 사라지고 「0만」만 허공에 뜹니다.
+     연소득 칸(moneyCard())과 같은 껍데기를 씌워야 합니다. */
+  tt('부채 입력칸이 연소득 칸과 같은 카드 안에 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const i = src.indexOf('id="inDebt"');
+     if (i < 0) return false;
+     const before = src.slice(Math.max(0, i - 400), i);
+     return /class="moneycard debtcard"/.test(before)
+         && before.lastIndexOf('moneycard') > before.lastIndexOf('</div>');
+  })());
+  tt('부채 설명과 입력칸이 한 덩어리다 (근접성)',
+     /\.debtbox > \.q-sub\{margin:0\}/.test(fs.readFileSync(FILE,'utf8'))
+     && /\.debtcard\{margin-top:10px\}/.test(fs.readFileSync(FILE,'utf8')));
+  tt('부채 설명에 인라인 여백이 남아 있지 않다',
+     !/q-sub" style="margin/.test(fs.readFileSync(FILE,'utf8')));
   tt('기존 부채가 엔진으로 간다',
      /otherDebtMonthly:\(S\.debtMonthly\|\|0\)\*10000/.test(UI));
   tt('기본은 접혀 있다 (피로도 관리)', /debtOpen:false/.test(UI));
@@ -417,18 +434,59 @@ HYGIENE.forEach(([name, over]) => {
   tt('CTA가 「결과 확인하기」', /'결과 확인하기'/.test(UI));
   tt('단위가 값에 붙어 있다', /\.mfield\{[^}]*gap:0/.test(fs.readFileSync(FILE,'utf8')));
 
+  /* ═══ v23.18 — 타이포 밀도 · 수직 리듬 ═══════════════════════
+     🔴 button·input은 letter-spacing을 상속하지 않습니다. body에 -.02em을 걸어도
+        칩·세그먼트는 브라우저 기본값(0)으로 렌더됩니다. 실제로 본문보다 퍼져 있었습니다. */
+  tt('button이 전역 자간을 상속한다',
+     /button\{[^}]*letter-spacing:inherit/.test(css2));
+  tt('input이 전역 자간을 상속한다',
+     /^input\{[^}]*letter-spacing:inherit/m.test(css2));
+  tt('전역 기본 자간이 -.02em이다', /body\{[^}]*letter-spacing:-\.02em/.test(css2));
+
+  /* 큰 타이틀·큰 금액은 -.05em 한 값으로 통일합니다. 두 값이 섞이면 화면마다 밀도가 달라집니다. */
+  tt('큰 타이틀·큰 금액 자간이 -.05em으로 통일', (()=>{
+     const want = ['\\.q-title\\{[^}]*letter-spacing:-\\.05em',
+                   '\\.headline\\{[^}]*letter-spacing:-\\.05em',
+                   '\\.mfield input\\{[^}]*letter-spacing:-\\.05em',
+                   '\\.rhead-amount\\{[^}]*letter-spacing:-\\.05em',
+                   '\\.tile-v\\{[^}]*letter-spacing:-\\.05em'];
+     return want.every(r => new RegExp(r).test(css2));
+  })());
+  /* 단위 span은 숫자의 트래킹 잔여 폭만큼 당겨져 있어야 「10억」이 한 단어로 읽힙니다. */
+  tt('단위 span이 숫자 쪽으로 당겨져 있다',
+     /\.mfield span\{[^}]*margin-left:-1px/.test(css2));
+
+  /* 죽은 .mrow 규칙이 금액 자간을 -.04em으로 되돌리던 두 번째 정의였습니다. */
+  tt('죽은 .mrow 규칙이 없다', !/^\.mrow[\s{]/m.test(css2));
+
+  /* 질문 → 입력 카드 간격은 01(히어로 카드 안)과 02·03이 같아야 합니다. */
+  /* ⚠ `.app.hero-on .funnel > .q .moneycard{` 도 `.moneycard{`를 품습니다.
+        줄머리로 앵커하지 않으면 같은 규칙을 두 번 읽고 항상 통과합니다. */
+  tt('질문 → 입력 카드 간격이 24px로 통일', (()=>{
+     const base = (css2.match(/\n\.moneycard\{[^}]*margin-top:(\d+)px/)||[])[1];
+     const hero = (css2.match(/\.app\.hero-on \.funnel > \.q \.moneycard\{[^}]*margin-top:(\d+)px/)||[])[1];
+     return base && hero && base === hero && +base >= 24 && +base <= 28;
+  })());
+
   /* 게이지 어댑티브 컬러 — 임계값을 40/60으로 되돌리면 세 색 중 하나만 나타납니다 */
   tt('게이지 임계가 40 / 60이다',
      /ratio<0\.40\s*\?\s*'ok'\s*:\s*ratio<0\.60\s*\?\s*'mid'/.test(UI));
   tt('게이지가 DSR 상한 40%를 만석으로 봐다', /ratio\/0\.40\*100/.test(UI));
   tt('퍼센트 글자도 단계색을 따른다', /tileBurden'\)\.className='tile-v '\+band/.test(UI));
 
-  /* 「부담」은 클수록 무거운 지표라 초록으로 시작하면 의미가 어긋납니다.
-     레드 계열 안에서 옆고 → 진함으로 가야 합니다. */
-  const RED = /^#(?:[89ABCDEF][0-9A-F]|7F)/i;
+  /* 🔴 v23.18에서 뒤집었습니다.
+     이전 규칙: 「부담은 클수록 무거우니 레드 3단으로만 간다」 → --ok가 #C4837C(팥죽색)였고
+     정상 상태가 병색으로 읽혔습니다. 부담 18%는 실제로 좋은 상태이므로 신호등 방향이 맞습니다.
+     지금 규칙: 안전 = 그린, 경고 2단만 레드 농도 사다리. */
   const okv = (css2.match(/--ok:\s*(#[0-9A-Fa-f]{6})/)||[])[1] || '';
-  tt('부담 낮음이 레드 계열이다 (초록 금지)',
-     !!okv && parseInt(okv.slice(1,3),16) > parseInt(okv.slice(3,5),16), okv);
+  tt('부담 낮음이 그린 계열이다 (팥죽색 폐기)',
+     !!okv && parseInt(okv.slice(3,5),16) > parseInt(okv.slice(1,3),16), okv);
+  tt('팥죽색 #C4837C 잔재 없음', !/#C4837C/i.test(css2));
+  tt('경고 2단은 레드 계열을 유지한다', (()=>{
+     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
+     return [g('warn'),g('bad')].every(h =>
+       parseInt(h.slice(1,3),16) > parseInt(h.slice(3,5),16));
+  })());
   tt('단계가 옆고 → 진함 순서다', (()=>{
      const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
      const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
@@ -478,6 +536,12 @@ HYGIENE.forEach(([name, over]) => {
   /* v23.13 — 결과에서 플로팅 바 숨김 · 2-Track · 면책 한 줄 */
   tt('결과에서 플로팅 바를 숨긴다', /\$\('dock'\)\.hidden=true/.test(UI));
   tt('2-Track — 조건 수정 버튼이 있다', /id="reeditBtn"/.test(UI));
+  /* v23.18 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다. */
+  tt('되돌아가기가 버튼 덩어리다 (흰 면 + 테두리 + 그림자)',
+     /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
+     && /\.reedit-cta\{[^}]*border:1px solid var\(--line\)/.test(css2)
+     && /\.reedit-cta\{[^}]*box-shadow:var\(--sh\)/.test(css2));
+  tt('되돌아가기 문구에 방향 표시가 있다', /←\s*이전 단계로 돌아가기/.test(UI));
   tt('조건 수정은 03단계로 간다', /S\.step = STEPS\.length - 1/.test(UI));
   tt('조건 칩에 ▾ 아이콘', /<b class="cc">\u25be<\/b>|class="cc">▾/.test(UI));
   tt('면책은 한 줄만', (UI.match(/class=\\"legal\\"|class="legal"/g)||[]).length === 1,
@@ -515,8 +579,19 @@ HYGIENE.forEach(([name, over]) => {
 
   /* v23.16 — 그린 브랜드 · 카드 분리 · 슬라이더 커스텀 */
   tt('세로선이 그린', /\.brand \.headline::before\{background:var\(--green\)/.test(css2));
-  tt('CTA가 그린 배경 + 흰 글자',
-     /\.cta\{[^}]*background:var\(--green-ink\);color:var\(--card\)/.test(css2));
+  /* v23.18 — 흰 글자를 지키려고 배경 채도를 죽이던 타협을 뒤집었습니다.
+     화사한 --green 면 + --espresso 글자 = 7.64:1 (이전 흰 글자 조합은 5.48:1). */
+  tt('CTA가 화사한 그린 배경 + 잉크 글자',
+     /\.cta\{[^}]*background:var\(--green\);color:var\(--espresso\)/.test(css2));
+  tt('CTA 대비 ≥ 4.5:1', (()=>{
+     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
+     const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
+       return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+     const a=L(g('green')), b=L(g('espresso'));
+     return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
+  })());
+  tt('CTA 호버에서 글자가 배경에 묻히지 않는다',
+     /\.cta:hover\{background:var\(--green-ink\);color:var\(--card\)/.test(css2));
   tt('금액 글자가 그린', /\.rhead-amount > span\{color:var\(--green-ink\)/.test(css2));
   tt('배경과 카드가 분리된다 (배경 연그레이)', /--bg:#F2F4F6/.test(css2));
   tt('카드에 테두리가 없다', !/\.card\{[^}]*border:/.test(css2));
@@ -532,8 +607,17 @@ HYGIENE.forEach(([name, over]) => {
   tt('글자용 그린이 따로 있다 (대비 5.48:1)', /--green-ink:#00794A/.test(css2));
   tt('라임 잔재 없음', !/--lime/.test(css2));
   tt('형광펜 하이라이트 삭제', !/linear-gradient\(to top, var\(--/.test(css2));
-  tt('칩 선택이 흰 바탕+그린 테두리+그린 글자',
-     /\.chip\.is-on\{background:var\(--card\);color:var\(--green-ink\);border:2px solid var\(--green\)/.test(css2));
+  /* v23.18 — 2px 안쪽 테두리 폐기. 선택 언어를 「흰 면 + 그린 글자 + 바깥 그림자」 하나로 통일합니다.
+     ⚠ border를 0으로 지우면 미선택(1px hair)과 상자 크기가 어긋나 줄이 흔들립니다. */
+  tt('칩 선택이 흰 바탕+그린 글자+떠 있는 그림자',
+     /\.chip\.is-on\{background:var\(--card\);color:var\(--green-ink\);border:1px solid transparent/.test(css2)
+     && /\.chip\.is-on\{[^}]*box-shadow:var\(--sh-lift\)/.test(css2));
+  tt('선택 상태에 2px 안쪽 테두리가 없다',
+     !/\.(chip|zonecard)\.is-on\{[^}]*border:2px/.test(css2));
+  tt('지역 카드 선택도 같은 언어',
+     /\.zonecard\.is-on\{[^}]*border:1px solid transparent;box-shadow:var\(--sh-lift\)/.test(css2));
+  tt('세그먼트 선택 글자도 그린',
+     /\.seg button\.is-on\{background:var\(--card\);color:var\(--green-ink\)/.test(css2));
   tt('날짜 하드코딩이 화면 문구에 없다',
      !/textContent\s*=\s*'[^']*2026\.08\.05/.test(UI) && !/innerHTML\s*=\s*`[^`]*2026\.08\.05/.test(UI));
   tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.05/.test(css2));
