@@ -500,14 +500,28 @@ HYGIENE.forEach(([name, over]) => {
   tt('다크모드 차단', /name="color-scheme" content="light"/.test(css2)
      && /:root\{[\s\S]{0,80}color-scheme:light/.test(css2));
   /* v23.14: 넓은 어두운 면을 걷어내고 라임을 액센트 면으로 씁니다. */
+  /* v23.17 — 마이크로 컴포넌트 네이티브화 */
+  tt('세그먼트에 테두리 없음 · 그림자로 띄운다',
+     !/\.seg button\.is-on\{[^}]*inset 0 0 0 2px/.test(css2)
+     && /\.seg button\.is-on\{[^}]*box-shadow:0 2px 8px/.test(css2));
+  tt('체크박스가 직접 그려졌다 (appearance:none)',
+     /\.subtoggle input\{[^}]*appearance:none/.test(css2)
+     && /\.subtoggle input:checked::after/.test(css2));
+  tt('accent-color 의존 없음', !/accent-color\s*:/.test(css2));
+  /* ⚠ [\s\S]*? 는 규칙 밖까지 넘어갑니다. 규칙 안([^}]*)으로 가둡니다. */
+  tt('스위치 손잡이가 전용 그림자',
+     /\.sw::after\{[^}]*box-shadow:0 3px 8px/.test(css2)
+     && !/\.sw::after\{[^}]*box-shadow:var\(--sh\)/.test(css2));
+
   /* v23.16 — 그린 브랜드 · 카드 분리 · 슬라이더 커스텀 */
   tt('세로선이 그린', /\.brand \.headline::before\{background:var\(--green\)/.test(css2));
-  tt('CTA가 그린 배경 + 흰 글자', /\.cta\{[^}]*background:var\(--green-ink\);color:#FFFFFF/.test(css2));
+  tt('CTA가 그린 배경 + 흰 글자',
+     /\.cta\{[^}]*background:var\(--green-ink\);color:var\(--card\)/.test(css2));
   tt('금액 글자가 그린', /\.rhead-amount > span\{color:var\(--green-ink\)/.test(css2));
   tt('배경과 카드가 분리된다 (배경 연그레이)', /--bg:#F2F4F6/.test(css2));
   tt('카드에 테두리가 없다', !/\.card\{[^}]*border:/.test(css2));
   tt('슬라이더가 커스텀되었다', /--fill-pct/.test(css2)
-     && /::-webkit-slider-thumb\{[\s\S]*?background:var\(--green\)/.test(css2));
+     && /::-webkit-slider-thumb\{[^}]*background:var\(--green\)/.test(css2));
   tt('02 링크 밑줄 없음', !/\.debtlink\{[^}]*text-decoration/.test(css2));
   tt('영수증 대출액이 블랙', /\.line\.minus \.v\{color:var\(--ink\)/.test(css2));
   tt('하단 회색 박스 제거 · 중앙 정렬',
