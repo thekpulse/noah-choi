@@ -281,8 +281,43 @@ HYGIENE.forEach(([name, over]) => {
   const noComment = html.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
   tt('금액·소득을 외부로 보내지 않는다',
      !/gtag\([^)]*(?:cash|income|price|amount)/i.test(noComment));
-  tt('localStorage·sessionStorage 미사용',
-     !/localStorage|sessionStorage/.test(noComment));
+  /* 🔴 v23.25 — 이 락을 **반쪽만** 풉니다(지침 5층 3번).
+     원칙 36의 취지는 「금액·소득을 기기에 남기지 않는다」였습니다.
+     sessionStorage는 **탭을 닫으면 사라지므로 기기에 남지 않습니다** — 취지가 유지됩니다.
+     localStorage는 남습니다. 그래서 그쪽만 그대로 막습니다. */
+  tt('localStorage 미사용 (기기에 남기지 않는다)', !/localStorage/.test(noComment));
+  tt('임시 저장은 sessionStorage 한 키뿐이다', (()=>{
+     const keys = [...noComment.matchAll(/sessionStorage\.\w+\(\s*([A-Za-z_$][\w$]*|'[^']*')/g)]
+       .map(m => m[1]);
+     return keys.length > 0 && new Set(keys).size === 1 && keys[0] === 'DRAFT_KEY';
+  })());
+  /* 되살린 값은 손으로 고칠 수 있습니다. 그대로 믿으면 엔진에 쓰레기가 들어갑니다. */
+  tt('되살린 값을 다시 검사한다',
+     /if\(!HOUSE\[S\.houseStatus\]\) S\.houseStatus = 'none';/.test(UI)
+     && /if\(S\.sgg && !sggName\(S\.sgg\)\)/.test(UI)
+     && /S\.step = Math\.max\(0, Math\.min\(parseInt\(S\.step,10\) \|\| 0, STEPS\.length - 1\)\)/.test(UI));
+  /* 🔴 결과를 되살리면 「입력이 끝난 시점에 한 번만 산정」이 깨집니다. */
+  tt('결과는 복구하지 않는다',
+     /S\.lockedPrice = null;\s*\/\* 결과는 되살리지 않습니다 \*\//.test(UI)
+     && !/DRAFT_KEYS[^;]*lockedPrice/.test(UI));
+  tt('저장 키에 결과·파생값이 없다', (()=>{
+     const m = UI.match(/const DRAFT_KEYS = \[([\s\S]*?)\];/);
+     if(!m) return false;
+     return !/lockedPrice|priceOverride|pyeong|interior/.test(m[1]);
+  })());
+  /* 처음부터 다시 = 남은 값도 지웁니다. 안 지우면 다음 사람이 이어받습니다. */
+  tt('처음부터 다시 계산하면 저장분을 지운다',
+     /function restart\(\)\{\s*clearDraft\(\);/.test(UI));
+  /* 빈 초안을 남기면 「지웠는데 흔적이 있는」 상태가 됩니다 — 넣은 게 없으면 키도 만들지 않습니다. */
+  tt('빈 상태에서는 키를 만들지 않는다',
+     /if\(!S\.cash && !S\.income && !S\.sgg && !S\.debtMonthly && !S\.noLoan\)\{ clearDraft\(\); return; \}/.test(UI));
+  /* 사파리 프라이빗 모드는 sessionStorage 접근에서 던집니다. 화면이 죽으면 안 됩니다. */
+  tt('저장 실패가 화면을 막지 않는다',
+     (UI.match(/try\{[\s\S]{0,400}?sessionStorage[\s\S]{0,400}?\}catch\(e\)\{\}/g)||[]).length >= 2);
+  tt('복구가 첫 렌더 앞에서 일어난다', (()=>{
+     const i = UI.indexOf('loadDraft();'), j = UI.lastIndexOf('\nrender();');
+     return i > 0 && j > i;
+  })());
   tt('입력값을 URL에 싣지 않는다',
      !/location\.(search|href)\s*=[^=]/.test(noComment));
 })();
@@ -524,12 +559,22 @@ HYGIENE.forEach(([name, over]) => {
                  '\\.tile-v\\{[^}]*font-weight:900'];
      return want.every(r=>new RegExp(r).test(css2));
   })());
-  tt('타이틀·금액 행간이 1.1~1.2', (()=>{
-     const sel=['\\.headline\\{','\\.q-title\\{','\\.mfield input\\{','\\.rhead-amount\\{','\\.tile-v\\{'];
-     return sel.every(x=>{
-       const m=css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'));
-       return m && +m[1]>=1.1 && +m[1]<=1.2;
-     });
+  /* 🔴 v23.26 — 문장과 숫자의 행간을 갈랐습니다(지침 6-9의 행간판).
+     문장 타이틀은 **1.22** — 900 + 자간 -.05em에서 2줄이 되면 받침이 붙습니다.
+     숫자는 **1.15** — 받침이 없고, 벌리면 큰 금액이 두 덩어리로 흩어집니다.
+     v23.19의 「1.1~1.2 한 값」 락을 **두 값으로** 다시 씁니다(지침 5층 3번). */
+  tt('문장 타이틀 행간이 1.22다', ['\\.headline\\{','\\.q-title\\{'].every(x=>{
+     const m=css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'));
+     return m && +m[1]===1.22;
+  }));
+  tt('숫자 행간은 1.1~1.2로 조인다', ['\\.mfield input\\{','\\.rhead-amount\\{','\\.tile-v\\{'].every(x=>{
+     const m=css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'));
+     return m && +m[1]>=1.1 && +m[1]<=1.2;
+  }));
+  /* 문장이 숫자보다 넓어야 합니다. 뒤집히면 받침 충돌이 그대로 돌아옵니다. */
+  tt('문장 행간 > 숫자 행간', (()=>{
+     const g=x=>+(css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'))||[])[1];
+     return g('\\.q-title\\{') > g('\\.tile-v\\{');
   })());
   /* v23.19 — 다음 걸음 2×2 · 부채칸 1단 */
   tt('다음 걸음이 2×2 바둑판',
@@ -608,9 +653,22 @@ HYGIENE.forEach(([name, over]) => {
      && !/\.app\.hero-on \.funnel > \.q\{/.test(css2));
 
   /* 게이지 어댑티브 컬러 — 임계값을 40/60으로 되돌리면 세 색 중 하나만 나타납니다 */
-  tt('게이지 임계가 40 / 60이다',
-     /ratio<0\.40\s*\?\s*'ok'\s*:\s*ratio<0\.60\s*\?\s*'mid'/.test(UI));
+  /* 🔴 v23.26 — 「임계가 40/60인가」를 **「막대와 색이 같은 눈금을 쓰는가」**로 다시 씁니다.
+     이전 락은 값만 지켰고, 그 값 때문에 경고 두 색이 한 번도 뜨지 않았습니다.
+     막대의 만석이 0.40이면 색 경계도 그 안(0 < a < b < 0.40)에 있어야 합니다. */
   tt('게이지가 DSR 상한 40%를 만석으로 봐다', /ratio\/0\.40\*100/.test(UI));
+  tt('색 단계가 게이지 눈금 안에 있다', (()=>{
+     const m = UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)\s*\?\s*'mid'/);
+     const full = (UI.match(/ratio\/([\d.]+)\*100/)||[])[1];
+     if(!m || !full) return false;
+     const a=+m[1], b=+m[2], F=+full;
+     return 0 < a && a < b && b < F;          /* 두 경계가 만석 안쪽에 있어야 합니다 */
+  })(), (UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)/)||[]).slice(1).join(' / '));
+  /* 경고 두 색이 실제로 도달 가능한가 — 화면 부담률은 스트레스 금리 때문에 최대 ~34%입니다. */
+  tt('경고 두 색이 도달 가능하다', (()=>{
+     const m = UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)\s*\?\s*'mid'/);
+     return m && +m[1] <= 0.30 && +m[2] <= 0.36;
+  })());
   tt('퍼센트 글자도 단계색을 따른다', /tileBurden'\)\.className='tile-v '\+band/.test(UI));
 
   /* 🔴 v23.18에서 뒤집었습니다.
@@ -668,6 +726,18 @@ HYGIENE.forEach(([name, over]) => {
 
   /* v23.5 문구·구조 락 */
   tt('「여력」이 어디에도 없다', !/여력/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v23.26 — 화면 문구에서 과장·모호 표현을 뺍니다.
+     면책이 「실제 금액은 은행에서 확인」이라고 말하는데 본문이 「정확한」이라고 하면 서로 어긋납니다. */
+  tt('화면 문구에 과장·모호 표현이 없다', (()=>{
+     const BAN = ['정확한 금액','살짝','크게 올라','완벽','충분히','어느 정도','대략적으로'];
+     return BAN.every(w => !UI.includes(w));
+  })(), (()=>{ const BAN=['정확한 금액','살짝','크게 올라','완벽','충분히','어느 정도','대략적으로'];
+     return BAN.filter(w=>UI.includes(w)).join(', ')||'없음'; })());
+  /* 소득을 왜 묻는지 화면에서 말합니다 — 비활성 CTA만 두면 이유를 알 수 없습니다. */
+  tt('연소득을 묻는 이유가 화면에 있다', /대출 한도는 소득으로 정해져요/.test(UI));
+  /* G-8 — 같은 상태를 두 이름으로 부르지 않습니다. */
+  tt('「소득 미입력」의 이름이 하나다',
+     /'넣지 않음'/.test(UI) && !/'안 넣음'/.test(UI));
   tt('방공제 안내가 한도 아코디언 안으로 이동', /id="roomTip"/.test(fs.readFileSync(FILE,'utf8')));
   /* 🔴 v23.23 — 퍼널(02)에 「항목별로 더하기」 아코디언이 하나 생겼습니다.
      이 락이 지키려던 것은 **결과 화면**의 밀도입니다. 그쪽만 셉니다. */
@@ -810,6 +880,16 @@ HYGIENE.forEach(([name, over]) => {
      /\.restartrow \.reedit-cta\{flex:35 1 0\}/.test(css2)
      && /\.restartrow \.restart-cta\{flex:65 1 0\}/.test(css2));
   tt('두 버튼 높이가 같다', /\.restartrow > button\{height:var\(--h-cta\)/.test(css2));
+  /* 🔴 v23.26 — 같은 줄의 두 버튼은 글자 크기·굵기가 같아야 합니다. 위계는 「면」이 만듭니다. */
+  tt('두 버튼 글자가 같다', (()=>{
+     const g = sel => {
+       const m = css2.match(new RegExp(sel+'\\{[^}]*font-size:var\\((--t\\d)\\)[^}]*font-weight:(\\d+)'));
+       return m ? m[1]+'/'+m[2] : null;
+     };
+     const a=g('\\.reedit-cta'), b=g('\\.restart-cta');
+     return a && b && a===b;
+  })(), (css2.match(/\.reedit-cta\{[^}]*font-size:var\((--t\d)\)/)||[])[1]
+      + ' vs ' + (css2.match(/\.restart-cta\{[^}]*font-size:var\((--t\d)\)/)||[])[1]);
   /* 왼쪽은 옅은 세컨더리, 오른쪽은 솔리드 프라이머리 — 둘이 같은 무게면 위계가 죽습니다. */
   tt('좌 세컨더리(흰 면) · 우 프라이머리(그린)로 갈린다',
      /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
@@ -838,11 +918,19 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 3-b. 탁한 흙색 → 순색. 채도(R - max(G,B))로 잽니다.
      이전 값 #A85510(83) · #7F2420(91)은 여기서 떨어집니다 — 그게 이 검사의 목적입니다. */
-  /* 임계 110 — 이전 두 값은 83 · 91이라 여기서 떨어집니다. 지금은 115 · 177입니다.
-     4.5:1을 지키는 오렌지에서 115가 사실상 상한이라 임계를 110으로 잡았습니다. */
-  tt('주의 · 위험이 순색이다 (채도 ≥ 110)', ['warn','bad'].every(n=>{
-     const c=rgb(gv(n)); return c[0] - Math.max(c[1],c[2]) >= 110;
+  /* 🔴 v23.26 — **채도에 상한도 겁니다.**
+     v23.21은 하한(110)만 걸었습니다. 「탁한 밤색(83·91)」을 고치려고 만든 락인데,
+     그 락 때문에 순색 레드(177)까지 갔고 이번엔 「네온」이라는 반대 지적을 받았습니다.
+     한쪽만 막으면 다음 판에 반대편 끝으로 튑니다. **95 ≤ 채도 ≤ 150** 이 그 자리입니다.
+       탁한 밤색 83·91 → 하한에서 걸림 / 네온 레드 177 → 상한에서 걸림
+       현재 warn 115 · bad 107 → 둘 다 안쪽 */
+  tt('주의 · 위험의 채도가 95~150이다', ['warn','bad'].every(n=>{
+     const c=rgb(gv(n)); const sat=c[0]-Math.max(c[1],c[2]);
+     return sat >= 95 && sat <= 150;
   }), ['warn','bad'].map(n=>{const c=rgb(gv(n));return n+'='+(c[0]-Math.max(c[1],c[2]))}).join(' / '));
+  /* 위험은 주의보다 **어두워야** 합니다 — 밝기가 뒤집히면 사다리가 무너집니다. */
+  tt('위험이 주의보다 어둡다 (다크 레드)', lumT(gv('bad')) < lumT(gv('warn')) * 0.75,
+     lumT(gv('bad')).toFixed(4) + ' vs ' + lumT(gv('warn')).toFixed(4));
   tt('탁한 밤색 잔재 없음', !/#A85510|#7F2420|#C4837C|#B33A3A/i.test(css2));
 
   /* 4. 카피 다이어트 */
