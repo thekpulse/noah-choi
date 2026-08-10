@@ -445,10 +445,14 @@ HYGIENE.forEach(([name, over]) => {
   })());
   /* 🔴 v23.22 — 설명을 입력칸 **위**에서 **아래**로 옮기고 .helper 컴포넌트에 태웠습니다.
      락을 지우지 않고 「필드 아래에 6px로 종속되는가」로 다시 씁니다. */
+  /* ⚠ v24.0 — 결과 카드에도 .helper가 생겼습니다. **부채 블록 안에서** 순서를 봐야 합니다.
+     파일 전체에서 첫 .helper를 찾으면 결과 카드의 것을 읽고 헛돕니다(원칙 99). */
   tt('헬퍼 텍스트가 입력칸 아래에 종속된다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     const i = src.indexOf('id="inDebt"'), j = src.indexOf('class="helper"');
-     return i > 0 && j > i && /\.helper\{margin:6px 0 0/.test(src);
+     const i = src.indexOf('id="inDebt"');
+     if(i < 0) return false;
+     const after = src.slice(i, i + 500);
+     return after.indexOf('class="helper"') > 0 && /\.helper\{margin:6px 0 0/.test(src);
   })());
   tt('헬퍼가 12~13px · 쿨 그레이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
@@ -493,8 +497,23 @@ HYGIENE.forEach(([name, over]) => {
   tt('정책대출 미반영을 면책에 밝힌다', /정책대출을 받을 수 있다면/.test(UI));
 
   /* 전월세는 본체에서 완전히 빠졌다 (2026.08.08 결정) */
-  tt('본체에 전월세 노출 없음',
-     !/href="\/rent"|id="outRent"/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v24.2 — 전월세는 **보류가 아니라 폐기 확정**입니다(2026.08.11 결정).
+     「너무 무겁고 복잡하다 · 보여줄 다른 것이 많다」 — 지우는 판단이지 미루는 판단이 아닙니다.
+     락을 「링크가 없다」에서 **「화면 문구에 전월세 어휘가 없다」**로 넓힙니다.
+     ⚠ 주석과 `//` 줄은 걷어내고 봅니다. 정책 주석의 「전세사기피해자」는 정책대출 엔진의 기록이고,
+       「소액임차보증금」·「최우선변제금」은 **방공제**라 매매 계산의 일부입니다 — 둘 다 대상이 아닙니다. */
+  tt('본체에 전월세 기능이 없다 (폐기 확정)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     if(/href="\/rent"|id="outRent"/.test(src)) return false;
+     const clean = src.replace(/\/\*[\s\S]*?\*\//g,'')
+                      .replace(/<!--[\s\S]*?-->/g,'')
+                      .replace(/^\s*\/\/.*$/gm,'');
+     return !/전월세|월세|반전세|임대차/.test(clean);
+  })(), (()=>{
+     const src = fs.readFileSync(FILE,'utf8')
+       .replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'').replace(/^\s*\/\/.*$/gm,'');
+     return ['전월세','월세','반전세','임대차'].filter(w=>src.includes(w)).join(', ') || '없음';
+  })());
 
   /* 하단 여백 안정화 — 빈 공간을 바닥에 몰지 않는다 */
   const css2 = fs.readFileSync(FILE,'utf8'), html2 = css2;
@@ -739,6 +758,69 @@ HYGIENE.forEach(([name, over]) => {
      return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
   }));
   tt('영수증 아래 안내 박스가 없다', !/receiptTip/.test(css2));
+
+  /* ═══ v24.0 — 실거래가 ═══════════════════════════════════════════
+     🔴 이 기능의 첫 번째 요구사항은 「보여준다」가 아니라 **「계산기를 막지 않는다」**입니다. */
+  tt('실거래 카드가 기본은 꺼져 있다',
+     /<div class="card" id="dealCard" hidden>/.test(fs.readFileSync(FILE,'utf8')));
+  tt('실거래 호출이 계산을 막지 않는다', (()=>{
+     /* await로 결과 렌더를 잡으면 API가 느릴 때 화면이 통째로 늦게 뜹니다. */
+     return /fetchDeals\(lawd\)\.then\(/.test(UI)
+         && !/await fetchDeals/.test(UI)
+         && /renderOutlinks\(price\); renderDeals\(price\);/.test(UI);
+  })());
+  tt('실패하면 카드를 감춘다', (()=>{
+     return (UI.match(/card\.hidden = true;/g)||[]).length >= 3
+         && /\.catch\(\(\) => \{ if\(my === DEAL\.req\) card\.hidden = true; \}\)/.test(UI);
+  })());
+  tt('한 달이 실패해도 나머지를 쓴다',
+     /\.catch\(\(\) => \(\{items:\[\]\}\)\)/.test(UI) && /Promise\.all\(months\.map/.test(UI));
+  /* 늦게 온 응답이 새 결과를 덮으면 다른 지역의 거래가 뜹니다. */
+  tt('늦은 응답이 새 결과를 덮지 않는다',
+     /const my = \+\+DEAL\.req;/.test(UI) && /if\(my !== DEAL\.req\) return;/.test(UI));
+
+  /* 🔴 밖으로 나가는 것은 지역코드와 년월뿐입니다(원칙 36). */
+  tt('실거래 호출에 금액·소득을 싣지 않는다', (()=>{
+     const m = UI.match(/fetch\(`\/api\/apt-price\?([^`]+)`/);
+     return !!m && !/income|cash|price|debt|amount/i.test(m[1]);
+  })());
+
+  /* 🔴 예산을 넘는 거래를 섞으면 「살 수 있다」로 읽힙니다(원칙 28). */
+  tt('예산 이하 거래만 보여준다',
+     /x\.amountMan >= lo && x\.amountMan <= priceMan/.test(UI));
+  /* 취소된 거래를 시세로 보여주면 없는 가격을 믿게 됩니다 — 서버에서 걸러냅니다. */
+  tt('해제된 거래를 걸러낸다는 것을 화면에서 밝힌다',
+     /해제된 거래는 뺐어요/.test(UI));
+  /* 「추천」이 아닙니다 — 우리가 하는 일은 거래가 있었던 곳을 보여주는 것입니다. */
+  tt('실거래 문구에 「추천」·「최적」이 없다', (()=>{
+     const i = UI.indexOf('const DEAL = {'), j = UI.indexOf('function renderOutlinks');
+     const blk = UI.slice(i, j);
+     return !/추천|최적|딱 맞|완벽/.test(blk);
+  })());
+  tt('건수를 밝힌다', /\$\{rows\.length\}건/.test(UI));
+
+  /* 🔴 API가 주지 않는 값으로 칩을 만들지 않습니다. buildYear 하나만 씁니다. */
+  tt('취향 칩은 신축 하나뿐이다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /id="dealNew"/.test(src)
+         && !/역세권|학군|세대수|1,000세대/.test(src)
+         && /x\.buildYear && thisYear - x\.buildYear <= DEAL\.newYears/.test(UI);
+  })());
+  tt('신축 칩이 기존 옵션 칩 컴포넌트를 쓴다',
+     /<button class="chip" id="dealNew"/.test(fs.readFileSync(FILE,'utf8')));
+  tt('칩 상태가 보조기술에 전달된다', /aria-pressed/.test(fs.readFileSync(FILE,'utf8')));
+  /* 단지명은 외부 데이터입니다 — 그대로 innerHTML에 넣으면 안 됩니다. */
+  tt('외부 데이터를 이스케이프한다',
+     /const esc = t =>/.test(UI) && /esc\(x\.name\)/.test(UI) && /esc\(sub\)/.test(UI));
+  /* 링크가 아닌 것을 링크처럼 보이게 하지 않습니다 — 단지 상세로 보낼 데이터가 없습니다. */
+  tt('거래 줄은 링크가 아니다',
+     !/<a[^>]*class="deal"/.test(UI) && /class="deal"><div class="nm">/.test(UI));
+  /* 🔴 3개월치를 합치면 같은 단지·같은 평형이 여러 번 나옵니다.
+     접지 않으면 같은 이름·같은 금액이 줄줄이 뜨고 G-7(같은 금액 ≤ 2회)에도 걸립니다. */
+  tt('같은 단지 · 같은 평형을 접는다',
+     /const k = x\.name \+ '\|' \+ \(x\.areaM2 == null \? '' : x\.areaM2\);/.test(UI)
+     && /if\(!old \|\| when\(x\) > when\(old\)\) seen\.set\(k, x\);/.test(UI)
+     && /\[\.\.\.seen\.values\(\)\]/.test(UI));
   /* 🔴 v23.23 — Light(300) 폐기. 한글 300은 12~17px에서 「흐린 글자」로 읽힙니다.
      대비는 400 ↔ 900으로 만듭니다. */
   tt('본문에 Light(300)를 쓰지 않는다',
@@ -801,7 +883,10 @@ HYGIENE.forEach(([name, over]) => {
      (RES.match(/<div/g)||[]).length + ' / ' + (RES.match(/<\/div>/g)||[]).length);
   tt('인테리어·다음걸음이 result 안에 있다',
      RES.includes('id="outInterior"') && RES.includes('id="outSave"'));
-  tt('result 안 카드가 3개', (RES.match(/<div class="card[ "]/g)||[]).length === 3,
+  /* 🔴 v24.0 — 실거래 카드가 하나 늘어 **4개**입니다.
+     ⚠ G-9(결과 블록 ≤ 8)가 이제 **꽉 찼습니다** — 헤더 1 + 타일 3 + 카드 4 = 8.
+       다음에 무엇을 더하려면 **무엇을 접을지 먼저 정해야 합니다**(지침 4층 3번). */
+  tt('result 안 카드가 4개', (RES.match(/<div class="card[ "]/g)||[]).length === 4,
      (RES.match(/<div class="card[ "]/g)||[]).length + '개');
 
   tt('첫 화면 오버랩이 없다 (밴드 끝선이 깔끔하게)',
@@ -839,12 +924,33 @@ HYGIENE.forEach(([name, over]) => {
      return !!m && /opacity/.test(m[1]) && /max-height/.test(m[1]);
   })());
   /* 🔴 v23.27 — 공유 카드가 웹과 같은 라이트 톤인가 */
-  tt('공유 카드가 라이트 톤이다',
-     /\.report-top\{background:var\(--bg\);color:var\(--ink\)/.test(css2)
-     && !/linear-gradient\(135deg,var\(--grad/.test(css2));
+  /* 🔴 v24.1 — 「라이트 톤인가」에서 **「브랜드 그린 면인가」**로 다시 씁니다(지침 5층 3번).
+     다크 그라데이션을 막는다는 목적은 그대로이고, 기준만 한 단 올라갔습니다. */
+  tt('공유 카드 상단이 브랜드 그린 면이다',
+     /\.report-top\{background:var\(--green\);color:var\(--ink\)/.test(css2)
+     && !/linear-gradient\(135deg,var\(--grad/.test(css2)
+     && !/\.report-top\{[^}]*background:#/.test(css2));
   tt('공유 카드 금액이 잉크다', /\.report-amount\{[^}]*color:var\(--ink\)/.test(css2));
-  tt('공유 카드에도 그린은 면으로만',
-     /\.report-brand::before\{[^}]*background:var\(--green\)/.test(css2));
+  /* 🔴 그린 면 위에서 읽히는 글자는 --ink(7.64:1)와 --ink-2(5.07:1) 둘뿐입니다.
+     --ink-3(3.28) · --ink-4(2.13) · 흰색(2.17)은 AA 미달입니다. 실제 대비를 계산해서 봅니다. */
+  tt('그린 면 위 글자가 전부 4.5:1 이상', (()=>{
+     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'');
+     const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
+       return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+     const CR=(a,b)=>(Math.max(L(a),L(b))+.05)/(Math.min(L(a),L(b))+.05);
+     const green=g('green'); if(!green) return false;
+     /* ⚠ 상속된 규칙(.report-amount .u)까지 포함해야 합니다 — 실제로 여기서 한 건 놓쳤습니다. */
+     const rules = css2.match(/\.report-(brand|cond|label|amount)[^{]*\{[^}]*\}/g)||[];
+     const used = rules.map(r => (r.match(/color:var\((--[a-z0-9-]+)\)/)||[])[1]).filter(Boolean);
+     return used.length >= 5 && used.every(tok => {
+       const hex = g(tok.slice(2));
+       return hex && CR(hex, green) >= 4.5;
+     });
+  })());
+  /* 그린 위 그린은 안 보입니다 — 브랜드 막대는 잉크로 뒤집혀야 합니다. */
+  tt('그린 면 위에 그린을 얹지 않는다',
+     /\.report-brand::before\{[^}]*background:var\(--ink\)/.test(css2)
+     && !/\.report-(brand|cond|label|amount)[^{]*\{[^}]*var\(--green\)/.test(css2));
   tt('다크 그라데이션 토큰을 삭제했다',
      !/--grad-1\s*:/.test(css2) && !/--bronze-hi\s*:/.test(css2)
      && !/var\(--grad-[12]\)/.test(css2) && !/var\(--bronze-hi\)/.test(css2));
