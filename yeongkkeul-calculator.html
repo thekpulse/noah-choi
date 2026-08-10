@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v23.26 · 정책 2026.08.05 -->
+<!-- BUILD v24.2 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -33,10 +33,11 @@
        --fill 면을 흰 카드 밖으로 내보내려면 먼저 G-16을 통과시키세요. */
   --fill:#F2F4F6;                            /* 입력칸·트랙 면 — 흰 카드 위 1.09:1 */
   --line:#E5E8EB;                            /* 헤어라인 · 트랙 · 비활성 면 */
-  --grad-1:#000000; --grad-2:#191F28;        /* 공유 리포트 전용 */
+  /* ⏹ --grad-1 · --grad-2 (공유 리포트 다크 그라데이션)는 v23.27에서 삭제했습니다.
+     공유 카드가 라이트 톤으로 바뀌면서 쓰는 곳이 없어졌습니다(원칙 84). */
   --espresso:#191F28; --espresso-2:#000000;  /* 솔리드 다크 면 */
   --green:#00CA71;      /* 채널 A — 면·선 전용. 흰 바탕 위 글자로는 1.97:1이라 글자로 못 씁니다 */
-  --bronze-hi:#8B95A1;  /* 다크 면 위 전용 — 밝은 면에는 쓰지 않습니다 */  /* 공유 리포트 보조 글자 */
+  /* ⏹ --bronze-hi 도 v23.27에서 삭제했습니다 — 다크 면이 사라져 쓸 자리가 없습니다. */
   --ink:#191F28; --ink-2:#333D4B; --ink-3:#4E5968;
   /* ⚠ --ink-4는 v23.19까지 #8B95A1(흰 면 위 3.04:1)이었습니다. 마이크로 라벨에는 통했지만
      v23.20에서 넛지 문장(13px 본문)이 이 색을 쓰게 되어 AA를 못 넘겼습니다. 한 단 내립니다. */
@@ -223,6 +224,13 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .helper{margin:6px 0 0;font-size:var(--t7);font-weight:400;color:var(--ink-4);line-height:1.6}
 .helper b{color:var(--ink-3);font-weight:700}
 .helper + .helper{margin-top:4px}
+/* 🔴 v23.27 — 입력이 잘렸을 때만 뜨는 줄. 헬퍼와 같은 자리, 같은 크기, 색만 다릅니다.
+   ⚠ hidden으로 껐다 켜면 전환이 재생되지 않습니다. 항상 DOM에 두고 max-height로 폅니다.
+   ⚠ 접힌 상태의 높이는 0이라 **평소에는 레이아웃을 한 픽셀도 차지하지 않습니다.** */
+.fielderr{margin:0;font-size:var(--t7);line-height:1.6;font-weight:600;color:var(--bad);
+  opacity:0;max-height:0;overflow:hidden;transform:translateY(-2px);
+  transition:opacity .18s ease, max-height .18s ease, transform .18s ease, margin-top .18s ease}
+.fielderr.on{opacity:1;max-height:4em;transform:none;margin-top:6px}
 .readout{margin:6px 0 0;font-size:var(--t7);font-weight:400;color:var(--ink-4);line-height:1.6}
 .readout:empty{display:none}
 
@@ -498,8 +506,13 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .quote{font-size:clamp(28px,8.5vw,var(--t1));font-weight:800;letter-spacing:-.04em;
   margin:8px 0 0;white-space:nowrap;color:var(--espresso)}
 
+/* 🔴 v23.27 — 밖으로 나가는 넷은 <button> + window.open이 아니라 **진짜 <a>**입니다.
+   카톡·인스타 인앱 브라우저는 스크립트로 연 창을 막거나 같은 탭에 띄웁니다.
+   같은 탭에 뜨면 뒤로가기로 돌아올 때 페이지가 다시 로드되고, 사용자는 계산을 잃습니다.
+   네이티브 앵커는 인앱 브라우저에서도 새 탭(또는 새 뷰)으로 뜹니다. */
 .mini{display:flex;align-items:center;gap:14px;width:100%;padding:16px 18px;margin-top:16px;
-  border-radius:var(--r-m);background:var(--fill);text-align:left;transition:.14s}
+  border-radius:var(--r-m);background:var(--fill);text-align:left;transition:.14s;
+  text-decoration:none;color:inherit;cursor:pointer;box-sizing:border-box}
 .mini:hover{background:var(--line)}
 /* 2×2 바둑판 — 세로 4단은 스크롤만 먹고 밀도가 죽습니다.
    ⚠ 폭이 절반이 되므로 제목·설명 글자 크기를 함께 내려야 넘치지 않습니다(원칙 34). */
@@ -522,6 +535,20 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .mini.amber:hover{background:var(--line)}
 .mini.sm{padding:16px 18px;margin-top:16px;background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.sm em{font-size:var(--t5)} .mini.sm .txt b{font-size:var(--t7)}
+
+/* 🔴 v24.0 — 실거래 한 줄. 카드 안의 「기록」입니다.
+   ⚠ 링크가 아닙니다. 단지 상세로 보낼 데이터가 우리에게 없습니다 —
+     있는 것처럼 보이게 만들지 않습니다. */
+.deal{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding:14px 0;border-bottom:1px solid var(--line)}
+.deal:last-of-type{border-bottom:0}
+.deal .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:700;color:var(--ink);
+  letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deal .nm small{display:block;margin-top:3px;font-size:var(--t7);font-weight:400;
+  color:var(--ink-4);letter-spacing:-.01em;white-space:nowrap}
+.deal .amt{flex:none;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.deal-msg{margin:6px 0 0;font-size:var(--t6);line-height:1.6;color:var(--ink-3)}
+.deal-msg b{color:var(--ink);font-weight:800}
 
 /* 🔴 v23.24 — 「스트레스 DSR · 취득세 · …」 한 줄을 ⓘ 하나로 접었습니다(점진적 정보 공개).
    신뢰 지표를 지운 게 아니라 **한 단계 뒤로** 옮겼습니다 — 눌러야 나오지만 언제나 있습니다. */
@@ -587,12 +614,31 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 /* ── 공유용 진단서 (화면 밖에서 렌더) ───────── */
 .reportwrap{position:fixed;left:0;top:0;width:440px;height:0;overflow:hidden;
   opacity:0;pointer-events:none;z-index:-1}
-.report{width:440px;background:var(--card);border-radius:28px;overflow:hidden}
-.report-top{background:linear-gradient(135deg,var(--grad-1) 0%,var(--grad-2) 100%);color:var(--card);padding:38px 34px 34px}
-.report-brand{font-size:12.5px;font-weight:700;letter-spacing:.14em;color:var(--bronze-hi);margin:0}
-.report-cond{font-size:14px;font-weight:600;color:var(--line);margin:20px 0 0}
-.report-label{font-size:14px;font-weight:500;color:var(--line);margin:14px 0 0}
-.report-amount{font-size:46px;line-height:1.12;font-weight:800;letter-spacing:-.05em;margin:8px 0 0}
+.report{width:440px;background:var(--card);border-radius:28px;overflow:hidden;border:1px solid var(--line)}
+/* 🔴 v24.1 — 공유 카드 상단을 **브랜드 그린 면**으로 올렸습니다.
+   v23.27에서 다크 그라데이션 → 라이트 그레이로 바꿨고, 이번에 한 걸음 더 갑니다.
+   카톡에서 받은 사람이 보는 첫 화면이 이 카드이고, **거기서 브랜드가 먼저 읽혀야 합니다.**
+
+   🔴 그린은 여전히 **면**입니다. 글자로 쓰지 않습니다(v23.22 락).
+   ⚠ 그린 면 위에서 읽히는 글자는 **두 단뿐**입니다 — 실측:
+        --ink   #191F28  7.64 : 1  ✅ AAA
+        --ink-2 #333D4B  5.07 : 1  ✅ AA
+        --ink-3          3.28 : 1  ❌   --ink-4  2.13 : 1  ❌   흰색  2.17 : 1  ❌
+     **--ink-3 이하와 흰 글자를 이 면에 쓰지 마세요.** 검사가 막습니다.
+   ⚠ 브랜드 막대는 그린 → 잉크로 뒤집습니다. 그린 위 그린은 안 보입니다. */
+.report-top{background:var(--green);color:var(--ink);padding:38px 34px 34px}
+.report-brand{position:relative;font-size:12.5px;font-weight:700;letter-spacing:.14em;
+  color:var(--ink-2);margin:0;padding-left:14px}
+.report-brand::before{content:'';position:absolute;left:0;top:.1em;bottom:.1em;
+  width:4px;border-radius:2px;background:var(--ink)}
+.report-cond{font-size:14px;font-weight:700;color:var(--ink-2);margin:20px 0 0}
+.report-label{font-size:14px;font-weight:600;color:var(--ink-2);margin:14px 0 0}
+.report-amount{font-size:46px;line-height:1.12;font-weight:900;letter-spacing:-.05em;
+  color:var(--ink);margin:8px 0 0}
+/* 🔴 금액 안의 단위(`억`·`만원 선`)는 화면용 .u 규칙을 물려받아 --ink-3 이었습니다.
+   그린 면 위에서 **3.28 : 1** — AA 미달입니다. 이 카드 안에서만 한 단 올립니다.
+   ⚠ 배경을 바꿀 때는 **그 위에 얹히는 모든 글자**를 다시 재야 합니다. 상속된 규칙까지. */
+.report-amount .u{color:var(--ink-2);font-weight:700}
 .report-body{padding:30px 34px 34px}
 .report-line{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;font-size:14px}
 .report-line + .report-line{border-top:1px solid var(--line)}
@@ -652,7 +698,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
         <div class="costrow"><div class="nm">법무사 · 등기비</div><button class="sw" id="swLegal" role="switch"></button><div class="amt"><input id="inLegal" inputmode="numeric" value="65"><u>만</u></div></div>
         <div class="costrow"><div class="nm">이사 · 입주청소</div><button class="sw" id="swMove" role="switch"></button><div class="amt"><input id="inMove" inputmode="numeric" value="175"><u>만</u></div></div>
         <div class="costrow"><div class="nm">가전 · 가구</div><button class="sw" id="swAppl" role="switch"></button><div class="amt"><input id="inAppl" inputmode="numeric" value="500"><u>만</u></div></div>
-        <button class="mini sm" id="outMove"><div class="txt"><b>이사 · 입주청소 견적 비교하기</b></div><span class="arw">↗</span></button>
+        <a class="mini sm" id="outMove" target="_blank" rel="noopener noreferrer"><div class="txt"><b>이사 · 입주청소 견적 비교하기</b></div><span class="arw">↗</span></a>
       </div>
 
       <button class="disc" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
@@ -673,14 +719,27 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
       <div class="tweak"><p class="tweak-label">시공 수준</p><div class="chips" id="interiorChips"></div></div>
       <div class="tweak"><p class="quote-k" id="itKicker"></p><p class="quote" id="itQuote">—</p></div>
       <div class="tip" id="itTip"></div>
-      <button class="mini amber" id="outInterior"><div class="txt"><b id="outInteriorT"></b><span id="outInteriorS"></span></div><span class="arw">↗</span></button>
+      <a class="mini amber" id="outInterior" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outInteriorT"></b><span id="outInteriorS"></span></div><span class="arw">↗</span></a>
+    </div>
+
+    <!-- 🔴 v24.0 — 이 예산으로 실제 거래된 곳. 국토부 실거래가입니다.
+         ⚠ 이 카드는 **비어 있는 것이 기본값**입니다. 실거래가는 자주 0건이고,
+           API가 죽어도 계산기는 그대로 돌아야 합니다. -->
+    <div class="card" id="dealCard" hidden>
+      <h2 class="card-title">이 예산으로 거래된 곳</h2>
+      <p class="helper" id="dealLead"></p>
+      <div id="dealList"></div>
+      <div class="chips" id="dealChips" hidden>
+        <button class="chip" id="dealNew" aria-pressed="false">신축</button>
+      </div>
+      <p class="helper" id="dealFoot"></p>
     </div>
 
     <div class="card">
       <h2 class="card-title">다음 걸음</h2>
       <div class="minigrid">
-      <button class="mini" id="outNaver"><div class="txt"><b id="outNaverT"></b><span id="outNaverS"></span></div><span class="arw">↗</span></button>
-      <button class="mini" id="outHogang"><div class="txt"><b id="outHogangT"></b><span>국토교통부 실거래가 공개시스템에서 확인해요</span></div><span class="arw">↗</span></button>
+      <a class="mini" id="outNaver" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outNaverT"></b><span id="outNaverS"></span></div><span class="arw">↗</span></a>
+      <a class="mini" id="outHogang" target="_blank" rel="noopener noreferrer" href="https://rt.molit.go.kr/"><div class="txt"><b id="outHogangT"></b><span>국토교통부 실거래가 공개시스템에서 확인해요</span></div><span class="arw">↗</span></a>
       <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b><span>메신저와 SNS 어디든 바로 공유할 수 있어요</span></div><span class="arw">↓</span></button>
       <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 복사하기</b><span>카톡에 붙여넣기 좋게 한 줄로 정리해요</span></div><span class="arw">⧉</span></button>
       </div>
@@ -1494,7 +1553,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v23.26 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.2 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1504,7 +1563,7 @@ const D = { rate:5.4, years:30, rateType:'variable', fixedYears:0 };
 const INTERIOR = [ {v:0,label:'안 함'}, {v:80,label:'기본'}, {v:150,label:'일반'}, {v:250,label:'고급'} ];
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
-            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, costOpen:false, limitOpen:false,
+            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false,
             legal:{on:true,v:65}, move:{on:false,v:175}, appl:{on:false,v:500} };
 
 const $ = id => document.getElementById(id);
@@ -1579,6 +1638,7 @@ function renderQuestion(){
             value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 나가는 대출 원리금"><span>만</span></div>
         </div>
         <p class="helper">신용대출·자동차·학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
+        <p class="fielderr" role="alert" aria-live="polite"></p>
         <p class="readout" id="debtEcho"></p>
         <div class="chips">
           ${[30,50,100].map(v=>`<button class="chip" data-debt="${v}">+${v}만</button>`).join('')}
@@ -1625,7 +1685,8 @@ function moneyCard(field, val, label, helper){
       value="${e||''}" aria-label="${label} 억 단위"><span>억</span></div>
     <div class="mfield"><input id="inMan" inputmode="numeric" autocomplete="off" placeholder="0"
       value="${m?comma(m):''}" aria-label="${label} 만 단위"><span>만</span></div></div></div>
-    <p class="helper">${helper}</p>`;
+    <p class="helper">${helper}</p>
+    <p class="fielderr" role="alert" aria-live="polite"></p>`;
 }
 function regionPane(){
   if(!S.group) return '';
@@ -1666,6 +1727,29 @@ function renderAnswered(){
 /* ── 억 / 만 두 칸 입력기 ─────────────────────
    0을 셀 일이 없게 단위를 나눴습니다. 억 칸에 소수점(10.5)을 넣으면
    만 칸으로 자동 분배되고, 만 칸이 10,000을 넘으면 억으로 올려줍니다. */
+/* 🔴 v23.27 — 콤마를 다시 찍으면 캐럿이 문자열 끝으로 튑니다.
+   오른쪽 정렬이라 뒤에 붙여 쓸 때는 티가 안 나지만, **가운데를 고칠 때 커서가 날아갑니다.**
+   「콤마 앞의 숫자 개수」를 세어 같은 자리로 되돌립니다. */
+function setCommaValue(el, digits){
+  const before = el.value, pos = el.selectionStart;
+  const next = digits ? comma(digits) : '';
+  if(before === next) return;
+  const digitsBeforeCaret = (before.slice(0, pos).match(/\d/g) || []).length;
+  el.value = next;
+  if(el === document.activeElement){
+    let seen = 0, i = 0;
+    for(; i < next.length && seen < digitsBeforeCaret; i++) if(/\d/.test(next[i])) seen++;
+    try{ el.setSelectionRange(i, i); }catch(e){}   /* number 타입 등에서 던질 수 있습니다 */
+  }
+}
+/* 잘림을 화면으로 말합니다 — 조용히 자르면 사용자는 자기가 잘못 눌렀다고 생각합니다. */
+function fieldErr(el, msg){
+  const box = el && el.closest('.moneycard');
+  const line = box && box.parentElement && box.parentElement.querySelector('.fielderr');
+  if(!line) return;
+  if(msg){ line.textContent = msg; line.classList.add('on'); }
+  else line.classList.remove('on');
+}
 function attachEokMan(eokEl, manEl, get, set, onSync){
   const paint = () => { onSync && onSync(get()); };
   const spread = total => {
@@ -1682,14 +1766,17 @@ function attachEokMan(eokEl, manEl, get, set, onSync){
     let raw=(eokEl.value||'').replace(/[^\d.]/g,'');
     const p=raw.split('.'); if(p.length>2) raw=p[0]+'.'+p.slice(1).join('');
     const [a,b]=raw.split('.');
+    const cut = (a||'').length > 4;
     eokEl.value=(a||'').slice(0,4)+(b!==undefined?'.'+b.slice(0,2):'');
+    fieldErr(eokEl, cut ? '억 단위는 9,999까지 넣을 수 있어요.' : '');
     const t=Math.round(readEok()*10000)+readMan();
     set(t>0?t:null); paint();
   };
   eokEl.onblur = () => spread(Math.round(readEok()*10000)+readMan());
   manEl.oninput = () => {
-    const d=(manEl.value||'').replace(/[^\d]/g,'').slice(0,5);
-    manEl.value = d?comma(d):'';
+    const all=(manEl.value||'').replace(/[^\d]/g,''), d=all.slice(0,5);
+    setCommaValue(manEl, d);
+    fieldErr(manEl, all.length > 5 ? '만 단위는 99,999까지 넣을 수 있어요.' : '');
     const t=Math.round(readEok()*10000)+(d?+d:0);
     set(t>0?t:null); paint();
   };
@@ -1730,8 +1817,10 @@ function bind(){
     const clearParts = () => { S.debtParts={credit:null,etc:null};
       if(cr) cr.value=''; if(et) et.value=''; };
     if(dbt){
-      dbt.oninput = () => { const v=(dbt.value||'').replace(/[^\d]/g,'').slice(0,4);
-        dbt.value = v?comma(v):''; S.debtMonthly = v?+v:null;
+      dbt.oninput = () => { const raw=(dbt.value||'').replace(/[^\d]/g,''), v=raw.slice(0,4);
+        setCommaValue(dbt, v);
+        fieldErr(dbt, raw.length > 4 ? '월 상환액은 9,999만원까지 넣을 수 있어요.' : '');
+        S.debtMonthly = v?+v:null;
         clearParts();          /* 위 칸을 직접 고치면 항목 합계는 더 이상 맞지 않습니다 */
         paint(); syncCta(); };
       box.querySelectorAll('[data-debt]').forEach(b=>b.onclick=e=>{
@@ -1801,13 +1890,20 @@ function ready(){
    🔴 **밖으로 나가는 것은 없습니다.** 저장은 이 기기, 이 탭 안에서만 일어납니다.
    ═══════════════════════════════════════════ */
 const DRAFT_KEY = 'yk.draft.v1';
+/* 🔴 v23.27 — `onResult`와 `lockedPrice`를 저장 목록에 넣었습니다.
+   v23.25에서는 「결과는 되살리지 않는다」였습니다. 그 판단을 뒤집습니다.
+   근거: 밖으로 나갔다 돌아온 사람이 **결과를 잃는 것**이 실제 사고였습니다.
+   ⚠ 원칙 5(역산은 한 번만)와 어긋나지 않습니다 — `lockedPrice`는 「이미 한 번 정한 값」이고,
+     같은 탭·같은 페이지 코드 안에서 그대로 돌려주는 것은 **다시 부르는 것이 아닙니다.**
+     오히려 되살리지 않고 다시 계산하면 그때 규칙이 깨집니다. */
 const DRAFT_KEYS = ['step','cash','income','noLoan','houseStatus','group','sido','sgg',
-                    'debtMonthly','debtParts','debtOpen','debtPartsOpen'];
+                    'debtMonthly','debtParts','debtOpen','debtPartsOpen',
+                    'onResult','lockedPrice','pyeong','interior','itTouched'];
 function saveDraft(){
   try{
     /* 🔴 넣은 것이 하나도 없으면 **키를 만들지 않습니다.**
        빈 초안을 남기면 「지웠는데 흔적이 남아 있는」 상태가 됩니다. */
-    if(!S.cash && !S.income && !S.sgg && !S.debtMonthly && !S.noLoan){ clearDraft(); return; }
+    if(!S.cash && !S.income && !S.sgg && !S.debtMonthly && !S.noLoan && !S.onResult){ clearDraft(); return; }
     const o = {}; DRAFT_KEYS.forEach(k => o[k] = S[k]);
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify(o));
   }catch(e){}          /* 사파리 프라이빗 모드 등에서 던집니다 — 저장 실패가 화면을 막지 않습니다 */
@@ -1827,8 +1923,15 @@ function loadDraft(){
     if(S.group && ['seoul','metro','other'].indexOf(S.group) < 0) { S.group=null; S.sido=''; S.sgg=''; }
     S.step = Math.max(0, Math.min(parseInt(S.step,10) || 0, STEPS.length - 1));
     if(visible().indexOf(S.step) < 0) S.step = visible()[visible().length - 1];
-    S.lockedPrice = null;        /* 결과는 되살리지 않습니다 */
+    /* 결과 복원은 **숫자가 성립할 때만** 합니다. 하나라도 어긋나면 퍼널로 돌립니다. */
     S.priceOverride = null;
+    const lp = Number(S.lockedPrice);
+    if(!(Number.isFinite(lp) && lp > 0)) { S.lockedPrice = null; S.onResult = false; }
+    else S.lockedPrice = lp;
+    S.pyeong = Math.max(0, Math.min(parseInt(S.pyeong,10) || 0, 50));
+    S.interior = [0,100,150,220].indexOf(+S.interior) >= 0 ? +S.interior : 150;
+    S.itTouched = !!S.itTouched;
+    S.onResult = !!S.onResult;
   }catch(e){}
 }
 
@@ -1853,6 +1956,7 @@ function back(){
   if(i>0){ S.step=V[i-1]; render(); }
 }
 function render(){
+  S.onResult = false;
   $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
   $('app').classList.remove('no-dock');
   $('brand').hidden = S.step!==0;
@@ -1936,7 +2040,7 @@ function showResult(keepScroll){
   renderCondBar(price);
 
   renderBento(c); renderReceipt(c, price); renderLimits(c, price); renderDiscs();
-  renderCostBox(c); renderPkg(); renderOutlinks(price);
+  renderCostBox(c); renderPkg(); renderOutlinks(price); renderDeals(price);
   LASTVIEW = {c, price, headline, isOverride, short};
   renderReport(LASTVIEW);
 
@@ -1962,6 +2066,7 @@ function showResult(keepScroll){
   $('result').hidden=false; $('dock').hidden=true;
   $('app').classList.add('no-dock'); $('dock').hidden=true;   /* 결과에서는 플로팅 바를 걸지 않습니다 */
   $('barLabel').textContent='결과'; $('bar').style.width='100%';
+  S.onResult = true; saveDraft();      /* 밖에 나갔다 돌아와도 이 화면으로 되돌아옵니다 */
   if(!keepScroll) window.scrollTo(0,0);
 }
 
@@ -2053,8 +2158,8 @@ function renderCostBox(c){
     i.oninput = () => { const d=(i.value||'').replace(/[^\d]/g,'').slice(0,5); S[key].v=d?+d:0; i.value=d?comma(d):''; };
     i.onchange = () => showResult(true);
   });
-  $('outMove').onclick = e => { e.preventDefault();
-    go(PARTNER.moving || 'https://search.naver.com/search.naver?query='+encodeURIComponent('이사 입주청소 견적 비교')); };
+  $('outMove').href = PARTNER.moving
+    || 'https://search.naver.com/search.naver?query='+encodeURIComponent('이사 입주청소 견적 비교');
 }
 const LNAME={LTV:'집값 기준',DSR:'소득 기준',DTI:'소득 기준','구간한도':'정부 상한','상품한도':'상품 상한','은행자체한도':'은행 상한'};
 function renderLimits(c, price){
@@ -2110,9 +2215,112 @@ function refreshPkg(){
     : `<b>지금 영수증에는 인테리어비가 빠져 있어요.</b> 아래 슬라이더로 평형을 정하면 그때 계산에 더합니다.`;
   $('outInteriorT').textContent = `${py}평 맞춤 시공 사례와 견적 받아보기`;
   $('outInteriorS').textContent = `같은 평형 포트폴리오를 모아서 봐요`;
-  $('outInterior').onclick = e => { e.preventDefault();
-    go(PARTNER.interior || `https://ohou.se/projects?query=${encodeURIComponent(py+'평 아파트')}`); };
+  $('outInterior').href = PARTNER.interior || `https://ohou.se/projects?query=${encodeURIComponent(py+'평 아파트')}`;
 }
+/* ═══════════════════════════════════════════
+   실거래가 — v24.0
+   🔴 이 블록은 **계산기를 절대 막지 않습니다.**
+      비동기로 붙고, 실패하면 카드를 통째로 감춥니다. 결과 화면은 그대로 뜹니다.
+   🔴 밖으로 나가는 것은 **지역코드와 년월뿐**입니다.
+      소득·현금·집값은 이 경로를 지나지 않습니다(원칙 36).
+   🔴 「추천」이라고 하지 않습니다. 우리가 하는 일은 **거래가 있었던 곳을 보여주는 것**입니다.
+   ⚠ 이 API가 주지 않는 값으로는 칩을 만들지 않습니다(단지 규모·교통·학교·좌표는 응답에 없습니다).
+      만들 수 있는 취향 칩은 buildYear를 쓰는 **「신축」 하나뿐**입니다.
+      없는 값을 지어내지 않습니다 — 지침: 출처를 못 찾으면 넣지 않고 못 찾았다고 말합니다.
+   ═══════════════════════════════════════════ */
+const DEAL = { months:3, rows:5, newYears:10, band:0.85, req:0, cache:new Map(), items:null, only:false };
+
+/* 최근 N개월의 YYYYMM. 이번 달은 거래 등록이 늦어 비어 있는 경우가 많아 함께 부릅니다. */
+function recentYmd(n){
+  const out=[], d=new Date();
+  for(let i=0;i<n;i++){ const t=new Date(d.getFullYear(), d.getMonth()-i, 1);
+    out.push(t.getFullYear()*100 + (t.getMonth()+1)); }
+  return out;
+}
+async function fetchDeals(lawd){
+  if(DEAL.cache.has(lawd)) return DEAL.cache.get(lawd);
+  const months = recentYmd(DEAL.months);
+  const rs = await Promise.all(months.map(ymd =>
+    fetch(`/api/apt-price?lawd=${encodeURIComponent(lawd)}&ymd=${ymd}`)
+      .then(r => r.ok ? r.json() : {items:[]})
+      .catch(() => ({items:[]}))          /* 한 달이 실패해도 나머지는 씁니다 */
+  ));
+  const items = rs.flatMap(r => (r && r.items) || []);
+  DEAL.cache.set(lawd, items);
+  return items;
+}
+/* 예산 이하 거래만 봅니다. 예산을 넘는 거래를 섞으면 「살 수 있다」로 읽힙니다(원칙 28).
+   🔴 **단지 + 전용면적으로 접습니다.** 3개월치를 합치면 같은 단지·같은 평형이 여러 번 나오고,
+      화면에 같은 이름·같은 금액이 줄줄이 뜹니다(G-7 「같은 금액 ≤ 2회」에도 걸립니다).
+      한 줄이 「그 단지 그 평형의 최근 거래 하나」를 뜻하게 만듭니다. */
+function pickDeals(items, priceMan){
+  const lo = Math.round(priceMan * DEAL.band);
+  const thisYear = new Date().getFullYear();
+  const seen = new Map();
+  items
+    .filter(x => x.amountMan >= lo && x.amountMan <= priceMan)
+    .filter(x => !DEAL.only || (x.buildYear && thisYear - x.buildYear <= DEAL.newYears))
+    .forEach(x => {
+      const k = x.name + '|' + (x.areaM2 == null ? '' : x.areaM2);
+      const old = seen.get(k);
+      const when = n => (n.y||0)*10000 + (n.m||0)*100 + (n.d||0);
+      if(!old || when(x) > when(old)) seen.set(k, x);   /* 가장 최근 거래를 남깁니다 */
+    });
+  return [...seen.values()].sort((a,b) => b.amountMan - a.amountMan);
+}
+function dealLine(x){
+  const area = x.areaM2 ? `${x.areaM2}㎡` : '';
+  const sub = [x.dong, area, x.buildYear ? `${x.buildYear}년` : ''].filter(Boolean).join(' · ');
+  return `<div class="deal"><div class="nm">${esc(x.name)}<small>${esc(sub)}</small></div>`
+       + `<div class="amt">${formatWon(x.amountMan*10000)}</div></div>`;
+}
+const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function paintDeals(priceMan){
+  const list=$('dealList'), lead=$('dealLead'), foot=$('dealFoot'), chips=$('dealChips');
+  const rows = pickDeals(DEAL.items || [], priceMan);
+  chips.hidden = !(DEAL.items && DEAL.items.length);
+  if(!rows.length){
+    list.innerHTML = `<p class="deal-msg">${DEAL.only
+      ? '최근 3개월 안에 <b>이 예산대 신축 거래가 없어요.</b>'
+      : '최근 3개월 안에 <b>이 예산대 거래가 없어요.</b>'}</p>`;
+    foot.textContent = '지역이나 예산을 바꾸면 달라질 수 있어요.';
+    return;
+  }
+  list.innerHTML = rows.slice(0, DEAL.rows).map(dealLine).join('');
+  lead.textContent = `${regionLabel()} · 최근 3개월 · ${rows.length}건`;
+  foot.textContent = '국토교통부 실거래가입니다. 해제된 거래는 뺐어요.';
+}
+
+function renderDeals(price){
+  const card=$('dealCard');
+  if(!card) return;
+  const lawd = S.sgg, priceMan = Math.floor(price/10000);
+  if(!lawd || !(priceMan > 0)){ card.hidden = true; return; }
+  const my = ++DEAL.req;                    /* 늦게 온 응답이 새 결과를 덮지 않게 */
+  card.hidden = false;
+  $('dealLead').textContent = `${regionLabel()} · 최근 3개월`;
+  $('dealList').innerHTML = '<p class="deal-msg">불러오는 중이에요…</p>';
+  $('dealFoot').textContent = '';
+  $('dealChips').hidden = true;
+  fetchDeals(lawd).then(items => {
+    if(my !== DEAL.req) return;
+    DEAL.items = items;
+    if(!items.length){ card.hidden = true; return; }   /* 아무것도 못 받으면 카드를 지웁니다 */
+    paintDeals(priceMan);
+  }).catch(() => { if(my === DEAL.req) card.hidden = true; });
+
+  const btn=$('dealNew');
+  btn.classList.toggle('is-on', DEAL.only);
+  btn.setAttribute('aria-pressed', String(DEAL.only));
+  btn.onclick = e => { e.preventDefault();
+    DEAL.only = !DEAL.only;
+    btn.classList.toggle('is-on', DEAL.only);
+    btn.setAttribute('aria-pressed', String(DEAL.only));
+    paintDeals(priceMan);
+  };
+}
+
 function renderOutlinks(price){
   const region=regionLabel(), q=encodeURIComponent(region);
   const band=Math.floor(price/100000000*10)/10;
@@ -2121,13 +2329,14 @@ function renderOutlinks(price){
   $('outNaverT').textContent=`${band}억대 추천 단지 보기`;
   $('outNaverS').textContent=`네이버 부동산에서 이 예산대를 봐요`;
   $('outHogangT').textContent=`실거래가 확인하기`;
-  $('outNaver').onclick  = e => { e.preventDefault(); go(`https://new.land.naver.com/search?sk=${q}`); };
-  $('outHogang').onclick = e => { e.preventDefault(); go('https://rt.molit.go.kr/'); };
+  /* 🔴 앵커는 href만 채웁니다. onclick으로 열지 않습니다(인앱 브라우저에서 막힙니다). */
+  $('outNaver').href  = `https://new.land.naver.com/search?sk=${q}`;
   $('outSave').onclick   = e => { e.preventDefault(); saveImage(); };
 
   $('outCopy').onclick   = e => { e.preventDefault(); copySummary(); };
 }
-function go(url){ window.open(url,'_blank','noopener'); }
+/* ⏹ go()는 v23.27에서 삭제했습니다 — 밖으로 나가는 넷은 전부 <a href> 입니다.
+   스크립트로 창을 여는 방식은 인앱 브라우저에서 막히거나 같은 탭에 뜹니다. */
 
 /* ── 공유 ─────────────────────────────────── */
 function renderReport(v){
@@ -2220,7 +2429,7 @@ document.addEventListener('keydown', e => {
 function restart(){
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
-    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,costOpen:false,limitOpen:false});
+    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,costOpen:false,limitOpen:false});
   render(); window.scrollTo(0,0);
 }
 
@@ -2234,12 +2443,12 @@ window.__selfcheck = function(){
   const moneyRe=/(?:\d[\d,]*억\s?)?[\d,]+만원|\d[\d,]*억원/g;
 
   /* 🔒 디자인 락 — 토큰이 바뀌었으면 여기서 걸립니다 */
-  const LOCK = {'--bg':'#F2F4F6','--card':'#FFFFFF','--grad-1':'#000000','--grad-2':'#191F28',
+  const LOCK = {'--bg':'#F2F4F6','--card':'#FFFFFF',
     '--espresso':'#191F28','--espresso-2':'#000000','--ink':'#191F28',
     '--green':'#00CA71','--line':'#E5E8EB','--fill':'#F2F4F6'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.26 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v24.2 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
@@ -2390,8 +2599,13 @@ window.__selfcheck = function(){
 $('ctaBtn').onclick=next;
 $('homeBtn').onclick=goHome;
 loadDraft();          /* ⚠ render() 앞이어야 합니다. 뒤면 화면을 두 번 그립니다 */
+/* 🔴 v23.27 — 결과 화면에서 밖으로 나갔다 돌아온 경우, 결과로 바로 되돌립니다.
+   ⚠ render()는 S.onResult를 false로 되돌리므로 **여기서 값을 먼저 떠 둡니다.**
+   ⚠ showResult()는 화면 요소를 만지므로 render() 뒤에 불러야 합니다. */
+const RESUME_RESULT = S.onResult && S.lockedPrice > 0 && ready();
 $('prevBtn').onclick=back;
 render();
+if(RESUME_RESULT) showResult(false);
 </script>
 </body>
 </html>
