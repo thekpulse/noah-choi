@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v23.22 · 정책 2026.08.05 -->
+<!-- BUILD v23.23 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -26,7 +26,12 @@
      채널 B 판정 = --ok(무채색) → --warn(오렌지) → --bad(딥 레드)
      채널 C 제휴 = 색을 쓰지 않습니다. 흰 면 + 얇은 윤곽 + ↗ 로만 가릅니다 */
   --bg:#F2F4F6; --card:#FFFFFF;              /* 쿨 그레이 바탕 · 퓨어 화이트 카드 */
-  --fill:#EEF0F3;                            /* 입력칸 면 — ⚠ --bg와 같은 값이면 카드 밖에서 사라집니다(원칙 97) */
+  /* 🔴 v23.23 — 입력 필드 면을 #F2F4F6으로 맞췄습니다(지시 반복 2회).
+     ⚠ --bg와 **같은 값**입니다. v23.18에 「0만만 허공에 뜨던」 사고가 난 조건입니다(원칙 97).
+       지금 이것이 성립하는 이유는 딱 하나 — **모든 --fill 면이 흰 카드 안에만 놓이기 때문**입니다.
+       토큰 비교로는 더 이상 못 막습니다. **렌더된 면을 재는 G-16이 유일한 방어선**입니다.
+       --fill 면을 흰 카드 밖으로 내보내려면 먼저 G-16을 통과시키세요. */
+  --fill:#F2F4F6;                            /* 입력칸·트랙 면 — 흰 카드 위 1.09:1 */
   --line:#E5E8EB;                            /* 헤어라인 · 트랙 · 비활성 면 */
   --grad-1:#000000; --grad-2:#191F28;        /* 공유 리포트 전용 */
   --espresso:#191F28; --espresso-2:#000000;  /* 솔리드 다크 면 */
@@ -85,6 +90,9 @@ body{background:var(--bg);color:var(--ink);
   font-size:var(--t5);line-height:1.5;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
   word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
 h1,h2,p,.q-title,.headline,.card-title,.hero-label{text-wrap:balance}
+/* 🔴 v23.23 — Light(300)를 팔레트에서 뺐습니다. 가장 얇은 글자는 400입니다.
+   한글 300은 12~17px에서 획이 끊겨 보이고, 「힘을 뺀 것」이 아니라 「흐린 것」으로 읽힙니다.
+   대비는 굵기 400 ↔ 900으로 만듭니다. */
 /* 🔴 button·input은 font-family만 상속받고 letter-spacing은 상속하지 않습니다.
    전역 -.02em을 선언해도 칩·세그먼트·CTA는 브라우저 기본값(normal=0)으로 렌더되어
    본문보다 미세하게 퍼져 보였습니다. 여기서 명시적으로 이어 붙입니다. */
@@ -102,7 +110,8 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .app.hero-on .progress{background:var(--line)}
 .app.hero-on .progress i{background:var(--green)}
 .iconbtn{width:40px;height:40px;border-radius:var(--r-m);display:grid;place-items:center;color:var(--ink-2)}
-.iconbtn:hover{background:var(--fill)}
+/* ⚠ 앱 배경(--bg) 위의 호버는 --fill이 아니라 --line을 씁니다 — 두 값이 같아 아무 일도 안 일어납니다. */
+.iconbtn:hover{background:var(--line)}
 .barlabel{font-size:var(--t6);font-weight:700;color:var(--ink-3);margin-left:4px}
 .progress{position:sticky;top:56px;z-index:20;height:2px;background:var(--line)}
 .progress i{display:block;height:100%;width:0;background:var(--green);transition:width .34s cubic-bezier(.22,1,.36,1)}
@@ -134,7 +143,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .headline::before{content:'';position:absolute;left:0;top:.18em;bottom:.18em;
   width:4px;border-radius:2px;background:var(--espresso)}
 .headline b{color:inherit;font-weight:900;letter-spacing:-.05em}
-.subline{font-size:var(--t6);line-height:1.8;font-weight:300;color:var(--ink-3);margin:18px 0 0;padding-left:18px}
+.subline{font-size:var(--t6);line-height:1.8;font-weight:400;color:var(--ink-3);margin:18px 0 0;padding-left:18px}
 
 /* ── 퍼널 ───────────────────────────────────── */
 .funnel{padding:24px 16px 36px;display:flex;flex-direction:column;
@@ -155,7 +164,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 🔴 v23.22 — 입력칸을 감싸던 흰 라운드 박스(베젤)를 통째로 지웠습니다.
    흰 질문 카드 위에 회색 필드가 바로 놓입니다. 이제 .moneycard는 「간격」만 담당합니다.
    ⚠ 여기에 background·padding·box-shadow를 다시 넣으면 3중첩이 그대로 부활합니다. */
-.moneycard{margin-top:24px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none}
+.moneycard{margin-top:8px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none}
 /* 두 칸 입력 — 320px 화면에서도 넘치지 않게 폭을 계산해 잡았습니다.
    이전 값(패딩 16·글자 28px 고정)은 360px에서 14px 넘쳤습니다. */
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
@@ -180,6 +189,13 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    두 번째 정의가 여기 남아 있었습니다(원칙 84 — 값은 한 곳에서만 정한다). */
 /* 값이 들어오면 사라집니다. 두 칸이 이미 「10억 0만」을 보여주는데
    아래에서 「10억원」을 한 번 더 말하면 같은 말을 두 번 하는 것입니다(원칙 43). */
+/* 🔴 v23.23 — 폼 3단 위계는 **예외 없이** 이 순서입니다.
+     [ .flabel 볼드 명사형 소제목 ] → [ .mfield 입력 ] → [ .helper 서브 설명 ]
+   ⚠ 문장형 질문(.q-title)은 소제목을 **대체하지 못합니다.** 질문은 화면의 주제이고,
+     소제목은 「이 칸에 무엇을 넣는가」입니다. */
+.flabel{margin:22px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
+  letter-spacing:-.02em;line-height:1.4}
+.flabel:first-child{margin-top:0}
 /* 🔴 v23.22 — 헬퍼 텍스트 컴포넌트. 필드에 **종속**시킵니다(마진 6px · 12.5px · 쿨 그레이).
    ⚠ 색은 --ink-4(#6B7684 · 흰 면 위 4.62:1)입니다. 한 단 밝은 #8B95A1은 3.04:1로
      본문 기준(4.5:1)을 못 넘깁니다. v23.20에서 같은 이유로 한 번 내린 값입니다. */
@@ -246,8 +262,8 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    회색 박스가 통째로 사라지고 「0만」만 허공에 뜹니다. moneyCard()와 같은 껍데기를 씌웁니다.
    ⚠ v23.22 — 설명은 입력칸 **아래**에 종속시킵니다(.helper). 위에 띄우면 어느 필드의 설명인지 흐려집니다. */
 .debtcard{margin-top:0}
-/* 넛지 — 「얼마인지 모르겠다」에서 멈추는 사람을 위한 어림값입니다. 헬퍼와 같은 컴포넌트를 씁니다. */
-.q-hint{margin:4px 0 0;font-size:var(--t7);line-height:1.6;color:var(--ink-4);font-weight:400}
+/* ⏹ .q-hint 는 v23.23에서 삭제했습니다 — 어림값 넛지(💡)를 항목별 자동 합산으로 대체했습니다.
+   설명은 .helper 하나뿐입니다. 죽은 규칙을 남기면 다음 판에서 누군가 다시 씁니다(원칙 84). */
 /* 물어보는 값이 하나뿐이므로 2단 그리드를 벗기고 한 칸이 폭을 다 씁니다. */
 .debtcard .mfield{width:100%}
 .subtoggle{margin-top:24px;display:flex;align-items:center;gap:11px;font-size:var(--t6);font-weight:600;color:var(--ink-3)}
@@ -271,7 +287,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 @supports (height:100dvh){ .answered:not(:empty){margin-top:auto} }
 .answered:empty{display:none}
 .arow{width:100%;display:flex;align-items:center;gap:12px;padding:15px 4px;text-align:left;border-radius:var(--r-m)}
-.arow:hover{background:var(--fill)}
+.arow:hover{background:var(--line)}
 .arow .k{font-size:var(--t7);color:var(--ink-4);min-width:66px;flex:none}
 .arow .v{font-size:var(--t6);font-weight:700;color:var(--ink-2);flex:1}
 .arow .go{font-size:var(--t7);font-weight:800;color:var(--ink-3);flex:none}
@@ -284,7 +300,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* ⚠ --fill(#EEF0F3)은 앱 배경 --bg(#F2F4F6)와 1.02:1입니다. 독은 배경 위에 떠 있으므로
    회색 면으로 두면 버튼이 사라집니다(원칙 97). 세컨더리는 흰 면 + 헤어라인으로 통일합니다. */
 .cta.back{flex:0 0 90px;width:auto;background:var(--card);border:1px solid var(--line);color:var(--ink-2)}
-.cta.back:hover{color:var(--ink);background:var(--fill);filter:none}
+.cta.back:hover{color:var(--ink);background:var(--line);filter:none}
 /* CTA — 흰 글자를 고집하면 배경을 #00794A까지 낮춰야 해서 버튼이 탁해집니다(5.48:1).
    글자를 잉크로 뒤집으면 화사한 #00CA71을 그대로 쓰면서 대비가 오히려 올라갑니다.
    #191F28 on #00CA71 = 7.64 : 1. 채도를 죽이는 대신 글자를 바꾼 자리입니다.
@@ -304,7 +320,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .result{padding:0 16px 44px}
 /* 헤더는 카드가 아닙니다. 배경 위에 얹어 화면 하나를 통째로 먹던 검은 박스를 없앴습니다. */
 .rhead{padding:12px 4px 22px}
-.rhead-label{font-size:var(--t5);font-weight:300;color:var(--ink-3);margin:0;line-height:1.3}
+.rhead-label{font-size:var(--t5);font-weight:400;color:var(--ink-3);margin:0;line-height:1.3}
 /* 핵심 수치 밑에 라임 하이라이트 — 숫자가 먼저 읽힐니다 */
 /* 🔴 마커는 금액 span에만 걸어야 합니다.
    문단 전체에 걸면 오른쪽 「수준이에요」까지 덮어버립니다(v23.10 수정). */
@@ -319,8 +335,8 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   font-size:clamp(32px,11vw,var(--d1));line-height:1.1;font-weight:900;
   letter-spacing:-.04em;margin:8px 0 0}
 .rhead-amount > span{white-space:nowrap}
-.u{font-style:normal;font-size:.72em;font-weight:300;color:var(--ink-3);letter-spacing:-.01em;margin-left:.05em}
-.rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:300;color:var(--ink-3);
+.u{font-style:normal;font-size:.72em;font-weight:400;color:var(--ink-3);letter-spacing:-.01em;margin-left:.05em}
+.rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:400;color:var(--ink-3);
   color:var(--ink-3);letter-spacing:-.02em;margin-left:7px;vertical-align:baseline}
 /* 🔴 v23.21 — 굵은 세로선(3px)을 지웠습니다. 위계는 「선」이 아니라 「면」으로 만듭니다.
    평상시는 중립 틴트, 한도에 걸렸을 때만 오렌지 틴트 + 오렌지 글자로 갈립니다. */
@@ -343,7 +359,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .tile-k{font-size:var(--t7);font-weight:500;color:var(--ink-4);margin:0;letter-spacing:.04em}
 .tile-v{font-size:var(--t1);line-height:1.15;font-weight:900;letter-spacing:-.04em;margin:10px 0 0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tile-s{font-size:var(--t7);font-weight:300;color:var(--ink-4);margin:7px 0 0}
+.tile-s{font-size:var(--t7);font-weight:400;color:var(--ink-4);margin:7px 0 0}
 
 .card{margin-top:var(--gap);background:var(--card);border-radius:var(--r-xl);padding:var(--pad);box-shadow:var(--sh)}
 .card-title{font-size:var(--t4);font-weight:800;line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}
@@ -370,7 +386,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 
 .line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;font-size:var(--t6)}
 .line .v{white-space:nowrap}
-.line .k{color:var(--ink-3);font-weight:300} .line .v{font-weight:700;color:var(--ink-2)}
+.line .k{color:var(--ink-3);font-weight:400} .line .v{font-weight:700;color:var(--ink-2)}
 .line.minus .v{color:var(--ink)}
 .line.total{border-top:1px solid var(--line);margin-top:12px;padding-top:20px}
 .line.total .k{font-size:var(--t5);font-weight:800;color:var(--ink)}
@@ -418,6 +434,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .costrow .amt input:disabled{color:var(--ink-4)}
 .costrow .amt u{text-decoration:none;font-size:var(--t7);color:var(--ink-4);flex:none}
 .costrow .fixed{width:98px;flex:none;text-align:right;font-size:var(--t6);font-weight:700;color:var(--ink-2)}
+/* 퍼널 안의 아코디언 — 결과 카드의 .disc보다 한 단 조용합니다(카드 안이라 구분선이 이미 있습니다). */
+.debtbox .disc{margin-top:14px;padding:14px 2px;font-size:var(--t7);font-weight:700;color:var(--ink-2)}
+.debtbox .costrow{padding:14px 0}
+.debtbox .costrow .amt{width:110px}
 .sw{width:46px;height:27px;flex:none;border-radius:var(--r-pill);background:var(--line);position:relative;transition:background .18s}
 .sw::after{content:'';position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:var(--r-pill);
   background:var(--card);
@@ -464,13 +484,13 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .mini em{font-style:normal;font-size:var(--t3);flex:none}
 .mini .txt{flex:1;min-width:0}
 .mini .txt b{display:block;font-size:var(--t6);font-weight:700;color:var(--ink);line-height:1.45}
-.mini .txt span{display:block;margin-top:4px;font-size:var(--t7);font-weight:300;color:var(--ink-3);line-height:1.6}
+.mini .txt span{display:block;margin-top:4px;font-size:var(--t7);font-weight:400;color:var(--ink-3);line-height:1.6}
 .mini .arw{flex:none;font-size:var(--t6);color:var(--ink-4)}
 /* 채널 C 제휴 — 색을 쓰지 않습니다. 흰 면 + 얇은 윤곽 + ↗ 로만 가릅니다(원칙 62). */
 .mini.amber{background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.amber .txt b,.mini.amber .arw{color:var(--ink)}
 .mini.amber .txt span{color:var(--ink-3)}
-.mini.amber:hover{background:var(--fill)}
+.mini.amber:hover{background:var(--line)}
 .mini.sm{padding:16px 18px;margin-top:16px;background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.sm em{font-size:var(--t5)} .mini.sm .txt b{font-size:var(--t7)}
 
@@ -493,12 +513,15 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
   background:var(--card);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--sh);
   font-size:var(--t6);font-weight:700;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
-.reedit-cta:hover{background:var(--fill);color:var(--ink);box-shadow:var(--sh-lift)}
+.reedit-cta:hover{background:var(--line);color:var(--ink);box-shadow:var(--sh-lift)}
+/* 🔴 v23.23 — 검정 솔리드를 폐기하고 01·02·03의 「다음」과 **같은 버튼**으로 맞췄습니다.
+   프라이머리 액션이 화면마다 다른 색이면 그 색은 더 이상 「액션」을 뜻하지 않습니다.
+   ⚠ 지침 6-5의 「재계산 CTA는 예외로 검정 면」 조항은 v23.23에서 폐기했습니다. */
 .restart-cta{width:100%;height:58px;margin-top:10px;border-radius:var(--r-m);
-  background:var(--espresso);color:var(--card);box-shadow:var(--sh-lift);
-  font-size:var(--t5);font-weight:800;letter-spacing:-.02em;transition:.14s;
+  background:var(--green);color:var(--espresso);box-shadow:var(--sh-lift);
+  font-size:var(--t5);font-weight:900;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
-.restart-cta:hover{background:var(--espresso-2)}
+.restart-cta:hover{filter:brightness(.94)}
 .foot{padding:8px 12px 0;text-align:center;font-size:12px;line-height:1.7;color:var(--ink-3)}
 .foot .legal{display:block;margin:0;color:var(--ink-3);font-weight:400;
   word-break:keep-all;overflow-wrap:anywhere}
@@ -1401,7 +1424,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v23.22 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v23.23 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1411,7 +1434,7 @@ const D = { rate:5.4, years:30, rateType:'variable', fixedYears:0 };
 const INTERIOR = [ {v:0,label:'안 함'}, {v:80,label:'기본'}, {v:150,label:'일반'}, {v:250,label:'고급'} ];
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
-            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, debtMonthly:null, debtOpen:false, priceOverride:null, lockedPrice:null, costOpen:false, limitOpen:false,
+            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, costOpen:false, limitOpen:false,
             legal:{on:true,v:65}, move:{on:false,v:175}, appl:{on:false,v:500} };
 
 const $ = id => document.getElementById(id);
@@ -1464,8 +1487,8 @@ function renderQuestion(){
   let h='';
   if(st.id==='cash'){
     h = eye + `<h2 class="q-title">지금 모은 돈이 얼마인가요?</h2>
-      <p class="q-sub oneline">주담대를 제외하고 끌어모을 수 있는 모든 자금이에요.</p>
-      ${moneyCard('cash', S.cash, '금액을 넣으면 예상 예산이 바로 나와요')}
+      ${moneyCard('cash', S.cash, '가진 돈',
+        '주택담보대출을 제외하고 끌어모을 수 있는 모든 자금이에요.')}
       <div class="chips">
         ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}
         <button class="chip is-clear" data-add="0">지우기</button></div>
@@ -1473,23 +1496,35 @@ function renderQuestion(){
   }
   if(st.id==='income'){
     h = eye + `<h2 class="q-title">연소득이 얼마인가요?</h2>
-      <p class="q-sub">세전 기준 · 부부라면 합쳐서 넣어주세요</p>
-      ${moneyCard('income', S.income, '은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봐요')}
+      ${moneyCard('income', S.income, '연소득',
+        '세전 기준이에요. 부부라면 두 사람 소득을 합쳐서 넣어주세요.')}
       <div class="chips">
         ${[1000,5000,10000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}
         <button class="chip is-clear" data-add="0">지우기</button></div>
       <button class="debtlink" id="debtLink">${S.debtOpen ? '갚고 있는 대출 입력 닫기' : '갚고 있는 대출이 있어요 ›'}</button>
       <div class="debtbox ${S.debtOpen?'open':''}">
+        <p class="flabel">매달 나가는 대출 원리금</p>
         <div class="moneycard debtcard">
           <div class="mfield"><input id="inDebt" inputmode="numeric" placeholder="0"
-            value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 갚는 돈"><span>만</span></div>
-          <div class="readout" id="debtEcho"></div>
+            value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 나가는 대출 원리금"><span>만</span></div>
         </div>
         <p class="helper">신용대출·자동차·학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
-        <p class="q-hint">💡 계산이 어렵다면? 신용대출 1억 원당 월 약 100만 원으로 어림잡아보세요.</p>
+        <p class="readout" id="debtEcho"></p>
         <div class="chips">
           ${[30,50,100].map(v=>`<button class="chip" data-debt="${v}">+${v}만</button>`).join('')}
           <button class="chip is-clear" data-debt="0">지우기</button></div>
+        <!-- 🔴 v23.23 — 여러 개를 머릿속으로 더하게 하지 않습니다.
+             여기 넣은 값이 위 칸으로 **자동 합산**됩니다. 엔진으로 가는 값은 위 칸 하나뿐입니다. -->
+        <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts">
+          <span>대출이 여러 개이신가요? 항목별로 더하기</span><span class="caret">▾</span></button>
+        <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts">
+          <div class="costrow"><div class="nm">신용대출</div>
+            <div class="amt"><input id="inDebtCredit" inputmode="numeric" placeholder="0"
+              value="${S.debtParts.credit?comma(S.debtParts.credit):''}" aria-label="신용대출 월 상환액"><u>만</u></div></div>
+          <div class="costrow"><div class="nm">기타 대출<small>마이너스통장 · 자동차 · 학자금 등</small></div>
+            <div class="amt"><input id="inDebtEtc" inputmode="numeric" placeholder="0"
+              value="${S.debtParts.etc?comma(S.debtParts.etc):''}" aria-label="기타 대출 월 상환액"><u>만</u></div></div>
+        </div>
       </div>`;
   }
   if(st.id==='region'){
@@ -1511,14 +1546,16 @@ function renderQuestion(){
   }
   box.innerHTML=h; bind();
 }
-function moneyCard(field, val, hint){
+/* 🔴 v23.23 — 폼 3단 위계. 라벨(명사형) → 입력 → 헬퍼. 예외 없습니다. */
+function moneyCard(field, val, label, helper){
   const e = Math.floor((val||0)/10000), m = (val||0)%10000;
-  return `<div class="moneycard"><div class="mgrid">
+  return `<p class="flabel">${label}</p>
+    <div class="moneycard"><div class="mgrid">
     <div class="mfield"><input id="inEok" inputmode="decimal" autocomplete="off" placeholder="0"
-      value="${e||''}" aria-label="억 단위"><span>억</span></div>
+      value="${e||''}" aria-label="${label} 억 단위"><span>억</span></div>
     <div class="mfield"><input id="inMan" inputmode="numeric" autocomplete="off" placeholder="0"
-      value="${m?comma(m):''}" aria-label="만 단위"><span>만</span></div></div>
-    <div class="readout" id="readout">${val?'':hint}</div></div>`;
+      value="${m?comma(m):''}" aria-label="${label} 만 단위"><span>만</span></div></div></div>
+    <p class="helper">${helper}</p>`;
 }
 function regionPane(){
   if(!S.group) return '';
@@ -1596,12 +1633,9 @@ function bind(){
   const box=$('qBox'), id=STEPS[S.step].id, eokEl=$('inEok'), manEl=$('inMan');
   if(eokEl){
     const field = id==='income' ? 'income' : 'cash';
-    const hint = field==='income' ? '은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봐요' : '금액을 넣으면 예상 예산이 바로 나와요';
-    const onSync = m => {
-      $('readout').textContent = m ? '' : hint;   /* 값이 있으면 비웁니다 */
-      syncCta();
-    };
-    attachEokMan(eokEl, manEl, ()=>S[field], v=>{S[field]=v;}, onSync);
+    /* ⏹ v23.23 — 값이 있으면 사라지던 동적 힌트를 없앴습니다.
+       설명은 .helper 하나로 고정입니다(3단 위계). 문구가 나타났다 사라지면 줄 수가 흔들립니다. */
+    attachEokMan(eokEl, manEl, ()=>S[field], v=>{S[field]=v;}, ()=>syncCta());
     [eokEl,manEl].forEach(el => el.onkeydown = e => {
       if(e.key==='Enter'){ el.blur(); if(!$('ctaBtn').disabled) next(); } });
     box.querySelectorAll('[data-add]').forEach(b=>b.onclick=e=>{
@@ -1619,17 +1653,41 @@ function bind(){
       el.textContent = S.debtMonthly
         ? '1년이면 ' + formatWon(S.debtMonthly*12*10000) + '을 갚고 있어요. 그만큼 빌릴 수 있는 몫이 줄어요.'
         : ''; };
+    /* 🔴 v23.23 — 항목별 입력 → 위 칸으로 자동 합산.
+       ⚠ 값의 출처는 **언제나 S.debtMonthly 하나**입니다. 엔진은 이 값만 봅니다.
+         항목은 「합계를 만드는 보조 입력」이지 별도의 진실이 아닙니다(원칙 84). */
+    const cr=$('inDebtCredit'), et=$('inDebtEtc'), pt=$('debtPartsToggle');
+    const clearParts = () => { S.debtParts={credit:null,etc:null};
+      if(cr) cr.value=''; if(et) et.value=''; };
     if(dbt){
       dbt.oninput = () => { const v=(dbt.value||'').replace(/[^\d]/g,'').slice(0,4);
-        dbt.value = v?comma(v):''; S.debtMonthly = v?+v:null; paint(); };
+        dbt.value = v?comma(v):''; S.debtMonthly = v?+v:null;
+        clearParts();          /* 위 칸을 직접 고치면 항목 합계는 더 이상 맞지 않습니다 */
+        paint(); syncCta(); };
       box.querySelectorAll('[data-debt]').forEach(b=>b.onclick=e=>{
         e.preventDefault(); const add=+b.dataset.debt;
         S.debtMonthly = add===0 ? null : (S.debtMonthly||0)+add;
-        dbt.value = S.debtMonthly?comma(S.debtMonthly):''; paint();
+        clearParts();
+        dbt.value = S.debtMonthly?comma(S.debtMonthly):''; paint(); syncCta();
         b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+      });
+      const sumParts = () => {
+        const t=(S.debtParts.credit||0)+(S.debtParts.etc||0);
+        S.debtMonthly = t>0 ? t : null;
+        dbt.value = S.debtMonthly?comma(S.debtMonthly):'';
+        paint(); syncCta();
+      };
+      [[cr,'credit'],[et,'etc']].forEach(([el,k])=>{ if(!el) return;
+        el.oninput = () => { const v=(el.value||'').replace(/[^\d]/g,'').slice(0,4);
+          el.value = v?comma(v):''; S.debtParts[k] = v?+v:null; sumParts(); };
       });
       paint();
     }
+    /* 토글은 다시 그리지 않습니다 — renderQuestion()을 부르면 입력 포커스가 날아갑니다. */
+    if(pt) pt.onclick = e => { e.preventDefault();
+      S.debtPartsOpen = !S.debtPartsOpen;
+      $('debtParts').classList.toggle('open', S.debtPartsOpen);
+      pt.setAttribute('aria-expanded', String(S.debtPartsOpen)); };
   }
   const nl=$('noLoanBox'); if(nl) nl.onchange=()=>{S.noLoan=nl.checked;
     if(S.noLoan) S.income=null;      /* 소득 단계를 건너뛰므로 값도 비웁니다 */
@@ -1776,7 +1834,7 @@ function showResult(keepScroll){
   /* 2-Track — 왼쪽 35%: 조건만 고치기(세컨더리) / 오른쪽 65%: 처음부터(메인) */
   $('restartWrap').innerHTML =
     '<div class="restartrow">' +
-    '<button class="reedit-cta" id="reeditBtn">← 이전 단계</button>' +
+    '<button class="reedit-cta" id="reeditBtn">이전 단계</button>' +
     '<button class="restart-cta" id="restartBtn">처음부터 다시 계산하기</button>' +
     '</div>';
   $('restartBtn').onclick = restart;
@@ -1976,21 +2034,21 @@ function summaryText(){
   const {headline, isOverride} = LASTVIEW;
   const head = isOverride
     ? `[영끌자금 리포트] ${regionLabel()}에서 이 집을 사려면 현금 ${approxWon(headline)} 선이 필요해요!`
-    : `[영끌자금 리포트] 현금 ${formatWon(man(S.cash))}으로 ${regionLabel()} 예상 매수 가능 금액은 약 ${approxWon(headline)} 선이에요! 💡`;
+    : `[영끌자금 리포트] 현금 ${formatWon(man(S.cash))}으로 ${regionLabel()} 예상 매수 가능 금액은 약 ${approxWon(headline)} 선이에요.`;
   return `${head}\n(※ 단순 시뮬레이션 추정치)\n${SERVICE_URL}`;
 }
 async function copySummary(){
   const btn=$('outCopy'), t=btn.querySelector('b'), o=t.textContent, txt=summaryText();
   try{
-    if(navigator.share && !navigator.canShare){ await navigator.share({text:txt}); t.textContent='✅ 공유했어요'; }
-    else if(navigator.clipboard){ await navigator.clipboard.writeText(txt); t.textContent='✅ 복사했어요'; }
+    if(navigator.share && !navigator.canShare){ await navigator.share({text:txt}); t.textContent='공유했어요'; }
+    else if(navigator.clipboard){ await navigator.clipboard.writeText(txt); t.textContent='복사했어요'; }
     else throw new Error('no clipboard');
   }catch(e){
     if(e && e.name==='AbortError'){ return; }
     const ta=document.createElement('textarea'); ta.value=txt;
     document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); t.textContent='✅ 복사했어요'; }
-    catch(e2){ t.textContent='⚠ 복사 실패'; }
+    try{ document.execCommand('copy'); t.textContent='복사했어요'; }
+    catch(e2){ t.textContent='복사하지 못했어요'; }
     document.body.removeChild(ta);
   }
   setTimeout(()=>t.textContent=o, 2200);
@@ -2001,7 +2059,7 @@ async function saveImage(){
   try{
     const canvas=await html2canvas($('reportCard'),{backgroundColor:null,scale:2,useCORS:true});
     canvas.toBlob(async blob=>{
-      if(!blob){ t.textContent='⚠ 실패, 다시 시도해주세요'; setTimeout(()=>t.textContent=o,2400); return; }
+      if(!blob){ t.textContent='저장에 실패했어요. 다시 시도해 주세요'; setTimeout(()=>t.textContent=o,2400); return; }
       const file=new File([blob],'영끌계산기-리포트.png',{type:'image/png'});
       if(navigator.canShare && navigator.canShare({files:[file]})){
         try{ await navigator.share({files:[file], text:summaryText()}); t.textContent=o; return; }
@@ -2010,14 +2068,14 @@ async function saveImage(){
       const url=URL.createObjectURL(blob), a=document.createElement('a');
       a.href=url; a.download='영끌계산기-리포트.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-      t.textContent='✅ 저장했어요'; setTimeout(()=>t.textContent=o,2400);
+      t.textContent='저장했어요'; setTimeout(()=>t.textContent=o,2400);
     },'image/png');
-  }catch(e){ console.error(e); t.textContent='⚠ 실패, 다시 시도해주세요'; setTimeout(()=>t.textContent=o,2400); }
+  }catch(e){ console.error(e); t.textContent='저장에 실패했어요. 다시 시도해 주세요'; setTimeout(()=>t.textContent=o,2400); }
 }
 
 function restart(){
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
-    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,priceOverride:null,lockedPrice:null,costOpen:false,limitOpen:false});
+    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,costOpen:false,limitOpen:false});
   render(); window.scrollTo(0,0);
 }
 
@@ -2033,10 +2091,10 @@ window.__selfcheck = function(){
   /* 🔒 디자인 락 — 토큰이 바뀌었으면 여기서 걸립니다 */
   const LOCK = {'--bg':'#F2F4F6','--card':'#FFFFFF','--grad-1':'#000000','--grad-2':'#191F28',
     '--espresso':'#191F28','--espresso-2':'#000000','--ink':'#191F28',
-    '--green':'#00CA71','--line':'#E5E8EB','--fill':'#EEF0F3'};
+    '--green':'#00CA71','--line':'#E5E8EB','--fill':'#F2F4F6'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.22 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.23 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
@@ -2052,9 +2110,12 @@ window.__selfcheck = function(){
   ok('막대 두 조각 대비 ≥ 3:1 (원칙 94)', cr>=3, cr.toFixed(2)+' : 1');
   /* 🔴 원칙 97 — 두 토큰의 값이 같아지면 한쪽이 놓인 자리에 따라 통째로 사라집니다.
      v23.19는 카드가 배경에서 분리되는 근거가 「테두리」뿐이라 더 위험합니다. */
-  const same=[['--fill','--bg'],['--card','--bg']].filter(([a,b])=>
+  /* 🔴 v23.23 — --fill이 --bg와 **같은 값**이 되었습니다(#F2F4F6).
+     그래서 G-15는 이제 --card만 봅니다. 「입력 면이 사라지지 않는가」는
+     토큰 비교가 아니라 **G-16(렌더된 면)** 이 봅니다. 둘의 역할이 갈린 자리입니다. */
+  const same=[['--card','--bg'],['--card','--fill']].filter(([a,b])=>
     cs2.getPropertyValue(a).trim().toUpperCase()===cs2.getPropertyValue(b).trim().toUpperCase());
-  ok('G-15 배경 · 면 토큰이 서로 다른 값', same.length===0,
+  ok('G-15 카드 면이 배경 · 입력면과 다른 값', same.length===0,
      same.map(p=>p.join(' = ')).join(', ')||'전부 다름');
 
   /* 🔴 G-16 (v23.22) — 입력 필드가 **자기 뒤에 실제로 깔린 면** 위에서 보이는가.
