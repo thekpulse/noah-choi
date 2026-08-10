@@ -348,7 +348,7 @@ HYGIENE.forEach(([name, over]) => {
      지금은 ok(...) 호출의 라벨만 모아서 봅니다 — 검사가 실제로 「돌고 있는지」를 봅니다. */
   const LABELS = [...html.matchAll(/\bok\(\s*'([^']+)'/g)].map(m => m[1]);
   ['디자인 락','G-6','G-1','G-3','G-7','넘침','영수증 합계','대출 ≤ 집값','다크 카드','결과 블록',
-   'G-13','G-14','G-15','G-16','G-17']
+   'G-13','G-14','G-15','G-16','G-17','G-18']
     .forEach(k => tt('__selfcheck 항목: ' + k, LABELS.some(l => l.includes(k)),
                      LABELS.length + '개 라벨'));
 })();
@@ -647,8 +647,10 @@ HYGIENE.forEach(([name, over]) => {
      라벨 위 22px(덩어리 사이) · 라벨 아래 8px · 헬퍼 6px — 안쪽이 바깥쪽보다 좁아야 묶입니다. */
   tt('폼 3단 위계의 간격 규약', (()=>{
      const g = (sel,prop) => (css2.match(new RegExp(sel+'\\{[^}]*'+prop+':(\\d+)px'))||[])[1];
-     const labelTop = (css2.match(/\.flabel\{margin:(\d+)px/)||[])[1];
-     const labelBot = (css2.match(/\.flabel\{margin:\d+px 0 (\d+)px/)||[])[1];
+     /* ⚠ v24.3 — .flabel이 flex 한 줄이 되면서 margin이 규칙 앞쪽이 아닙니다. 규칙 안에서 찾습니다. */
+     const fl = (css2.match(/\n\.flabel\{([^}]*)\}/)||[])[1] || '';
+     const labelTop = (fl.match(/margin:(\d+)px/)||[])[1];
+     const labelBot = (fl.match(/margin:\d+px 0 (\d+)px/)||[])[1];
      const card = g('\\n\\.moneycard','margin-top');
      const help = (css2.match(/\.helper\{margin:(\d+)px/)||[])[1];
      const all = css2.match(/\.moneycard[^{]*\{[^}]*margin-top:(\d+)px/g) || [];
@@ -851,6 +853,46 @@ HYGIENE.forEach(([name, over]) => {
      return BAN.filter(w=>UI.includes(w)).join(', ')||'없음'; })());
   /* 소득을 왜 묻는지 화면에서 말합니다 — 비활성 CTA만 두면 이유를 알 수 없습니다. */
   tt('연소득을 묻는 이유가 화면에 있다', /대출 한도는 소득으로 정해져요/.test(UI));
+  /* 🔴 v24.3 — 헬퍼는 **한 줄**입니다.
+     ⚠ 글자 수는 지표가 아닙니다. 360px에서 32자짜리 두 개 중 하나만 두 줄이 됐습니다
+       — 공백·중점(·)이 섞이면 들어가고, 한글만 붙으면 넘칩니다. **지표는 폭입니다.**
+     그래서 진짜 검사는 렌더를 재는 **G-18**이고, 여기 있는 건 싸구려 조기 경보입니다.
+     상한을 34자로 헐겁게 잡습니다 — 34자를 넘으면 어떤 조합이든 360px에서 넘칩니다(실측).
+     이 줄이 초록이라고 한 줄인 게 아닙니다. 360px에서 __selfcheck()를 돌려야 압니다. */
+  tt('헬퍼 길이가 조기 경보 상한 안이다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const hs = [...src.matchAll(/moneyCard\('\w+', S\.\w+, '[^']+',\s*'([^']+)'\)/g)].map(m=>m[1])
+       .concat([...src.matchAll(/<p class="helper">([^<]*(?:<b>[^<]*<\/b>[^<]*)*)<\/p>/g)]
+         .map(m=>m[1].replace(/<[^>]+>/g,'')));
+     return hs.length >= 2 && hs.every(t => t.trim().length <= 34);
+  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
+     return [...src.matchAll(/moneyCard\('\w+', S\.\w+, '[^']+',\s*'([^']+)'\)/g)]
+       .map(m=>m[1].length+'자').join(' / '); })());
+  /* 🔴 G-18이 실제로 렌더를 재고 있는지 소스에서도 확인합니다(원칙 101).
+     라벨만 남기고 알맹이를 지우는 사보타주는 위 「__selfcheck 항목」 검사가 못 잡습니다. */
+  tt('G-18이 렌더된 줄 수를 잰다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /querySelectorAll\('\.helper'\)/.test(src)
+         && /getBoundingClientRect\(\)\.height \/ lh\) > 1/.test(src);
+  })());
+
+  /* 🔴 v24.3 — 「지우기」는 빠른 추가 칩의 형제가 아니라 **그 입력칸에 딸린 동작**입니다.
+     칩 줄에 두면 칩 폭에 따라 어떤 화면은 같은 줄, 어떤 화면은 혼자 다음 줄로 떨어집니다. */
+  tt('지우기가 라벨 줄에 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /class="flabel">\$\{label\}<button class="clearbtn" data-add="0" hidden>지우기<\/button>/.test(src)
+         && /매달 나가는 대출 원리금<button class="clearbtn" data-debt="0" hidden>지우기<\/button>/.test(src);
+  })());
+  tt('칩 줄에 지우기가 없다',
+     !/class="chip is-clear"/.test(fs.readFileSync(FILE,'utf8')));
+  tt('라벨 줄이 좌우 양끝 정렬이다',
+     /\n\.flabel\{[^}]*display:flex/.test(css2)
+     && /\n\.flabel\{[^}]*justify-content:space-between/.test(css2));
+  /* 지울 게 없는데 「지우기」가 떠 있으면 소음입니다 — 값이 있을 때만 보입니다. */
+  tt('값이 없으면 지우기를 숨긴다',
+     /if\(clr\) clr\.hidden = !v;/.test(UI)
+     && /if\(dc\) dc\.hidden = !S\.debtMonthly;/.test(UI)
+     && /class="clearbtn" data-add="0" hidden/.test(fs.readFileSync(FILE,'utf8')));
   /* G-8 — 같은 상태를 두 이름으로 부르지 않습니다. */
   tt('「소득 미입력」의 이름이 하나다',
      /'넣지 않음'/.test(UI) && !/'안 넣음'/.test(UI));
