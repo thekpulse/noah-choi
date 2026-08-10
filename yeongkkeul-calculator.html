@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.2 · 정책 2026.08.05 -->
+<!-- BUILD v24.3 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -215,9 +215,19 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      [ .flabel 볼드 명사형 소제목 ] → [ .mfield 입력 ] → [ .helper 서브 설명 ]
    ⚠ 문장형 질문(.q-title)은 소제목을 **대체하지 못합니다.** 질문은 화면의 주제이고,
      소제목은 「이 칸에 무엇을 넣는가」입니다. */
-.flabel{margin:22px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
+/* 🔴 v24.3 — 「지우기」를 빠른 추가 칩 줄에서 **라벨 줄로** 올렸습니다.
+   칩 셋의 폭이 단계마다 달라서 「지우기」가 어떤 화면은 같은 줄, 어떤 화면은
+   혼자 다음 줄로 떨어졌습니다. **위치가 화면마다 달라지면 그건 자리가 없는 것**입니다.
+   지우기는 「빠른 추가」의 형제가 아니라 **그 입력칸에 딸린 동작**입니다. 라벨 옆이 제자리입니다. */
+.flabel{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin:22px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
   letter-spacing:-.02em;line-height:1.4}
 .flabel:first-child{margin-top:0}
+/* 값이 없을 때는 숨깁니다 — 지울 게 없는데 「지우기」가 떠 있으면 소음입니다. */
+.clearbtn{flex:none;padding:2px 0;font-size:var(--t7);font-weight:600;color:var(--ink-4);
+  letter-spacing:-.02em;line-height:1.4;transition:color .14s}
+.clearbtn:hover{color:var(--ink-2)}
+.clearbtn[hidden]{display:none}
 /* 🔴 v23.22 — 헬퍼 텍스트 컴포넌트. 필드에 **종속**시킵니다(마진 6px · 12.5px · 쿨 그레이).
    ⚠ 색은 --ink-4(#6B7684 · 흰 면 위 4.62:1)입니다. 한 단 밝은 #8B95A1은 3.04:1로
      본문 기준(4.5:1)을 못 넘깁니다. v23.20에서 같은 이유로 한 번 내린 값입니다. */
@@ -1553,7 +1563,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v24.2 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.3 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1617,22 +1627,20 @@ function renderQuestion(){
   if(st.id==='cash'){
     h = eye + `<h2 class="q-title">지금 모은 돈이 얼마인가요?</h2>
       ${moneyCard('cash', S.cash, '가진 돈',
-        '주택담보대출을 제외하고 끌어모을 수 있는 모든 자금이에요.')}
+        '주택담보대출 말고 끌어모을 수 있는 모든 돈이에요.')}
       <div class="chips">
-        ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}
-        <button class="chip is-clear" data-add="0">지우기</button></div>
+        ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
       <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>대출 없이 살 거예요</label>`;
   }
   if(st.id==='income'){
     h = eye + `<h2 class="q-title">연소득이 얼마인가요?</h2>
       ${moneyCard('income', S.income, '연소득',
-        '대출 한도는 소득으로 정해져요. 세전 기준 · 부부는 합산해서 넣어주세요.')}
+        '대출 한도는 소득으로 정해져요. 세전 · 부부 합산 기준.')}
       <div class="chips">
-        ${[1000,5000,10000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}
-        <button class="chip is-clear" data-add="0">지우기</button></div>
+        ${[1000,5000,10000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
       <button class="debtlink" id="debtLink">${S.debtOpen ? '갚고 있는 대출 입력 닫기' : '갚고 있는 대출이 있어요 ›'}</button>
       <div class="debtbox ${S.debtOpen?'open':''}">
-        <p class="flabel">매달 나가는 대출 원리금</p>
+        <p class="flabel">매달 나가는 대출 원리금<button class="clearbtn" data-debt="0" hidden>지우기</button></p>
         <div class="moneycard debtcard">
           <div class="mfield"><input id="inDebt" inputmode="numeric" placeholder="0"
             value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 나가는 대출 원리금"><span>만</span></div>
@@ -1641,8 +1649,7 @@ function renderQuestion(){
         <p class="fielderr" role="alert" aria-live="polite"></p>
         <p class="readout" id="debtEcho"></p>
         <div class="chips">
-          ${[30,50,100].map(v=>`<button class="chip" data-debt="${v}">+${v}만</button>`).join('')}
-          <button class="chip is-clear" data-debt="0">지우기</button></div>
+          ${[30,50,100].map(v=>`<button class="chip" data-debt="${v}">+${v}만</button>`).join('')}</div>
         <!-- 🔴 v23.23 — 여러 개를 머릿속으로 더하게 하지 않습니다.
              여기 넣은 값이 위 칸으로 **자동 합산**됩니다. 엔진으로 가는 값은 위 칸 하나뿐입니다. -->
         <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts">
@@ -1679,7 +1686,7 @@ function renderQuestion(){
 /* 🔴 v23.23 — 폼 3단 위계. 라벨(명사형) → 입력 → 헬퍼. 예외 없습니다. */
 function moneyCard(field, val, label, helper){
   const e = Math.floor((val||0)/10000), m = (val||0)%10000;
-  return `<p class="flabel">${label}</p>
+  return `<p class="flabel">${label}<button class="clearbtn" data-add="0" hidden>지우기</button></p>
     <div class="moneycard"><div class="mgrid">
     <div class="mfield"><input id="inEok" inputmode="decimal" autocomplete="off" placeholder="0"
       value="${e||''}" aria-label="${label} 억 단위"><span>억</span></div>
@@ -1792,7 +1799,9 @@ function bind(){
     const field = id==='income' ? 'income' : 'cash';
     /* ⏹ v23.23 — 값이 있으면 사라지던 동적 힌트를 없앴습니다.
        설명은 .helper 하나로 고정입니다(3단 위계). 문구가 나타났다 사라지면 줄 수가 흔들립니다. */
-    attachEokMan(eokEl, manEl, ()=>S[field], v=>{S[field]=v;}, ()=>syncCta());
+    const clr = box.querySelector('.flabel .clearbtn');
+    attachEokMan(eokEl, manEl, ()=>S[field], v=>{S[field]=v;},
+      v => { if(clr) clr.hidden = !v; syncCta(); });
     [eokEl,manEl].forEach(el => el.onkeydown = e => {
       if(e.key==='Enter'){ el.blur(); if(!$('ctaBtn').disabled) next(); } });
     box.querySelectorAll('[data-add]').forEach(b=>b.onclick=e=>{
@@ -1806,7 +1815,10 @@ function bind(){
   const dl=$('debtLink'), dbt=$('inDebt');
   if(dl){
     dl.onclick = e => { e.preventDefault(); S.debtOpen=!S.debtOpen; renderQuestion(); };
-    const paint = () => { const el=$('debtEcho'); if(!el) return;
+    const paint = () => {
+      const dc = box.querySelector('.debtbox .clearbtn');
+      if(dc) dc.hidden = !S.debtMonthly;
+      const el=$('debtEcho'); if(!el) return;
       el.textContent = S.debtMonthly
         ? '1년이면 ' + formatWon(S.debtMonthly*12*10000) + '을 갚고 있어요. 그만큼 빌릴 수 있는 몫이 줄어요.'
         : ''; };
@@ -2448,7 +2460,7 @@ window.__selfcheck = function(){
     '--green':'#00CA71','--line':'#E5E8EB','--fill':'#F2F4F6'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v24.2 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v24.3 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
@@ -2513,6 +2525,23 @@ window.__selfcheck = function(){
     boxOk=Math.abs(w1-w0)<=0.5; boxDrift=w0.toFixed(2)+'px → '+w1.toFixed(2)+'px';
   } else { boxDrift='🟡 측정 대상 0 — 칩이 있는 화면에서 다시 실행하세요'; }
   ok('G-17 선택해도 칩 상자가 안 커진다', boxOk, boxDrift);
+
+  /* 🔴 G-18 (v24.3) — 헬퍼가 **한 줄**인가.
+     node test.js는 이걸 못 봅니다. 글자 수는 지표가 아닙니다 — 폭이 지표입니다.
+     같은 32자라도 공백·중점(·)이 많으면 들어가고, 받침 많은 한글만이면 넘칩니다.
+     실제로 v24.3에서 32자 두 개 중 하나만 두 줄이 됐습니다.
+     헬퍼가 두 줄이 되면 입력칸과 빠른 추가 칩 사이가 벌어져 덩어리가 흐려집니다.
+     ⚠ 좁은 폭에서 재야 의미가 있습니다 — 360px에서 돌리세요. */
+  const helpers=[...document.querySelectorAll('.helper')].filter(el=>el.offsetParent);
+  const wrapped=helpers.filter(el=>{
+    const lh=parseFloat(getComputedStyle(el).lineHeight);
+    if(!Number.isFinite(lh) || lh<=0) return false;
+    return Math.round(el.getBoundingClientRect().height / lh) > 1;
+  });
+  ok('G-18 헬퍼가 한 줄이다', wrapped.length===0,
+     wrapped.length ? wrapped.map(el=>'「'+el.textContent.trim().slice(0,14)+'…」').join(', ')+' 두 줄'
+     : helpers.length ? helpers.length+'개 확인 (창 폭 '+Math.round(document.documentElement.clientWidth)+'px)'
+     : '🟡 측정 대상 0 — 입력 01·02에서 다시 실행하세요');
 
   const dark=document.querySelectorAll('#result .pkg, #result .hero').length;
   ok('화면에 다크 카드 없음', dark===0, dark+'개');
