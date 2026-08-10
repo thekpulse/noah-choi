@@ -296,21 +296,38 @@ HYGIENE.forEach(([name, over]) => {
      /if\(!HOUSE\[S\.houseStatus\]\) S\.houseStatus = 'none';/.test(UI)
      && /if\(S\.sgg && !sggName\(S\.sgg\)\)/.test(UI)
      && /S\.step = Math\.max\(0, Math\.min\(parseInt\(S\.step,10\) \|\| 0, STEPS\.length - 1\)\)/.test(UI));
-  /* 🔴 결과를 되살리면 「입력이 끝난 시점에 한 번만 산정」이 깨집니다. */
-  tt('결과는 복구하지 않는다',
-     /S\.lockedPrice = null;\s*\/\* 결과는 되살리지 않습니다 \*\//.test(UI)
-     && !/DRAFT_KEYS[^;]*lockedPrice/.test(UI));
-  tt('저장 키에 결과·파생값이 없다', (()=>{
+  /* 🔴 v23.27 — 「결과는 복구하지 않는다」를 **뒤집었습니다**(지침 5층 3번).
+     밖으로 나갔다 돌아온 사람이 결과를 잃는 것이 실제 사고였습니다.
+     `lockedPrice`는 「이미 한 번 정한 값」이고, 같은 탭에서 그대로 돌려주는 것은
+     역산을 **다시 부르는 것이 아닙니다.** 되살리지 않고 재계산하면 그때 원칙 5가 깨집니다.
+     대신 **숫자가 성립할 때만** 되살리도록 잠급니다. */
+  tt('결과를 복구한다', (()=>{
      const m = UI.match(/const DRAFT_KEYS = \[([\s\S]*?)\];/);
-     if(!m) return false;
-     return !/lockedPrice|priceOverride|pyeong|interior/.test(m[1]);
+     return !!m && /'onResult'/.test(m[1]) && /'lockedPrice'/.test(m[1]);
   })());
+  tt('결과 복구는 숫자가 성립할 때만',
+     /const lp = Number\(S\.lockedPrice\);/.test(UI)
+     && /if\(!\(Number\.isFinite\(lp\) && lp > 0\)\) \{ S\.lockedPrice = null; S\.onResult = false; \}/.test(UI)
+     && /const RESUME_RESULT = S\.onResult && S\.lockedPrice > 0 && ready\(\);/.test(UI));
+  /* ⚠ priceOverride는 저장하지 않습니다 — 「다른 집값으로 보기」는 그 자리에서만 유효한 값입니다. */
+  tt('저장 키에 priceOverride가 없다', (()=>{
+     const m = UI.match(/const DRAFT_KEYS = \[([\s\S]*?)\];/);
+     return !!m && !/priceOverride/.test(m[1]) && /S\.priceOverride = null;/.test(UI);
+  })());
+  /* 되살린 파생값도 전부 범위 검사를 거칩니다(원칙 122). */
+  tt('되살린 파생값도 검사한다',
+     /S\.pyeong = Math\.max\(0, Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, 50\)\);/.test(UI)
+     && /S\.interior = \[0,100,150,220\]\.indexOf\(\+S\.interior\) >= 0/.test(UI));
+  /* render()가 퍼널을 그릴 때마다 결과 플래그를 내려야 합니다. 안 내리면 영영 결과로 돌아갑니다. */
+  tt('퍼널로 가면 결과 플래그가 내려간다',
+     /function render\(\)\{\s*S\.onResult = false;/.test(UI)
+     && /S\.onResult = true; saveDraft\(\);/.test(UI));
   /* 처음부터 다시 = 남은 값도 지웁니다. 안 지우면 다음 사람이 이어받습니다. */
   tt('처음부터 다시 계산하면 저장분을 지운다',
      /function restart\(\)\{\s*clearDraft\(\);/.test(UI));
   /* 빈 초안을 남기면 「지웠는데 흔적이 있는」 상태가 됩니다 — 넣은 게 없으면 키도 만들지 않습니다. */
   tt('빈 상태에서는 키를 만들지 않는다',
-     /if\(!S\.cash && !S\.income && !S\.sgg && !S\.debtMonthly && !S\.noLoan\)\{ clearDraft\(\); return; \}/.test(UI));
+     /if\(!S\.cash && !S\.income && !S\.sgg && !S\.debtMonthly && !S\.noLoan && !S\.onResult\)\{ clearDraft\(\); return; \}/.test(UI));
   /* 사파리 프라이빗 모드는 sessionStorage 접근에서 던집니다. 화면이 죽으면 안 됩니다. */
   tt('저장 실패가 화면을 막지 않는다',
      (UI.match(/try\{[\s\S]{0,400}?sessionStorage[\s\S]{0,400}?\}catch\(e\)\{\}/g)||[]).length >= 2);
@@ -439,6 +456,23 @@ HYGIENE.forEach(([name, over]) => {
          && /\.helper\{[^}]*color:var\(--ink-4\)/.test(src)
          && /--t7:13px/.test(src);
   })());
+  /* 🔴 v23.27 — 입력 피드백 */
+  tt('콤마를 다시 찍어도 캐럿이 유지된다',
+     /function setCommaValue\(el, digits\)/.test(UI)
+     && /el\.setSelectionRange\(i, i\)/.test(UI)
+     && /digitsBeforeCaret/.test(UI));
+  /* 값이 잘렸는데 아무 말도 안 하면 사용자는 자기가 잘못 눌렀다고 생각합니다. */
+  tt('잘린 입력을 화면으로 말한다', (()=>{
+     const msgs = ['억 단위는 9,999까지','만 단위는 99,999까지','월 상환액은 9,999만원까지'];
+     return msgs.every(m => UI.includes(m)) && (UI.match(/fieldErr\(/g)||[]).length >= 4;   /* 정의 1 + 호출 3 */
+  })());
+  /* hidden으로 껐다 켜면 전환이 재생되지 않습니다 — 항상 DOM에 두고 클래스로 폅니다. */
+  tt('에러 줄을 hidden으로 감추지 않는다',
+     /class="fielderr" role="alert"/.test(fs.readFileSync(FILE,'utf8'))
+     && !/class="fielderr"[^>]*hidden/.test(fs.readFileSync(FILE,'utf8')));
+  tt('에러 줄이 스크린리더에 전달된다',
+     (fs.readFileSync(FILE,'utf8').match(/role="alert" aria-live="polite"/g)||[]).length >= 2);
+
   /* 필드 밑 문구는 마진 4~8px 안에서만 붙습니다 — 14px는 「떠 있다」로 읽힙니다. */
   tt('필드 밑 문구가 4~8px 안에 붙는다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
@@ -540,7 +574,7 @@ HYGIENE.forEach(([name, over]) => {
   /* 직접 입력과 빠른 추가 칩, 두 자리 모두에서 항목을 비웁니다.
      한 곳만 비우면 「합계는 5인데 항목은 3+4」인 상태가 남습니다. */
   tt('메인 칸을 직접 고치면 항목이 초기화된다',
-     /dbt\.oninput[\s\S]{0,220}clearParts\(\);/.test(UI)
+     /dbt\.oninput[\s\S]{0,400}clearParts\(\);/.test(UI)
      && /data-debt[\s\S]{0,220}clearParts\(\);/.test(UI));
   tt('엔진으로 가는 값은 여전히 메인 칸 하나',
      /otherDebtMonthly:\(S\.debtMonthly\|\|0\)\*10000/.test(UI)
@@ -775,7 +809,46 @@ HYGIENE.forEach(([name, over]) => {
   tt('보유 라벨이 명사형', /생애 최초[\s\S]{0,400}1주택 이상/.test(UI));
   tt('규제 도달 문구가 전문형', /비율\(LTV\) 최대 한도에 도달/.test(UI)
      && /규제\(DSR\) 최대 한도에 도달/.test(UI));
-  tt('실거래가 링크가 국토부', /rt\.molit\.go\.kr/.test(UI) && !/hogangnono/.test(UI));
+  tt('실거래가 링크가 국토부', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /rt\.molit\.go\.kr/.test(src) && !/hogangnono/.test(src);
+  })());
+  /* 🔴 v23.27 — 밖으로 나가는 링크는 **진짜 앵커**여야 합니다.
+     스크립트로 연 창은 인앱 브라우저(카톡·인스타)에서 막히거나 같은 탭에 뜹니다.
+     같은 탭에 뜨면 뒤로가기에서 페이지가 다시 로드되고, 사용자는 계산을 잃습니다. */
+  tt('밖으로 나가는 넷이 전부 앵커다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return ['outNaver','outHogang','outInterior','outMove'].every(id =>
+       new RegExp('<a class="mini[^"]*" id="'+id+'" target="_blank" rel="noopener noreferrer"').test(src));
+  })());
+  tt('창을 스크립트로 열지 않는다',
+     !/window\.open\(/.test(UI) && !/function go\(url\)/.test(UI));
+  /* 앵커는 href만 채웁니다 — onclick으로 열면 앵커로 바꾼 의미가 없습니다. */
+  tt('앵커는 href로만 연결된다', (()=>{
+     return /\$\('outNaver'\)\.href\s*=/.test(UI)
+         && /\$\('outInterior'\)\.href\s*=/.test(UI)
+         && /\$\('outMove'\)\.href\s*=/.test(UI)
+         && !/\$\('out(Naver|Hogang|Interior|Move)'\)\.onclick/.test(UI);
+  })());
+  tt('앵커가 버튼과 같은 모양이다',
+     /\.mini\{[^}]*text-decoration:none/.test(css2) && /\.mini\{[^}]*color:inherit/.test(css2));
+  tt('에러 줄이 평소에 자리를 차지하지 않는다',
+     /\.fielderr\{[^}]*max-height:0/.test(css2) && /\.fielderr\{[^}]*opacity:0/.test(css2));
+  tt('에러 줄이 부드럽게 나타난다', (()=>{
+     const m = css2.match(/\.fielderr\{[^}]*transition:([^;}]+)/);
+     return !!m && /opacity/.test(m[1]) && /max-height/.test(m[1]);
+  })());
+  /* 🔴 v23.27 — 공유 카드가 웹과 같은 라이트 톤인가 */
+  tt('공유 카드가 라이트 톤이다',
+     /\.report-top\{background:var\(--bg\);color:var\(--ink\)/.test(css2)
+     && !/linear-gradient\(135deg,var\(--grad/.test(css2));
+  tt('공유 카드 금액이 잉크다', /\.report-amount\{[^}]*color:var\(--ink\)/.test(css2));
+  tt('공유 카드에도 그린은 면으로만',
+     /\.report-brand::before\{[^}]*background:var\(--green\)/.test(css2));
+  tt('다크 그라데이션 토큰을 삭제했다',
+     !/--grad-1\s*:/.test(css2) && !/--bronze-hi\s*:/.test(css2)
+     && !/var\(--grad-[12]\)/.test(css2) && !/var\(--bronze-hi\)/.test(css2));
+
   tt('임시 도메인 표기', /출시-후-도메인-연결-예정/.test(UI));
   tt('헤더 밴드가 퍼널 높이를 푸는다',
      /\.app\.hero-on \.funnel\{[^}]*min-height:0/.test(fs.readFileSync(FILE,'utf8')));
