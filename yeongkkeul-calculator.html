@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v23.23 · 정책 2026.08.05 -->
+<!-- BUILD v23.24 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -63,7 +63,15 @@
   --sh:0 4px 20px rgba(0,0,0,.03);
   --sh-lift:0 10px 30px rgba(0,0,0,.08);
 
-  --d1:50px; --t1:28px; --t2:25px; --t3:20px; --t4:17px; --t5:16px; --t6:14px; --t7:12.5px;
+  /* 🔴 v23.24 — --t7을 12.5 → 13px으로 올렸습니다.
+     12.5px은 지침이 금지한 **0.5px 단위**였습니다(모서리·자간과 같은 규칙).
+     상태 칩·헬퍼·캡션이 전부 이 값을 쓰므로 스케일에서 반칙을 없앱니다. */
+  --d1:50px; --t1:28px; --t2:25px; --t3:20px; --t4:17px; --t5:16px; --t6:14px; --t7:13px;
+  /* 🔴 v23.24 — 컴포넌트 3계층. 높이와 글자 크기를 토큰으로 고정합니다.
+     ⚠ 이 셋 밖의 높이를 새로 만들지 마세요. 버튼이 네 종류가 되는 순간 규격이 아닙니다. */
+  --h-cta:54px;     /* 메인 CTA — 화면 하단 고정 · 16px SemiBold */
+  --h-opt:46px;     /* 옵션 · 선택 버튼 — 칩 · 세그먼트 · 14px */
+  --h-chip:35px;    /* 상태 칩 · 뱃지 — 결과 요약부 · 13px */
   --r-m:14px; --r-l:20px; --r-xl:26px; --r-pill:999px;
   /* 🔴 v23.21 — 카드 안쪽 여백을 24 → 20px으로 줄였습니다.
      바깥 여백(16px)은 이미 목표치였고, 폭을 실제로 먹고 있던 것은 **카드 자신의 패딩**입니다.
@@ -109,10 +117,15 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .app.hero-on .appbar .barlabel{color:var(--ink-3)}
 .app.hero-on .progress{background:var(--line)}
 .app.hero-on .progress i{background:var(--green)}
-.iconbtn{width:40px;height:40px;border-radius:var(--r-m);display:grid;place-items:center;color:var(--ink-2)}
+/* 워드마크 — 아이콘 없이 굵기 대비만으로 브랜드를 세웁니다. */
+.wordmark{padding:8px 4px;font-size:var(--t4);line-height:1.2;font-weight:500;
+  letter-spacing:-.04em;color:var(--ink-3);transition:color .14s}
+.wordmark b{font-weight:900;color:var(--ink)}
 /* ⚠ 앱 배경(--bg) 위의 호버는 --fill이 아니라 --line을 씁니다 — 두 값이 같아 아무 일도 안 일어납니다. */
-.iconbtn:hover{background:var(--line)}
-.barlabel{font-size:var(--t6);font-weight:700;color:var(--ink-3);margin-left:4px}
+.wordmark:hover{color:var(--ink)}
+/* 단계 라벨은 오른쪽 끝, 결과에서만 켜집니다. 비어 있으면 자리도 차지하지 않습니다. */
+.barlabel{margin-left:auto;padding-right:6px;font-size:var(--t7);font-weight:700;color:var(--ink-4)}
+.barlabel:empty{display:none}
 .progress{position:sticky;top:56px;z-index:20;height:2px;background:var(--line)}
 .progress i{display:block;height:100%;width:0;background:var(--green);transition:width .34s cubic-bezier(.22,1,.36,1)}
 
@@ -211,8 +224,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 지시는 「기본 1px → 활성 1.5px」였지만, 폭이 변하면 상자가 0.5px 커져 칩 줄이 흔들립니다
      (원칙 34 · G-14). 활성 사양(1.5px 그린)을 그대로 지키고 기본을 1.5px로 맞췄습니다.
      #E5E8EB는 1.5px에서도 헤어라인으로 읽힙니다. */
-.chip{padding:11px 16px;border:1.5px solid var(--line);border-radius:var(--r-pill);background:var(--card);
-  font-size:var(--t6);font-weight:700;color:var(--ink-2);box-shadow:var(--sh);
+/* 🔴 v23.24 계층 2 — 옵션 · 선택 버튼. 높이 --h-opt · 14px. */
+.chip{display:inline-flex;align-items:center;justify-content:center;
+  min-height:var(--h-opt);padding:0 16px;border:1.5px solid var(--line);border-radius:var(--r-pill);
+  background:var(--card);font-size:var(--t6);font-weight:700;color:var(--ink-2);box-shadow:var(--sh);
   transition:transform .12s cubic-bezier(.34,1.56,.64,1),background .14s,color .14s,border-color .14s}
 .chip:hover{color:var(--espresso)}
 .chip:active{transform:scale(.94)}
@@ -238,17 +253,18 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .pane{margin-top:26px}
 .pane-title{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px;letter-spacing:.02em}
 .taggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.taggrid .chip{padding:14px 10px;font-size:var(--t7);text-align:center;line-height:1.35;
-  letter-spacing:-.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.taggrid .chip{padding:0 8px;font-size:var(--t6);text-align:center;line-height:1.35;
+  letter-spacing:-.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.taggrid .chip{display:inline-flex}
 .sidoscroll{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
 .sidoscroll::-webkit-scrollbar{display:none}
-.sidoscroll .chip{flex:none;padding:11px 16px;font-size:var(--t7)}
+.sidoscroll .chip{flex:none;padding:0 16px;font-size:var(--t6)}
 
 .seg{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
   padding:5px;border-radius:var(--r-m)}
 /* 세그먼트도 칩과 같은 선택 언어입니다 — 폭 고정 1.5px, 색만 바뀝니다. */
-.seg button{padding:13px 4px;border:1.5px solid transparent;border-radius:10px;font-size:var(--t7);
-  font-weight:700;color:var(--ink-3);transition:.14s}
+.seg button{min-height:var(--h-opt);padding:0 4px;border:1.5px solid transparent;border-radius:10px;
+  font-size:var(--t6);font-weight:700;color:var(--ink-3);transition:.14s}
 .seg button.is-on{background:var(--card);border-color:var(--green);color:var(--ink);
   box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .blockhead{margin:34px 0 0;font-size:15px;font-weight:700;color:var(--ink-2);letter-spacing:-.02em}
@@ -305,8 +321,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    글자를 잉크로 뒤집으면 화사한 #00CA71을 그대로 쓰면서 대비가 오히려 올라갑니다.
    #191F28 on #00CA71 = 7.64 : 1. 채도를 죽이는 대신 글자를 바꾼 자리입니다.
    ⚠ 독에서는 flex:1로 남은 폭을 다 씁니다. width:100%는 flex 계산을 방해하지 않습니다. */
-.cta{width:100%;height:54px;border-radius:var(--r-m);background:var(--green);color:var(--espresso);
-  font-size:var(--t5);font-weight:900;letter-spacing:-.02em;
+/* 🔴 v23.24 계층 1 — 메인 CTA. 높이 --h-cta · 16px SemiBold(600).
+   화면이 달라도 이 버튼은 언제나 같은 크기·같은 색입니다. */
+.cta{width:100%;height:var(--h-cta);border-radius:var(--r-m);background:var(--green);color:var(--espresso);
+  font-size:var(--t5);font-weight:600;letter-spacing:-.02em;
   transition:background .14s,color .14s,transform .12s}
 /* 호버에서 색을 바꾸지 않습니다 — 그린이 하나뿐이라 「더 짙은 그린」이 존재하지 않습니다.
    밝기와 그림자로만 반응합니다. 잉크 글자는 그대로라 대비 7.64:1이 유지됩니다. */
@@ -345,7 +363,8 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   color:var(--ink-2);line-height:1.6}
 .rhead-why.bad{background:var(--warn-tint);color:var(--warn)}
 .condbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
-.condchip{display:inline-flex;align-items:center;gap:6px;padding:9px 11px 9px 13px;border-radius:var(--r-pill);
+/* 🔴 v23.24 계층 3 — 상태 칩 · 뱃지. 높이 --h-chip · 13px. */
+.condchip{display:inline-flex;align-items:center;gap:6px;height:var(--h-chip);padding:0 12px;border-radius:var(--r-pill);
   background:var(--card);border:1px solid var(--line);font-size:var(--t7);font-weight:700;color:var(--ink-2);
   letter-spacing:-.02em;transition:.12s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .condchip:hover{border-color:var(--ink-4);color:var(--ink)}
@@ -426,10 +445,12 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .costrow:last-of-type{border-bottom:0}
 .costrow .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:600;color:var(--ink-2)}
 .costrow .nm small{display:block;font-size:var(--t7);font-weight:400;color:var(--ink-4);margin-top:3px;line-height:1.6}
-.costrow .amt{width:98px;flex:none;display:flex;align-items:baseline;gap:0;
-  border-radius:10px;padding:9px 11px;background:var(--fill)}
+.costrow .amt{width:108px;flex:none;display:flex;align-items:baseline;gap:0;
+  border-radius:10px;padding:8px 11px;background:var(--fill)}
+/* 🔴 v23.24 — 14px이었습니다. iOS Safari는 **16px 미만 입력에 포커스하면 화면을 확대**합니다.
+   지침의 「폼 컨트롤은 16px 이상」을 그동안 이 칸만 어기고 있었습니다. */
 .costrow .amt input{width:100%;border:0;padding:0;background:none;text-align:right;
-  font-size:var(--t6);font-weight:700;color:var(--ink)}
+  font-size:var(--t5);font-weight:700;color:var(--ink)}
 .costrow .amt input:focus{outline:none}
 .costrow .amt input:disabled{color:var(--ink-4)}
 .costrow .amt u{text-decoration:none;font-size:var(--t7);color:var(--ink-4);flex:none}
@@ -494,32 +515,57 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .mini.sm{padding:16px 18px;margin-top:16px;background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.sm em{font-size:var(--t5)} .mini.sm .txt b{font-size:var(--t7)}
 
-/* 둘러싸던 회색 박스를 걷어냈습니다 — 가짜 버튼처럼 보였습니다 */
-.trust{margin:26px 0 0;padding:0;background:none;text-align:center;
-  font-size:12px;line-height:1.7;font-weight:400;color:var(--ink-3);
-  word-break:keep-all;overflow-wrap:anywhere}
+/* 🔴 v23.24 — 「스트레스 DSR · 취득세 · …」 한 줄을 ⓘ 하나로 접었습니다(점진적 정보 공개).
+   신뢰 지표를 지운 게 아니라 **한 단계 뒤로** 옮겼습니다 — 눌러야 나오지만 언제나 있습니다. */
+.trust{display:inline-flex;align-items:center;gap:6px;height:var(--h-chip);margin:26px 0 0;padding:0 14px;
+  border-radius:var(--r-pill);background:none;border:1px solid var(--line);
+  font-size:var(--t7);line-height:1;font-weight:600;color:var(--ink-3);transition:.14s}
+.trust:hover{color:var(--ink);background:var(--card)}
+.trust i{font-style:normal;font-size:14px;line-height:1}
+.trustwrap{text-align:center}
+/* ── 바텀시트 ─────────────────────────────────
+   ⚠ 스크롤 잠금은 body에 position:fixed를 쓰지 않습니다 — 스크롤 위치가 튑니다(원칙 92).
+      overflow:hidden 하나로 충분합니다. */
+.sheet-back{position:fixed;inset:0;z-index:60;background:rgba(25,31,40,.45);
+  opacity:0;pointer-events:none;transition:opacity .24s}
+.sheet-back.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:480px;margin:0 auto;
+  background:var(--card);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:10px 20px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.22,1,.36,1);
+  max-height:82dvh;overflow-y:auto}
+.sheet.on{transform:none}
+.sheet-grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 16px}
+.sheet-title{font-size:var(--t4);font-weight:900;letter-spacing:-.03em;line-height:1.3;margin:0 0 4px}
+.sheet-row{padding:16px 0;border-bottom:1px solid var(--line)}
+.sheet-row:last-of-type{border-bottom:0}
+.sheet-row b{display:block;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.sheet-row span{display:block;margin-top:4px;font-size:var(--t7);line-height:1.6;color:var(--ink-3)}
+.sheet-close{width:100%;height:var(--h-cta);margin-top:14px;border-radius:var(--r-m);
+  background:var(--fill);color:var(--ink);font-size:var(--t5);font-weight:600;letter-spacing:-.02em}
+.sheet-close:hover{background:var(--line)}
 /* 고스트 버튼 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다.
    흰 면 + 1px 테두리 + 그림자로 덩어리를 만듭니다. */
 /* 🔴 v23.21 — 거대한 버튼 둘을 위아래로 쌓던 것을 **가로 2분할**로 바꿨습니다.
    세로 112px + 여백을 먹으면서 시선이 두 번 내려갔습니다.
    왼쪽 35%(세컨더리 · 옅은 면) / 오른쪽 65%(프라이머리 · 솔리드). 엄지 구역 안에 둘 다 들어옵니다. */
 .restartrow{display:flex;gap:10px;margin-top:var(--gap)}
-.restartrow > button{height:56px;margin-top:0}
+.restartrow > button{height:var(--h-cta);margin-top:0}
 .restartrow .reedit-cta{flex:35 1 0}
 .restartrow .restart-cta{flex:65 1 0}
 /* ⚠ 세컨더리 면을 --fill로 내리면 앱 배경(--bg)과 1.02:1이라 버튼이 통째로 사라집니다(원칙 97).
    「옅은 Secondary」는 여기서 --card(흰 면) + 헤어라인 + 그림자입니다. */
-.reedit-cta{width:100%;height:54px;margin-top:var(--gap);border-radius:var(--r-m);
+.reedit-cta{width:100%;height:var(--h-cta);margin-top:var(--gap);border-radius:var(--r-m);
   background:var(--card);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--sh);
-  font-size:var(--t6);font-weight:700;letter-spacing:-.02em;transition:.14s;
+  font-size:var(--t6);font-weight:600;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
 .reedit-cta:hover{background:var(--line);color:var(--ink);box-shadow:var(--sh-lift)}
 /* 🔴 v23.23 — 검정 솔리드를 폐기하고 01·02·03의 「다음」과 **같은 버튼**으로 맞췄습니다.
    프라이머리 액션이 화면마다 다른 색이면 그 색은 더 이상 「액션」을 뜻하지 않습니다.
    ⚠ 지침 6-5의 「재계산 CTA는 예외로 검정 면」 조항은 v23.23에서 폐기했습니다. */
-.restart-cta{width:100%;height:58px;margin-top:10px;border-radius:var(--r-m);
+.restart-cta{width:100%;height:var(--h-cta);margin-top:10px;border-radius:var(--r-m);
   background:var(--green);color:var(--espresso);box-shadow:var(--sh-lift);
-  font-size:var(--t5);font-weight:900;letter-spacing:-.02em;transition:.14s;
+  font-size:var(--t5);font-weight:600;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
 .restart-cta:hover{filter:brightness(.94)}
 .foot{padding:8px 12px 0;text-align:center;font-size:12px;line-height:1.7;color:var(--ink-3)}
@@ -548,11 +594,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 <body>
 
 <div class="app" id="app">
+  <!-- 🔴 v23.24 — 라인 집 아이콘을 뺐습니다. 워드마크 자체가 홈 버튼입니다.
+       위계는 자간(-.04em)과 굵기 대비(900 ↔ 500)로만 만듭니다. -->
   <div class="appbar">
-    <button class="iconbtn" id="homeBtn" aria-label="처음으로">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <span class="barlabel" id="barLabel">영끌계산기</span>
+    <button class="wordmark" id="homeBtn" aria-label="처음으로"><b>영끌</b>계산기</button>
+    <span class="barlabel" id="barLabel"></span>
   </div>
   <div class="progress"><i id="bar"></i></div>
 
@@ -633,7 +679,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 
 
     <div id="restartWrap"></div>
-    <p class="trust" id="trustText"></p>
+    <div class="trustwrap"><button class="trust" id="trustBtn"><i>ⓘ</i>계산 기준 보기</button></div>
     <p class="foot" id="footNote"></p>
   </section>
 </div>
@@ -643,6 +689,20 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
     <button class="cta back" id="prevBtn">이전</button>
     <button class="cta" id="ctaBtn">다음</button>
   </div>
+</div>
+
+<!-- 🔴 v23.24 — 점진적 정보 공개. 결과 화면을 미니멀하게 두고 근거는 여기로 내립니다.
+     ⚠ .app 밖에 둡니다. 안에 넣으면 overflow-x:clip이 fixed 요소를 가둡니다. -->
+<div class="sheet-back" id="sheetBack" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-grip"></div>
+  <h2 class="sheet-title" id="sheetTitle">계산 기준</h2>
+  <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 한도를 봅니다. 실제 금리보다 높게 잡아 한도가 보수적으로 나옵니다.</span></div>
+  <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라집니다. 대출을 받지 않아도 항상 계산에 넣습니다.</span></div>
+  <div class="sheet-row"><b>중개보수</b><span>거래 금액 구간별 상한요율로 계산합니다. 실제 보수는 협의로 더 낮아질 수 있습니다.</span></div>
+  <div class="sheet-row"><b>방공제(최우선변제금)</b><span>지역별 기준액을 승인 한도에서 뺍니다. 그만큼 실제로 나오는 돈이 줄어듭니다.</span></div>
+  <div class="sheet-row"><b>정책 확인일</b><span>2026.08.05 기준입니다. 정부 정책이 바뀌면 결과도 달라집니다.</span></div>
+  <button class="sheet-close" id="sheetClose">닫기</button>
 </div>
 
 <div class="reportwrap" aria-hidden="true"><div class="report" id="reportCard">
@@ -1424,7 +1484,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v23.23 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v23.24 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1745,7 +1805,7 @@ function render(){
   $('brand').hidden = S.step!==0;
   $('app').classList.toggle('hero-on', S.step===0);
   $('prevBtn').hidden = posOf(S.step)===0;
-  $('barLabel').textContent='영끌계산기';
+  $('barLabel').textContent='';
   $('bar').style.width = (posOf(S.step)/visible().length*100)+'%';
   $('ctaBtn').onclick = next;
   renderQuestion(); renderAnswered(); syncCta();
@@ -1826,7 +1886,6 @@ function showResult(keepScroll){
   LASTVIEW = {c, price, headline, isOverride, short};
   renderReport(LASTVIEW);
 
-  $('trustText').textContent = '스트레스 DSR · 취득세 · 지방교육세 · 중개보수 상한요율 기준 반영';
   /* 🔴 v23.21 — 두 줄이 같은 말을 두 번 하고 있었습니다(원칙 43). 한 줄로 합칩니다.
      정책 변동 고지는 반드시 남깁니다 — 정책대출 미반영분(약 7,657만원 과소)의 면책 근거입니다. */
   $('footNote').innerHTML =
@@ -2073,6 +2132,32 @@ async function saveImage(){
   }catch(e){ console.error(e); t.textContent='저장에 실패했어요. 다시 시도해 주세요'; setTimeout(()=>t.textContent=o,2400); }
 }
 
+/* ── 바텀시트 ─────────────────────────────────
+   ⚠ 열 때 스크롤 위치를 건드리지 않습니다(원칙 92). overflow:hidden 하나만 씁니다.
+   ⚠ hidden을 먼저 벗기고 다음 프레임에 .on을 붙여야 transform 전환이 실제로 재생됩니다. */
+let SHEET_LAST = null;
+function openSheet(){
+  const sh=$('sheet'), bk=$('sheetBack');
+  SHEET_LAST = document.activeElement;
+  sh.hidden=false; bk.hidden=false;
+  requestAnimationFrame(()=>{ sh.classList.add('on'); bk.classList.add('on'); });
+  document.documentElement.style.overflow='hidden';
+  $('sheetClose').focus({preventScroll:true});
+}
+function closeSheet(){
+  const sh=$('sheet'), bk=$('sheetBack');
+  sh.classList.remove('on'); bk.classList.remove('on');
+  document.documentElement.style.overflow='';
+  setTimeout(()=>{ sh.hidden=true; bk.hidden=true; }, 280);
+  if(SHEET_LAST && SHEET_LAST.focus) SHEET_LAST.focus({preventScroll:true});
+}
+$('trustBtn').onclick = e => { e.preventDefault(); openSheet(); };
+$('sheetClose').onclick = e => { e.preventDefault(); closeSheet(); };
+$('sheetBack').onclick = () => closeSheet();
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape' && !$('sheet').hidden) closeSheet();
+});
+
 function restart(){
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
     group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,costOpen:false,limitOpen:false});
@@ -2094,7 +2179,7 @@ window.__selfcheck = function(){
     '--green':'#00CA71','--line':'#E5E8EB','--fill':'#F2F4F6'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.23 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.24 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
