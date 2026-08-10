@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v23.20 · 정책 2026.08.05 -->
+<!-- BUILD v23.22 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -18,7 +18,11 @@
    =================================================================== */
 :root{
   color-scheme:light;                      /* 시스템 다크모드로 폼 컴포넌트가 반전되는 것을 막습니다 */
-  /* 채널 A 조작 = --green(면) / --green-ink(글자)  ⚠ 두 값은 달라야 합니다(원칙 102)
+  /* 🔴 v23.22 — 브랜드 그린은 **단 하나**입니다. --green-ink(짙은 녹색)를 정의부터 지웠습니다.
+     원칙 102(면용/글자용 두 값)는 「그린을 글자로도 쓰려면」의 답이었습니다.
+     v23.22의 답은 더 강합니다 — **그린을 글자로 아예 쓰지 않습니다.**
+     글자는 잉크 4단(--ink ~ --ink-4), 그린은 「지금 이것이 선택·활성」이라는 면·선에만 씁니다.
+     ⚠ 되살리지 마세요. 값이 둘이 되는 순간 화면마다 다른 초록이 섞입니다.
      채널 B 판정 = --ok(무채색) → --warn(오렌지) → --bad(딥 레드)
      채널 C 제휴 = 색을 쓰지 않습니다. 흰 면 + 얇은 윤곽 + ↗ 로만 가릅니다 */
   --bg:#F2F4F6; --card:#FFFFFF;              /* 쿨 그레이 바탕 · 퓨어 화이트 카드 */
@@ -26,22 +30,29 @@
   --line:#E5E8EB;                            /* 헤어라인 · 트랙 · 비활성 면 */
   --grad-1:#000000; --grad-2:#191F28;        /* 공유 리포트 전용 */
   --espresso:#191F28; --espresso-2:#000000;  /* 솔리드 다크 면 */
-  --green:#00CA71;      /* 채널 A — 면 전용. 흰 바탕 위 글자로는 1.97:1이라 못 씁니다 */
-  --green-ink:#00794A;  /* 채널 A — 글자 전용. 흰 바탕 위 5.48:1 */
+  --green:#00CA71;      /* 채널 A — 면·선 전용. 흰 바탕 위 글자로는 1.97:1이라 글자로 못 씁니다 */
   --bronze-hi:#8B95A1;  /* 다크 면 위 전용 — 밝은 면에는 쓰지 않습니다 */  /* 공유 리포트 보조 글자 */
   --ink:#191F28; --ink-2:#333D4B; --ink-3:#4E5968;
   /* ⚠ --ink-4는 v23.19까지 #8B95A1(흰 면 위 3.04:1)이었습니다. 마이크로 라벨에는 통했지만
      v23.20에서 넛지 문장(13px 본문)이 이 색을 쓰게 되어 AA를 못 넘겼습니다. 한 단 내립니다. */
   --ink-4:#6B7684;
   /* 🔴 v23.20 — 「부담」에 초록을 쓰지 않습니다. 낮음은 색이 아니라 「조용함」으로 말합니다.
-     무채색 → 오렌지 → 딥 레드. 명도 사다리가 아니라 채도 사다리입니다. */
-  --ok:#333D4B;        /* 부담 낮음 — 무채색. 정상은 신호를 보내지 않습니다 */
-  --warn:#A85510;      /* 부담 중간 — 딥 오렌지 (흰 면 위 5.29:1) */
-  --bad:#7F2420;       /* 부담 높음 — 딥 버건디 */
-  --warn-tint:rgba(168,85,16,.06);           /* 규제지역 안내 면 */
-  --glass:rgba(255,255,255,.10);
-  --glass-line:rgba(255,255,255,.20);
-  --glass-2:rgba(255,255,255,.16);
+     무채색 → 오렌지 → 딥 레드. 명도 사다리가 아니라 채도 사다리입니다.
+     🔴 v23.21 — 같은 사다리를 유지하되 **탁한 흙색을 순색으로 바꿨습니다.**
+     이전 두 값은 채도가 낮아(R-max(G,B) = 83 · 91) 밤색으로 읽혔습니다.
+     지금은 115 · 177로, 4.5:1을 지키면서 낼 수 있는 가장 맑은 오렌지·레드입니다.
+     ⚠ 이전 hex를 주석에 적지 않습니다 — 「탁한 밤색 잔재 없음」 검사가 파일 전체를 봅니다.
+     기준: 흰 면 위 ≥4.5:1 · R>G>B · 주의가 위험보다 옅을 것. 확인일 2026.08.10 */
+  --ok:#333D4B;        /* 부담 낮음 — 무채색. 정상은 신호를 보내지 않습니다 (11.00:1) */
+  --warn:#BE4B00;      /* 부담 중간 — 순색 오렌지 (흰 면 위 5.00:1 · 색상각 24°) */
+  --bad:#C00F0C;       /* 부담 높음 — 순색 레드 (흰 면 위 6.33:1 · 색상각 1°) */
+  /* 🔴 v23.21 — 세로선을 지운 자리를 「면」이 대신합니다. 6% 틴트 하나로 위계를 만듭니다. */
+  --warn-tint:rgba(190,75,0,.06);            /* 규제지역 · 초과 안내 면 */
+  --ink-tint:rgba(25,31,40,.04);             /* 중립 안내 면 (결과 헤더의 한 줄 이유) */
+  /* ⏹ --glass / --glass-line / --glass-2 는 v23.21에서 삭제했습니다.
+     어떤 규칙도 var()로 부르지 않는 죽은 토큰 3개였고, G-6(색 ≤26)의 정원만 먹고 있었습니다.
+     죽은 CSS는 죽은 값이 아니라 「살아 있는 두 번째 정의」입니다(원칙 84 · 지침 6-6).
+     ⚠ 부활시키려면 쓰는 규칙과 함께 되살립니다. */
   /* 🔴 입체감은 앰비언트 섀도우로만 냅니다. 오프셋 하드 섀도우는 v23.20에서 폐기했습니다. */
   --hair:1px solid #E5E8EB;
   --sh:0 4px 20px rgba(0,0,0,.03);
@@ -49,10 +60,14 @@
 
   --d1:50px; --t1:28px; --t2:25px; --t3:20px; --t4:17px; --t5:16px; --t6:14px; --t7:12.5px;
   --r-m:14px; --r-l:20px; --r-xl:26px; --r-pill:999px;
-  --gap:16px; --pad:24px; --dock:112px;
+  /* 🔴 v23.21 — 카드 안쪽 여백을 24 → 20px으로 줄였습니다.
+     바깥 여백(16px)은 이미 목표치였고, 폭을 실제로 먹고 있던 것은 **카드 자신의 패딩**입니다.
+     360px 화면에서 내용 폭 280 → 296px. 「10억」·「0만」 입력칸이 그만큼 숨을 쉽니다. */
+  --gap:16px; --pad:20px; --dock:112px;
 }
 @media (max-width:400px){ :root{ --d1:40px; --t1:25px; --t2:22px; }
-  .funnel{padding:22px 12px 32px} .result{padding:0 12px 40px} }
+  .funnel{padding:22px 12px 32px} .result{padding:0 12px 40px}
+  .brand{padding:26px 14px 4px} }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;min-width:0}
 [hidden]{display:none!important}
@@ -100,16 +115,19 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    지적은 「네이비 색」이 아니라 「넓은 면적」이었는데,
    v23.13에서 색만 블랙으로 바꾸고 면적을 그대로 둔 것이 오류였습니다.
    레퍼런스처럼 바탕은 밝게, 라임을 액센트 면으로 씁니다. */
-.brand{background:var(--bg);padding:30px 24px 4px;margin:0}
+/* 🔴 v23.21 — 좌우 24 → 18px. 타이틀은 세로선 때문에 안쪽으로 18px 더 들어가므로
+   18+18 = 36px가 되어, 아래 히어로 카드의 글자 시작점(16+20 = 36px)과 **정확히 맞습니다.**
+   이전에는 42 vs 40으로 2px 어긋나 있었습니다. */
+.brand{background:var(--bg);padding:30px 18px 4px;margin:0}
 .brand .headline{color:var(--ink)}
 .brand .headline::before{background:var(--green)}
 .brand .subline{color:var(--ink-3)}
 /* 🔴 밴드가 화면 위쪽을 이미 먹었으므로 퍼널은 min-height를 푸니다.
    안 풀면 페이지가 1.5배로 늘어나 하단이 통째로 비어 보입니다. */
 .app.hero-on .funnel{padding-top:0;min-height:0;padding-bottom:24px}
-.app.hero-on .funnel > .q{background:var(--card);border:var(--hair);border-radius:var(--r-xl);
-  padding:24px;margin-top:20px;box-shadow:var(--sh)}
-.app.hero-on .funnel > .q .moneycard{background:transparent;border:0;box-shadow:none;padding:0;margin-top:24px}
+/* ⏹ v23.22 — 히어로 전용이던 흰 카드 규칙을 01·02·03 전부로 올렸습니다(아래 .funnel > .q).
+   02·03에서만 질문이 회색 바닥에 맨몸으로 놓이고 그 안에 다시 흰 .moneycard가 들어가
+   「회색 → 흰 카드 → 회색 필드」 3중첩이 됐습니다. 지금은 「흰 카드 → 회색 필드」 둘입니다. */
 /* 세로선 — 에디토리얼 리포트의 구조적 킥. 장식 문구 없이 모양으로만 임팩트를 냅니다. */
 .headline{position:relative;font-size:var(--t2);line-height:1.15;font-weight:900;
   letter-spacing:-.05em;margin:0;padding-left:18px}
@@ -121,7 +139,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* ── 퍼널 ───────────────────────────────────── */
 .funnel{padding:24px 16px 36px;display:flex;flex-direction:column;
   min-height:calc(100dvh - 58px - var(--dock))}
-.funnel > .q{flex:none}
+/* 🔴 v23.22 — 질문 블록은 01·02·03 모두 같은 흰 카드입니다.
+   ⚠ 카드에 테두리를 두르지 않습니다. .card·.tile과 같은 「그림자 하나」 문법으로 통일합니다. */
+.funnel > .q{flex:none;background:var(--card);border:0;border-radius:var(--r-xl);
+  padding:var(--pad);margin-top:20px;box-shadow:var(--sh)}
 .q{animation:rise .32s cubic-bezier(.22,1,.36,1)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .eyebrow{font-size:var(--t7);font-weight:800;color:var(--espresso);letter-spacing:.1em;margin:0 0 12px}
@@ -131,16 +152,19 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 
 /* 질문 → 입력 카드 간격은 01·02·03이 같아야 합니다(24px).
    01은 히어로 카드 안이라 20px, 02·03은 28px이어서 스크롤할 때 리듬이 어긋났습니다. */
-.moneycard{margin-top:24px;background:var(--card);border-radius:var(--r-xl);padding:var(--pad);
-  box-shadow:var(--sh);transition:box-shadow .22s}
-.moneycard:focus-within{box-shadow:var(--sh-lift)}
+/* 🔴 v23.22 — 입력칸을 감싸던 흰 라운드 박스(베젤)를 통째로 지웠습니다.
+   흰 질문 카드 위에 회색 필드가 바로 놓입니다. 이제 .moneycard는 「간격」만 담당합니다.
+   ⚠ 여기에 background·padding·box-shadow를 다시 넣으면 3중첩이 그대로 부활합니다. */
+.moneycard{margin-top:24px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none}
 /* 두 칸 입력 — 320px 화면에서도 넘치지 않게 폭을 계산해 잡았습니다.
    이전 값(패딩 16·글자 28px 고정)은 360px에서 14px 넘쳤습니다. */
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+/* 🔴 v23.22 전역 규칙 — 입력 필드는 **테두리 0 · 옅은 회색 면**입니다.
+   ⚠ 포커스 표시는 outline으로 냅니다. border를 키우면 상자가 커져 줄이 흔들립니다(원칙 34).
+     outline은 레이아웃을 전혀 건드리지 않습니다. */
 .mfield{display:flex;align-items:baseline;gap:0;background:var(--fill);border-radius:var(--r-m);
-  border:1.5px solid transparent;padding:15px 13px;overflow:hidden;
-  transition:border-color .2s ease, background-color .2s ease}
-.mfield:focus-within{border-color:var(--espresso);background:var(--card)}
+  border:0;padding:16px 14px;overflow:hidden;transition:background-color .2s ease}
+.mfield:focus-within{outline:2px solid var(--green);outline-offset:-2px}
 .mfield input{flex:1;width:100%;min-width:0;max-width:100%;border:0;padding:0;background:none;
   text-align:right;color:var(--ink);font-size:clamp(19px,6vw,var(--t1));line-height:1.15;
   font-weight:900;letter-spacing:-.04em}
@@ -156,13 +180,24 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    두 번째 정의가 여기 남아 있었습니다(원칙 84 — 값은 한 곳에서만 정한다). */
 /* 값이 들어오면 사라집니다. 두 칸이 이미 「10억 0만」을 보여주는데
    아래에서 「10억원」을 한 번 더 말하면 같은 말을 두 번 하는 것입니다(원칙 43). */
-.readout{margin-top:14px;font-size:var(--t7);font-weight:500;color:var(--ink-4);line-height:1.5}
+/* 🔴 v23.22 — 헬퍼 텍스트 컴포넌트. 필드에 **종속**시킵니다(마진 6px · 12.5px · 쿨 그레이).
+   ⚠ 색은 --ink-4(#6B7684 · 흰 면 위 4.62:1)입니다. 한 단 밝은 #8B95A1은 3.04:1로
+     본문 기준(4.5:1)을 못 넘깁니다. v23.20에서 같은 이유로 한 번 내린 값입니다. */
+.helper{margin:6px 0 0;font-size:var(--t7);font-weight:400;color:var(--ink-4);line-height:1.6}
+.helper b{color:var(--ink-3);font-weight:700}
+.helper + .helper{margin-top:4px}
+.readout{margin:6px 0 0;font-size:var(--t7);font-weight:400;color:var(--ink-4);line-height:1.6}
 .readout:empty{display:none}
 
 .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
-.chip{padding:11px 16px;border:var(--hair);border-radius:var(--r-pill);background:var(--card);
+/* 🔴 v23.22 전역 규칙 — 선택 칩·버튼의 테두리.
+   기본 var(--line) / 활성 var(--green). **폭은 두 상태가 같습니다(1.5px).**
+   ⚠ 지시는 「기본 1px → 활성 1.5px」였지만, 폭이 변하면 상자가 0.5px 커져 칩 줄이 흔들립니다
+     (원칙 34 · G-14). 활성 사양(1.5px 그린)을 그대로 지키고 기본을 1.5px로 맞췄습니다.
+     #E5E8EB는 1.5px에서도 헤어라인으로 읽힙니다. */
+.chip{padding:11px 16px;border:1.5px solid var(--line);border-radius:var(--r-pill);background:var(--card);
   font-size:var(--t6);font-weight:700;color:var(--ink-2);box-shadow:var(--sh);
-  transition:transform .12s cubic-bezier(.34,1.56,.64,1),background .14s,color .14s}
+  transition:transform .12s cubic-bezier(.34,1.56,.64,1),background .14s,color .14s,border-color .14s}
 .chip:hover{color:var(--espresso)}
 .chip:active{transform:scale(.94)}
 .chip.pop{animation:pop .34s cubic-bezier(.34,1.56,.64,1)}
@@ -170,16 +205,20 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 선택 = 흰 면 + 그린 글자 + 떠 있는 그림자. 테두리는 쓰지 않습니다.
    ⚠ border를 0으로 지우면 미선택(1px hair)과 상자 크기가 어긋나 줄이 흔들립니다.
       1px를 투명으로 남겨 치수를 고정합니다. */
-.chip.is-on{background:var(--card);color:var(--green-ink);border:1px solid transparent;font-weight:800;
+/* 🔴 v23.22 — **선택해도 글자 굵기를 바꾸지 않습니다.**
+   700 → 800은 글자를 넓혀 칩 상자를 1.02px 키웠고, 칩 줄이 미세하게 다시 흘렀습니다.
+   G-14(테두리 폭)는 이걸 못 봤습니다 — G-17(렌더된 상자 폭)이 잡은 자리입니다.
+   선택 신호는 이미 셋입니다: 그린 테두리 · 뜨는 그림자 · 잉크로 진해지는 글자. */
+.chip.is-on{background:var(--card);color:var(--ink);border-color:var(--green);
   box-shadow:var(--sh-lift)}
-.chip.is-clear{color:var(--ink-4);font-weight:600;box-shadow:none;background:none;border:0}
+.chip.is-clear{color:var(--ink-4);font-weight:600;box-shadow:none;background:none;border-color:transparent}
 
 .zonegrid{margin-top:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.zonecard{padding:20px 6px;border:var(--hair);border-radius:var(--r-l);background:var(--card);box-shadow:var(--sh);
-  text-align:center;transition:.14s}
-.zonecard.is-on{background:var(--card);border:1px solid transparent;box-shadow:var(--sh-lift)}
+.zonecard{padding:20px 6px;border:1.5px solid var(--line);border-radius:var(--r-l);background:var(--card);
+  box-shadow:var(--sh);text-align:center;transition:.14s}
+.zonecard.is-on{background:var(--card);border-color:var(--green);box-shadow:var(--sh-lift)}
 .zonecard b{display:block;font-size:var(--t6);font-weight:700}
-.zonecard.is-on b{color:var(--green-ink)}
+.zonecard.is-on b{color:var(--ink)}
 .pane{margin-top:26px}
 .pane-title{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px;letter-spacing:.02em}
 .taggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -191,9 +230,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 
 .seg{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
   padding:5px;border-radius:var(--r-m)}
-.seg button{padding:13px 4px;border-radius:10px;font-size:var(--t7);font-weight:700;color:var(--ink-3);transition:.14s}
-/* 흰 면 + 그린 글자 + 은은한 그림자. 안쪽 링(0-오프셋)은 쓰지 않습니다(G-14). */
-.seg button.is-on{background:var(--card);color:var(--green-ink);font-weight:800;
+/* 세그먼트도 칩과 같은 선택 언어입니다 — 폭 고정 1.5px, 색만 바뀝니다. */
+.seg button{padding:13px 4px;border:1.5px solid transparent;border-radius:10px;font-size:var(--t7);
+  font-weight:700;color:var(--ink-3);transition:.14s}
+.seg button.is-on{background:var(--card);border-color:var(--green);color:var(--ink);
   box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .blockhead{margin:34px 0 0;font-size:15px;font-weight:700;color:var(--ink-2);letter-spacing:-.02em}
 .debtlink{margin-top:30px;padding:0;font-size:var(--t7);font-weight:600;color:var(--ink-3);
@@ -204,11 +244,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 🔴 연소득 칸과 100% 같은 폼이어야 합니다.
    .mfield의 배경(--fill)은 앱 배경(--bg)과 같은 값이라, 흰 카드 밖에 두면
    회색 박스가 통째로 사라지고 「0만」만 허공에 뜹니다. moneyCard()와 같은 껍데기를 씌웁니다.
-   ⚠ 여기서는 설명과 입력칸이 한 덩어리여야 합니다(근접성). 카드 기본 24px는 너무 멉니다. */
-.debtbox > .q-sub{margin:0}
-.debtcard{margin-top:10px}
-/* 넛지 — 「얼마인지 모르겠다」에서 멈추는 사람을 위한 어림값입니다. 지시가 아니라 힌트라 옅게 둡니다. */
-.q-hint{margin:10px 0 0;font-size:13px;line-height:1.6;color:var(--ink-4);font-weight:500}
+   ⚠ v23.22 — 설명은 입력칸 **아래**에 종속시킵니다(.helper). 위에 띄우면 어느 필드의 설명인지 흐려집니다. */
+.debtcard{margin-top:0}
+/* 넛지 — 「얼마인지 모르겠다」에서 멈추는 사람을 위한 어림값입니다. 헬퍼와 같은 컴포넌트를 씁니다. */
+.q-hint{margin:4px 0 0;font-size:var(--t7);line-height:1.6;color:var(--ink-4);font-weight:400}
 /* 물어보는 값이 하나뿐이므로 2단 그리드를 벗기고 한 칸이 폭을 다 씁니다. */
 .debtcard .mfield{width:100%}
 .subtoggle{margin-top:24px;display:flex;align-items:center;gap:11px;font-size:var(--t6);font-weight:600;color:var(--ink-3)}
@@ -219,9 +258,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer;
   transition:background .14s, box-shadow .14s}
 .subtoggle input::after{content:'';position:absolute;left:7px;top:3px;width:6px;height:11px;
-  border:solid var(--card);border-width:0 2.2px 2.2px 0;border-radius:1px;
+  border:solid var(--espresso);border-width:0 2.2px 2.2px 0;border-radius:1px;
   transform:rotate(45deg) scale(.6);opacity:0;transition:transform .14s, opacity .14s}
-.subtoggle input:checked{background:var(--green-ink);box-shadow:inset 0 0 0 1.5px var(--green-ink)}
+/* 체크 표시는 잉크입니다 — 흰 체크를 --green 위에 얹으면 1.97:1로 안 보입니다. */
+.subtoggle input:checked{background:var(--green);box-shadow:inset 0 0 0 1.5px var(--green)}
 .subtoggle input:checked::after{transform:rotate(45deg) scale(1);opacity:1}
 .subtoggle input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 
@@ -234,15 +274,17 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .arow:hover{background:var(--fill)}
 .arow .k{font-size:var(--t7);color:var(--ink-4);min-width:66px;flex:none}
 .arow .v{font-size:var(--t6);font-weight:700;color:var(--ink-2);flex:1}
-.arow .go{font-size:var(--t7);font-weight:800;color:var(--green-ink);flex:none}
+.arow .go{font-size:var(--t7);font-weight:800;color:var(--ink-3);flex:none}
 
 .dock{position:fixed;left:0;right:0;z-index:30;max-width:480px;margin:0 auto;
   padding:0 16px;bottom:calc(22px + env(safe-area-inset-bottom))}
 /* 🔴 v23.20 — 둥근 캡슐을 벗겼습니다. 알약 안에 알약이 들어 있어 좌우 여백이 두 번 먹혔고,
    엄지가 닿는 폭이 실제보다 좁았습니다. 이제 두 버튼이 폭을 그대로 나눠 씁니다. */
 .dockrow{display:flex;gap:8px}
-.cta.back{flex:0 0 90px;width:auto;background:var(--fill);border:0;color:var(--ink-3)}
-.cta.back:hover{color:var(--ink);background:var(--line)}
+/* ⚠ --fill(#EEF0F3)은 앱 배경 --bg(#F2F4F6)와 1.02:1입니다. 독은 배경 위에 떠 있으므로
+   회색 면으로 두면 버튼이 사라집니다(원칙 97). 세컨더리는 흰 면 + 헤어라인으로 통일합니다. */
+.cta.back{flex:0 0 90px;width:auto;background:var(--card);border:1px solid var(--line);color:var(--ink-2)}
+.cta.back:hover{color:var(--ink);background:var(--fill);filter:none}
 /* CTA — 흰 글자를 고집하면 배경을 #00794A까지 낮춰야 해서 버튼이 탁해집니다(5.48:1).
    글자를 잉크로 뒤집으면 화사한 #00CA71을 그대로 쓰면서 대비가 오히려 올라갑니다.
    #191F28 on #00CA71 = 7.64 : 1. 채도를 죽이는 대신 글자를 바꾼 자리입니다.
@@ -250,25 +292,29 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .cta{width:100%;height:54px;border-radius:var(--r-m);background:var(--green);color:var(--espresso);
   font-size:var(--t5);font-weight:900;letter-spacing:-.02em;
   transition:background .14s,color .14s,transform .12s}
-.cta:hover{background:var(--green-ink);color:var(--card)}
+/* 호버에서 색을 바꾸지 않습니다 — 그린이 하나뿐이라 「더 짙은 그린」이 존재하지 않습니다.
+   밝기와 그림자로만 반응합니다. 잉크 글자는 그대로라 대비 7.64:1이 유지됩니다. */
+.cta:hover{filter:brightness(.94);box-shadow:var(--sh-lift)}
 .cta:active{transform:scale(.985)}
 .cta:disabled{background:var(--line);color:var(--ink-4);cursor:default;transform:none}
-.cta.ghost{background:var(--fill);color:var(--ink-3)}
 .dockrow .cta{flex:1;min-width:0;box-shadow:var(--sh-lift)}
 .dockrow .cta.back{flex:0 0 90px;box-shadow:var(--sh)}
 
 /* ═══ 결과 ═══════════════════════════════════ */
 .result{padding:0 16px 44px}
 /* 헤더는 카드가 아닙니다. 배경 위에 얹어 화면 하나를 통째로 먹던 검은 박스를 없앴습니다. */
-.rhead{padding:12px 8px 22px}
+.rhead{padding:12px 4px 22px}
 .rhead-label{font-size:var(--t5);font-weight:300;color:var(--ink-3);margin:0;line-height:1.3}
 /* 핵심 수치 밑에 라임 하이라이트 — 숫자가 먼저 읽힐니다 */
 /* 🔴 마커는 금액 span에만 걸어야 합니다.
    문단 전체에 걸면 오른쪽 「수준이에요」까지 덮어버립니다(v23.10 수정). */
 /* 얄은 마커 — 떡칠한 형광펜이 아니라 밑줄처럼 깔립니다 */
 /* 금액은 그린 글자로 꽉 잡습니다. #00CA71은 1.97:1이라 못 쓰고 #00794A(5.48:1)를 씁니다. */
-.rhead-amount > span{color:var(--green-ink)}
-.rhead-amount .u{color:var(--ink-2);font-weight:400}
+/* 🔴 v23.22 — 히어로 금액을 그린에서 잉크로 되돌렸습니다.
+   금액은 「강조」가 아니라 「본문 중 가장 큰 글자」입니다. 크기·굵기가 이미 위계를 만듭니다.
+   그린을 글자로 쓰면 브랜드색이 상태 신호(선택·활성)와 겹쳐 의미가 흐려집니다. */
+.rhead-amount > span{color:var(--ink)}
+.rhead-amount .u{color:var(--ink-3);font-weight:400}
 .rhead-amount{position:relative;display:inline-block;
   font-size:clamp(32px,11vw,var(--d1));line-height:1.1;font-weight:900;
   letter-spacing:-.04em;margin:8px 0 0}
@@ -276,15 +322,17 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .u{font-style:normal;font-size:.72em;font-weight:300;color:var(--ink-3);letter-spacing:-.01em;margin-left:.05em}
 .rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:300;color:var(--ink-3);
   color:var(--ink-3);letter-spacing:-.02em;margin-left:7px;vertical-align:baseline}
-.rhead-why{display:flex;gap:8px;margin:16px 0 0;font-size:var(--t6);font-weight:600;
-  color:var(--ink-2);line-height:1.5}
-.rhead-why::before{content:'';flex:none;width:3px;border-radius:2px;background:var(--espresso);align-self:stretch}
-.rhead-why.bad::before{background:var(--warn)}
+/* 🔴 v23.21 — 굵은 세로선(3px)을 지웠습니다. 위계는 「선」이 아니라 「면」으로 만듭니다.
+   평상시는 중립 틴트, 한도에 걸렸을 때만 오렌지 틴트 + 오렌지 글자로 갈립니다. */
+.rhead-why{display:block;margin:16px 0 0;padding:12px 14px;border-radius:var(--r-m);
+  background:var(--ink-tint);font-size:var(--t6);font-weight:600;
+  color:var(--ink-2);line-height:1.6}
+.rhead-why.bad{background:var(--warn-tint);color:var(--warn)}
 .condbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
 .condchip{display:inline-flex;align-items:center;gap:6px;padding:9px 11px 9px 13px;border-radius:var(--r-pill);
-  background:var(--card);border:0;font-size:var(--t7);font-weight:700;color:var(--ink-2);
+  background:var(--card);border:1px solid var(--line);font-size:var(--t7);font-weight:700;color:var(--ink-2);
   letter-spacing:-.02em;transition:.12s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.condchip:hover{border-color:var(--ink);color:var(--ink)}
+.condchip:hover{border-color:var(--ink-4);color:var(--ink)}
 .condchip:active{background:var(--fill);transform:scale(.97)}
 .condchip .cc{font-size:9px;color:var(--ink-4);font-weight:400;margin-left:1px}
 .condchip:hover .cc{color:var(--ink)}
@@ -299,13 +347,15 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 
 .card{margin-top:var(--gap);background:var(--card);border-radius:var(--r-xl);padding:var(--pad);box-shadow:var(--sh)}
 .card-title{font-size:var(--t4);font-weight:800;line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}
-/* 안내 박스는 수수하게, 접기 버튼은 누를 수 있게 — 둘을 갈라 놓습니다 */
-.tip{margin-top:18px;padding:14px 0 14px 16px;border-radius:0;background:transparent;
-  border-left:3px solid var(--line);font-size:var(--t7);line-height:1.75;color:var(--ink-3)}
+/* 안내 박스는 수수하게, 접기 버튼은 누를 수 있게 — 둘을 갈라 놓습니다.
+   🔴 v23.21 — 왼쪽 굵은 세로선(3px)을 전부 지웠습니다. 레거시 인용문 문법입니다.
+   중립 안내는 선도 면도 없이 글자만, 주의 안내는 「면」으로만 갈립니다. */
+.tip{margin-top:18px;padding:14px 0;border-radius:0;background:transparent;
+  border:0;font-size:var(--t7);line-height:1.75;color:var(--ink-3)}
 .tip b{color:var(--ink-2);font-weight:800}
 /* 규제지역 안내는 「정보」가 아니라 「주의」입니다. 면과 글자로 위계를 만듭니다. */
-.tip.info{background:var(--warn-tint);border:0;border-left:3px solid var(--warn);
-  border-radius:0 var(--r-m) var(--r-m) 0;padding:14px 16px;color:var(--warn);font-weight:600}
+.tip.info{background:var(--warn-tint);border:0;
+  border-radius:var(--r-m);padding:14px 16px;color:var(--warn);font-weight:600}
 .tip.info b{color:var(--warn)}
 
 .stack{height:12px;border-radius:var(--r-pill);overflow:hidden;display:flex;background:var(--fill);margin-top:16px}
@@ -325,8 +375,9 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .line.total{border-top:1px solid var(--line);margin-top:12px;padding-top:20px}
 .line.total .k{font-size:var(--t5);font-weight:800;color:var(--ink)}
 .line.total .v{font-size:var(--t3);font-weight:800;letter-spacing:-.04em}
-.overnote{margin-top:14px;padding:12px 0 12px 14px;border-left:3px solid var(--warn);
-  font-size:var(--t7);font-weight:600;color:var(--warn)}
+.overnote{margin-top:14px;padding:12px 14px;border:0;border-radius:var(--r-m);
+  background:var(--warn-tint);
+  font-size:var(--t7);line-height:1.6;font-weight:600;color:var(--warn)}
 .overnote b{font-weight:800}
 
 .gauge{height:8px;border-radius:var(--r-pill);background:var(--fill);margin-top:14px;overflow:hidden}
@@ -350,15 +401,15 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;
   padding:17px 2px;border-radius:0;background:transparent;border:0;border-top:1px solid var(--line);
   font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
-.disc:hover{color:var(--green-ink)}
-.disc[aria-expanded="true"]{color:var(--green-ink)}
-.disc .caret{transition:transform .22s;font-size:var(--t7);color:var(--ink-4)}
-.disc[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.disc:hover .caret{color:var(--ink)}
+.disc .caret{transition:transform .22s,color .14s;font-size:var(--t7);color:var(--ink-4)}
+.disc[aria-expanded="true"] .caret{transform:rotate(180deg);color:var(--ink)}
 .costbox{display:none;margin-top:12px;margin-bottom:8px} .costbox.open{display:block}
-.costrow{display:flex;align-items:center;gap:12px;padding:18px 0;border-bottom:1px solid var(--fill)}
+/* ⚠ 선은 --line, 면은 --fill입니다. 여기서 --fill을 선으로 쓰고 있었습니다(토큰 혼용). */
+.costrow{display:flex;align-items:center;gap:12px;padding:18px 0;border-bottom:1px solid var(--line)}
 .costrow:last-of-type{border-bottom:0}
 .costrow .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:600;color:var(--ink-2)}
-.costrow .nm small{display:block;font-size:var(--t7);font-weight:500;color:var(--ink-4);margin-top:3px;line-height:1.5}
+.costrow .nm small{display:block;font-size:var(--t7);font-weight:400;color:var(--ink-4);margin-top:3px;line-height:1.6}
 .costrow .amt{width:98px;flex:none;display:flex;align-items:baseline;gap:0;
   border-radius:10px;padding:9px 11px;background:var(--fill)}
 .costrow .amt input{width:100%;border:0;padding:0;background:none;text-align:right;
@@ -373,7 +424,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   /* 손잡이 전용 그림자 — 카드용 --sh를 재사용하면 입체감이 죽습니다 */
   box-shadow:0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.10);
   transition:transform .18s}
-.sw.on{background:var(--green-ink)} .sw.on::after{transform:translateX(19px)}
+.sw.on{background:var(--green)} .sw.on::after{transform:translateX(19px)}
 
 .slider-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
 .slider-head .k{font-size:var(--t7);font-weight:700;color:var(--ink-4)}
@@ -407,13 +458,13 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .minigrid .mini{flex-direction:column;align-items:flex-start;gap:6px;margin-top:0;padding:15px 14px;
   min-height:118px}
 .minigrid .mini .txt{width:100%}
-.minigrid .mini .txt b{font-size:var(--t7);line-height:1.35}
-.minigrid .mini .txt span{font-size:11.5px;line-height:1.4;margin-top:5px}
+.minigrid .mini .txt b{font-size:var(--t7);line-height:1.4}
+.minigrid .mini .txt span{font-size:11.5px;line-height:1.6;margin-top:5px}
 .minigrid .mini .arw{align-self:flex-end;margin-top:auto;color:var(--ink)}
 .mini em{font-style:normal;font-size:var(--t3);flex:none}
 .mini .txt{flex:1;min-width:0}
 .mini .txt b{display:block;font-size:var(--t6);font-weight:700;color:var(--ink);line-height:1.45}
-.mini .txt span{display:block;margin-top:4px;font-size:var(--t7);font-weight:300;color:var(--ink-3);line-height:1.5}
+.mini .txt span{display:block;margin-top:4px;font-size:var(--t7);font-weight:300;color:var(--ink-3);line-height:1.6}
 .mini .arw{flex:none;font-size:var(--t6);color:var(--ink-4)}
 /* 채널 C 제휴 — 색을 쓰지 않습니다. 흰 면 + 얇은 윤곽 + ↗ 로만 가릅니다(원칙 62). */
 .mini.amber{background:var(--card);border:var(--hair);box-shadow:var(--sh)}
@@ -429,21 +480,30 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
   word-break:keep-all;overflow-wrap:anywhere}
 /* 고스트 버튼 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다.
    흰 면 + 1px 테두리 + 그림자로 덩어리를 만듭니다. */
+/* 🔴 v23.21 — 거대한 버튼 둘을 위아래로 쌓던 것을 **가로 2분할**로 바꿨습니다.
+   세로 112px + 여백을 먹으면서 시선이 두 번 내려갔습니다.
+   왼쪽 35%(세컨더리 · 옅은 면) / 오른쪽 65%(프라이머리 · 솔리드). 엄지 구역 안에 둘 다 들어옵니다. */
+.restartrow{display:flex;gap:10px;margin-top:var(--gap)}
+.restartrow > button{height:56px;margin-top:0}
+.restartrow .reedit-cta{flex:35 1 0}
+.restartrow .restart-cta{flex:65 1 0}
+/* ⚠ 세컨더리 면을 --fill로 내리면 앱 배경(--bg)과 1.02:1이라 버튼이 통째로 사라집니다(원칙 97).
+   「옅은 Secondary」는 여기서 --card(흰 면) + 헤어라인 + 그림자입니다. */
 .reedit-cta{width:100%;height:54px;margin-top:var(--gap);border-radius:var(--r-m);
-  background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh);
-  font-size:var(--t6);font-weight:700;letter-spacing:-.02em;transition:.14s}
-.reedit-cta:hover{background:var(--fill);box-shadow:var(--sh-lift)}
+  background:var(--card);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--sh);
+  font-size:var(--t6);font-weight:700;letter-spacing:-.02em;transition:.14s;
+  padding:0 6px;white-space:nowrap}
+.reedit-cta:hover{background:var(--fill);color:var(--ink);box-shadow:var(--sh-lift)}
 .restart-cta{width:100%;height:58px;margin-top:10px;border-radius:var(--r-m);
   background:var(--espresso);color:var(--card);box-shadow:var(--sh-lift);
-  font-size:var(--t5);font-weight:800;letter-spacing:-.02em;transition:.14s}
+  font-size:var(--t5);font-weight:800;letter-spacing:-.02em;transition:.14s;
+  padding:0 6px;white-space:nowrap}
 .restart-cta:hover{background:var(--espresso-2)}
 .foot{padding:8px 12px 0;text-align:center;font-size:12px;line-height:1.7;color:var(--ink-3)}
 .foot .legal{display:block;margin:0;color:var(--ink-3);font-weight:400;
   word-break:keep-all;overflow-wrap:anywhere}
-.textbtn{display:inline-block;margin-top:14px;padding:11px 18px;border-radius:10px;
-  background:var(--fill);color:var(--ink);font-size:var(--t7);font-weight:700;
-  letter-spacing:-.02em;transition:background .14s}
-.textbtn:hover{background:var(--line)}
+/* ⏹ .cta.ghost · .textbtn 은 v23.22에서 삭제했습니다 — 어떤 마크업도 쓰지 않는 죽은 규칙입니다.
+   죽은 CSS는 죽은 값이 아니라 「살아 있는 두 번째 정의」입니다(원칙 84 · 지침 6-6). */
 
 /* ── 공유용 진단서 (화면 밖에서 렌더) ───────── */
 .reportwrap{position:fixed;left:0;top:0;width:440px;height:0;overflow:hidden;
@@ -456,7 +516,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .report-amount{font-size:46px;line-height:1.12;font-weight:800;letter-spacing:-.05em;margin:8px 0 0}
 .report-body{padding:30px 34px 34px}
 .report-line{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;font-size:14px}
-.report-line + .report-line{border-top:1px solid var(--fill)}
+.report-line + .report-line{border-top:1px solid var(--line)}
 .report-line .k{color:var(--ink-3)} .report-line .v{font-weight:700;color:var(--ink)}
 .report-note{margin:22px 0 0;padding:15px 17px;border-radius:14px;background:var(--fill);
   font-size:11.5px;line-height:1.7;color:var(--ink-3)}
@@ -1341,7 +1401,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v23.20 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v23.22 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1420,12 +1480,12 @@ function renderQuestion(){
         <button class="chip is-clear" data-add="0">지우기</button></div>
       <button class="debtlink" id="debtLink">${S.debtOpen ? '갚고 있는 대출 입력 닫기' : '갚고 있는 대출이 있어요 ›'}</button>
       <div class="debtbox ${S.debtOpen?'open':''}">
-        <p class="q-sub">신용대출·자동차·학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
         <div class="moneycard debtcard">
           <div class="mfield"><input id="inDebt" inputmode="numeric" placeholder="0"
             value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 갚는 돈"><span>만</span></div>
           <div class="readout" id="debtEcho"></div>
         </div>
+        <p class="helper">신용대출·자동차·학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
         <p class="q-hint">💡 계산이 어렵다면? 신용대출 1억 원당 월 약 100만 원으로 어림잡아보세요.</p>
         <div class="chips">
           ${[30,50,100].map(v=>`<button class="chip" data-debt="${v}">+${v}만</button>`).join('')}
@@ -1709,13 +1769,16 @@ function showResult(keepScroll){
   renderReport(LASTVIEW);
 
   $('trustText').textContent = '스트레스 DSR · 취득세 · 지방교육세 · 중개보수 상한요율 기준 반영';
+  /* 🔴 v23.21 — 두 줄이 같은 말을 두 번 하고 있었습니다(원칙 43). 한 줄로 합칩니다.
+     정책 변동 고지는 반드시 남깁니다 — 정책대출 미반영분(약 7,657만원 과소)의 면책 근거입니다. */
   $('footNote').innerHTML =
-    `<span class="legal">※ 본 결과는 단순 시뮬레이션 추정치이며, 실제 대출 한도와 세금은 은행 심사 및 물건에 따라 달라질 수 있습니다.</span>` +
-    `<span class="legal">※ 본 시뮬레이션은 현재 기준이며, 정부 정책 변화 및 은행 심사 기준에 따라 실제 대출 한도와 세금은 언제든 변동될 수 있습니다.</span>`;
-  /* 2-Track — 위: 조건만 고치기(세컨더리) / 아래: 처음부터(메인) */
+    `<span class="legal">※ 본 결과는 시뮬레이션 추정치이며, 정부 정책 변화 및 은행 심사 기준에 따라 실제 대출 한도와 세금은 변동될 수 있습니다.</span>`;
+  /* 2-Track — 왼쪽 35%: 조건만 고치기(세컨더리) / 오른쪽 65%: 처음부터(메인) */
   $('restartWrap').innerHTML =
-    '<button class="reedit-cta" id="reeditBtn">← 이전 단계로 돌아가기</button>' +
-    '<button class="restart-cta" id="restartBtn">처음부터 다시 계산하기</button>';
+    '<div class="restartrow">' +
+    '<button class="reedit-cta" id="reeditBtn">← 이전 단계</button>' +
+    '<button class="restart-cta" id="restartBtn">처음부터 다시 계산하기</button>' +
+    '</div>';
   $('restartBtn').onclick = restart;
   $('reeditBtn').onclick = () => {
     S.step = STEPS.length - 1;          /* 03 지역 선택으로 */
@@ -1877,9 +1940,11 @@ function refreshPkg(){
 function renderOutlinks(price){
   const region=regionLabel(), q=encodeURIComponent(region);
   const band=Math.floor(price/100000000*10)/10;
-  $('outNaverT').textContent=`${region} ${band}억대 추천 단지 보기`;
+  /* 🔴 v23.21 — 지역명을 뺐습니다. 바로 위 조건 칩에 「지역 서울 성동구」가 이미 있어
+     2×2 바둑판 안에서 같은 말이 두 줄을 만들고 있었습니다(원칙 43 · 34). */
+  $('outNaverT').textContent=`${band}억대 추천 단지 보기`;
   $('outNaverS').textContent=`네이버 부동산에서 이 예산대를 봐요`;
-  $('outHogangT').textContent=`${region} 실거래가 확인하기`;
+  $('outHogangT').textContent=`실거래가 확인하기`;
   $('outNaver').onclick  = e => { e.preventDefault(); go(`https://new.land.naver.com/search?sk=${q}`); };
   $('outHogang').onclick = e => { e.preventDefault(); go('https://rt.molit.go.kr/'); };
   $('outSave').onclick   = e => { e.preventDefault(); saveImage(); };
@@ -1968,10 +2033,10 @@ window.__selfcheck = function(){
   /* 🔒 디자인 락 — 토큰이 바뀌었으면 여기서 걸립니다 */
   const LOCK = {'--bg':'#F2F4F6','--card':'#FFFFFF','--grad-1':'#000000','--grad-2':'#191F28',
     '--espresso':'#191F28','--espresso-2':'#000000','--ink':'#191F28',
-    '--green':'#00CA71','--green-ink':'#00794A','--line':'#E5E8EB','--fill':'#EEF0F3'};
+    '--green':'#00CA71','--line':'#E5E8EB','--fill':'#EEF0F3'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.20 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v23.22 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
@@ -1991,6 +2056,48 @@ window.__selfcheck = function(){
     cs2.getPropertyValue(a).trim().toUpperCase()===cs2.getPropertyValue(b).trim().toUpperCase());
   ok('G-15 배경 · 면 토큰이 서로 다른 값', same.length===0,
      same.map(p=>p.join(' = ')).join(', ')||'전부 다름');
+
+  /* 🔴 G-16 (v23.22) — 입력 필드가 **자기 뒤에 실제로 깔린 면** 위에서 보이는가.
+     흰 베젤(.moneycard)을 지웠으므로, 필드는 이제 질문 카드 위에 바로 놓입니다.
+     토큰만 봐서는 안 보입니다 — 부모를 거슬러 올라가 「진짜 칠해진 색」을 재야 걸립니다(원칙 97).
+     v23.18의 「0만만 허공에 뜬다」가 정확히 이 자리에서 났습니다. */
+  const rgbL=str=>{const m=(str||'').match(/\d+/g); if(!m||m.length<3) return null;
+    const c=m.slice(0,3).map(v=>{let x=+v/255; return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)});
+    return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+  const behind=el=>{ for(let n=el.parentElement;n;n=n.parentElement){
+    const bg=getComputedStyle(n).backgroundColor;
+    if(bg && bg!=='transparent' && !/rgba\(0, 0, 0, 0\)/.test(bg)) return bg; } return 'rgb(255,255,255)'; };
+  const fieldFail=[...document.querySelectorAll('.mfield')].filter(el=>{
+    if(!el.offsetParent) return false;
+    const a=rgbL(getComputedStyle(el).backgroundColor), b=rgbL(behind(el));
+    if(a===null||b===null) return true;
+    return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) < 1.05;   /* 1.05:1 미만이면 배경에 녹습니다 */
+  });
+  /* ⚠ 결과 화면·입력 03에는 .mfield가 없습니다. **0개면 조용히 통과한 것**이므로 그렇게 적습니다.
+     G-14와 같은 함정입니다 — 입력 01 또는 02에서 한 번 더 돌려야 실제로 재집니다(원칙 99). */
+  const fieldSeen=[...document.querySelectorAll('.mfield')].filter(el=>el.offsetParent).length;
+  ok('G-16 입력 필드가 뒤 배경과 구분된다', fieldFail.length===0,
+     fieldFail.length ? fieldFail.length+'개가 배경에 녹음'
+     : fieldSeen ? fieldSeen+'개 확인' : '🟡 측정 대상 0 — 입력 01·02에서 다시 실행하세요');
+
+  /* 🔴 G-17 (v23.22) — 선택해도 상자 크기가 변하지 않는가.
+     G-14는 테두리 「폭」만 봅니다. 폭이 같아도 padding·font-weight가 바뀌면 상자가 움직입니다.
+     칩을 실제로 켰다 껐다 하며 **렌더된 폭**을 잽니다. */
+  /* ⚠ 변수명 주의 — 아래 G-13이 이미 `probe`를 씁니다. 같은 스코프에서 두 번 선언하면
+     __selfcheck가 아니라 **스크립트 전체가 죽습니다**(첫 화면이 빈 채로 뜹니다). */
+  /* ⚠ 숨은 화면(#qBox·#result)에도 칩이 남아 있습니다. 폭이 0으로 나와 조용히 통과합니다.
+     **보이는** 칩만 잡습니다. */
+  const chipProbe=[...document.querySelectorAll('.chip:not(.is-clear)')]
+    .find(el=>el.offsetParent && el.getBoundingClientRect().width > 0);
+  let boxDrift='측정 대상 없음', boxOk=true;
+  if(chipProbe){
+    const was=chipProbe.classList.contains('is-on');
+    chipProbe.classList.remove('is-on'); const w0=chipProbe.getBoundingClientRect().width;
+    chipProbe.classList.add('is-on');    const w1=chipProbe.getBoundingClientRect().width;
+    chipProbe.classList.toggle('is-on', was);
+    boxOk=Math.abs(w1-w0)<=0.5; boxDrift=w0.toFixed(2)+'px → '+w1.toFixed(2)+'px';
+  } else { boxDrift='🟡 측정 대상 0 — 칩이 있는 화면에서 다시 실행하세요'; }
+  ok('G-17 선택해도 칩 상자가 안 커진다', boxOk, boxDrift);
 
   const dark=document.querySelectorAll('#result .pkg, #result .hero').length;
   ok('화면에 다크 카드 없음', dark===0, dark+'개');
