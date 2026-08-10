@@ -402,7 +402,7 @@ HYGIENE.forEach(([name, over]) => {
      const src = fs.readFileSync(FILE,'utf8');
      return /\.helper\{[^}]*font-size:var\(--t7\)/.test(src)
          && /\.helper\{[^}]*color:var\(--ink-4\)/.test(src)
-         && /--t7:12\.5px/.test(src);
+         && /--t7:13px/.test(src);
   })());
   /* 필드 밑 문구는 마진 4~8px 안에서만 붙습니다 — 14px는 「떠 있다」로 읽힙니다. */
   tt('필드 밑 문구가 4~8px 안에 붙는다', (()=>{
@@ -809,7 +809,7 @@ HYGIENE.forEach(([name, over]) => {
   tt('가로 2분할 비율이 35 : 65다',
      /\.restartrow \.reedit-cta\{flex:35 1 0\}/.test(css2)
      && /\.restartrow \.restart-cta\{flex:65 1 0\}/.test(css2));
-  tt('두 버튼 높이가 같다', /\.restartrow > button\{height:56px/.test(css2));
+  tt('두 버튼 높이가 같다', /\.restartrow > button\{height:var\(--h-cta\)/.test(css2));
   /* 왼쪽은 옅은 세컨더리, 오른쪽은 솔리드 프라이머리 — 둘이 같은 무게면 위계가 죽습니다. */
   tt('좌 세컨더리(흰 면) · 우 프라이머리(그린)로 갈린다',
      /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
@@ -941,8 +941,88 @@ HYGIENE.forEach(([name, over]) => {
      /\.cta\.back\{[^}]*background:var\(--card\);border:1px solid var\(--line\)/.test(css2));
   tt('조건 칩도 헤어라인을 갖는다', /\.condchip\{[^}]*border:1px solid var\(--line\)/.test(css2));
   tt('죽은 규칙 .cta.ghost · .textbtn 없음', !/\.cta\.ghost\{|\n\.textbtn\{/.test(css2));
-  tt('하단 회색 박스 제거 · 중앙 정렬',
-     /\.trust\{[^}]*background:none[^}]*text-align:center/.test(css2));
+  /* 🔴 v23.24 — 「기준 반영」 한 줄을 ⓘ 버튼 + 바텀시트로 접었습니다(점진적 정보 공개).
+     락을 지우지 않고 「회색 박스가 없고 가운데 정렬인가」를 감싸는 쪽(.trustwrap)에서 봅니다. */
+  tt('하단 신뢰 지표가 회색 박스 없이 중앙 정렬',
+     /\.trust\{[^}]*background:none/.test(css2)
+     && /\.trustwrap\{text-align:center\}/.test(css2));
+
+  /* ═══ v23.24 — 헤더 · 컴포넌트 3계층 · 바텀시트 ═══════════════════════ */
+
+  /* 1. 헤더 — 아이콘 폐기, 워드마크가 홈 버튼 */
+  tt('헤더에 아이콘이 없다',
+     !/class="iconbtn"/.test(fs.readFileSync(FILE,'utf8'))
+     && !/\.iconbtn\{/.test(css2));
+  tt('워드마크가 홈 버튼이다',
+     /<button class="wordmark" id="homeBtn"/.test(fs.readFileSync(FILE,'utf8')));
+  tt('워드마크가 굵기 대비로 위계를 만든다', (()=>{
+     const base = (css2.match(/\.wordmark\{[^}]*font-weight:(\d+)/)||[])[1];
+     const b    = (css2.match(/\.wordmark b\{font-weight:(\d+)/)||[])[1];
+     return base && b && +b - +base >= 300 && /\.wordmark\{[^}]*letter-spacing:-\.04em/.test(css2);
+  })());
+
+  /* 2. 컴포넌트 3계층 — 높이·글자 크기를 토큰으로 고정 */
+  tt('3계층 높이 토큰이 정의돼 있다',
+     /--h-cta:54px/.test(css2) && /--h-opt:46px/.test(css2) && /--h-chip:35px/.test(css2));
+  tt('메인 CTA 3종이 같은 높이 토큰을 쓴다', ['\\.cta','\\.restart-cta','\\.reedit-cta']
+     .every(x => new RegExp(x+'\\{[^}]*height:var\\(--h-cta\\)').test(css2)));
+  tt('메인 CTA가 16px SemiBold다', ['\\.cta','\\.restart-cta'].every(x=>{
+     const m = css2.match(new RegExp(x+'\\{[^}]*font-size:var\\(--t5\\)[^}]*font-weight:(\\d+)'));
+     return m && +m[1] === 600;
+  }));
+  tt('옵션 버튼이 --h-opt · 14px이다',
+     /\.chip\{[^}]*min-height:var\(--h-opt\)/.test(css2)
+     && /\.chip\{[^}]*font-size:var\(--t6\)/.test(css2)
+     && /\.seg button\{min-height:var\(--h-opt\)/.test(css2));
+  tt('상태 칩이 --h-chip · 13px이다',
+     /\.condchip\{[^}]*height:var\(--h-chip\)/.test(css2)
+     && /\.condchip\{[^}]*font-size:var\(--t7\)/.test(css2)
+     && /\.trust\{[^}]*height:var\(--h-chip\)/.test(css2));
+  /* ⚠ 높이를 토큰 밖에서 새로 만들면 버튼이 네 종류가 됩니다. 하드코딩된 px 높이를 셉니다. */
+  tt('버튼 높이를 px로 하드코딩한 곳이 없다', (()=>{
+     const btn = css2.match(/\.(cta|restart-cta|reedit-cta|chip|seg button|condchip|trust|sheet-close)[^{]*\{[^}]*\}/g)||[];
+     return !btn.some(r => /(^|[^-])height:\d+px/.test(r));
+  })());
+  /* 🔴 지침 — 폼 컨트롤은 16px 이상. 미만이면 iOS가 포커스 시 화면을 확대합니다. */
+  tt('모든 텍스트 입력이 16px 이상이다', (()=>{
+     const rules = css2.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[];
+     const bad = rules.filter(r => {
+       const m = r.match(/font-size:\s*var\((--t\d)\)/);
+       if(!m) return false;                       /* clamp() 등은 따로 봅니다 */
+       const px = +(css2.match(new RegExp(m[1]+':([\\d.]+)px'))||[])[1];
+       return px < 16;
+     });
+     return bad.length === 0;
+  })(), (css2.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[])
+        .filter(r=>/var\(--t[67]\)/.test(r)).slice(0,2).join(' | '));
+  /* 0.5px 단위는 지침이 금지합니다 — 12.5px이 스케일에 남아 있었습니다. */
+  tt('타입 스케일에 0.5px 단위가 없다', !/--t\d:[\d]+\.5px/.test(css2));
+
+  /* 3. 점진적 정보 공개 — ⓘ + 바텀시트 */
+  tt('계산 기준이 ⓘ 인디케이터로 접혔다',
+     /id="trustBtn"/.test(fs.readFileSync(FILE,'utf8'))
+     && /계산 기준 보기/.test(fs.readFileSync(FILE,'utf8'))
+     && !/스트레스 DSR · 취득세 · 지방교육세 · 중개보수 상한요율 기준 반영/.test(UI));
+  tt('바텀시트가 대화상자로 선언돼 있다',
+     /id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"/.test(fs.readFileSync(FILE,'utf8')));
+  /* ⚠ .app{overflow-x:clip}은 자손 fixed 요소를 가둡니다. 시트는 .app 밖에 있어야 합니다. */
+  tt('시트가 .app 밖에 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const appEnd = src.indexOf('<div class="dock"');
+     return src.indexOf('id="sheet"') > appEnd;
+  })());
+  tt('시트를 닫는 길이 셋이다 (닫기 · 배경 · ESC)',
+     /sheetClose'\)\.onclick/.test(UI) && /sheetBack'\)\.onclick/.test(UI)
+     && /e\.key==='Escape'[\s\S]{0,60}closeSheet\(\)/.test(UI));
+  /* 시트가 닫힌 뒤 스크롤 잠금이 남으면 화면이 통째로 굳습니다. */
+  tt('시트를 닫으면 스크롤 잠금이 풀린다',
+     /closeSheet\(\)\{[\s\S]{0,300}documentElement\.style\.overflow=''/.test(UI));
+  tt('시트가 스크롤 위치를 옮기지 않는다 (원칙 92)',
+     !/openSheet\(\)\{[\s\S]{0,400}scrollTo/.test(UI)
+     && !/position:fixed[^}]*\}[\s\S]{0,0}/.test('')  /* body fixed 기법 미사용 */
+     && !/body\.style\.position\s*=/.test(UI));
+  tt('시트 안에 계산 기준 5항목이 있다',
+     (fs.readFileSync(FILE,'utf8').match(/class="sheet-row"/g)||[]).length === 5);
 
   /* v23.15: 라임 → 핀테크 그린. 면·테두리와 글자 색을 나눕니다. */
   tt('핀테크 그린 복귀', /--green:#00CA71/.test(css2));
