@@ -407,7 +407,7 @@ HYGIENE.forEach(([name, over]) => {
   /* 필드 밑 문구는 마진 4~8px 안에서만 붙습니다 — 14px는 「떠 있다」로 읽힙니다. */
   tt('필드 밑 문구가 4~8px 안에 붙는다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return ['\\.helper','\\.readout','\\.q-hint'].every(x=>{
+     return ['\\.helper','\\.readout'].every(x=>{
        const m = src.match(new RegExp(x+'\\{margin:(\\d+)px'));
        return m && +m[1] >= 4 && +m[1] <= 8;
      });
@@ -486,10 +486,34 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 죽은 .mrow 규칙이 금액 자간을 -.04em으로 되돌리던 두 번째 정의였습니다. */
   tt('죽은 .mrow 규칙이 없다', !/^\.mrow[\s{]/m.test(css2));
-  /* v23.20 — 02단계 넛지. 「얼마인지 모르겠다」에서 멈추는 사람을 위한 어림값입니다. */
-  tt('원리금 넛지 카피가 있다',
-     /신용대출 1억 원당 월 약 100만 원/.test(fs.readFileSync(FILE,'utf8'))
-     && /\.q-hint\{[^}]*color:var\(--ink-4\)/.test(css2));
+  /* 🔴 v23.23 — 「1억 원당 월 100만 원」 어림값 넛지를 폐기하고 **항목별 자동 합산**으로 바꿨습니다.
+     넛지는 「머릿속으로 더하라」는 요구를 남겨 둔 채 힌트만 준 것이었습니다.
+     락을 지우지 않고 **대체물이 실제로 있는가**로 다시 씁니다(지침 5층 3번). */
+  tt('어림값 넛지를 폐기했다',
+     !/신용대출 1억 원당 월 약 100만 원/.test(fs.readFileSync(FILE,'utf8'))
+     && !/class="q-hint"/.test(fs.readFileSync(FILE,'utf8'))
+     && !/\n\.q-hint\{/.test(fs.readFileSync(FILE,'utf8')));
+  tt('항목별 합산 아코디언이 있다',
+     /id="debtPartsToggle"/.test(UI) && /대출이 여러 개이신가요\? 항목별로 더하기/.test(UI));
+  tt('합산 항목이 신용대출 · 기타 둘이다',
+     /id="inDebtCredit"/.test(UI) && /id="inDebtEtc"/.test(UI)
+     && (UI.match(/id="inDebt(Credit|Etc)"/g)||[]).length === 2);
+  /* ⚠ 값의 출처는 언제나 S.debtMonthly 하나입니다. 항목이 두 번째 진실이 되면 어긋납니다(원칙 84). */
+  tt('항목 합계가 메인 칸으로 들어간다',
+     /const t=\(S\.debtParts\.credit\|\|0\)\+\(S\.debtParts\.etc\|\|0\);/.test(UI)
+     && /S\.debtMonthly = t>0 \? t : null;/.test(UI));
+  /* 직접 입력과 빠른 추가 칩, 두 자리 모두에서 항목을 비웁니다.
+     한 곳만 비우면 「합계는 5인데 항목은 3+4」인 상태가 남습니다. */
+  tt('메인 칸을 직접 고치면 항목이 초기화된다',
+     /dbt\.oninput[\s\S]{0,220}clearParts\(\);/.test(UI)
+     && /data-debt[\s\S]{0,220}clearParts\(\);/.test(UI));
+  tt('엔진으로 가는 값은 여전히 메인 칸 하나',
+     /otherDebtMonthly:\(S\.debtMonthly\|\|0\)\*10000/.test(UI)
+     && !/debtParts[\s\S]{0,60}otherDebtMonthly/.test(UI));
+  /* 토글에서 renderQuestion()을 부르면 입력 포커스가 날아갑니다. */
+  tt('합산 토글이 화면을 다시 그리지 않는다',
+     /pt\.onclick[\s\S]{0,220}classList\.toggle\('open'/.test(UI)
+     && !/pt\.onclick[\s\S]{0,220}renderQuestion\(\)/.test(UI));
 
   /* v23.19 — 타이틀·금액은 900 고정, 행간 1.1~1.2 */
   tt('타이틀·금액이 900이다', (()=>{
@@ -520,11 +544,58 @@ HYGIENE.forEach(([name, over]) => {
         줄머리로 앵커하지 않으면 같은 규칙을 두 번 읽고 항상 통과합니다. */
   /* 🔴 v23.22 — 히어로 전용 .moneycard 규칙이 사라졌습니다(01·02·03이 같은 규칙을 씁니다).
      검사를 지우지 않고 「정의가 하나뿐인가 + 값이 24px인가」로 다시 씁니다(원칙 84 · 지침 5층). */
-  tt('질문 → 입력 카드 간격이 24px 하나로만 정의된다', (()=>{
+  /* 🔴 v23.23 — 간격의 기준이 「질문 → 입력칸」에서 「라벨 → 입력칸 → 헬퍼」로 옮겼습니다.
+     락을 지우지 않고 **3단 위계의 간격 규약**으로 다시 씁니다.
+     라벨 위 22px(덩어리 사이) · 라벨 아래 8px · 헬퍼 6px — 안쪽이 바깥쪽보다 좁아야 묶입니다. */
+  tt('폼 3단 위계의 간격 규약', (()=>{
+     const g = (sel,prop) => (css2.match(new RegExp(sel+'\\{[^}]*'+prop+':(\\d+)px'))||[])[1];
+     const labelTop = (css2.match(/\.flabel\{margin:(\d+)px/)||[])[1];
+     const labelBot = (css2.match(/\.flabel\{margin:\d+px 0 (\d+)px/)||[])[1];
+     const card = g('\\n\\.moneycard','margin-top');
+     const help = (css2.match(/\.helper\{margin:(\d+)px/)||[])[1];
      const all = css2.match(/\.moneycard[^{]*\{[^}]*margin-top:(\d+)px/g) || [];
-     const base = (css2.match(/\n\.moneycard\{[^}]*margin-top:(\d+)px/)||[])[1];
-     return all.length === 1 && base === '24';
+     return all.length === 1
+         && +labelTop >= 20 && +labelBot === 8 && +card === 8 && +help === 6
+         && +labelTop > +labelBot;
   })());
+  /* 🔴 모든 입력 필드 앞에 라벨, 뒤에 헬퍼가 있는가 — 구조 자체를 셉니다. */
+  tt('모든 입력 필드가 라벨 → 입력 → 헬퍼 순서다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const q = src.slice(src.indexOf('function renderQuestion'), src.indexOf('function moneyCard'))
+             + src.slice(src.indexOf('function moneyCard'), src.indexOf('function regionPane'));
+     /* moneyCard()가 라벨·헬퍼를 항상 함께 냅니다 */
+     const mc = src.slice(src.indexOf('function moneyCard'), src.indexOf('function regionPane'));
+     /* ⚠ indexOf는 없으면 -1입니다. **-1 < n 은 언제나 참**이라, 순서만 보면
+        라벨을 통째로 지운 사보타주가 조용히 통과합니다. 존재부터 셉니다(원칙 99). */
+     const iL = mc.indexOf('class="flabel"'), iF = mc.indexOf('class="mfield"'),
+           iH = mc.indexOf('class="helper"');
+     const okMc = iL >= 0 && iF >= 0 && iH >= 0 && iL < iF && iF < iH;
+     /* 부채 칸도 같은 순서여야 합니다 */
+     const i = src.indexOf('id="inDebt"');
+     const before = src.slice(0, i), after = src.slice(i);
+     const okDebt = before.lastIndexOf('class="flabel"') > before.lastIndexOf('class="helper"')
+                 && after.indexOf('class="helper"') > 0 && after.indexOf('class="helper"') < 400;
+     return okMc && okDebt;
+  })());
+  /* ⚠ 원칙 99 — `class="flabel">${label}<` 도 이 패턴에 걸립니다(템플릿 자리표시자).
+     실제 문구는 moneyCard() **호출 인자**에 있습니다. 둘을 합쳐서 봅니다. */
+  /* 🔴 G-8 — 하나의 값을 부르는 이름은 화면 전체에서 하나입니다.
+     입력 라벨과 「답한 것」 요약 줄의 이름이 어긋나면 같은 값이 두 개로 읽힙니다. */
+  tt('입력 라벨이 요약 줄의 이름과 같다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const keys = [...src.matchAll(/\{id:'\w+',key:'([^']+)'\}/g)].map(m=>m[1]);
+     const args = [...src.matchAll(/moneyCard\('\w+', S\.\w+, '([^']+)'/g)].map(m=>m[1]);
+     return args.length === 2 && args.every(a => keys.includes(a));
+  })(), [...fs.readFileSync(FILE,'utf8').matchAll(/moneyCard\('\w+', S\.\w+, '([^']+)'/g)].map(m=>m[1]).join(' / '));
+  tt('라벨이 명사형이다 (물음표·서술어 없음)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const inline = [...src.matchAll(/class="flabel">([^<$]+)</g)].map(m=>m[1].trim());
+     const args   = [...src.matchAll(/moneyCard\('\w+', S\.\w+, '([^']+)'/g)].map(m=>m[1].trim());
+     const labels = inline.concat(args);
+     return labels.length >= 3 && labels.every(l => !/[?？]|세요|나요|에요|입니다/.test(l));
+  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
+     return [...src.matchAll(/class="flabel">([^<$]+)</g)].map(m=>m[1])
+       .concat([...src.matchAll(/moneyCard\('\w+', S\.\w+, '([^']+)'/g)].map(m=>m[1])).join(' / '); })());
   /* 🔴 v23.22 — 입력칸을 감싸던 흰 라운드 박스(베젤)를 지웠습니다. 3중첩이 부활하면 여기서 걸립니다. */
   tt('입력칸에 흰 베젤이 없다', (()=>{
      const m = (css2.match(/\n\.moneycard\{([^}]*)\}/)||[])[1] || '';
@@ -576,12 +647,37 @@ HYGIENE.forEach(([name, over]) => {
      return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
   }));
   tt('영수증 아래 안내 박스가 없다', !/receiptTip/.test(css2));
+  /* 🔴 v23.23 — Light(300) 폐기. 한글 300은 12~17px에서 「흐린 글자」로 읽힙니다.
+     대비는 400 ↔ 900으로 만듭니다. */
+  tt('본문에 Light(300)를 쓰지 않는다',
+     !/font-weight:300/.test(css2), (css2.match(/[^{;]*font-weight:300/g)||[]).slice(0,3).join(' | '));
+  tt('핵심 수치가 700 이상이다', ['\\.rhead-amount','\\.tile-v','\\.mfield input','\\.line\\.total \\.v']
+     .every(x=>{ const m=css2.match(new RegExp(x+'\\{[^}]*font-weight:(\\d+)')); return m && +m[1]>=700; }));
+  /* 지시 6 — 이모지를 화면에서 완전히 뺐습니다(v23.20에서 1개 허용했던 것을 폐기). */
+  /* ⚠ __selfcheck는 **콘솔 진단**입니다. ✅·🔴·🟡는 화면에 안 뜹니다 — 잘라내고 봅니다.
+     이 경계를 안 그으면 검사가 자기 자신을 보고 영원히 🔴입니다. */
+  tt('화면 노출 이모지가 0개다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const from = src.indexOf("console.info('영끌계산기 BUILD");
+     const ui  = src.slice(from, src.indexOf('window.__selfcheck', from));
+     const body = src.slice(src.indexOf('<body>'), src.indexOf('<script>', src.indexOf('<body>')));
+     const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+     const strip = t => t.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return !EMOJI.test(strip(ui)) && !EMOJI.test(strip(body));
+  })());
 
   /* v23.5 문구·구조 락 */
   tt('「여력」이 어디에도 없다', !/여력/.test(fs.readFileSync(FILE,'utf8')));
   tt('방공제 안내가 한도 아코디언 안으로 이동', /id="roomTip"/.test(fs.readFileSync(FILE,'utf8')));
-  tt('아코디언은 2종 (부대비용 · 한도)',
-     (fs.readFileSync(FILE,'utf8').match(/class="disc"/g)||[]).length === 2);
+  /* 🔴 v23.23 — 퍼널(02)에 「항목별로 더하기」 아코디언이 하나 생겼습니다.
+     이 락이 지키려던 것은 **결과 화면**의 밀도입니다. 그쪽만 셉니다. */
+  tt('결과 화면 아코디언은 2종 (부대비용 · 한도)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
+     return (res.match(/class="disc"/g)||[]).length === 2;
+  })());
+  tt('퍼널 아코디언은 1종 (항목별 더하기)',
+     (UI.match(/class="disc" id="debtPartsToggle"/g)||[]).length === 1);
   tt('「다른 집값으로 계산하기」가 없다',
      !/priceToggle|다른 집값으로 계산/.test(fs.readFileSync(FILE,'utf8')));
   /* v23.20 — 아코디언의 회색 박스를 벗겼습니다. 버튼이 아니라 「열고 닫는 줄」입니다. */
@@ -630,10 +726,10 @@ HYGIENE.forEach(([name, over]) => {
      /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
      && /\.reedit-cta\{[^}]*border:1px solid var\(--line\)/.test(css2)
      && /\.reedit-cta\{[^}]*box-shadow:var\(--sh\)/.test(css2));
-  /* 🔴 v23.21 — 문구를 「← 이전 단계로 돌아가기」에서 「← 이전 단계」로 줄였습니다.
-     가로 2분할의 왼쪽 35% 폭에 긴 문구가 들어가면 두 줄이 되거나 잘립니다(원칙 34).
-     락은 지우지 않고 「방향 표시 + 이전 단계」로 다시 씁니다(지침 5층). */
-  tt('되돌아가기 문구에 방향 표시가 있다', /←\s*이전 단계/.test(UI));
+  /* 🔴 v23.23 — 화살표(←)를 뺐습니다. 버튼 안의 아이콘은 **위치가 이미 말하는 것**을 반복합니다.
+     v23.21에 「방향 표시가 있는가」로 잠갔던 락을 **반대 방향으로** 다시 씁니다(지침 5층 3번). */
+  tt('되돌아가기가 텍스트만이다',
+     /id="reeditBtn">이전 단계</.test(UI) && !/←/.test(UI));
   tt('조건 수정은 03단계로 간다', /S\.step = STEPS\.length - 1/.test(UI));
   tt('조건 칩에 ▾ 아이콘', /<b class="cc">\u25be<\/b>|class="cc">▾/.test(UI));
   /* v23.20 — 정책 변동 고지를 더해 두 줄이 됐습니다. 셋 이상은 읽지 않습니다. */
@@ -651,7 +747,15 @@ HYGIENE.forEach(([name, over]) => {
      && /\.dockrow \.cta\{flex:1/.test(css2)
      && /\.dockrow \.cta\.back\{flex:0 0 90px/.test(css2));
   tt('독에 캡슐 껍데기가 없다', !/\.dockrow\{[^}]*border-radius:999px/.test(css2));
-  tt('재계산 CTA가 솔리드', /\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
+  /* 🔴 v23.23 — 검정 솔리드 폐기. 프라이머리 액션은 화면이 달라도 **같은 버튼**이어야 합니다.
+     지침 6-5의 「재계산 CTA는 예외로 검정 면」 조항을 폐기하고 락을 뒤집습니다. */
+  tt('재계산 CTA가 「다음」과 같은 버튼이다',
+     /\.restart-cta\{[^}]*background:var\(--green\);color:var\(--espresso\)/.test(css2)
+     && !/\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
+  tt('프라이머리 버튼이 화면마다 같다', (()=>{
+     const g = sel => (css2.match(new RegExp(sel+'\\{[^}]*background:var\\((--[a-z-]+)\\)'))||[])[1];
+     return g('\\.cta') === g('\\.restart-cta');
+  })(), (css2.match(/\.restart-cta\{[^}]*background:var\((--[a-z-]+)\)/)||[])[1]);
 
   /* 🔴 v23.20 — 하드 보더 문법을 폐기하고 v23.18의 그림자 문법으로 되돌렸습니다.
      ⚠ 원칙 101 — 분리의 근거를 셉니다. 지금은 「배경색 차이 + 은은한 그림자」 둘입니다.
@@ -707,9 +811,9 @@ HYGIENE.forEach(([name, over]) => {
      && /\.restartrow \.restart-cta\{flex:65 1 0\}/.test(css2));
   tt('두 버튼 높이가 같다', /\.restartrow > button\{height:56px/.test(css2));
   /* 왼쪽은 옅은 세컨더리, 오른쪽은 솔리드 프라이머리 — 둘이 같은 무게면 위계가 죽습니다. */
-  tt('좌 세컨더리 · 우 프라이머리로 갈린다',
+  tt('좌 세컨더리(흰 면) · 우 프라이머리(그린)로 갈린다',
      /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
-     && /\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
+     && /\.restart-cta\{[^}]*background:var\(--green\)/.test(css2));
   /* ⚠ 세컨더리 면을 --fill로 내리면 앱 배경(--bg)과 1.02:1이라 통째로 사라집니다(원칙 97). */
   tt('세컨더리 면이 앱 배경과 다른 값',
      !/\.reedit-cta\{[^}]*background:var\(--fill\)/.test(css2));
@@ -809,12 +913,21 @@ HYGIENE.forEach(([name, over]) => {
   /* 누런 톤 잔재 — 웜 베이지 팔레트가 한 값이라도 살아 있으면 색이 섞입니다. */
   tt('웜 베이지 잔재 없음',
      !/#EAEADF|#F8F7F7|#DEDED2|#C9C9BC|#C6EF4E|#4D7C0F/i.test(css2));
-  /* 🔴 원칙 97 — 같은 값을 가진 토큰 둘은 문맥이 바뀌면 하나가 사라집니다. */
-  tt('배경 · 카드 · 입력면이 서로 다른 값', (()=>{
+  /* 🔴 v23.23 — `--fill`이 `--bg`와 **같은 값**(#F2F4F6)이 되었습니다(지시 반복 2회 후 반영).
+     원칙 97의 정적 방어선은 여기서 끝납니다. 지금 이것이 성립하는 조건은 딱 하나 —
+     **모든 --fill 면이 흰 카드 안에만 놓이는 것**이고, 그건 렌더된 면을 재는 **G-16**만 봅니다.
+     정적으로는 「카드 면이 나머지 둘과 다른가」까지만 잠급니다. */
+  tt('카드 면이 배경 · 입력면과 다른 값', (()=>{
      const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'').toUpperCase();
-     const v=[g('bg'),g('card'),g('fill')];
-     return v.every(Boolean) && new Set(v).size===3;
+     const [bg,card,fill]=[g('bg'),g('card'),g('fill')];
+     return bg && card && fill && card!==bg && card!==fill;
   })());
+  tt('입력 면이 #F2F4F6이다', /--fill:#F2F4F6/.test(css2));
+  /* --fill == --bg 이므로, 배경 위 호버에 --fill을 쓰면 아무 일도 일어나지 않습니다. */
+  tt('배경 위 호버에 --fill을 쓰지 않는다',
+     !/\.(iconbtn|arow|cta\.back|reedit-cta|mini\.amber):hover\{[^}]*background:var\(--fill\)/.test(css2));
+  /* 🔴 G-15의 정적 축이 하나 줄었으므로, G-16이 살아 있는지를 소스에서도 확인합니다(원칙 101). */
+  tt('G-16이 --fill 면 전체를 본다', /querySelectorAll\('\.mfield'\)/.test(fs.readFileSync(FILE,'utf8')));
   /* ⏹ 「카드에 테두리가 없다」는 v23.19에서 폐기했습니다 — 위 '카드가 하드 보더로 분리된다'로 대체. */
   tt('슬라이더가 커스텀되었다', /--fill-pct/.test(css2)
      && /::-webkit-slider-runnable-track/.test(css2));
