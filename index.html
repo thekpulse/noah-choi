@@ -431,8 +431,17 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 설명 문구는 칩을 바꿀 때 **부드럽게 교체**됩니다 — 글자가 툭 바뀌면 바뀐 걸 놓칩니다. */
 .tip{transition:opacity .18s ease}
 .tip.fading{opacity:0}
-.tip{margin-top:18px;padding:14px 0;border-radius:0;background:transparent;
-  border:0;font-size:var(--t7);line-height:1.75;color:var(--ink-3)}
+/* 🔴 v24.15 — `padding:14px 0`을 지웠습니다.
+     .tip은 **배경도 테두리도 없는 문단**입니다. 면이 없는데 패딩을 주면 그건 여백일 뿐이고,
+     margin-top 18과 겹쳐 위 32px · 아래 30px이 됩니다 — 이 카드의 다른 간격(20·26)의 1.5배입니다.
+     화면에서 「저기만 유난히 벌어져 있다」로 보이던 자리입니다.
+     ⚠ 패딩은 **면이 있을 때만** 뜻이 있습니다. 그래서 .tip.info는 패딩을 그대로 둡니다.
+   🔴 행간도 1.75 → 1.6. 13px 안내 문구의 표준값입니다(검사: 「작은 안내 문구 행간이 1.6 이상」).
+   🔴 비어 있으면 아예 접습니다. #itTip·#limitTip·#roomTip은 **평소 빈 문자열**이라
+     예전에는 글자 없이 28px짜리 빈 칸만 남아 있었습니다(.readout과 같은 처리). */
+.tip{margin-top:16px;padding:0;border-radius:0;background:transparent;
+  border:0;font-size:var(--t7);line-height:1.6;color:var(--ink-3)}
+.tip:empty{display:none}
 .tip b{color:var(--ink-2);font-weight:800}
 /* 규제지역 안내는 「정보」가 아니라 「주의」입니다. 면과 글자로 위계를 만듭니다. */
 .tip.info{background:var(--warn-tint);border:0;
@@ -453,7 +462,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .line .v{white-space:nowrap}
 .line .k{color:var(--ink-3);font-weight:400} .line .v{font-weight:700;color:var(--ink-2)}
 .line.minus .v{color:var(--ink)}
-.line.total{border-top:1px solid var(--line);margin-top:12px;padding-top:20px}
+/* 🔴 v24.15 — 합계 줄의 간격을 12+20 → 8+16으로 좁혔습니다.
+   위 줄의 padding-bottom 11까지 더하면 43px이었습니다 — 카드 안 최대 간격이 여기였습니다.
+   가르는 일은 **선**이 합니다. 여백은 선을 거들 만큼만 있으면 됩니다. */
+.line.total{border-top:1px solid var(--line);margin-top:8px;padding-top:16px}
 .line.total .k{font-size:var(--t5);font-weight:800;color:var(--ink)}
 .line.total .v{font-size:var(--t3);font-weight:800;letter-spacing:-.04em}
 .overnote{margin-top:14px;padding:12px 14px;border:0;border-radius:var(--r-m);
@@ -479,15 +491,21 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 
 /* 회색 박스를 벗깁니다 — 아코디언은 버튼이 아니라 리스트 줄에 가깝습니다.
    투명 면 + 헤어라인 하나로 「열고 닫는 줄」임을 말합니다. */
-.disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;
-  padding:17px 2px;border-radius:0;background:transparent;border:0;border-top:1px solid var(--line);
+/* 🔴 v24.15 — 10+17(=27) → 8+16(=24). 값 자체보다 **스케일 밖 숫자를 없애는 것**이 목적입니다.
+   17px은 이 파일에서 여기 한 곳에만 있던 값이었습니다. */
+.disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;
+  padding:16px 2px;border-radius:0;background:transparent;border:0;border-top:1px solid var(--line);
   font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
 .disc:hover .caret{color:var(--ink)}
 .disc .caret{transition:transform .22s,color .14s;font-size:var(--t7);color:var(--ink-4)}
 .disc[aria-expanded="true"] .caret{transform:rotate(180deg);color:var(--ink)}
 .costbox{display:none;margin-top:12px;margin-bottom:8px} .costbox.open{display:block}
 /* ⚠ 선은 --line, 면은 --fill입니다. 여기서 --fill을 선으로 쓰고 있었습니다(토큰 혼용). */
-.costrow{display:flex;align-items:center;gap:12px;padding:18px 0;border-bottom:1px solid var(--line)}
+/* 🔴 v24.15 — 18 → 14. 영수증 줄(.line)은 11px(=22px 간격)인데 여기는 18px(=36px)이었습니다.
+   같은 「한 줄에 이름과 금액」인데 상세 쪽이 1.6배 벌어져 있었습니다.
+   ⚠ 이 줄은 스위치와 입력칸을 안고 있어 .line보다는 넉넉해야 합니다 — 같게 만들지 않고 28px로 둡니다.
+   ⚠ 줄의 실제 높이는 안쪽 .amt(입력칸)가 정합니다. 패딩을 줄여도 터치 영역은 안 줄어듭니다. */
+.costrow{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
 .costrow:last-of-type{border-bottom:0}
 .costrow .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:600;color:var(--ink-2)}
 .costrow .nm small{display:block;font-size:var(--t7);font-weight:400;color:var(--ink-4);margin-top:3px;line-height:1.6}
@@ -530,7 +548,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 input[type=range]:active::-webkit-slider-thumb{transform:scale(1.12)}
 input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r-pill);background:var(--card);
   border:0;box-shadow:0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.10);cursor:pointer}
-.tweak + .tweak{margin-top:26px}
+/* 🔴 v24.15 — 26 → 24. 26px은 4의 배수가 아니어서 옆 간격들(16·20)과 눈으로 안 맞았습니다. */
+.tweak + .tweak{margin-top:24px}
 .tweak-label{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px}
 .quote-k{font-size:var(--t7);font-weight:700;color:var(--ink-3);margin:0}
 .quote{font-size:clamp(28px,8.5vw,var(--t1));font-weight:800;letter-spacing:-.04em;
@@ -668,8 +687,20 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
         --ink-3          3.28 : 1  ❌   --ink-4  2.13 : 1  ❌   흰색  2.17 : 1  ❌
      **--ink-3 이하와 흰 글자를 이 면에 쓰지 마세요.** 검사가 막습니다.
    ⚠ 브랜드 막대는 그린 → 잉크로 뒤집습니다. 그린 위 그린은 안 보입니다. */
+/* 🔴 v24.15 — 진단서 안에서만 **고정폭 숫자를 끕니다.**
+   증상: 카톡으로 보낸 이미지에서 「14억」이 「1 4억」으로, 「10억원」이 「1 0억원」으로,
+        「301만원」이 「301 만원」으로 보였습니다. 픽셀로 재보니 숫자 한 칸의 폭은 18px로 일정한데
+        「1」의 획 폭만 9px이고 **그 9px이 칸 왼쪽에 붙어** 오른쪽에 9px이 남습니다.
+        즉 고장이 아니라 tabular-nums가 설계대로 동작한 결과입니다.
+   🔴 고정폭 숫자는 **숫자가 바뀔 때** 필요합니다 — 화면의 countTo가 자릿수마다 덜컹이지 않게.
+      진단서는 **정지 이미지**입니다. 바뀌는 숫자가 없으니 칸을 맞출 이유도 없습니다.
+   ⚠ 화면(body)의 tabular-nums는 그대로 둡니다. 여기서만 끕니다. */
+.report, .report *{font-variant-numeric:normal}
 .report-top{background:var(--green);color:var(--ink);padding:38px 34px 34px}
-.report-brand{position:relative;font-size:12.5px;font-weight:700;letter-spacing:.14em;
+/* 🔴 v24.15 — 12.5px은 지침이 금지한 **0.5px 단위**였습니다 → --t7(13px).
+   자간도 .14em → .1em. .1em은 이미 .eyebrow가 쓰는 값이고, .14em은 이 파일에서 여기 한 곳뿐이었습니다.
+   한글은 로마자보다 자간이 벌어져 보여 .14em에서 낱글자로 흩어집니다. */
+.report-brand{position:relative;font-size:var(--t7);font-weight:700;letter-spacing:.1em;
   color:var(--ink-2);margin:0;padding-left:14px}
 .report-brand::before{content:'';position:absolute;left:0;top:.1em;bottom:.1em;
   width:4px;border-radius:2px;background:var(--ink)}
@@ -685,8 +716,9 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .report-line{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;font-size:14px}
 .report-line + .report-line{border-top:1px solid var(--line)}
 .report-line .k{color:var(--ink-3)} .report-line .v{font-weight:700;color:var(--ink)}
+/* 🔴 v24.15 — 11.5px → 12px. 0.5px 단위는 지침이 금지합니다. */
 .report-note{margin:22px 0 0;padding:15px 17px;border-radius:14px;background:var(--fill);
-  font-size:11.5px;line-height:1.7;color:var(--ink-3)}
+  font-size:12px;line-height:1.7;color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -780,8 +812,12 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
       <h2 class="card-title">이 예산으로 거래된 곳</h2>
       <p class="helper" id="dealLead"></p>
       <div id="dealList"></div>
+      <!-- 🔴 v24.15 — 칩 넷. 앞의 셋은 **목록을 좁히고**, 마지막 하나는 **넓힙니다.**
+           59㎡·84㎡는 API가 주는 excluUseAr(전용면적)로만 만든 것입니다. 없는 값은 안 씁니다. -->
       <div class="chips" id="dealChips" hidden>
-        <button class="chip" id="dealNew" aria-pressed="false">신축</button>
+        <button class="chip" id="dealNew" aria-pressed="false">신축 (10년)</button>
+        <button class="chip" id="deal59" aria-pressed="false">59㎡</button>
+        <button class="chip" id="deal84" aria-pressed="false">84㎡</button>
         <!-- 🔴 v24.14 — 예산 초과는 **기본으로 안 보입니다.** 켠 사람에게만 나옵니다.
              섞어서 보여주면 「살 수 있다」로 읽힙니다(원칙 28). 본인이 켠 것이라 오해가 없습니다. -->
         <button class="chip" id="dealOver" aria-pressed="false">+10%까지</button>
@@ -2438,7 +2474,8 @@ function refreshPkg(){
       소득·현금·집값은 이 경로를 지나지 않습니다(원칙 36).
    🔴 「추천」이라고 하지 않습니다. 우리가 하는 일은 **거래가 있었던 곳을 보여주는 것**입니다.
    ⚠ 이 API가 주지 않는 값으로는 칩을 만들지 않습니다(단지 규모·교통·학교·좌표는 응답에 없습니다).
-      만들 수 있는 취향 칩은 buildYear를 쓰는 **「신축」 하나뿐**입니다.
+      🔴 v24.15 — 만들 수 있는 취향 칩은 **둘**입니다: `buildYear`(신축) · `excluUseAr`(전용면적).
+        v24.14의 「신축 하나뿐」은 틀린 문장이었습니다 — 면적은 응답에 늘 들어 있습니다.
       없는 값을 지어내지 않습니다 — 지침: 출처를 못 찾으면 넣지 않고 못 찾았다고 말합니다.
    ═══════════════════════════════════════════ */
 /* 🔴 v24.14 — 서울 25개 구의 **인접 관계표**.
@@ -2479,8 +2516,16 @@ const NEARBY = {
 /* band     : 예산 이하 구간의 하한 (예산의 85%)
    overBand : 「조금 더 모으면」 구간의 상한 (예산의 110%)
    want     : 이만큼 못 채우면 인근 구까지 넓힙니다 */
+/* 🔴 v24.15 — 면적 칩의 경계를 **숫자로 함수 안에 쓰지 않고 여기 둡니다**(지침: 계산 함수에 숫자 직접 금지).
+   a59 / a84 : 「59㎡형」·「84㎡형」이라 불리는 실제 전용면적의 폭입니다.
+     기준: **시장 통칭 · 법령 근거 없음.** 단지마다 58.9 · 59.96 · 84.32 · 84.98처럼 흩어져 있어
+           한 점으로는 못 잡습니다. 인테리어 단가와 같은 성격의 어림값입니다(0-B 3번).
+   ⚠ a84의 위끝 86은 **85㎡(국민주택규모 · 농특세 경계)를 넘습니다.** 85.0~86.0인 단지가 걸리면
+     그 줄은 취득세 구조가 화면의 계산과 다릅니다. 좁히려면 [82,85]로 바꾸면 됩니다 — 값 한 줄입니다. */
 const DEAL = { months:3, rows:5, newYears:10, band:0.85, overBand:1.10, want:3,
-               req:0, cache:new Map(), items:null, over:null, only:false, wide:false };
+               a59:[57,63], a84:[82,86],
+               req:0, cache:new Map(), items:null, over:null,
+               onlyNew:false, only59:false, only84:false, wide:false };
 
 /* 최근 N개월의 YYYYMM. 이번 달은 거래 등록이 늦어 비어 있는 경우가 많아 함께 부릅니다. */
 function recentYmd(n){
@@ -2527,24 +2572,39 @@ async function fetchDeals(lawd, priceMan){
      over  : 예산의 100% ~ 110% — **칩을 켰을 때만** 보입니다
    예산을 넘는 집을 같은 줄에 섞으면 「살 수 있다」로 읽힙니다(원칙 28).
    섞지 않고, 켠 사람에게만, 그리고 금액 옆에 **차액**을 답니다. */
+/* 🔴 v24.15 — 정렬 기준을 **금액순에서 최근 거래순으로** 바꿨습니다.
+     금액순은 늘 예산 상단의 같은 단지가 붙박이로 앉아 있었습니다. 사람이 보러 오는 것은
+     「지금 얼마에 팔리는가」이므로 날짜 내림차순이 맞습니다.
+   ⚠ 같은 날 거래가 여러 건이면 순서가 갈립니다 — **금액 내림차순으로 한 번 더** 갈라
+     같은 입력이면 같은 화면이 나오게 합니다(안 그러면 새로고침마다 줄이 바뀝니다). */
 function splitDeals(items, priceMan){
   const lo = Math.round(priceMan * DEAL.band);
   const hi = Math.round(priceMan * DEAL.overBand);
   const thisYear = new Date().getFullYear();
+  const when = n => (n.y||0)*10000 + (n.m||0)*100 + (n.d||0);
+
   const dedupe = arr => {
     const seen = new Map();
     arr.forEach(x => {
       const k = x.name + '|' + (x.areaM2 == null ? '' : x.areaM2);
       const old = seen.get(k);
-      const when = n => (n.y||0)*10000 + (n.m||0)*100 + (n.d||0);
       if(!old || when(x) > when(old)) seen.set(k, x);   /* 가장 최근 거래를 남깁니다 */
     });
-    return [...seen.values()].sort((a,b) => b.amountMan - a.amountMan);
+    return [...seen.values()].sort((a,b) => (when(b) - when(a)) || (b.amountMan - a.amountMan));
   };
-  const fresh = x => !DEAL.only || (x.buildYear && thisYear - x.buildYear <= DEAL.newYears);
+  const fresh = x => !DEAL.onlyNew || (x.buildYear && thisYear - x.buildYear <= DEAL.newYears);
+  /* 59와 84를 **둘 다 켜면 합집합**입니다(둘 중 하나면 통과). 교집합은 늘 0건이라 뜻이 없습니다.
+     ⚠ areaM2가 null인 줄은 면적 칩을 켜는 순간 빠집니다 — 면적을 모르는 줄을 「59㎡다」라고 할 수 없습니다. */
+  const inBand = (v, b) => v != null && v >= b[0] && v <= b[1];
+  const sized = x => {
+    if(!DEAL.only59 && !DEAL.only84) return true;
+    return (DEAL.only59 && inBand(x.areaM2, DEAL.a59))
+        || (DEAL.only84 && inBand(x.areaM2, DEAL.a84));
+  };
+  const pass = x => fresh(x) && sized(x);
   return {
-    under: dedupe(items.filter(x => x.amountMan >= lo && x.amountMan <= priceMan).filter(fresh)),
-    over:  dedupe(items.filter(x => x.amountMan >  priceMan && x.amountMan <= hi).filter(fresh))
+    under: dedupe(items.filter(x => x.amountMan >= lo && x.amountMan <= priceMan).filter(pass)),
+    over:  dedupe(items.filter(x => x.amountMan >  priceMan && x.amountMan <= hi).filter(pass))
   };
 }
 
@@ -2573,11 +2633,18 @@ function paintDeals(priceMan){
   const keep = DEAL.over ? Math.min(2, over.length) : 0;
   const rows = keep ? under.slice(0, DEAL.rows - keep).concat(over.slice(0, keep)) : under;
   const total = under.length + (DEAL.over ? over.length : 0);
+  /* 🔴 v24.15 — 칩이 넷이 되면서 「예산대 거래가 없어요」가 **거짓말이 될 수 있습니다.**
+     84㎡만 켜서 0건인 것을, 그 예산에 거래가 아예 없다는 뜻으로 읽으면 안 됩니다.
+     좁히는 칩(신축·59·84) 중 하나라도 켜져 있으면 **조건 때문임을 말합니다.**
+     ⚠ 「+10%까지」는 넓히는 칩이라 여기 안 셉니다 — 켜도 0건이면 그건 정말 거래가 없는 것입니다. */
+  const narrowed = DEAL.onlyNew || DEAL.only59 || DEAL.only84;
   if(!rows.length){
-    list.innerHTML = `<p class="deal-msg">${DEAL.only
-      ? '최근 3개월 안에 <b>이 예산대 신축 거래가 없어요.</b>'
+    list.innerHTML = `<p class="deal-msg">${narrowed
+      ? '최근 3개월 안에 <b>이 조건에 맞는 거래가 없어요.</b>'
       : '최근 3개월 안에 <b>이 예산대 거래가 없어요.</b>'}</p>`;
-    foot.textContent = '지역이나 예산을 바꾸면 달라질 수 있어요.';
+    foot.textContent = narrowed
+      ? '칩을 끄거나 지역·예산을 바꾸면 달라질 수 있어요.'
+      : '지역이나 예산을 바꾸면 달라질 수 있어요.';
     return;
   }
   list.innerHTML = rows.slice(0, DEAL.rows).map(x => dealLine(x, priceMan)).join('');
@@ -2606,7 +2673,9 @@ function renderDeals(price){
     paintDeals(priceMan);
   }).catch(() => { if(my === DEAL.req) card.hidden = true; });
 
-  /* 칩 둘은 같은 방식으로 돕니다 — 상태를 켜고, 다시 그리기만. 새 부품을 만들지 않습니다. */
+  /* 칩 넷은 같은 방식으로 돕니다 — 상태를 켜고, 다시 그리기만. 새 부품을 만들지 않습니다.
+     ⚠ 칩을 켜도 **다시 부르지 않습니다.** 이미 받아 둔 3개월치 안에서만 거릅니다.
+       API 호출은 계산할 때 한 번뿐입니다(원칙: 호출량을 칩 클릭에 매달지 않습니다). */
   const bindChip = (id, get, set) => {
     const btn = $(id); if(!btn) return;
     const paint = () => { btn.classList.toggle('is-on', get());
@@ -2614,8 +2683,10 @@ function renderDeals(price){
     paint();
     btn.onclick = e => { e.preventDefault(); set(!get()); paint(); paintDeals(priceMan); };
   };
-  bindChip('dealNew',  () => DEAL.only, v => DEAL.only = v);
-  bindChip('dealOver', () => DEAL.over, v => DEAL.over = v);
+  bindChip('dealNew',  () => DEAL.onlyNew, v => DEAL.onlyNew = v);
+  bindChip('deal59',   () => DEAL.only59,  v => DEAL.only59  = v);
+  bindChip('deal84',   () => DEAL.only84,  v => DEAL.only84  = v);
+  bindChip('dealOver', () => DEAL.over,    v => DEAL.over    = v);
 }
 
 function renderOutlinks(price){
