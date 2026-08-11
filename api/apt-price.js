@@ -1,13 +1,15 @@
 /* ===================================================================
-   수정된 국토교통부 아파트 매매 실거래가 프록시
+   국토교통부 아파트 매매 실거래가 프록시  —  v24.1 (Production)
+   Vercel Serverless Function.  GET /api/apt-price?lawd=11110&ymd=202608
    =================================================================== */
 
-const BASE = 'http://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev';
+const BASE = 'http://apis.data.go.kr/1613000/RTMSDataSvcAptTrade'
+           + '/getRTMSDataSvcAptTrade';
 
 const CACHE = new Map();
-const TTL_CLOSED = 24 * 60 * 60 * 1000;
-const TTL_OPEN   =      30 * 60 * 1000;
-const CACHE_MAX  = 200;
+const TTL_CLOSED = 24 * 60 * 60 * 1000;   /* 지난 달 — 24시간 */
+const TTL_OPEN   =      30 * 60 * 1000;   /* 이번 달 — 30분 */
+const CACHE_MAX  = 200;                   /* 인스턴스 메모리를 무한정 먹지 않게 */
 
 const nowYmd = () => {
   const d = new Date();
@@ -49,8 +51,9 @@ function parseItems(xml){
       _canceled: tag(b, 'cdealType') === 'O',
       _leasehold: tag(b, 'landLeaseholdGbn') === 'Y'
     };
-  }).filter(x => x.name && x.amountMan > 0 && !x._canceled && !x._leasehold)
-    .map(({ _canceled, _leasehold, ...keep }) => keep);
+  }).filter(x =>
+    x.name && x.amountMan > 0 && !x._canceled && !x._leasehold
+  ).map(({ _canceled, _leasehold, ...keep }) => keep);
 }
 
 module.exports = async function handler(req, res){
@@ -71,15 +74,14 @@ module.exports = async function handler(req, res){
     return res.status(200).json({ ok:false, reason:'no-key', items:[] });
 
   try{
-    // ✅ URLSearchParams를 사용하여 안전하게 인코딩 (이중 인코딩 방지)
     const params = new URLSearchParams({
-      serviceKey: serviceKey, // 원본 키 그대로 전달 (URLSearchParams가 한 번만 인코딩)
+      serviceKey: serviceKey,
       LAWD_CD: lawd,
       DEAL_YMD: ymd,
       pageNo: '1',
       numOfRows: '1000'
     });
-    
+
     const url = `${BASE}?${params.toString()}`;
 
     const ctrl = new AbortController();
@@ -91,8 +93,6 @@ module.exports = async function handler(req, res){
 
     const xml = await r.text();
     const code = tag(xml, 'resultCode');
-    
-    // 00은 정상, 000은 공공데이터포털의 정상 코드
     if(code && code !== '00' && code !== '000')
       return res.status(200).json({ ok:false, reason:'api-'+code, items:[] });
 
