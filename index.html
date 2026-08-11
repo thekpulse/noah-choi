@@ -1556,7 +1556,7 @@ function solveMaxPrice(cashAvailable, ctxBase){
      오히려 대출이 늘고 필요현금이 줄어드는 역전 구간이 생기기 때문이에요.
      그래서 단순 이분탐색을 쓰면 낮은 해에 갇혀 최대 매매가를 과소평가해요.
      → 전 구간을 조밀하게 스캔해 "가능한 최댓값"을 찾은 뒤, 그 주변만 정밀화해요. */
-  const MAX = 5000000000;
+  const MAX = 100000000000;          // 1000억 제한
   const STEP = 5000000;              // 500만원 간격 스캔
   const ok = (price) => calcCosts({...ctxBase, price}).cashNeeded <= cashAvailable;
 
