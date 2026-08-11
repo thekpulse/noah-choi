@@ -2499,7 +2499,7 @@ async function fetchOne(lawd){
       .catch(() => ({items:[]}))          /* 한 달이 실패해도 나머지는 씁니다 */
   ));
   /* 어느 구에서 왔는지 붙여 둡니다 — 화면에서 인근 구만 구 이름을 답니다. */
-  const items = rs.flatMap(r => (r && r.items) || []).map(x => ({...x, lawd}));
+  const items = rs.flatMap(r => (Array.isArray(r) ? r : (r && r.items) || [])).map(x => ({...x, lawd}));
   DEAL.cache.set(lawd, items);
   return items;
 }
