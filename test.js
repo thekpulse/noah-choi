@@ -76,6 +76,39 @@ function ctx(over){
 
 /* ═══ 1. 정책 상수가 살아 있는가 (원칙 33) ═══════════════════ */
 tt('POLICY.ltv 존재', !!POLICY.ltv);
+/* 🔴 v24.7 — 지침: 정책 수치는 ①기준 ②출처 ③확인일 셋을 주석에 함께 적습니다.
+   그런데 **그걸 보는 검사가 없었습니다.** 실제로 `area` 키가 둘 다 빠진 채로 있었습니다.
+   99-b: 이 검사가 🔴가 되려면? POLICY에 출처나 확인일 없는 키가 새로 들어오면. */
+tt('POLICY의 모든 키에 출처·확인일이 있다', (()=>{
+  const src = fs.readFileSync(FILE,'utf8');
+  const a = src.indexOf('const POLICY'), b = src.indexOf('const POLICY_DEFS');
+  if(!(a >= 0 && b > a)) return false;
+  /* POLICY 객체의 닫는 `};`에서 끊습니다. 안 끊으면 그 아래 주석까지 읽습니다. */
+  const polAll = src.slice(a, b);
+  const closeAt = polAll.indexOf('\n};');
+  const pol = closeAt > 0 ? polAll.slice(0, closeAt) : polAll;
+  const keys = [...pol.matchAll(/\n  ([a-zA-Z]+):/g)];
+  if(keys.length < 5) return false;                    /* 키를 못 찾으면 🔴 */
+  /* ⚠ 되돌아보는 창을 고정 길이로 잡으면 **앞 키의 주석**까지 읽습니다.
+     처음에 900자로 잡았다가, area의 출처를 지운 사보타주가 앞 키(policyLoan)의
+     주석에 걸려 통과했습니다. 구간은 **앞 키 끝 ~ 이 키 끝**으로 잘라야 합니다. */
+  return keys.every((m, n) => {
+    const from = n === 0 ? 0 : keys[n-1].index + keys[n-1][0].length;
+    const to   = n+1 < keys.length ? keys[n+1].index : pol.length;
+    const seg  = pol.slice(from, to);
+    /* 「출처」가 산문에 섞여도 통과하던 자리 — **`출처:` 표기**만 인정합니다(원칙 111). */
+    return /출처\s*[:：]/.test(seg) && /(확인일\s*[:：]?\s*20\d\d|미확인)/.test(seg);
+  });
+})(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
+  const _all=src.slice(src.indexOf('const POLICY'), src.indexOf('const POLICY_DEFS'));
+  const _c=_all.indexOf('\n};'); const pol=_c>0?_all.slice(0,_c):_all;
+  const keys=[...pol.matchAll(/\n  ([a-zA-Z]+):/g)];
+  const bad=keys.filter((m,n)=>{
+    const from=n===0?0:keys[n-1].index+keys[n-1][0].length;
+    const to=n+1<keys.length?keys[n+1].index:pol.length;
+    const seg=pol.slice(from,to);
+    return !(/출처\s*[:：]/.test(seg) && /(확인일\s*[:：]?\s*20\d\d|미확인)/.test(seg)); }).map(m=>m[1]);
+  return bad.length? bad.join(', ')+' 누락' : keys.length+'개 키 전부 있음'; })());
 tt('POLICY.ratio.dsr = 0.4', POLICY.ratio.dsr === 0.4);
 tt('POLICY.ratio.dti = 0.6', POLICY.ratio.dti === 0.6);
 tt('POLICY.acqTax 존재', !!POLICY.acqTax);
@@ -315,9 +348,40 @@ HYGIENE.forEach(([name, over]) => {
      return !!m && !/priceOverride/.test(m[1]) && /S\.priceOverride = null;/.test(UI);
   })());
   /* 되살린 파생값도 전부 범위 검사를 거칩니다(원칙 122). */
+  /* 🔴 v24.7 — 이 락이 **틀린 값을 잠그고 있었습니다.**
+     `[0,100,150,220]`은 INTERIOR의 실제 값 `[0,80,150,250]`과 다른 **두 번째 정의**였고,
+     검사가 그 오타를 그대로 고정해 주고 있었습니다. 새로고침하면 고급(250)이 일반(150)이 되어
+     25평 기준 필요현금이 2,500만원 줄었습니다 — **유리한 쪽 오차**(원칙 28).
+     지금은 목록을 손으로 적지 않고 INTERIOR에서 끌어오는지를 봅니다. */
   tt('되살린 파생값도 검사한다',
      /S\.pyeong = Math\.max\(0, Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, 50\)\);/.test(UI)
-     && /S\.interior = \[0,100,150,220\]\.indexOf\(\+S\.interior\) >= 0/.test(UI));
+     && /const IT_OK = INTERIOR\.map\(o => o\.v\);/.test(UI)
+     && /S\.interior = IT_OK\.indexOf\(\+S\.interior\) >= 0/.test(UI));
+  /* 🔴 v24.7 — 손으로 적은 목록이 다시 들어오는 것을 막습니다.
+     99-b: 이 검사가 🔴가 되려면? 복원 코드에 INTERIOR가 아닌 숫자 배열이 다시 박히면. */
+  tt('인테리어 복원 목록이 INTERIOR 하나에서만 온다', (()=>{
+     /* ⚠ saveDraft가 loadDraft보다 **앞**에 있습니다. 순서를 가정하면 구간이 음수가 되어
+        빈 문자열이 되고, 그러면 이 검사는 아무것도 안 보게 됩니다. 다음 함수까지로 자릅니다. */
+     /* ⚠⚠ 원칙 111 — **주석을 먼저 걷어냅니다.** 이 검사를 처음 쓸 때
+        「무엇을 고쳤는지」 적은 주석 안의 옛 배열에 제가 그대로 걸렸습니다.
+        오늘 같은 함정에 세 번 걸렸습니다. 문자열을 보는 검사는 주석을 걷고 봅니다. */
+     const bare = UI.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+     const i = bare.indexOf('function loadDraft');
+     if(i < 0) return false;
+     const j = bare.indexOf('\nfunction ', i + 10);
+     const draft = j > i ? bare.slice(i, j) : '';
+     if(draft.length < 100) return false;                    /* 구간을 못 자르면 🔴 */
+     return !/\[\s*0\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\]/.test(draft);
+  })());
+  /* 슬라이더 상한(50)과 복원 상한(50)이 같은지 — 다르면 되살릴 때 값이 잘립니다. */
+  tt('평형 복원 상한이 슬라이더 max와 같다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const m = src.match(/id="pyeongRange"[^>]*max="(\d+)"/);
+     const n = UI.match(/Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, (\d+)\)/);
+     return !!m && !!n && m[1] === n[1];
+  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
+     const m=src.match(/id="pyeongRange"[^>]*max="(\d+)"/), n=UI.match(/\|\| 0, (\d+)\)/);
+     return '슬라이더 '+(m?m[1]:'?')+' / 복원 '+(n?n[1]:'?'); })());
   /* render()가 퍼널을 그릴 때마다 결과 플래그를 내려야 합니다. 안 내리면 영영 결과로 돌아갑니다. */
   tt('퍼널로 가면 결과 플래그가 내려간다',
      /function render\(\)\{\s*S\.onResult = false;/.test(UI)
@@ -347,9 +411,15 @@ HYGIENE.forEach(([name, over]) => {
      실제로 G-17 검사를 지우는 사보타주가 주석 때문에 초록으로 통과했습니다(원칙 90 · 99).
      지금은 ok(...) 호출의 라벨만 모아서 봅니다 — 검사가 실제로 「돌고 있는지」를 봅니다. */
   const LABELS = [...html.matchAll(/\bok\(\s*'([^']+)'/g)].map(m => m[1]);
-  ['디자인 락','G-6','G-1','G-3','G-7','넘침','영수증 합계','대출 ≤ 집값','다크 카드','결과 블록',
-   'G-13','G-14','G-15','G-16','G-17','G-18']
-    .forEach(k => tt('__selfcheck 항목: ' + k, LABELS.some(l => l.includes(k)),
+  /* 🔴 v24.7 — `includes('G-1')`이 **G-13 · G-14 … G-18에도 걸립니다.**
+     그래서 G-1 검사를 통째로 지워도 초록이었습니다(사보타주로 확인).
+     게이트 이름은 라벨의 **첫 토큰**과 정확히 같아야 합니다. 문장형 라벨만 includes로 봅니다. */
+  const TOKENS = ['G-1','G-3','G-6','G-7','G-13','G-14','G-15','G-16','G-17','G-18','G-19'];
+  const PHRASES = ['디자인 락','넘침','영수증 합계','대출 ≤ 집값','다크 카드','결과 블록'];
+  const head = l => l.split(/\s/)[0];
+  TOKENS.forEach(k => tt('__selfcheck 항목: ' + k, LABELS.some(l => head(l) === k),
+                     LABELS.length + '개 라벨'));
+  PHRASES.forEach(k => tt('__selfcheck 항목: ' + k, LABELS.some(l => l.includes(k)),
                      LABELS.length + '개 라벨'));
 })();
 
@@ -413,8 +483,29 @@ HYGIENE.forEach(([name, over]) => {
   tt('가전·가구 기본 꺼짐',  /appl\s*:\s*\{\s*on\s*:\s*false/.test(UI));
   /* ⚠ refreshPkg에도 같은 조건이 있어서 느슨하게 잡으면 사보타주를 놓칩니다.
         엔진으로 넘어가는 자리(interiorPerPyeong)를 콕 집어 봅니다. */
+  /* 🔴 v24.7 — 「직접 입력」이 생기면서 조건이 하나 늘었습니다(지침 5층 3번 — 다시 씀).
+     `S.interior > 0`이 없으면 직접 입력 표시값 -1이 **평당 단가로 흘러 음수 비용**이 됩니다. */
   tt('인테리어는 만졌을 때만 엔진으로 넘어간다',
-     /interiorPerPyeong\s*:\s*\(\s*S\.itTouched\s*&&\s*S\.pyeong\s*>\s*0\s*\)\s*\?/.test(UI));
+     /interiorPerPyeong\s*:\s*\(\s*S\.itTouched\s*&&\s*S\.pyeong\s*>\s*0\s*&&\s*S\.interior\s*>\s*0\s*\)\s*\?/.test(UI));
+  /* 🔴 v24.7 — 직접 입력은 **총액**입니다. 평형으로 나눠 평당으로 되돌리면 반올림 오차가 생깁니다. */
+  /* 🔴 v24.12 — **영수증에 들어갔는지를 화면이 말해야 합니다.**
+     v24.3에 있던 「지금 영수증에는 인테리어비가 빠져 있어요」가 v24.8에서 사라졌습니다.
+     설명을 줄이다가 **사실을 버린** 자리입니다 — 영수증이 완전하다고 오해하는 방향(원칙 28).
+     99-b: 이 검사가 🔴가 되려면? 킥커에서 영수증 언급이 빠지면. */
+  tt('인테리어가 영수증에 들어갔는지 화면이 말한다', (()=>{
+     const m = UI.match(/\$\('itKicker'\)\.textContent = [\s\S]{0,400}?;/);
+     if(!m) return false;
+     return /아직 영수증에 없어요/.test(m[0]) && /영수증에 더/.test(m[0]);
+  })());
+  tt('직접 입력은 총액 경로로 흐른다',
+     /interiorTotal\s*:\s*\(\s*S\.itTouched\s*&&\s*S\.interior\s*===\s*IT_CUSTOM\s*&&\s*S\.itCustom\s*>\s*0\s*\)\s*\?/.test(UI)
+     && /ctx\.interiorTotal \* 10000/.test(UI + fs.readFileSync(FILE,'utf8')));
+  /* 표시값 -1이 단가 목록에 섞여 들어가지 않는지 — 섞이면 비용이 음수가 됩니다. */
+  tt('직접 입력 표시값이 단가로 쓰이지 않는다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     return /const IT_CUSTOM = -1;/.test(src)
+         && !/interiorPerPyeong\s*:\s*[^,\n]*IT_CUSTOM/.test(src);
+  })());
 
   /* 대출 항목의 이름이 하나인가 (원칙 91 · G-8) */
   tt('대출 이름이 「주택담보대출」로 통일',
@@ -467,7 +558,9 @@ HYGIENE.forEach(([name, over]) => {
      && /digitsBeforeCaret/.test(UI));
   /* 값이 잘렸는데 아무 말도 안 하면 사용자는 자기가 잘못 눌렀다고 생각합니다. */
   tt('잘린 입력을 화면으로 말한다', (()=>{
-     const msgs = ['억 단위는 9,999까지','만 단위는 99,999까지','월 상환액은 9,999만원까지'];
+     /* 🔴 v24.7 — 셋째 문구를 라벨과 같은 이름으로 고쳤습니다(G-8). 예전엔 「월 상환액」이었는데
+        그 입력칸의 라벨은 「매달 나가는 대출 원리금」이라 화면에서 두 이름이 됐습니다. */
+     const msgs = ['억 단위는 9,999까지','만 단위는 99,999까지','매달 나가는 대출 원리금은 9,999만원까지'];
      return msgs.every(m => UI.includes(m)) && (UI.match(/fieldErr\(/g)||[]).length >= 4;   /* 정의 1 + 호출 3 */
   })());
   /* hidden으로 껐다 켜면 전환이 재생되지 않습니다 — 항상 DOM에 두고 클래스로 폅니다. */
@@ -582,7 +675,9 @@ HYGIENE.forEach(([name, over]) => {
      && !/class="q-hint"/.test(fs.readFileSync(FILE,'utf8'))
      && !/\n\.q-hint\{/.test(fs.readFileSync(FILE,'utf8')));
   tt('항목별 합산 아코디언이 있다',
-     /id="debtPartsToggle"/.test(UI) && /대출이 여러 개이신가요\? 항목별로 더하기/.test(UI));
+     /id="debtPartsToggle"/.test(UI) && /대출이 여러 개인가요\? 항목별로 더하기/.test(UI));
+  /* 🔴 v24.7 — 사물 존대를 금지합니다. 주어가 사람이 아닌데 `-시-`를 붙이던 자리입니다. */
+  tt('화면 문구에 사물 존대가 없다', !/(대출|금액|한도|결과|예산)이?\s*[^ ]*이신가요/.test(UI));
   tt('합산 항목이 신용대출 · 기타 둘이다',
      /id="inDebtCredit"/.test(UI) && /id="inDebtEtc"/.test(UI)
      && (UI.match(/id="inDebt(Credit|Etc)"/g)||[]).length === 2);
@@ -630,9 +725,22 @@ HYGIENE.forEach(([name, over]) => {
      return g('\\.q-title\\{') > g('\\.tile-v\\{');
   })());
   /* v23.19 — 다음 걸음 2×2 · 부채칸 1단 */
-  tt('다음 걸음이 2×2 바둑판',
-     /\.minigrid\{[^}]*grid-template-columns:1fr 1fr/.test(css2)
-     && /class="minigrid"/.test(fs.readFileSync(FILE,'utf8')));
+  /* ⏹ v24.13 — v24.11에서 「한 줄 목록」으로 뒤집었다가 **되돌렸습니다**(지침 5층 3번).
+     뒤집었던 이유는 국토부 칸을 지워 **칸이 셋**이 됐기 때문입니다.
+     국토부 칸이 돌아와 다시 **넷**이므로 격자가 성립합니다.
+     🔴 **칸 수가 홀수면 격자를 쓰지 마세요.** 홀수를 메우려 한 칸을 전폭으로 올린 것이
+        72·118·118px 세 높이를 만들었고, 그게 이 왕복 전체의 시작이었습니다. */
+  tt('다음 걸음이 2×2 바둑판', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const m = src.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
+     const cards = m ? (m[0].match(/class="mini(?: [^"]*)?"/g)||[]) : [];
+     return /\n\.minigrid\{[^}]*grid-template-columns:1fr 1fr/.test(css2)
+         && /class="minigrid"/.test(src) && cards.length > 0 && cards.length % 2 === 0;
+  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const m=src.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
+     return ((m?m[0].match(/class="mini(?: [^"]*)?"/g):[])||[]).length + '칸'; })());
+  tt('다음 걸음에 크기 특례가 없다', !/\.mini\.wide|class="mini wide"/.test(
+     css2 + fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'')));
   tt('부채 입력칸이 1단 100%',
      /\.debtcard \.mfield\{width:100%\}/.test(css2)
      && !/id="inDebt"[\s\S]{0,300}visibility:hidden/.test(fs.readFileSync(FILE,'utf8')));
@@ -767,13 +875,27 @@ HYGIENE.forEach(([name, over]) => {
      /<div class="card" id="dealCard" hidden>/.test(fs.readFileSync(FILE,'utf8')));
   tt('실거래 호출이 계산을 막지 않는다', (()=>{
      /* await로 결과 렌더를 잡으면 API가 느릴 때 화면이 통째로 늦게 뜹니다. */
-     return /fetchDeals\(lawd\)\.then\(/.test(UI)
+     return /fetchDeals\(lawd, priceMan\)\.then\(/.test(UI)
          && !/await fetchDeals/.test(UI)
          && /renderOutlinks\(price\); renderDeals\(price\);/.test(UI);
   })());
-  tt('실패하면 카드를 감춘다', (()=>{
-     return (UI.match(/card\.hidden = true;/g)||[]).length >= 3
+  /* ⏹ v24.10 — v24.9에서 락을 「0건」과 「호출 실패」로 갈랐다가 **되돌렸습니다.**
+     되돌린 이유: 폴백(국토부 링크)이 사라졌으므로 두 경우가 같은 화면이 됩니다.
+       — 키 등록은 **일회성**이고, 정식 배포는 Vercel입니다. 거기서는 함수가 돕니다.
+       — 「불러오지 못했어요」는 우리 배관 사정이라 화면에 말하지 않습니다.
+     ⚠ 두 상태가 **실제로 다르다는 사실은 그대로입니다.** 언젠가 화면을 나눠야 하면
+       `fetchDeals`에서 `ok` 플래그를 다시 모으면 됩니다(v24.9 코드 참고). */
+  tt('못 받았든 0건이든 카드를 감춘다', (()=>{
+     return /if\(!items\.length\)\{ card\.hidden = true; return; \}/.test(UI)
          && /\.catch\(\(\) => \{ if\(my === DEAL\.req\) card\.hidden = true; \}\)/.test(UI);
+  })());
+  /* 빈 카드도, 남의 사이트로 보내는 링크도 그 자리에 두지 않습니다. */
+  tt('실거래 카드에 외부 링크가 없다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const i = src.indexOf('id="dealCard"');
+     if(i < 0) return false;
+     const seg = src.slice(i, src.indexOf('</div>', src.indexOf('id="dealFoot"')));
+     return !/<a /.test(seg) && !/rt\.molit\.go\.kr/.test(seg);
   })());
   tt('한 달이 실패해도 나머지를 쓴다',
      /\.catch\(\(\) => \(\{items:\[\]\}\)\)/.test(UI) && /Promise\.all\(months\.map/.test(UI));
@@ -794,14 +916,55 @@ HYGIENE.forEach(([name, over]) => {
   tt('해제된 거래를 걸러낸다는 것을 화면에서 밝힌다',
      /해제된 거래는 뺐어요/.test(UI));
   /* 「추천」이 아닙니다 — 우리가 하는 일은 거래가 있었던 곳을 보여주는 것입니다. */
+  /* 🔴 v24.7 — 마커가 안 잡히면 slice(-1, j)가 **빈 문자열**이라 무조건 통과했습니다.
+     `const DEAL = {`의 공백 한 칸에 검사 전체가 걸려 있었습니다. 구간 가드를 넣습니다. */
   tt('실거래 문구에 「추천」·「최적」이 없다', (()=>{
-     const i = UI.indexOf('const DEAL = {'), j = UI.indexOf('function renderOutlinks');
-     const blk = UI.slice(i, j);
-     return !/추천|최적|딱 맞|완벽/.test(blk);
+     const a = UI.indexOf('const DEAL = {'), b = UI.indexOf('function renderOutlinks');
+     if(!(a >= 0 && b > a)) return false;          /* 구간을 못 자르면 🔴 — 빈 문자열 통과 금지 */
+     return !/추천|최적|딱 맞|베스트/.test(UI.slice(a, b));
   })());
-  tt('건수를 밝힌다', /\$\{rows\.length\}건/.test(UI));
+  /* ⏹ v24.14 — 표시 건수와 **가진 건수**가 달라졌습니다.
+     5행 상한 때문에 화면에는 5줄인데 실제로는 6건일 수 있습니다.
+     리드에는 **가진 건수**를 적습니다 — 「+10%까지」를 켰을 때 숫자가 움직여야
+     칩이 무언가 했다는 걸 압니다. */
+  tt('건수를 밝힌다', /\$\{total\}건/.test(UI));
 
   /* 🔴 API가 주지 않는 값으로 칩을 만들지 않습니다. buildYear 하나만 씁니다. */
+  /* ⏹ v24.14 — 칩이 **둘**이 됐습니다. 다만 성격이 다릅니다.
+     「신축」은 **API 응답의 값**(buildYear)으로 거르는 취향 칩이고,
+     「+10%까지」는 **우리가 아는 값**(예산)으로 범위를 넓히는 칩입니다.
+     → API가 안 주는 값(역세권·학군·세대수)으로 칩을 만들지 않는다는 규칙은 그대로입니다. */
+  tt('예산 범위 칩이 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /id="dealOver"/.test(src) && /DEAL\.over/.test(UI)
+         && /overBand:1\.10/.test(UI);
+  })());
+  /* 🔴 예산 초과는 **켰을 때만** 보입니다. 기본으로 섞으면 「살 수 있다」로 읽힙니다(원칙 28). */
+  /* ⚠ 처음 이 검사를 `A || B ? true : C`로 썼다가 **항상 참**이 됐습니다.
+     `over: null`이 설정에 있으니 첫 항이 늘 통과했고, 칩을 없애는 사보타주가 그냥 지나갔습니다.
+     99-b: 이 검사가 🔴가 되려면? ①기본값이 켜져 있거나 ②칩 상태를 안 보고 초과분을 넣으면.
+     둘 다 **동시에** 봐야 합니다 — `||`로 잇지 않습니다. */
+  tt('예산 초과는 기본으로 안 보인다', (()=>{
+     const off  = /over:\s*null/.test(UI);                                  /* 기본 꺼짐 */
+     const gate = /const keep = DEAL\.over \? Math\.min\(2, over\.length\) : 0;/.test(UI);
+     return off && gate;
+  })());
+  /* 초과 줄에는 **차액**이 붙어야 합니다 — 얼마를 더 모으면 되는지가 이 기능의 값입니다. */
+  tt('초과 줄에 차액이 붙는다',
+     /x\.amountMan > priceMan\)[\s\S]{0,80}approxWon\(\(x\.amountMan - priceMan\)/.test(UI));
+  /* 🔴 인접 구 표는 **우리가 만든 것**입니다. 대칭이 깨지면 한쪽에서만 이웃이 됩니다. */
+  tt('인접 구 표가 대칭이다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const m = src.match(/const NEARBY = \{[\s\S]*?\n\};/);
+     if(!m) return false;
+     let N; try{ N = eval('(' + m[0].replace('const NEARBY = ','').replace(/;$/,'') + ')'); }catch(e){ return false; }
+     const ks = Object.keys(N);
+     if(ks.length !== 25) return false;                       /* 서울 25개 구 */
+     return ks.every(a => N[a].length >= 2 && N[a].every(b => N[b] && N[b].includes(a)));
+  })());
+  /* 인접 구는 **모자랄 때만** 부릅니다 — 늘 부르면 호출이 25배가 됩니다. */
+  tt('인접 구는 모자랄 때만 부른다',
+     /if\(splitDeals\(items, priceMan\)\.under\.length >= DEAL\.want\) return items;/.test(UI));
   tt('취향 칩은 신축 하나뿐이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      return /id="dealNew"/.test(src)
@@ -810,6 +973,12 @@ HYGIENE.forEach(([name, over]) => {
   })());
   tt('신축 칩이 기존 옵션 칩 컴포넌트를 쓴다',
      /<button class="chip" id="dealNew"/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v24.7 — `aria-pressed` 문자열이 파일 어디든 1회만 있으면 통과했습니다.
+     setAttribute 두 줄을 다 지워도, 마크업 초기값만 지워도 초록이었습니다. 양쪽을 봅니다. */
+  tt('칩 상태가 마크업과 스크립트 양쪽에 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     return /aria-pressed="(true|false)"/.test(src) && /setAttribute\('aria-pressed'/.test(UI);
+  })());
   tt('칩 상태가 보조기술에 전달된다', /aria-pressed/.test(fs.readFileSync(FILE,'utf8')));
   /* 단지명은 외부 데이터입니다 — 그대로 innerHTML에 넣으면 안 됩니다. */
   tt('외부 데이터를 이스케이프한다',
@@ -846,34 +1015,89 @@ HYGIENE.forEach(([name, over]) => {
   tt('「여력」이 어디에도 없다', !/여력/.test(fs.readFileSync(FILE,'utf8')));
   /* 🔴 v23.26 — 화면 문구에서 과장·모호 표현을 뺍니다.
      면책이 「실제 금액은 은행에서 확인」이라고 말하는데 본문이 「정확한」이라고 하면 서로 어긋납니다. */
+  /* 🔴 v24.14 — 이 검사가 **주석까지** 보고 있었습니다(원칙 111).
+     코드 주석에 「충분히」를 쓴 것만으로 🔴가 떴습니다 — 화면에는 없는 말인데도요.
+     이 검사가 보려는 건 **화면 문구**이므로 주석을 걷어내고 봅니다.
+     ⚠ 오늘 같은 함정에 다섯 번 걸렸습니다. 문자열을 보는 검사는 예외 없이 주석을 겁니다. */
+  const UI_BARE = UI.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
   tt('화면 문구에 과장·모호 표현이 없다', (()=>{
      const BAN = ['정확한 금액','살짝','크게 올라','완벽','충분히','어느 정도','대략적으로'];
-     return BAN.every(w => !UI.includes(w));
+     return BAN.every(w => !UI_BARE.includes(w));
   })(), (()=>{ const BAN=['정확한 금액','살짝','크게 올라','완벽','충분히','어느 정도','대략적으로'];
-     return BAN.filter(w=>UI.includes(w)).join(', ')||'없음'; })());
-  /* 소득을 왜 묻는지 화면에서 말합니다 — 비활성 CTA만 두면 이유를 알 수 없습니다. */
-  tt('연소득을 묻는 이유가 화면에 있다', /대출 한도는 소득으로 정해져요/.test(UI));
+     return BAN.filter(w=>UI_BARE.includes(w)).join(', ')||'없음'; })());
+  tt('연소득을 묻는 이유가 화면에 있다', /소득 대비 대출 규제\(DSR\)에 쓰여요/.test(UI));
+  /* 🔴 v24.5 — 원칙 0(약어 단독 금지)은 화면 어디서나 유효합니다.
+     결과 화면은 G-3이 봅니다. **입력 화면은 아무도 안 보고 있었습니다.** */
+  tt('입력 화면의 DSR에 한글 설명이 붙어 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const m = src.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
+     if(!m) return false;
+     return !/DSR/.test(m[1]) || /소득 대비 대출 규제\(DSR\)/.test(m[1]);
+  })());
+  /* 🔴 v24.5 — DSR의 핵심 규칙(연소득의 몇 %)이 상시로 보이는 자리에 있어야 합니다.
+     이전에는 결과 화면에서 `binding`이 DSR·DTI일 때만 나왔습니다 — 다른 게 걸리면
+     소득을 왜 물었는지 끝까지 설명되지 않았습니다. */
+  tt('시트에 DSR 규칙 행이 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /<b>소득 대비 대출 규제\(DSR\)<\/b>/.test(src)
+         && /연소득의 \d+%까지만 원리금 상환에 쓸 수 있게 봅니다/.test(src);
+  })());
+  /* 🔴 v24.5 — **화면의 숫자와 POLICY가 어긋나는 것**을 막습니다.
+     POLICY.ratio.dsr을 고치고 시트 문구를 안 고치면 화면이 거짓말을 합니다.
+     지침 — 정책 수치는 POLICY에서만 정의하고, 화면에 쓴 값은 반드시 대조합니다. */
+  tt('시트의 DSR 비율이 POLICY.ratio.dsr과 같다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const m = src.match(/연소득의 (\d+)%까지만 원리금 상환에 쓸 수 있게 봅니다/);
+     return !!m && Number(m[1]) === Math.round(POLICY.ratio.dsr * 100);
+  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
+     const m=src.match(/연소득의 (\d+)%까지만/);
+     return '화면 '+(m?m[1]:'없음')+'% / POLICY '+Math.round(POLICY.ratio.dsr*100)+'%'; })());
+  /* 🔴 v24.5 — 02에서도 같은 시트를 엽니다. 헬퍼가 한 줄이라 설명할 자리가 없습니다.
+     ⚠ 버튼이 있는 것과 **눌리는 것**은 다릅니다. 바인딩까지 같이 봅니다(원칙 101). */
+  tt('입력 02에서 계산 기준 시트를 열 수 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /id="trustBtn2"/.test(src)
+         && /tb2\.onclick = e => \{ e\.preventDefault\(\); openSheet\(\); \}/.test(src);
+  })());
+  /* 🔴 v24.4 — 입력 화면이 「한도 = 소득」이라고 단정하지 않습니다.
+     ⚠ 결과 화면의 「소득이 한도를 정했어요」는 **금지 대상이 아닙니다** —
+       거기는 `c.binding==='DSR'||'DTI'`일 때만 나오는 조건부 서술입니다.
+       그래서 파일 전체가 아니라 **02 헬퍼 문자열만** 봅니다. */
+  tt('입력 화면이 한도를 소득 하나로 단정하지 않는다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const m = src.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
+     if(!m) return false;
+     return !/소득으로 정해|소득이 정해|소득이 결정|소득으로 결정/.test(m[1]);
+  })());
   /* 🔴 v24.3 — 헬퍼는 **한 줄**입니다.
      ⚠ 글자 수는 지표가 아닙니다. 360px에서 32자짜리 두 개 중 하나만 두 줄이 됐습니다
        — 공백·중점(·)이 섞이면 들어가고, 한글만 붙으면 넘칩니다. **지표는 폭입니다.**
      그래서 진짜 검사는 렌더를 재는 **G-18**이고, 여기 있는 건 싸구려 조기 경보입니다.
-     상한을 34자로 헐겁게 잡습니다 — 34자를 넘으면 어떤 조합이든 360px에서 넘칩니다(실측).
+
+     🔴 v24.5 — **34자 상한의 근거가 틀렸습니다.** v24.3 주석은 「34자를 넘으면 어떤
+       조합이든 360px에서 넘친다」고 적었는데, 「소득 대비 대출 규제(DSR)에 쓰여요.
+       세전 · 부부 합산.」은 **34자인데 한 줄**이고 35자짜리도 한 줄이었습니다.
+       라틴 문자·괄호·숫자는 한글보다 좁습니다. **자수는 한글 전용 문장의 어림값일 뿐입니다.**
+       상한을 36자로 올리고, 이 줄이 무엇을 재는지 다시 적었습니다(원칙 144).
      이 줄이 초록이라고 한 줄인 게 아닙니다. 360px에서 __selfcheck()를 돌려야 압니다. */
-  tt('헬퍼 길이가 조기 경보 상한 안이다', (()=>{
+  tt('헬퍼 길이가 조기 경보 상한(36자) 안이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const hs = [...src.matchAll(/moneyCard\('\w+', S\.\w+, '[^']+',\s*'([^']+)'\)/g)].map(m=>m[1])
        .concat([...src.matchAll(/<p class="helper">([^<]*(?:<b>[^<]*<\/b>[^<]*)*)<\/p>/g)]
          .map(m=>m[1].replace(/<[^>]+>/g,'')));
-     return hs.length >= 2 && hs.every(t => t.trim().length <= 34);
+     return hs.length >= 2 && hs.every(t => t.trim().length <= 36);
   })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
      return [...src.matchAll(/moneyCard\('\w+', S\.\w+, '[^']+',\s*'([^']+)'\)/g)]
        .map(m=>m[1].length+'자').join(' / '); })());
   /* 🔴 G-18이 실제로 렌더를 재고 있는지 소스에서도 확인합니다(원칙 101).
      라벨만 남기고 알맹이를 지우는 사보타주는 위 「__selfcheck 항목」 검사가 못 잡습니다. */
+  /* 🔴 v24.6 — G-18이 표(LINEMAX)로 넓어져 검사식도 다시 씁니다(지침 5층 3번).
+     이전: `.helper`를 직접 긁고 `> 1`로 비교했습니다. 지금은 선택자마다 상한이 다릅니다. */
   tt('G-18이 렌더된 줄 수를 잰다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return /querySelectorAll\('\.helper'\)/.test(src)
-         && /getBoundingClientRect\(\)\.height \/ lh\) > 1/.test(src);
+     return /const LINEMAX=\[\['\.helper',1\]/.test(src)
+         && /getBoundingClientRect\(\)\.height \/ lh\)/.test(src)
+         && /if\(n>max\)/.test(src);
   })());
 
   /* 🔴 v24.3 — 「지우기」는 빠른 추가 칩의 형제가 아니라 **그 입력칸에 딸린 동작**입니다.
@@ -896,7 +1120,14 @@ HYGIENE.forEach(([name, over]) => {
   /* G-8 — 같은 상태를 두 이름으로 부르지 않습니다. */
   tt('「소득 미입력」의 이름이 하나다',
      /'넣지 않음'/.test(UI) && !/'안 넣음'/.test(UI));
-  tt('방공제 안내가 한도 아코디언 안으로 이동', /id="roomTip"/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v24.7 — `id="roomTip"`이 **있는지만** 봤습니다. 아코디언 밖으로 옮겨도 초록이었습니다.
+     이름이 「이동」이면 위치를 재야 합니다(99-b). */
+  tt('방공제 안내가 한도 아코디언 안으로 이동', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const a = src.indexOf('id="limitTip"');
+     if(a < 0) return false;
+     return src.slice(Math.max(0, a-1200), a+1200).includes('id="roomTip"');
+  })());
   /* 🔴 v23.23 — 퍼널(02)에 「항목별로 더하기」 아코디언이 하나 생겼습니다.
      이 락이 지키려던 것은 **결과 화면**의 밀도입니다. 그쪽만 셉니다. */
   tt('결과 화면 아코디언은 2종 (부대비용 · 한도)', (()=>{
@@ -936,9 +1167,20 @@ HYGIENE.forEach(([name, over]) => {
   tt('보유 라벨이 명사형', /생애 최초[\s\S]{0,400}1주택 이상/.test(UI));
   tt('규제 도달 문구가 전문형', /비율\(LTV\) 최대 한도에 도달/.test(UI)
      && /규제\(DSR\) 최대 한도에 도달/.test(UI));
+  /* ⏹ v24.13 — 「밖으로 나가는 링크는 매물 하나뿐」을 **되돌렸습니다.**
+     지웠던 근거는 「실거래가는 앱 안에서 보여준다」였는데, 그 카드는 **API 키가 있어야 뜹니다.**
+     키를 넣기 전에는 실거래가가 화면 어디에도 없습니다. → 국토부 칸을 되살렸습니다. */
   tt('실거래가 링크가 국토부', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      return /rt\.molit\.go\.kr/.test(src) && !/hogangnono/.test(src);
+  })());
+  /* ⏹ v24.13 — 네이버는 **예산대 검색 주소**로 되돌렸습니다.
+     홈으로만 보내면 예산대 필터가 사라져 사용자가 할 일이 남습니다.
+     🟡 이 주소는 작업 환경에서 열어 확인하지 못했습니다 — 배포 후 실기 확인 필요(7장).
+     ⚠ 「추천」이 포지셔닝과 부딪힌다고 한 번 말씀드렸고 **기존대로 가기로 정해졌습니다.** */
+  tt('네이버가 예산대 검색으로 간다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     return /outNaver'\)\.href\s*=\s*`https:\/\/new\.land\.naver\.com\/search\?sk=\$\{q\}`/.test(src);
   })());
   /* 🔴 v23.27 — 밖으로 나가는 링크는 **진짜 앵커**여야 합니다.
      스크립트로 연 창은 인앱 브라우저(카톡·인스타)에서 막히거나 같은 탭에 뜹니다.
@@ -1023,9 +1265,11 @@ HYGIENE.forEach(([name, over]) => {
      /id="reeditBtn">이전 단계</.test(UI) && !/←/.test(UI));
   tt('조건 수정은 03단계로 간다', /S\.step = STEPS\.length - 1/.test(UI));
   tt('조건 칩에 ▾ 아이콘', /<b class="cc">\u25be<\/b>|class="cc">▾/.test(UI));
-  /* v23.20 — 정책 변동 고지를 더해 두 줄이 됐습니다. 셋 이상은 읽지 않습니다. */
-  tt('면책은 두 줄 이하', (UI.match(/class="legal"/g)||[]).length <= 2,
-     (UI.match(/class="legal"/g)||[]).length + '줄');
+  /* 🔴 v24.6 — 이 검사는 **요소 개수**를 세면서 값을 「줄」이라고 찍고 있었습니다.
+     그래서 화면이 두 줄이든 다섯 줄이든 블록이 하나면 초록이었습니다.
+     이름을 사실대로 바꿉니다. **렌더된 줄 수는 G-18이 봅니다**(상한 2줄). */
+  /* 🔴 v24.7 — 「면책 블록이 하나다」(=== 1)가 이 검사를 완전히 포섭합니다.
+     이 줄은 **단독으로 🔴가 될 수 없어** 지웠습니다(99-b). 상한이 필요하면 그 검사를 고치세요. */
   tt('정책 변동 고지가 있다', /정부 정책 변화 및 은행 심사 기준에 따라/.test(UI));
   tt('DSR·정책대출 안내는 한도 아코디언으로', /limitTip'\)\.innerHTML = bindingTip[\s\S]{0,300}본 DSR 한도/.test(UI));
 
@@ -1155,8 +1399,43 @@ HYGIENE.forEach(([name, over]) => {
   tt('탁한 밤색 잔재 없음', !/#A85510|#7F2420|#C4837C|#B33A3A/i.test(css2));
 
   /* 4. 카피 다이어트 */
-  tt('면책이 한 줄이다', (UI.match(/class="legal"/g)||[]).length === 1,
-     (UI.match(/class="legal"/g)||[]).length + '줄');
+  /* 🔴 v24.6 — 이름과 실제가 어긋나 있던 자리입니다(원칙 99).
+     「면책이 한 줄이다」라고 적고 `class="legal"` **개수**를 셌습니다. 개수는 1이라 늘 초록.
+     실측하면 360 · 390 · 430px **전부 두 줄**이었고, 여섯 판 동안 아무도 못 봤습니다.
+     인수인계 체크리스트 23번의 「한 줄인지」도 같은 착각이었습니다 — 「두 줄 이하」로 고쳤습니다.
+     ⚠ 면책은 **문장을 줄이면 안 되는 글**입니다(정책대출 미반영·DSR 근거가 걸려 있음).
+       줄일 수 있는 건 줄 수뿐이고, 두 줄이 그 하한입니다. 상한 판정은 G-18이 합니다. */
+  tt('면책 블록이 하나다', (UI.match(/class="legal"/g)||[]).length === 1,
+     (UI.match(/class="legal"/g)||[]).length + '개');
+  /* 🔴 v24.6 — G-18이 면책까지 보고 있는지 소스에서 확인합니다(원칙 101).
+     표에서 `.legal` 한 줄을 지우면 면책은 다시 아무도 안 보는 글이 됩니다. */
+  /* 🔴 v24.6 — **되돌린 락입니다. 지우지 않고 방향을 뒤집어 다시 썼습니다**(지침 5층 3번).
+     한때: 「다음 걸음 설명이 서술문이 아니다」 — 제목이 한 말을 설명이 되풀이한다고 보고
+     서술을 걷어내 목적지 이름만 남겼습니다(네이버 부동산 / 국토교통부).
+     되돌린 이유: 격자이기 때문입니다. 밖으로 나가는 위 두 칸에는 목적지가 남지만
+     안에서 끝나는 아래 두 칸에는 남길 말이 없어 제목만 남고, 카드 높이는 행마다 같으므로
+     **아래가 통째로 빈 자리**가 됩니다. 격자에서 빈 자리는 글자보다 더 눈에 띕니다.
+     → 지금 락은 **네 칸이 모두 설명 줄을 가진다**는 쪽입니다. 다음 사람이 같은 판단으로
+       또 지우는 것을 막습니다. 얇게 만들고 싶으면 문구가 아니라 패딩·높이를 건드리세요. */
+  /* 🔴 v24.7 — 국토부 칸이 빠져 **세 칸**입니다. 2×2에 홀수를 넣으면 빈 자리가 남으므로
+     네이버 칸을 **전폭**으로 올렸습니다(윗줄 1칸 · 아랫줄 2칸). v24.6에서 확인한 자리입니다.
+     설명 줄은 세 칸 모두 유지합니다 — 지우면 그때처럼 빈 자리가 생깁니다. */
+  tt('다음 걸음 네 칸이 모두 설명 줄을 가진다', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const m = bare.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
+     if(!m) return false;
+     /* ⚠ `class="mini[^"]*"`는 **`minigrid`도 잡습니다**(mini + grid). 경계를 붙입니다. */
+     const cards = m[0].match(/class="mini(?: [^"]*)?"/g)||[];
+     const spans = m[0].match(/<\/b><span>/g)||[];
+     /* 네이버 칸의 span은 비어 있고 JS가 채웁니다 — 칸 수보다 하나 적게 셉니다. */
+     return cards.length === 4 && spans.length >= 3
+         && /outNaverS'\)\.textContent=`네이버 부동산에서 이 예산대를 봐요`/.test(bare);
+  })());
+
+  tt('G-18이 면책 줄 수도 본다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /\['#result \.legal',2\]/.test(src) && /LINEMAX/.test(src);
+  })());
   tt('면책 한 줄에 추정치 · 정책 변동이 모두 들어 있다',
      /본 결과는 시뮬레이션 추정치이며, 정부 정책 변화 및 은행 심사 기준에 따라/.test(UI));
   /* 바로 위 조건 칩이 이미 지역을 말합니다. 2×2 칸에서 지역명이 두 줄을 만들었습니다. */
@@ -1293,6 +1572,18 @@ HYGIENE.forEach(([name, over]) => {
      return !btn.some(r => /(^|[^-])height:\d+px/.test(r));
   })());
   /* 🔴 지침 — 폼 컨트롤은 16px 이상. 미만이면 iOS가 포커스 시 화면을 확대합니다. */
+  /* 🔴 v24.7 — 화면에서 가장 큰 입력인 `.mfield input`은 clamp()라 아래 정규식에 안 걸려
+     **통째로 건너뛰고 있었습니다**. 주석엔 「clamp()는 따로 봅니다」인데 그 검사가 없었습니다.
+     첫 인자가 16px 미만이면 iOS가 포커스 때 화면을 확대합니다. */
+  /* ⚠ 16px 규칙은 **폼 컨트롤에만** 적용됩니다(iOS는 input에 포커스할 때만 확대합니다).
+     선택자에 input/textarea/select가 든 규칙만 봅니다 — 처음엔 전부 봐서 소제목까지 잡혔습니다. */
+  const clampRules = [...css2.matchAll(/(^|\n)([^{}\n]*(?:input|textarea|select)[^{}\n]*)\{([^}]*)\}/g)]
+    .map(m => [m[2].trim(), (m[3].match(/font-size:\s*clamp\(\s*([\d.]+)px/)||[])[1]])
+    .filter(([sel, v]) => v !== undefined)
+    .map(([sel, v]) => [sel, parseFloat(v)]);
+  tt('clamp 입력도 16px 이상이다',
+     clampRules.length > 0 && clampRules.every(([, v]) => v >= 16),   /* 대상 0개면 🔴 */
+     clampRules.length ? clampRules.map(([sel,v]) => sel+' '+v+'px').join(' / ') : '대상 0개');
   tt('모든 텍스트 입력이 16px 이상이다', (()=>{
      const rules = css2.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[];
      const bad = rules.filter(r => {
@@ -1308,6 +1599,12 @@ HYGIENE.forEach(([name, over]) => {
   tt('타입 스케일에 0.5px 단위가 없다', !/--t\d:[\d]+\.5px/.test(css2));
 
   /* 3. 점진적 정보 공개 — ⓘ + 바텀시트 */
+  /* 🔴 v24.7 — 「버튼이 있다」와 「버튼이 눌린다」는 다른 검사입니다(원칙 153).
+     아래 셋은 마크업만 보고 있어 onclick을 지워도 전부 초록이었습니다. */
+  tt('결과 ⓘ가 실제로 시트를 연다', /\$\('trustBtn'\)\.onclick[\s\S]{0,80}openSheet\(\)/.test(UI));
+  tt('워드마크가 실제로 홈으로 간다', /\$\('homeBtn'\)\.onclick\s*=\s*goHome/.test(UI));
+  tt('하단 CTA·이전 버튼에 핸들러가 있다',
+     /\$\('ctaBtn'\)\.onclick/.test(UI) && /\$\('prevBtn'\)\.onclick/.test(UI));
   tt('계산 기준이 ⓘ 인디케이터로 접혔다',
      /id="trustBtn"/.test(fs.readFileSync(FILE,'utf8'))
      && /계산 기준 보기/.test(fs.readFileSync(FILE,'utf8'))
@@ -1315,10 +1612,12 @@ HYGIENE.forEach(([name, over]) => {
   tt('바텀시트가 대화상자로 선언돼 있다',
      /id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"/.test(fs.readFileSync(FILE,'utf8')));
   /* ⚠ .app{overflow-x:clip}은 자손 fixed 요소를 가둡니다. 시트는 .app 밖에 있어야 합니다. */
+  /* 🔴 v24.7 — indexOf -1 함정. dock 문자열이 안 잡히면 -1이라 **무엇이든 통과**했습니다.
+     속성 순서만 바꿔도(class↔id) 시트를 .app 안에 넣는 사고가 그대로 지나갑니다. */
   tt('시트가 .app 밖에 있다', (()=>{
-     const src = fs.readFileSync(FILE,'utf8');
-     const appEnd = src.indexOf('<div class="dock"');
-     return src.indexOf('id="sheet"') > appEnd;
+     const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const a = src.indexOf('id="sheet"'), b = src.search(/<div[^>]*class="dock"/);
+     return a >= 0 && b >= 0 && a > b;      /* 둘 다 존재해야 합니다 — -1 통과 금지 */
   })());
   tt('시트를 닫는 길이 셋이다 (닫기 · 배경 · ESC)',
      /sheetClose'\)\.onclick/.test(UI) && /sheetBack'\)\.onclick/.test(UI)
@@ -1328,10 +1627,15 @@ HYGIENE.forEach(([name, over]) => {
      /closeSheet\(\)\{[\s\S]{0,300}documentElement\.style\.overflow=''/.test(UI));
   tt('시트가 스크롤 위치를 옮기지 않는다 (원칙 92)',
      !/openSheet\(\)\{[\s\S]{0,400}scrollTo/.test(UI)
-     && !/position:fixed[^}]*\}[\s\S]{0,0}/.test('')  /* body fixed 기법 미사용 */
+     /* 🔴 v24.7 — 여기 있던 절은 **빈 문자열에 정규식을 걸고** 있어 언제나 참이었습니다.
+        지우고, 실제로 재는 아래 두 절만 남깁니다. */
      && !/body\.style\.position\s*=/.test(UI));
-  tt('시트 안에 계산 기준 5항목이 있다',
-     (fs.readFileSync(FILE,'utf8').match(/class="sheet-row"/g)||[]).length === 5);
+  /* 🔴 v24.5 — 5 → **6항목**. 락을 지우지 않고 다시 씁니다(지침 5층 3번).
+     늘어난 하나가 「소득 대비 대출 규제(DSR)」입니다.
+     ⚠ 이 검사는 **개수만** 봅니다 — 무엇이 들어 있는지는 못 봅니다. 내용은 위쪽의
+       「시트에 DSR 규칙 행이 있다」 · 「시트의 DSR 비율이 POLICY와 같다」가 봅니다(원칙 99). */
+  tt('시트 안에 계산 기준 6항목이 있다',
+     (fs.readFileSync(FILE,'utf8').match(/class="sheet-row"/g)||[]).length === 6);
 
   /* v23.15: 라임 → 핀테크 그린. 면·테두리와 글자 색을 나눕니다. */
   tt('핀테크 그린 복귀', /--green:#00CA71/.test(css2));
@@ -1348,12 +1652,17 @@ HYGIENE.forEach(([name, over]) => {
   tt('그린을 글자색으로 쓰지 않는다',
      (css2.match(/(?:^|[;{\s])color:var\(--green\)/gm)||[]).length === 0,
      (css2.match(/(?:^|[;{\s])color:var\(--green\)/gm)||[]).length + '곳');
-  /* 그린이 실제로 「면·선」으로만 쓰이는가 — background / border-color / outline / 그라데이션 */
+  /* 그린이 실제로 「면·선」으로만 쓰이는가 — background / border / outline / 그림자
+     🔴 v24.7 — 허용 목록이 **규칙보다 좁았습니다.** 규칙은 「면·선 전용」인데
+       `border-color`만 허용해서 `border-bottom:1.5px solid var(--green)` 같은
+       **명백한 선**이 🔴로 걸렸습니다. `border`로 넓힙니다.
+       ⚠ `color:`는 여전히 막힙니다 — 접두가 `border`라 겹치지 않고,
+         글자색은 바로 위 「그린을 글자색으로 쓰지 않는다」가 따로 봅니다. */
+  const GREEN_OK = /^(background|border|outline|box-shadow|--fill-pct)/;
   tt('그린은 면 · 선으로만 쓰인다', (()=>{
      const uses = css2.match(/[a-z-]+:[^;{}]*var\(--green\)/g) || [];
-     const okProp = /^(background|border-color|outline|box-shadow|--fill-pct)/;
-     return uses.length > 0 && uses.every(u => okProp.test(u.trim()));
-  })(), (css2.match(/[a-z-]+:[^;{}]*var\(--green\)/g)||[]).filter(u=>!/^(background|border-color|outline|box-shadow|--fill-pct)/.test(u.trim())).join(' | '));
+     return uses.length > 0 && uses.every(u => GREEN_OK.test(u.trim()));
+  })(), (css2.match(/[a-z-]+:[^;{}]*var\(--green\)/g)||[]).filter(u=>!GREEN_OK.test(u.trim())).join(' | ') || '전부 면·선');
   tt('라임 잔재 없음', !/--lime/.test(css2));
   tt('형광펜 하이라이트 삭제', !/linear-gradient\(to top, var\(--/.test(css2));
   /* v23.18 — 2px 안쪽 테두리 폐기. 선택 언어를 「흰 면 + 그린 글자 + 바깥 그림자」 하나로 통일합니다.
