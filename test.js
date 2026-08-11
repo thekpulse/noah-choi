@@ -1357,8 +1357,18 @@ HYGIENE.forEach(([name, over]) => {
      /rows\.length < 2\)\{ box\.hidden = true; return; \}/.test(UI)
      && /if\(!priceMan \|\| items\.length === 0\)\{ box\.hidden = true; return; \}/.test(UI));
   /* 실거래는 async라 renderReport 시점엔 비어 있습니다 — 굽기 직전에 다시 채워야 합니다. */
+  /* ⚠ 원칙 48 — 처음엔 `paintReportDeals(LASTVIEW.price)`를 통째로 물었다가,
+     단위 버그를 고치며 인자가 바뀌자 빨갛게 떴습니다. **목적은 「굽기 직전에 다시 채운다」**입니다. */
   tt('이미지 저장 직전에 실거래를 다시 채운다',
-     /async function saveImage\(\)\{[\s\S]{0,200}paintReportDeals\(LASTVIEW\.price\)/.test(UI));
+     /async function saveImage\(\)\{[\s\S]{0,400}paintReportDeals\(/.test(UI));
+  /* 🔴 v24.15 — **단위.** 실거래 비교는 전부 **만원**입니다. 원 단위를 넘기면
+     예산 구간에 걸리는 거래가 0건이 되어 **에러 없이 블록이 사라집니다.**
+     실제로 그렇게 나갔습니다(2026.08.12 카톡 실물). 두 호출 지점 모두 잠급니다. */
+  tt('진단서 실거래에 만원 단위를 넘긴다', (()=>{
+     const calls = UI.match(/paintReportDeals\(([^)]*)\)/g) || [];
+     const passes = calls.filter(c => !/^paintReportDeals\(priceMan\)/.test(c));
+     return passes.length >= 2 && passes.every(c => /\/ 10000/.test(c));
+  })(), (UI.match(/paintReportDeals\([^)]*\)/g)||[]).join(' | '));
   /* 보낸 사람의 칩(신축·면적)이 카드에 새지 않습니다 — 받는 사람의 취향이 아닙니다. */
   tt('공유 카드 실거래에 칩 필터를 걸지 않는다', (()=>{
      const f = (UI.match(/function paintReportDeals\([\s\S]*?\n\}/)||[''])[0];
