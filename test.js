@@ -514,7 +514,13 @@ HYGIENE.forEach(([name, over]) => {
   tt('대출 이름이 「주택담보대출」로 통일',
      !/은행에서 빌리는 돈/.test(UI), (UI.match(/은행에서 빌리는 돈/g)||[]).length + '곳 남음');
   tt('영수증에 주택담보대출 줄이 있다', /row\('주택담보대출'/.test(UI));
-  tt('진단서에도 같은 이름', /report-line[\s\S]{0,80}주택담보대출/.test(UI));
+  /* 🔴 v24.15 — 검사의 **목적은 이름 일치**이고, 표현(.report-line)만 바뀌었습니다(원칙 48).
+     진단서에서 .report-line이 사라지고 자금 구성 줄(mixRow)로 합쳐졌습니다.
+     구조를 묻지 말고 **renderReport 안에 그 이름이 있는가**만 봅니다 — 다음에 또 옮겨도 안 깨집니다. */
+  tt('진단서에도 같은 이름', (()=>{
+     const f = (UI.match(/function renderReport\([\s\S]*?\n\}/)||[''])[0];
+     return f.length > 100 && /주택담보대출/.test(f) && !/은행에서 빌리는 돈/.test(f);
+  })());
 
   /* 면책 — 미반영 항목은 채권 매입비만 남긴다 */
   tt('면책에서 화재보험료 문구 삭제', !/화재보험료/.test(UI));
@@ -1055,12 +1061,18 @@ HYGIENE.forEach(([name, over]) => {
   })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
      const m=src.match(/연소득의 (\d+)%까지만/);
      return '화면 '+(m?m[1]:'없음')+'% / POLICY '+Math.round(POLICY.ratio.dsr*100)+'%'; })());
-  /* 🔴 v24.5 — 02에서도 같은 시트를 엽니다. 헬퍼가 한 줄이라 설명할 자리가 없습니다.
-     ⚠ 버튼이 있는 것과 **눌리는 것**은 다릅니다. 바인딩까지 같이 봅니다(원칙 101). */
-  tt('입력 02에서 계산 기준 시트를 열 수 있다', (()=>{
-     const src = fs.readFileSync(FILE,'utf8');
-     return /id="trustBtn2"/.test(src)
-         && /tb2\.onclick = e => \{ e\.preventDefault\(\); openSheet\(\); \}/.test(src);
+  /* ⏹ v24.15 — 「입력 02에서 계산 기준 시트를 열 수 있다」를 삭제했습니다.
+     v24.5에서 넣은 버튼을 v24.15에서 뺐습니다(실물에서 자리만 차지했습니다).
+     **기능을 지웠으면 락도 같이 지웁니다** — 없는 기능을 지키는 검사는 다음 사람을 속입니다.
+     ⚠ 시트 자체는 살아 있습니다. 아래 「결과 ⓘ가 실제로 시트를 연다」가 그걸 지킵니다. */
+  /* ⚠ 원칙 66 — **주석을 먼저 벗깁니다.** 여기서 실제로 한 번 걸렸습니다:
+     본체에 「02의 계산 기준 보기를 뺐습니다」라는 HTML 주석을 달았더니
+     그 주석이 카운트에 잡혀 검사가 빨갛게 떴습니다. 문구를 세는 검사는 주석까지 셉니다. */
+  tt('계산 기준 시트가 결과에 한 번만 있다', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8')
+       .replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
+     return (bare.match(/계산 기준 보기/g)||[]).length === 1
+         && !/id="trustBtn2"/.test(bare);
   })());
   /* 🔴 v24.4 — 입력 화면이 「한도 = 소득」이라고 단정하지 않습니다.
      ⚠ 결과 화면의 「소득이 한도를 정했어요」는 **금지 대상이 아닙니다** —
@@ -1242,7 +1254,123 @@ HYGIENE.forEach(([name, over]) => {
      !/--grad-1\s*:/.test(css2) && !/--bronze-hi\s*:/.test(css2)
      && !/var\(--grad-[12]\)/.test(css2) && !/var\(--bronze-hi\)/.test(css2));
 
-  tt('임시 도메인 표기', /출시-후-도메인-연결-예정/.test(UI));
+  /* 🔴 v24.15 — 「임시 도메인 표기」를 삭제하고 **실주소 락**으로 바꿨습니다.
+     자리표시자를 지키던 검사입니다. 주소가 들어왔으니 역할이 끝났습니다.
+     이제 지킬 것은 반대쪽입니다 — **자리표시자가 되돌아오지 않을 것**, 그리고
+     주소가 **한 곳에서만 정의될 것**(문자열을 화면에 직접 박으면 세 곳이 어긋납니다). */
+  tt('공유 주소가 자리표시자가 아니다',
+     !/\[출시-후-도메인-연결-예정\]/.test(UI)
+     && /const SERVICE_URL = 'https:\/\/[^'\[\]]+';/.test(UI));
+  /* 🔴 v24.15 — 카드의 실거래 블록. **없을 때 안 그리는 것**이 요점입니다(원칙 53). */
+  /* 🔴 v24.15 — 인접 구 표. 좌표가 없어 **손으로 적은 표**라 구조 검사만으로는 부족합니다.
+     대조에서 실제로 다섯 줄이 틀렸습니다. **확인된 것을 값으로 잠급니다** —
+     다음 사람이 「정리했다」는 문장만 보고 넘기지 않도록. */
+  tt('인접 구 표 — 대조 완료분이 그대로다', (()=>{
+     const near = (code) => {
+       const m = UI.match(new RegExp("'"+code+"':\\[([^\\]]*)\\]"));
+       return m ? m[1].split(',').map(x=>x.trim().replace(/'/g,'')).sort().join(',') : '';
+     };
+     return near('11215') === ['11200','11230','11260','11680','11710','11740'].sort().join(',')
+         && near('11260') === ['11215','11230','11290','11350'].sort().join(',')
+         && near('11740') === ['11215','11710'].sort().join(',')
+         && near('11380') === ['11110','11410','11440'].sort().join(',');
+  })());
+  /* 확인된 **오답 넷**이 되돌아오지 않는지 봅니다. 틀린 항목은 빠진 항목보다 나쁩니다 —
+     빠지면 결과가 줄 뿐이지만 틀리면 **엉뚱한 동네가 목록에 섞입니다**. */
+  tt('인접 구 표 — 확인된 오답이 없다', (()=>{
+     const has = (a,b) => {
+       const m = UI.match(new RegExp("'"+a+"':\\[([^\\]]*)\\]"));
+       return !!m && m[1].includes("'"+b+"'");
+     };
+     return !has('11215','11350') && !has('11350','11215')   /* 광진 ↔ 노원  — 안 붙습니다 */
+         && !has('11260','11740') && !has('11740','11260')   /* 중랑 ↔ 강동  — 안 붙습니다 */
+         && !has('11380','11320') && !has('11320','11380')   /* 은평 ↔ 도봉  — 안 붙습니다 */
+         && !has('11380','11500') && !has('11500','11380');  /* 은평 ↔ 강서  — 안 붙습니다 */
+  })());
+  /* 🔴 v24.15 — 면적 칩의 경계. **85㎡는 국민주택규모 · 농특세 경계**입니다.
+     위끝이 85를 넘으면 그 줄만 취득세 구조가 화면 계산과 달라집니다.
+     ⚠ 경계는 **양쪽을 봅니다**(원칙 56) — 85.0은 들어오고 85.1은 빠져야 합니다. */
+  tt('전용 84㎡ 칩이 85㎡를 넘지 않는다', (()=>{
+     const m = UI.match(/a84:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/);
+     return !!m && +m[2] <= 85 && +m[1] >= 82;
+  })(), (()=>{ const m=UI.match(/a84:\s*\[([^\]]+)\]/); return m?('a84 = ['+m[1].trim()+']'):'없음'; })());
+  tt('면적 경계가 양끝을 포함한다', /v >= b\[0\] && v <= b\[1\]/.test(UI));
+  /* 🔴 v24.15 — 굵기·자간·행간 스케일. 크기(--t*)만 규격이 있고 나머지 셋은 자리마다 손으로 골랐습니다. */
+  tt('굵기·자간·행간 스케일이 :root에 있다',
+     /--w-hero:\s*900;\s*--w-key:\s*700;\s*--w-sub:\s*500;/.test(css2)
+     && /--ls-hero:[^;]+;\s*--ls-ttl:[^;]+;\s*--ls-body:[^;]+;\s*--ls-eye:[^;]+;/.test(css2)
+     && /--lh-hero:[^;]+;\s*--lh-ttl:[^;]+;\s*--lh-body:[^;]+;/.test(css2));
+  /* 🔴 굵기는 **역할 세 단**입니다. 다만 이 규칙은 아직 **공유 카드에만** 적용했습니다.
+     ⚠ 처음엔 파일 전체에 물었다가 빨갛게 떴습니다 — 화면 전체는 400·500·600·700·800·900
+       **여섯 단**입니다(.eyebrow · .card-title · .line.total 등 800이 17곳).
+       화면 전체를 세 단으로 줄이는 것은 모든 글자가 움직이는 변경이라 **단독 판**이어야 합니다.
+     검사는 **실제로 지키는 범위만** 잠급니다. 지키지도 않는 규칙을 거는 검사는
+     다음 사람에게 「이미 정리됐다」는 거짓 신호를 줍니다. 범위를 카드로 좁힙니다. */
+  tt('공유 카드 굵기가 세 단뿐이다', (()=>{
+     const bare = css2.replace(/\/\*[\s\S]*?\*\//g,'');
+     const rules = (bare.match(/[^{}]*\.report[^{}]*\{[^}]*\}/g)||[]).join(' ');
+     const tok = new Set((rules.match(/font-weight:\s*var\((--w-[a-z]+)\)/g)||[])
+       .map(x=>(x.match(/--w-[a-z]+/)||[])[0]));
+     return tok.size <= 3 && [...tok].every(t=>['--w-hero','--w-key','--w-sub'].includes(t));
+  })());
+  /* 🔴 공유 카드는 **손으로 고른 굵기·자간·행간이 없어야** 합니다 — 전부 토큰. */
+  tt('공유 카드 활자가 전부 토큰이다', (()=>{
+     const bare = css2.replace(/\/\*[\s\S]*?\*\//g,'');
+     const rules = bare.match(/[^{}]*\.report[^{}]*\{[^}]*\}/g)||[];
+     const bad = [];
+     rules.forEach(r=>{
+       (r.match(/(font-weight|letter-spacing|line-height):\s*([^;}]+)/g)||[]).forEach(d=>{
+         if(!/var\(--/.test(d)) bad.push(d.trim());
+       });
+     });
+     return bad.length === 0;
+  })(), '남은 것: ' + ((()=>{const bare=css2.replace(/\/\*[\s\S]*?\*\//g,'');
+     const rules=bare.match(/[^{}]*\.report[^{}]*\{[^}]*\}/g)||[];const bad=[];
+     rules.forEach(r=>{(r.match(/(font-weight|letter-spacing|line-height):\s*([^;}]+)/g)||[])
+       .forEach(d=>{if(!/var\(--/.test(d)) bad.push(d.trim());});});
+     return bad.slice(0,3).join(' | ')||'없음';})()));
+  /* 🔴 숫자와 단위가 붙던 자리 — 음수 자간이 단위까지 당기고 있었습니다. */
+  tt('금액 단위가 음수 자간을 물려받지 않는다',
+     /\.report-amount \.u\{[^}]*letter-spacing:var\(--ls-body\)/.test(css2)
+     && /\.report-amount \.u\{[^}]*padding-left:/.test(css2));
+  /* 🔴 내보내는 그림은 보는 기기와 무관해야 합니다 — 반응형 토큰(--d1/--t1/--t2)을 쓰면 안 됩니다. */
+  tt('공유 카드가 반응형 토큰을 쓰지 않는다', (()=>{
+     const bare = css2.replace(/\/\*[\s\S]*?\*\//g,'');
+     const rules = (bare.match(/[^{}]*\.report[^{}]*\{[^}]*\}/g)||[]).join(' ');
+     return !/var\(--(d1|t1|t2)\)/.test(rules);
+  })());
+  /* 🔴 v24.15 — 이미지 속 주소는 **누를 수 없습니다.** 못 칠 길이면 안 적습니다. */
+  tt('카드 주소는 짧을 때만 적는다',
+     /const HOST_MAX = \d+;/.test(UI)
+     && /raw\.length <= HOST_MAX \? raw : ''/.test(UI));
+  /* 반대로 요약 문구(텍스트)에는 **길어도 전체 주소**가 들어갑니다 — 거기선 실제로 눌립니다. */
+  tt('요약 문구에는 전체 주소가 들어간다', (()=>{
+     const f = (UI.match(/function summaryText\([\s\S]*?\n\}/)||[''])[0];
+     return f.length > 100 && /L\.push\(SERVICE_URL\)/.test(f);
+  })());
+  /* 🔴 v24.15 — 원칙 47. 쓰는 곳이 없어진 CSS가 남으면 다음 사람이 산 규칙으로 읽습니다. */
+  tt('진단서에 죽은 .report-line 규칙이 없다', (()=>{
+     const bare = UI.replace(/\/\*[\s\S]*?\*\//g,'');
+     return !/\.report-line/.test(bare);
+  })());
+  tt('공유 카드 실거래는 2건 미만이면 안 그린다',
+     /rows\.length < 2\)\{ box\.hidden = true; return; \}/.test(UI)
+     && /if\(!priceMan \|\| items\.length === 0\)\{ box\.hidden = true; return; \}/.test(UI));
+  /* 실거래는 async라 renderReport 시점엔 비어 있습니다 — 굽기 직전에 다시 채워야 합니다. */
+  tt('이미지 저장 직전에 실거래를 다시 채운다',
+     /async function saveImage\(\)\{[\s\S]{0,200}paintReportDeals\(LASTVIEW\.price\)/.test(UI));
+  /* 보낸 사람의 칩(신축·면적)이 카드에 새지 않습니다 — 받는 사람의 취향이 아닙니다. */
+  tt('공유 카드 실거래에 칩 필터를 걸지 않는다', (()=>{
+     const f = (UI.match(/function paintReportDeals\([\s\S]*?\n\}/)||[''])[0];
+     return f.length > 100 && !/DEAL\.(onlyNew|only59|only84|over)/.test(f);
+  })());
+  tt('공유 주소를 SERVICE_URL 한 곳에서만 쓴다', (()=>{
+     const bare = UI.replace(/\/\*[\s\S]*?\*\//g,'');
+     const url = (bare.match(/const SERVICE_URL = '([^']+)'/)||[])[1] || '';
+     if(!url) return false;
+     const host = url.replace(/^https?:\/\//,'');
+     return (bare.split(host).length - 1) === 1;
+  })());
   tt('헤더 밴드가 퍼널 높이를 푸는다',
      /\.app\.hero-on \.funnel\{[^}]*min-height:0/.test(fs.readFileSync(FILE,'utf8')));
 
