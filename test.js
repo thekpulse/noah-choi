@@ -1,7 +1,10 @@
 /* ===================================================================
    영끌계산기 — 회귀 테스트 (v22.5용)
    실행:  node test.js
-          node test.js /경로/yeongkkeul-calculator.html
+          node test.js /경로/index.html
+
+   🔴 v24.15 — 본체 파일명이 index.html로 바뀌었습니다.
+     기본 경로도 같이 바꿨습니다. 인자 없이 돌아갑니다.
 
    ⚠ 구 test.js(888개)는 DOM id에 묶여 있어 새 본체에 붙지 않습니다.
      이 파일은 **계산 엔진만** 봅니다(지침 v4 9장의 1단계).
@@ -13,7 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const FILE = process.argv[2] || path.join(__dirname, 'yeongkkeul-calculator.html');
+const FILE = process.argv[2] || path.join(__dirname, 'index.html');
 
 /* ── 엔진 적재 ────────────────────────────────────────────────── */
 let UI = '';   /* 화면 코드 — 단위 경계 검사(19장)에 씁니다 */
