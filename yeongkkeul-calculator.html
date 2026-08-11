@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.3 · 정책 2026.08.05 -->
+<!-- BUILD v24.14 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -129,7 +129,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* ⚠ 앱 배경(--bg) 위의 호버는 --fill이 아니라 --line을 씁니다 — 두 값이 같아 아무 일도 안 일어납니다. */
 .wordmark:hover{color:var(--ink)}
 /* 단계 라벨은 오른쪽 끝, 결과에서만 켜집니다. 비어 있으면 자리도 차지하지 않습니다. */
-.barlabel{margin-left:auto;padding-right:6px;font-size:var(--t7);font-weight:700;color:var(--ink-4)}
+/* 🔴 v24.7 — --ink-4는 **흰 카드 위에서 4.62:1로 검증된 값**입니다.
+   상단 바는 배경(--bg #F2F4F6) 위라 같은 값이 **4.19:1**로 떨어집니다(4.5 미만).
+   토큰이 아니라 **토큰이 놓인 면**이 바뀐 자리입니다(원칙 97). --ink-3은 같은 면에서 6.45:1. */
+.barlabel{margin-left:auto;padding-right:6px;font-size:var(--t7);font-weight:700;color:var(--ink-3)}
 .barlabel:empty{display:none}
 .progress{position:sticky;top:56px;z-index:20;height:2px;background:var(--line)}
 .progress i{display:block;height:100%;width:0;background:var(--green);transition:width .34s cubic-bezier(.22,1,.36,1)}
@@ -411,6 +414,23 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 안내 박스는 수수하게, 접기 버튼은 누를 수 있게 — 둘을 갈라 놓습니다.
    🔴 v23.21 — 왼쪽 굵은 세로선(3px)을 전부 지웠습니다. 레거시 인용문 문법입니다.
    중립 안내는 선도 면도 없이 글자만, 주의 안내는 「면」으로만 갈립니다. */
+/* 🔴 v24.7 — 금액 자리를 그대로 입력칸으로. 새 컴포넌트를 만들지 않고
+   .quote의 타이포를 그대로 물려받습니다(글자 크기가 바뀌면 자리가 튑니다).
+   ⚠ 16px 이상이어야 iOS가 포커스 때 화면을 확대하지 않습니다 — clamp 첫 인자를 지키세요. */
+.quote-edit{display:flex;align-items:baseline;gap:6px}
+/* ⚠ 포커스는 **컨테이너**가 받습니다. 입력 자체에 전역 `:focus-visible` 링이 걸리면
+   숫자만 한 검은 사각형이 떠서 밑줄과 따로 놉니다(.mfield도 같은 방식입니다 — 201줄). */
+.quote-edit{padding-bottom:6px;border-bottom:1.5px solid var(--line);transition:border-color .14s}
+.quote-edit:focus-within{border-bottom-color:var(--green)}
+.quote-edit input{flex:1;min-width:0;width:100%;border:0;background:none;padding:0;
+  font-family:inherit;font-size:clamp(28px,8.5vw,var(--t1));font-weight:800;
+  letter-spacing:-.04em;line-height:1.15;color:var(--ink);text-align:left}
+.quote-edit input:focus,.quote-edit input:focus-visible{outline:none}
+.quote-edit input::placeholder{color:var(--ink-4);font-weight:800}
+.quote-edit span{flex:none;font-size:var(--t4);font-weight:700;color:var(--ink-3)}
+/* 설명 문구는 칩을 바꿀 때 **부드럽게 교체**됩니다 — 글자가 툭 바뀌면 바뀐 걸 놓칩니다. */
+.tip{transition:opacity .18s ease}
+.tip.fading{opacity:0}
 .tip{margin-top:18px;padding:14px 0;border-radius:0;background:transparent;
   border:0;font-size:var(--t7);line-height:1.75;color:var(--ink-3)}
 .tip b{color:var(--ink-2);font-weight:800}
@@ -525,13 +545,20 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
   text-decoration:none;color:inherit;cursor:pointer;box-sizing:border-box}
 .mini:hover{background:var(--line)}
 /* 2×2 바둑판 — 세로 4단은 스크롤만 먹고 밀도가 죽습니다.
-   ⚠ 폭이 절반이 되므로 제목·설명 글자 크기를 함께 내려야 넘치지 않습니다(원칙 34). */
+   ⚠ 폭이 절반이 되므로 제목·설명 글자 크기를 함께 내려야 넘치지 않습니다(원칙 34).
+   ⏹ v24.13 — v24.11에서 한 줄 목록으로 바꿨다가 **되돌렸습니다.**
+      바꾼 이유는 국토부 칸을 지워 **칸이 셋**이 됐기 때문이었습니다.
+      국토부 칸이 돌아와 다시 **넷**이므로 격자가 그대로 성립합니다.
+   🔴 **칸 수가 홀수가 되면 격자를 쓰지 마세요.** v24.7에서 홀수를 메우려고
+      한 칸을 전폭으로 올렸다가 72·118·118px 세 높이가 됐습니다. 그게 이 왕복의 시작이었습니다. */
 .minigrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .minigrid .mini{flex-direction:column;align-items:flex-start;gap:6px;margin-top:0;padding:15px 14px;
   min-height:118px}
 .minigrid .mini .txt{width:100%}
 .minigrid .mini .txt b{font-size:var(--t7);line-height:1.4}
-.minigrid .mini .txt span{font-size:11.5px;line-height:1.6;margin-top:5px}
+/* ⚠ 색은 --ink-3입니다. --ink-4는 흰 카드 위에서 검증된 값이라
+   이 카드의 면(--fill) 위에서는 4.19:1로 떨어집니다(G-19가 잡은 자리). */
+.minigrid .mini .txt span{font-size:11.5px;line-height:1.6;margin-top:5px;color:var(--ink-3)}
 .minigrid .mini .arw{align-self:flex-end;margin-top:auto;color:var(--ink)}
 .mini em{font-style:normal;font-size:var(--t3);flex:none}
 .mini .txt{flex:1;min-width:0}
@@ -556,7 +583,12 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
   letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .deal .nm small{display:block;margin-top:3px;font-size:var(--t7);font-weight:400;
   color:var(--ink-4);letter-spacing:-.01em;white-space:nowrap}
-.deal .amt{flex:none;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.deal .amt{flex:none;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em;text-align:right}
+/* 🔴 v24.14 — 차액은 금액 **아래 줄**입니다. 옆에 붙이면 「15억 5,000만원+8,000만원」이
+   한 덩어리로 읽혀 23억처럼 보입니다(실제로 그렇게 났습니다).
+   그리고 옆에 붙으면 금액 칸이 넓어져 **왼쪽 부제가 잘립니다.** */
+.deal .amt u{display:block;margin-top:3px;text-decoration:none;
+  font-size:var(--t7);font-weight:700;color:var(--warn);letter-spacing:-.01em}
 .deal-msg{margin:6px 0 0;font-size:var(--t6);line-height:1.6;color:var(--ink-3)}
 .deal-msg b{color:var(--ink);font-weight:800}
 
@@ -689,7 +721,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 
     <div class="bento">
       <div class="tile wide">
-        <p class="tile-k">이 돈이 어디서 오나요</p>
+        <p class="tile-k">이 돈이 어디서 오나요?</p>
         <div class="stack" id="fundStack"></div>
         <div class="legend" id="fundLegend"></div>
       </div>
@@ -727,7 +759,16 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
         <input type="range" id="pyeongRange" min="0" max="50" step="1" value="0" aria-label="평형">
       </div>
       <div class="tweak"><p class="tweak-label">시공 수준</p><div class="chips" id="interiorChips"></div></div>
-      <div class="tweak"><p class="quote-k" id="itKicker"></p><p class="quote" id="itQuote">—</p></div>
+      <div class="tweak"><p class="quote-k" id="itKicker"></p>
+        <p class="quote" id="itQuote">—</p>
+        <!-- 🔴 v24.7 — 「직접 입력」은 **모달을 띄우지 않습니다.** 금액이 놓이던 자리가
+             그대로 입력칸이 됩니다. 두 노드를 형제로 두고 하나만 보입니다.
+             ⚠ 이 칸은 칩을 다시 그릴 때 **재생성하지 않습니다** — 타이핑 중에 포커스가 날아갑니다. -->
+        <div class="quote-edit" id="itEditWrap" hidden>
+          <input id="itInput" inputmode="numeric" placeholder="0" aria-label="총 인테리어 예산(만원)"><span>만원</span>
+        </div>
+      </div>
+      <p class="fielderr" id="itErr" role="alert" aria-live="polite"></p>
       <div class="tip" id="itTip"></div>
       <a class="mini amber" id="outInterior" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outInteriorT"></b><span id="outInteriorS"></span></div><span class="arw">↗</span></a>
     </div>
@@ -741,17 +782,40 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
       <div id="dealList"></div>
       <div class="chips" id="dealChips" hidden>
         <button class="chip" id="dealNew" aria-pressed="false">신축</button>
+        <!-- 🔴 v24.14 — 예산 초과는 **기본으로 안 보입니다.** 켠 사람에게만 나옵니다.
+             섞어서 보여주면 「살 수 있다」로 읽힙니다(원칙 28). 본인이 켠 것이라 오해가 없습니다. -->
+        <button class="chip" id="dealOver" aria-pressed="false">+10%까지</button>
       </div>
       <p class="helper" id="dealFoot"></p>
+      <!-- ⏹ v24.10 — v24.9의 「국토부 폴백」을 **되돌렸습니다.**
+           넣었던 이유: API가 없으면 실거래가가 통째로 사라져서.
+           되돌린 이유: 그건 **키를 등록하면 끝나는 일회성 공백**인데,
+             거기에 맞춰 영구 UI를 만들고 있었습니다. 정식 배포는 Vercel이고
+             거기서는 함수가 돕니다. 깃허브는 확인용이지 사용자가 오는 곳이 아닙니다.
+           ⚠ 그리고 「불러오지 못했어요」는 **우리 배관 사정**입니다. 화면에 말하지 않습니다.
+           ⚠ 카드는 이제 얼굴이 둘입니다 — **목록이거나, 없거나.** 세 번째를 만들지 마세요. -->
     </div>
 
     <div class="card">
       <h2 class="card-title">다음 걸음</h2>
       <div class="minigrid">
+      <!-- ⏹ v24.13 — 밖으로 나가는 칸은 **둘**입니다(네이버 · 국토부).
+           v24.8에서 국토부 칸을 지웠다가 되돌렸습니다.
+           지운 근거는 「실거래가는 앱 안에서 보여준다」였는데, 그 카드는 API 키가 있어야 뜹니다.
+           키를 넣기 전에는 실거래가가 화면 어디에도 없게 됩니다.
+           ⚠ 네 칸이라 2×2가 성립합니다. **칸을 빼면 격자부터 다시 보세요.** -->
       <a class="mini" id="outNaver" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outNaverT"></b><span id="outNaverS"></span></div><span class="arw">↗</span></a>
       <a class="mini" id="outHogang" target="_blank" rel="noopener noreferrer" href="https://rt.molit.go.kr/"><div class="txt"><b id="outHogangT"></b><span>국토교통부 실거래가 공개시스템에서 확인해요</span></div><span class="arw">↗</span></a>
+      <!-- 🔴 v24.6 — **네 칸 모두 설명 줄을 가집니다. 지우지 마세요.**
+           v24.6 작업 중에 「제목이 이미 한 말을 설명이 되풀이한다」는 이유로 서술을 걷어내고
+           목적지 이름만 남겨 봤습니다(네이버 부동산 / 국토교통부). **되돌렸습니다.**
+           이유 — 이건 격자입니다. 밖으로 나가는 위 두 칸에는 목적지가 남지만 안에서 끝나는
+           아래 두 칸에는 남길 말이 없어 제목만 남고, 카드 높이는 행마다 같으므로
+           **아래가 통째로 빈 자리가 됩니다.** 격자에서 빈 자리는 글자보다 더 눈에 띕니다.
+           「구질구질하지 않게」의 답이 「지우기」가 아니었던 자리입니다.
+           ⚠ 카드를 얇게 만들고 싶으면 문구가 아니라 **패딩·높이**를 건드리세요. -->
       <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b><span>메신저와 SNS 어디든 바로 공유할 수 있어요</span></div><span class="arw">↓</span></button>
-      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 복사하기</b><span>카톡에 붙여넣기 좋게 한 줄로 정리해요</span></div><span class="arw">⧉</span></button>
+      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 복사하기</b><span>카톡·문자 등에 붙여넣기 좋게 한 줄로 정리해요</span></div><span class="arw">⧉</span></button>
       </div>
     </div>
 
@@ -776,6 +840,12 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
   <div class="sheet-grip"></div>
   <h2 class="sheet-title" id="sheetTitle">계산 기준</h2>
+  <!-- 🔴 v24.5 — DSR의 **핵심 규칙**이 어디에도 상시로는 없었습니다.
+       「소득이 한도를 정했어요」는 결과 화면에서 binding이 DSR·DTI일 때만 나옵니다.
+       ⚠ 40%는 POLICY.ratio.dsr입니다. 화면에 숫자를 쓰는 자리이므로 값이 바뀌면 여기도 고칩니다.
+       ⚠ 정책대출은 DTI 60%(POLICY.ratio.dti)입니다. 지금은 **화면에서 도달할 수 없어**
+         적지 않았습니다. 정책대출 UI가 붙는 판에서 이 행에 한 문장을 더하세요. -->
+  <div class="sheet-row"><b>소득 대비 대출 규제(DSR)</b><span>은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봅니다. 갚고 있는 대출의 원리금이 먼저 빠지고, 남은 몫으로 한도를 봅니다.</span></div>
   <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 한도를 봅니다. 실제 금리보다 높게 잡아 한도가 보수적으로 나옵니다.</span></div>
   <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라집니다. 대출을 받지 않아도 항상 계산에 넣습니다.</span></div>
   <div class="sheet-row"><b>중개보수</b><span>거래 금액 구간별 상한요율로 계산합니다. 실제 보수는 협의로 더 낮아질 수 있습니다.</span></div>
@@ -918,8 +988,21 @@ const POLICY = {
     }
   },
 
-  /* 면적 환산 — 평형은 공급면적 기준. 평 × 2.45 = 전용㎡ (전용률 약 74%)
-     ⚠ ÷ 3.3058이 아닙니다(원칙 5) */
+  /* 면적 환산 · 세율 경계
+     🔴 v24.7 — 이 키만 **출처·확인일이 없었습니다.** 지침이 요구하는 세 가지(기준·출처·확인일)
+        중 둘이 빠져 있었고, 아무 검사도 그걸 보지 않았습니다. 두 값의 성격이 다릅니다.
+
+     · pyeongToM2: 2.45  — **모델 가정입니다. 정책 수치가 아닙니다.**
+       기준: 평형은 **공급면적** 기준으로 받고, 전용률 약 74%를 적용해 전용㎡로 환산합니다.
+             1평 = 3.3058㎡ × 0.74 ≈ 2.45.
+       ⚠ ÷ 3.3058이 아닙니다(원칙 5). 공급→전용 환산이지 단순 단위 환산이 아닙니다.
+       ⚠ 전용률은 단지마다 다릅니다. 이 값은 어림이고, 아래 85㎡ 경계 판정에 쓰입니다.
+
+     · ruralTaxOverM2: 85 — **법정 경계입니다.**
+       기준: 전용면적 85㎡(국민주택규모) 초과 시 농어촌특별세가 붙습니다.
+       🟡 출처: **미확인.** 이 작업 환경에서 원문을 열지 못했습니다.
+          다음 세션에서 농어촌특별세법 조문으로 확인하고 확인일을 적으세요(7장 구멍 목록).
+       ⚠ 값을 지어내지 않았습니다 — 있던 값을 그대로 두고 **미확인이라고 적습니다**(지침). */
   area: {pyeongToM2: 2.45, ruralTaxOverM2: 85}
 };
 
@@ -1434,12 +1517,21 @@ function calcCosts(ctx){
   if(bBand.cap !== null) brokerFee = Math.min(brokerFee, bBand.cap);
   brokerFee = brokerFee * POLICY.broker.vat;   // 중개보수는 부가세 10% 별도 (상한요율 기준, 실제는 협의 가능)
 
-  const interiorCost = ctx.pyeong * ctx.interiorPerPyeong * 10000;
+  /* 🔴 v24.7 — 인테리어 비용에 경로가 둘입니다.
+       ① 칩   : 평당 단가 × 평형
+       ② 직접 입력 : **총액 그대로**. 평형으로 나눠 평당으로 되돌리지 않습니다 —
+                    역산은 반올림 오차를 만들고, 지침이 금지합니다.
+     둘 다 만원 단위 입력이라 ×10000으로 원으로 올립니다. */
+  const interiorCost = (Number.isFinite(ctx.interiorTotal) && ctx.interiorTotal > 0)
+    ? ctx.interiorTotal * 10000
+    : ctx.pyeong * ctx.interiorPerPyeong * 10000;
   /* 인테리어비는 평형 × 단가입니다. 두 필드가 서로 다른 소절('집 정보' / '입주 준비 비용')에
      떨어져 있고 평형이 '선택' 항목이라, 단가만 고르고 평형을 비워두면 곱의 한쪽이 0이라
      조용히 0원이 됐어요. 사용자에겐 "골랐는데 반영이 안 된다"로 보입니다.
      → 그 상태를 값으로 들고 나가서 입력·결과 양쪽에서 이유를 말해줍니다. */
-  const interiorBlocked = ctx.interiorPerPyeong > 0 && !(ctx.pyeong > 0);
+  /* 직접 입력은 총액이라 평형이 없어도 성립합니다 — 평당 단가일 때만 평형을 요구합니다. */
+  const interiorBlocked = ctx.interiorPerPyeong > 0 && !(ctx.pyeong > 0)
+    && !(Number.isFinite(ctx.interiorTotal) && ctx.interiorTotal > 0);
   const etcCost = ctx.etc * 10000;
   const pyeongM2 = ctx.pyeong * POLICY.area.pyeongToM2; // 평형은 통상 공급면적 기준이라, 전용면적 추정 시 전용률(약 74%)을 적용한 근사치예요
 
@@ -1563,17 +1655,32 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v24.3 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.14 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
 const SERVICE_URL = 'https://[출시-후-도메인-연결-예정]';
 
 const D = { rate:5.4, years:30, rateType:'variable', fixedYears:0 };
-const INTERIOR = [ {v:0,label:'안 함'}, {v:80,label:'기본'}, {v:150,label:'일반'}, {v:250,label:'고급'} ];
+/* 인테리어 시공 수준 — v24.7 개편
+   🟡 **정책 수치가 아니라 시장 관행 어림값입니다.** 법령·고시에 근거가 없습니다.
+      출처: 없음(시장 통용 단가). 확인일: 없음. **그래서 화면에서 「약」이라고 말합니다.**
+   ⚠ 이전 값은 80 / 150 / 250이었고 이름이 「기본·일반·고급」이었습니다.
+      「고급」이 무엇을 포함하는지 화면 어디에도 없어서 사용자가 고를 근거가 없었습니다.
+      지금은 **무엇을 하는 공사인지**로 이름을 바꾸고 단가를 100 / 150 / 200으로 맞췄습니다.
+   ⚠ `v`는 **평당 만원**입니다. `v:-1`은 「직접 입력」 표시값이며 평당 단가가 아닙니다 —
+      직접 입력은 `S.itCustom`(총액 만원)으로 따로 흐릅니다. 곱하지 마세요. */
+const IT_CUSTOM = -1;
+const INTERIOR = [
+  {v:0,   label:'안 함',    desc:''},
+  {v:100, label:'부분 시공', desc:'도배, 장판, 필름 등 살릴 건 살리는 가성비 시공이에요. (평당 약 100만원)'},
+  {v:150, label:'기본 수리', desc:'욕실, 주방 등 낡은 곳 위주로 고쳐요. 샷시 교체는 빠져 있어요. (평당 약 150만원)'},
+  {v:200, label:'전체 수리', desc:'샷시 교체를 포함해 뼈대만 남기고 집 전체를 새롭게 바꿔요. (평당 약 200만원)'},
+  {v:IT_CUSTOM, label:'직접 입력', desc:'원하시는 총 인테리어 예산을 직접 입력해 주세요.'}
+];
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
-            group:null, sido:'', sgg:'', pyeong:0, interior:150, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false,
+            group:null, sido:'', sgg:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false,
             legal:{on:true,v:65}, move:{on:false,v:175}, appl:{on:false,v:500} };
 
 const $ = id => document.getElementById(id);
@@ -1635,7 +1742,7 @@ function renderQuestion(){
   if(st.id==='income'){
     h = eye + `<h2 class="q-title">연소득이 얼마인가요?</h2>
       ${moneyCard('income', S.income, '연소득',
-        '대출 한도는 소득으로 정해져요. 세전 · 부부 합산 기준.')}
+        '소득 대비 대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.')}
       <div class="chips">
         ${[1000,5000,10000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
       <button class="debtlink" id="debtLink">${S.debtOpen ? '갚고 있는 대출 입력 닫기' : '갚고 있는 대출이 있어요 ›'}</button>
@@ -1645,7 +1752,7 @@ function renderQuestion(){
           <div class="mfield"><input id="inDebt" inputmode="numeric" placeholder="0"
             value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 나가는 대출 원리금"><span>만</span></div>
         </div>
-        <p class="helper">신용대출·자동차·학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
+        <p class="helper">신용대출 · 자동차 · 학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
         <p class="fielderr" role="alert" aria-live="polite"></p>
         <p class="readout" id="debtEcho"></p>
         <div class="chips">
@@ -1653,7 +1760,7 @@ function renderQuestion(){
         <!-- 🔴 v23.23 — 여러 개를 머릿속으로 더하게 하지 않습니다.
              여기 넣은 값이 위 칸으로 **자동 합산**됩니다. 엔진으로 가는 값은 위 칸 하나뿐입니다. -->
         <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts">
-          <span>대출이 여러 개이신가요? 항목별로 더하기</span><span class="caret">▾</span></button>
+          <span>대출이 여러 개인가요? 항목별로 더하기</span><span class="caret">▾</span></button>
         <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts">
           <div class="costrow"><div class="nm">신용대출</div>
             <div class="amt"><input id="inDebtCredit" inputmode="numeric" placeholder="0"
@@ -1662,7 +1769,11 @@ function renderQuestion(){
             <div class="amt"><input id="inDebtEtc" inputmode="numeric" placeholder="0"
               value="${S.debtParts.etc?comma(S.debtParts.etc):''}" aria-label="기타 대출 월 상환액"><u>만</u></div></div>
         </div>
-      </div>`;
+      </div>
+      <!-- 🔴 v24.5 — 결과에만 있던 ⓘ를 02에도 둡니다. **같은 시트**를 엽니다.
+           헬퍼는 한 줄(G-18)이라 DSR을 설명할 자리가 없습니다. 궁금해진 자리에서 열게 합니다.
+           ⚠ 새 클래스를 만들지 않았습니다 — 결과의 .trustwrap/.trust를 그대로 씁니다. -->
+      <div class="trustwrap"><button class="trust" id="trustBtn2"><i>ⓘ</i>계산 기준 보기</button></div>`;
   }
   if(st.id==='region'){
     h = eye + `<h2 class="q-title">어디에서 찾고 계세요?</h2>
@@ -1719,7 +1830,7 @@ const tagGrid = list => `<div class="taggrid">${list.map(([c,nm])=>
 function answeredVal(id){
   if(id==='cash')   return S.cash ? formatWon(man(S.cash)) + (S.noLoan?' · 대출 없이':'') : '—';
   if(id==='income') return (S.income ? formatWon(man(S.income)) : '넣지 않음')
-    + (S.debtMonthly ? ' · 갚는 대출 월 ' + comma(S.debtMonthly) + '만' : '');
+    + (S.debtMonthly ? ' · 갚는 대출 월 ' + comma(S.debtMonthly) + '만원' : '');
   if(id==='region') return (regionLabel()||'—') + ' · ' + HOUSE[S.houseStatus];
   return '';
 }
@@ -1812,6 +1923,10 @@ function bind(){
     });
     /* 모바일에서 진입하자마자 가상키보드가 화면을 가리던 문제 — 자동 포커스 제거(v23.9) */
   }
+  /* 🔴 v24.5 — 02의 ⓘ. renderQuestion()이 다시 그릴 때마다 새 노드라 여기서 겁니다.
+     결과 화면의 #trustBtn은 로드 시 한 번만 겁니다 — 그건 다시 그려지지 않습니다. */
+  const tb2=$('trustBtn2');
+  if(tb2) tb2.onclick = e => { e.preventDefault(); openSheet(); };
   const dl=$('debtLink'), dbt=$('inDebt');
   if(dl){
     dl.onclick = e => { e.preventDefault(); S.debtOpen=!S.debtOpen; renderQuestion(); };
@@ -1831,7 +1946,7 @@ function bind(){
     if(dbt){
       dbt.oninput = () => { const raw=(dbt.value||'').replace(/[^\d]/g,''), v=raw.slice(0,4);
         setCommaValue(dbt, v);
-        fieldErr(dbt, raw.length > 4 ? '월 상환액은 9,999만원까지 넣을 수 있어요.' : '');
+        fieldErr(dbt, raw.length > 4 ? '매달 나가는 대출 원리금은 9,999만원까지 넣을 수 있어요.' : '');
         S.debtMonthly = v?+v:null;
         clearParts();          /* 위 칸을 직접 고치면 항목 합계는 더 이상 맞지 않습니다 */
         paint(); syncCta(); };
@@ -1872,8 +1987,8 @@ function bind(){
     S.houseStatus=b.dataset.house;
     seg.querySelectorAll('button').forEach(x=>x.classList.toggle('is-on', x===b));
     $('houseEcho').textContent = b.dataset.house==='multi'
-      ? '다주택자는 취득세가 중과되며, 대출 한도가 크게 축소될 수 있습니다.'
-      : b.dataset.house==='first' ? '생애최초 기준이 적용돼 대출 한도가 늘어납니다.' : '';
+      ? '다주택자는 취득세가 중과되며, 대출 한도가 크게 축소될 수 있어요.'
+      : b.dataset.house==='first' ? '생애최초 기준이 적용돼 대출 한도가 늘어나요.' : '';
     syncCta();
   });
   bindPane();
@@ -1910,7 +2025,7 @@ const DRAFT_KEY = 'yk.draft.v1';
      오히려 되살리지 않고 다시 계산하면 그때 규칙이 깨집니다. */
 const DRAFT_KEYS = ['step','cash','income','noLoan','houseStatus','group','sido','sgg',
                     'debtMonthly','debtParts','debtOpen','debtPartsOpen',
-                    'onResult','lockedPrice','pyeong','interior','itTouched'];
+                    'onResult','lockedPrice','pyeong','interior','itCustom','itTouched'];
 function saveDraft(){
   try{
     /* 🔴 넣은 것이 하나도 없으면 **키를 만들지 않습니다.**
@@ -1941,7 +2056,16 @@ function loadDraft(){
     if(!(Number.isFinite(lp) && lp > 0)) { S.lockedPrice = null; S.onResult = false; }
     else S.lockedPrice = lp;
     S.pyeong = Math.max(0, Math.min(parseInt(S.pyeong,10) || 0, 50));
-    S.interior = [0,100,150,220].indexOf(+S.interior) >= 0 ? +S.interior : 150;
+    /* 🔴 v24.7 — 여기 있던 `[0,100,150,220]`은 **INTERIOR의 두 번째 정의**였고,
+       실제 값 `[0,80,150,250]`과 달랐습니다(원칙 84 — 죽은 값이 아니라 살아 있는 두 번째 정의).
+       그래서 새로고침하면 「기본(80)」·「고급(250)」이 조용히 「일반(150)」으로 바뀌었습니다.
+       25평이면 고급 6,250만 → 3,750만. **필요현금이 2,500만원 줄어드는 유리한 쪽 오차**입니다(원칙 28).
+       ⚠ 앞으로도 목록을 손으로 적지 마세요. INTERIOR에서 끌어옵니다. */
+    const IT_OK = INTERIOR.map(o => o.v);
+    S.interior = IT_OK.indexOf(+S.interior) >= 0 ? +S.interior : 150;
+    /* 직접 입력 금액도 되살립니다 — 유한 양수일 때만. 상한은 화면 입력 상한과 같습니다. */
+    const ic = Number(S.itCustom);
+    S.itCustom = (Number.isFinite(ic) && ic > 0) ? Math.min(Math.floor(ic), 99999) : null;
     S.itTouched = !!S.itTouched;
     S.onResult = !!S.onResult;
   }catch(e){}
@@ -1982,7 +2106,7 @@ function render(){
 }
 
 /* ═══ 결과 ═══════════════════════════════════ */
-const etcLabel = () => ['법무사·등기비','이사·입주청소','가전·가구']
+const etcLabel = () => ['법무사 · 등기비','이사 · 입주청소','가전 · 가구']
   .filter((_,i)=>[S.legal.on,S.move.on,S.appl.on][i]).join(' · ') || '부대비용';
 const etcMan = () => (S.legal.on?S.legal.v:0)+(S.move.on?S.move.v:0)+(S.appl.on?S.appl.v:0);
 function ctx(){
@@ -1995,7 +2119,9 @@ function ctx(){
     mciCovered:false, roomDeductAmt:man(roomDeductFromSgg(S.sgg)||2500),
     manualLoanCap:0, bankSelfCap:0, extraFunding:0,
     pyeong:S.pyeong, pyeongEntered:S.pyeong>0,
-    interiorPerPyeong:(S.itTouched && S.pyeong>0) ? S.interior : 0,   /* 직접 만졌을 때만 합산 */
+    /* 칩 단가는 「직접 입력」이 아닐 때만. -1을 평당 단가로 흘리면 음수 비용이 됩니다. */
+    interiorPerPyeong:(S.itTouched && S.pyeong>0 && S.interior>0) ? S.interior : 0,
+    interiorTotal:(S.itTouched && S.interior===IT_CUSTOM && S.itCustom>0) ? S.itCustom : 0,
     etc:etcMan(), over85:S.pyeong*2.45>85, firstTimeTaxCut:false, seominCheck:false };
 }
 function bindingShort(c){
@@ -2015,14 +2141,14 @@ function bindingTip(c, price){
   if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 금액이 올라가요.`;
   const L=c.limits||{};
   if(L.LTV===0 || c.mortgageLoan<=0)
-    return `<b>규제지역에서 집이 이미 있으면 주택담보대출이 막혀요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요. 「지금 없어요」로 바꾸거나 규제지역 밖을 보면 달라져요.`;
+    return `<b>규제지역에서 집이 이미 있으면 주택담보대출이 막혀요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요. 「무주택」으로 바꾸거나 규제지역 밖을 보면 달라져요.`;
   if(c.binding==='DSR'||c.binding==='DTI')
     return `<b>소득이 한도를 정했어요.</b> 은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봐요. ${S.debtMonthly ? '월 '+comma(S.debtMonthly)+'만원 갚는 대출을 반영한 값이에요.' : '<b>갚고 있는 대출이 있다면 02단계에서 넣어 주세요.</b>'}`;
   if(c.binding==='구간한도')
     return `<b>정부 규제 기준이에요.</b> 수도권에서는 집값 구간에 따라 대출 상한이 따로 붙어요. 위 막대의 「정부 상한」이 그 값이에요.`;
   if(c.binding==='LTV'){
     const pct = price>0 ? Math.round(L.LTV/price*100) : 0;
-    return `<b>주택담보대출 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요. 생애최초·비규제지역일수록 이 비율이 높아집니다.`;
+    return `<b>주택담보대출 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요. 생애최초·비규제지역일수록 이 비율이 높아져요.`;
   }
   return `<b>여러 기준 중 가장 작은 값이 한도가 돼요.</b>`;
 }
@@ -2185,10 +2311,10 @@ function renderLimits(c, price){
   }
   $('limitTip').innerHTML = bindingTip(c, price)
     + `<br><br>※ 본 DSR 한도는 입력하신 소득과 기존 대출만을 기준으로 산출되었으므로, 실제 금액은 은행 상담으로 확인해 주세요.`
-    + `<br>※ 시중은행 주담대 기준이에요 — 디딛돌·보금자리론 같은 정책대출을 받을 수 있다면 한도가 더 늘어나요.`
+    + `<br>※ 시중은행 주담대 기준이에요 — 디딤돌·보금자리론 같은 정책대출을 받을 수 있다면 한도가 더 늘어나요.`
     + `<br>※ 금리 연 ${D.rate}% · ${D.years}년 원리금균등 기준이고, 국민주택채권 매입비는 아직 넣지 않았어요.`;
   $('roomTip').innerHTML = c.roomCut>0
-    ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자를 보호하려고 은행이 미리 떼어두는 금액이라, 승인된 한도보다 실제로 나오는 돈이 그만큼 줄어듭니다.`
+    ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자를 보호하려고 은행이 미리 떼어두는 금액이라, 승인된 한도보다 실제로 나오는 돈이 그만큼 줄어들어요.`
     : '';
   $('roomTip').hidden = !(c.roomCut>0);
 }
@@ -2211,20 +2337,95 @@ function renderPkg(){
     $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'모름'; refreshPkg(); };
   r.onchange = () => showResult(true);
   $('interiorChips').innerHTML = INTERIOR.map(o=>
-    `<button class="chip ${S.interior===o.v?'is-on':''}" data-it="${o.v}">${o.label}</button>`).join('');
+    `<button class="chip ${S.interior===o.v?'is-on':''}" data-it="${o.v}" aria-pressed="${S.interior===o.v}">${o.label}</button>`).join('');
   $('interiorChips').querySelectorAll('[data-it]').forEach(b=>b.onclick=e=>{
-    e.preventDefault(); S.itTouched=true; S.interior=+b.dataset.it; showResult(true); });
+    e.preventDefault(); S.itTouched=true; S.interior=+b.dataset.it;
+    /* 직접 입력으로 들어가면 곧바로 칸에 커서를 둡니다 — 한 번 더 누르게 하지 않습니다. */
+    const toCustom = S.interior===IT_CUSTOM;
+    showResult(true);
+    if(toCustom){ const el=$('itInput'); if(el) el.focus({preventScroll:true}); }
+  });
+  bindItInput();
   refreshPkg();
 }
+
+/* 🔴 v24.7 — 인라인 입력. **한 번만 겁니다.**
+   칩을 다시 그릴 때마다 다시 걸면 타이핑 도중 값이 되돌아갑니다. */
+let IT_BOUND = false;
+function bindItInput(){
+  if(IT_BOUND) return;
+  const el = $('itInput'); if(!el) return;
+  IT_BOUND = true;
+  el.addEventListener('input', () => {
+    const digits = (el.value.match(/\d/g) || []).join('').slice(0, 5);   /* 5자리 = 9,999만원대 */
+    const over = (el.value.match(/\d/g) || []).length > 5;
+    setCommaValue(el, digits);
+    fieldErr(el, over ? '인테리어 예산은 99,999만원까지 넣을 수 있어요.' : '');
+    S.itTouched = true;
+    S.itCustom = digits ? parseInt(digits, 10) : null;
+    /* ⚠ 여기서 showResult를 부르면 이 칸이 다시 그려져 커서가 날아갑니다.
+       영수증과 금액만 갱신합니다. */
+    repriceOnly();
+  });
+}
+/* 집값은 이미 잠겨 있습니다(showResult 주석). 인테리어만 바뀌었으므로
+   **영수증과 준비할 현금만** 다시 그립니다 — 화면 전체를 재생성하지 않습니다. */
+function repriceOnly(){
+  const base = ctx();
+  const price = S.priceOverride!=null ? man(S.priceOverride) : S.lockedPrice;
+  if(!(price > 0)) return;
+  const c = calcCosts({...base, price});
+  renderReceipt(c, price);
+  const q = $('itQuote');
+  if(q && !q.hidden) countTo(q, c.interiorCost);
+  /* 🔴 v24.12 — 킥커도 같이 갱신합니다. 직접 입력에 금액이 들어가면
+     「금액을 넣으면 영수증에 더해요」 → 「총 인테리어 예산 · 영수증에 더했어요」로 바뀌어야 합니다.
+     ⚠ textContent만 씁니다. 입력칸을 다시 그리면 타이핑 중 커서가 날아갑니다. */
+  const k = $('itKicker');
+  if(k) k.textContent = (S.itCustom > 0)
+    ? '총 인테리어 예산 · 영수증에 더했어요' : '금액을 넣으면 영수증에 더해요';
+  saveDraft();
+}
 function refreshPkg(){
-  const on = S.itTouched && S.pyeong>0;
-  const py=S.pyeong||25, budget=py*S.interior*10000;
-  $('itQuote').hidden = !on;
-  if(on) countTo($('itQuote'), budget);
-  $('itKicker').textContent = on ? `${py}평 입주 인테리어 예산` : '평형을 정하면 예산이 나와요';
-  $('itTip').innerHTML = on
-    ? `평당 ${comma(S.interior)}만원 기준이에요. 이 금액은 위 영수증에도 더해집니다.`
-    : `<b>지금 영수증에는 인테리어비가 빠져 있어요.</b> 아래 슬라이더로 평형을 정하면 그때 계산에 더합니다.`;
+  const custom = S.interior === IT_CUSTOM;
+  const py = S.pyeong || 25;
+  /* 직접 입력은 총액이라 평형이 없어도 성립합니다. 칩 단가는 평형이 있어야 성립합니다. */
+  const on = S.itTouched && (custom ? S.itCustom > 0 : (S.pyeong > 0 && S.interior > 0));
+  const budget = custom ? (S.itCustom || 0) * 10000 : py * S.interior * 10000;
+
+  $('itEditWrap').hidden = !custom;
+  $('itQuote').hidden = custom || !on;
+  if(custom){
+    const el = $('itInput');
+    /* 타이핑 중에는 건드리지 않습니다 — 커서가 튑니다. */
+    if(el && el !== document.activeElement) el.value = S.itCustom ? comma(S.itCustom) : '';
+  } else if(on) countTo($('itQuote'), budget);
+
+  /* 🔴 v24.12 — 킥커가 **영수증에 들어갔는지**를 말합니다.
+     v24.3에는 「지금 영수증에는 인테리어비가 빠져 있어요」가 굵게 있었는데,
+     v24.8에서 설명을 두 줄로 줄이며 **그 사실을 통째로 날렸습니다.**
+     줄 수를 아끼려고 사용자가 알아야 할 사실을 버린 셈이고, 영수증이 완전하다고
+     오해하는 방향이라 나쁜 교환이었습니다(원칙 28).
+     → 설명(tip)은 **이 시공이 무엇인지**, 킥커는 **영수증에 들어갔는지**. 역할을 갈랐습니다. */
+  $('itKicker').textContent = on
+    ? (custom ? '총 인테리어 예산 · 영수증에 더했어요' : `${py}평 인테리어 예산 · 영수증에 더했어요`)
+    : (custom ? '금액을 넣으면 영수증에 더해요' : '아직 영수증에 없어요 · 평형을 정하면 더해요');
+
+  /* 설명은 **부드럽게 교체**합니다. 툭 바뀌면 바뀐 것을 못 봅니다. */
+  const meta = INTERIOR.find(o => o.v === S.interior);
+  const nextTip = custom ? meta.desc
+    : (S.interior === 0)
+      ? '<b>인테리어비를 계산에 넣지 않습니다.</b> 시공 수준을 고르면 그때 더해요.'
+      /* ⚠ 평형 미정일 때 「평형을 정하면…」을 덧붙이지 않습니다 —
+         바로 위 킥커가 이미 「평형을 정하면 예산이 나와요」라고 말합니다(G-8).
+         덧붙이면 같은 말이 두 번 나오고 설명이 세 줄로 늘어집니다. */
+      : on ? `${meta.desc} 이 금액은 위 영수증에도 더해져요.` : meta.desc;
+  const tipEl = $('itTip');
+  if(tipEl.dataset.txt !== nextTip){
+    tipEl.classList.add('fading');
+    setTimeout(() => { tipEl.innerHTML = nextTip; tipEl.dataset.txt = nextTip;
+                       tipEl.classList.remove('fading'); }, 180);
+  }
   $('outInteriorT').textContent = `${py}평 맞춤 시공 사례와 견적 받아보기`;
   $('outInteriorS').textContent = `같은 평형 포트폴리오를 모아서 봐요`;
   $('outInterior').href = PARTNER.interior || `https://ohou.se/projects?query=${encodeURIComponent(py+'평 아파트')}`;
@@ -2240,7 +2441,46 @@ function refreshPkg(){
       만들 수 있는 취향 칩은 buildYear를 쓰는 **「신축」 하나뿐**입니다.
       없는 값을 지어내지 않습니다 — 지침: 출처를 못 찾으면 넣지 않고 못 찾았다고 말합니다.
    ═══════════════════════════════════════════ */
-const DEAL = { months:3, rows:5, newYears:10, band:0.85, req:0, cache:new Map(), items:null, only:false };
+/* 🔴 v24.14 — 서울 25개 구의 **인접 관계표**.
+   ⚠ **이 표는 API가 주지 않습니다. 제가 만든 것입니다.**
+     실거래가 응답에 좌표가 없어 거리 계산이 불가능합니다(v24.0에서 확인).
+   기준: **행정경계가 맞닿은 구**. 한강 건너편은 **다리로 바로 이어질 때만** 넣었습니다
+        (예: 성동 ↔ 강남, 마포 ↔ 영등포). 「가깝게 느껴지는 곳」이 아니라 경계 기준입니다.
+   🟡 **공식 출처 없음 · 미검증.** 지도로 한 번 대조해 주세요(7장 구멍 목록).
+   ⚠ 검사가 **대칭성**(A의 이웃이면 B의 이웃)과 **최소 2개**를 봅니다 — 오타는 그게 잡습니다.
+     하지만 **틀린 인접**은 못 잡습니다. 사람이 봐야 합니다. */
+const NEARBY = {
+  '11110':['11140','11290','11380','11410','11230'],                    /* 종로 */
+  '11140':['11110','11170','11200','11230','11410'],                    /* 중구 */
+  '11170':['11140','11200','11440','11410','11590','11650'],            /* 용산 */
+  '11200':['11140','11170','11215','11230','11680'],                    /* 성동 */
+  '11215':['11200','11230','11710','11350'],                            /* 광진 */
+  '11230':['11110','11140','11200','11215','11290','11260'],            /* 동대문 */
+  '11260':['11230','11290','11350','11740'],                            /* 중랑 */
+  '11290':['11110','11230','11260','11305','11350'],                    /* 성북 */
+  '11305':['11290','11320','11350'],                                    /* 강북 */
+  '11320':['11305','11350','11380'],                                    /* 도봉 */
+  '11350':['11215','11260','11290','11305','11320'],                    /* 노원 */
+  '11380':['11110','11320','11410','11440','11500'],                    /* 은평 */
+  '11410':['11110','11140','11170','11380','11440'],                    /* 서대문 */
+  '11440':['11170','11380','11410','11500','11560'],                    /* 마포 */
+  '11470':['11500','11530','11560'],                                    /* 양천 */
+  '11500':['11380','11440','11470','11530'],                            /* 강서 */
+  '11530':['11470','11500','11545','11560'],                            /* 구로 */
+  '11545':['11530','11560','11620'],                                    /* 금천 */
+  '11560':['11440','11470','11530','11545','11590','11620'],            /* 영등포 */
+  '11590':['11170','11560','11620','11650'],                            /* 동작 */
+  '11620':['11545','11560','11590','11650'],                            /* 관악 */
+  '11650':['11170','11590','11620','11680'],                            /* 서초 */
+  '11680':['11200','11650','11710'],                                    /* 강남 */
+  '11710':['11215','11680','11740'],                                    /* 송파 */
+  '11740':['11260','11710']                                             /* 강동 */
+};
+/* band     : 예산 이하 구간의 하한 (예산의 85%)
+   overBand : 「조금 더 모으면」 구간의 상한 (예산의 110%)
+   want     : 이만큼 못 채우면 인근 구까지 넓힙니다 */
+const DEAL = { months:3, rows:5, newYears:10, band:0.85, overBand:1.10, want:3,
+               req:0, cache:new Map(), items:null, over:null, only:false, wide:false };
 
 /* 최근 N개월의 YYYYMM. 이번 달은 거래 등록이 늦어 비어 있는 경우가 많아 함께 부릅니다. */
 function recentYmd(n){
@@ -2249,7 +2489,8 @@ function recentYmd(n){
     out.push(t.getFullYear()*100 + (t.getMonth()+1)); }
   return out;
 }
-async function fetchDeals(lawd){
+/* 구 하나의 3개월치. 캐시는 **구 단위**입니다 — 인접 구를 더 부를 때 이미 받은 건 다시 안 부릅니다. */
+async function fetchOne(lawd){
   if(DEAL.cache.has(lawd)) return DEAL.cache.get(lawd);
   const months = recentYmd(DEAL.months);
   const rs = await Promise.all(months.map(ymd =>
@@ -2257,41 +2498,81 @@ async function fetchDeals(lawd){
       .then(r => r.ok ? r.json() : {items:[]})
       .catch(() => ({items:[]}))          /* 한 달이 실패해도 나머지는 씁니다 */
   ));
-  const items = rs.flatMap(r => (r && r.items) || []);
+  /* 어느 구에서 왔는지 붙여 둡니다 — 화면에서 인근 구만 구 이름을 답니다. */
+  const items = rs.flatMap(r => (r && r.items) || []).map(x => ({...x, lawd}));
   DEAL.cache.set(lawd, items);
   return items;
 }
+/* 🔴 v24.14 — **캐스케이드.** 선택한 구에서 충분히 나오면 거기서 멈춥니다.
+   모자랄 때만 인접 구를 더 부릅니다 — 호출을 늘 25배로 쓰지 않습니다.
+   ⚠ 「충분하다」의 기준은 **예산 이하 건수**(DEAL.want)입니다.
+     초과 구간은 사용자가 칩을 켰을 때만 보이므로 여기 세지 않습니다. */
+async function fetchDeals(lawd, priceMan){
+  let items = await fetchOne(lawd);
+  DEAL.wide = false;
+  if(splitDeals(items, priceMan).under.length >= DEAL.want) return items;
+  const near = NEARBY[lawd] || [];
+  if(!near.length) return items;
+  const more = await Promise.all(near.map(code => fetchOne(code)));
+  DEAL.wide = true;
+  return items.concat(...more);
+}
+
 /* 예산 이하 거래만 봅니다. 예산을 넘는 거래를 섞으면 「살 수 있다」로 읽힙니다(원칙 28).
    🔴 **단지 + 전용면적으로 접습니다.** 3개월치를 합치면 같은 단지·같은 평형이 여러 번 나오고,
       화면에 같은 이름·같은 금액이 줄줄이 뜹니다(G-7 「같은 금액 ≤ 2회」에도 걸립니다).
       한 줄이 「그 단지 그 평형의 최근 거래 하나」를 뜻하게 만듭니다. */
-function pickDeals(items, priceMan){
+/* 🔴 v24.14 — 한 목록을 **두 구간으로 가릅니다.**
+     under : 예산의 85% ~ 100%  — 기본으로 보입니다
+     over  : 예산의 100% ~ 110% — **칩을 켰을 때만** 보입니다
+   예산을 넘는 집을 같은 줄에 섞으면 「살 수 있다」로 읽힙니다(원칙 28).
+   섞지 않고, 켠 사람에게만, 그리고 금액 옆에 **차액**을 답니다. */
+function splitDeals(items, priceMan){
   const lo = Math.round(priceMan * DEAL.band);
+  const hi = Math.round(priceMan * DEAL.overBand);
   const thisYear = new Date().getFullYear();
-  const seen = new Map();
-  items
-    .filter(x => x.amountMan >= lo && x.amountMan <= priceMan)
-    .filter(x => !DEAL.only || (x.buildYear && thisYear - x.buildYear <= DEAL.newYears))
-    .forEach(x => {
+  const dedupe = arr => {
+    const seen = new Map();
+    arr.forEach(x => {
       const k = x.name + '|' + (x.areaM2 == null ? '' : x.areaM2);
       const old = seen.get(k);
       const when = n => (n.y||0)*10000 + (n.m||0)*100 + (n.d||0);
       if(!old || when(x) > when(old)) seen.set(k, x);   /* 가장 최근 거래를 남깁니다 */
     });
-  return [...seen.values()].sort((a,b) => b.amountMan - a.amountMan);
+    return [...seen.values()].sort((a,b) => b.amountMan - a.amountMan);
+  };
+  const fresh = x => !DEAL.only || (x.buildYear && thisYear - x.buildYear <= DEAL.newYears);
+  return {
+    under: dedupe(items.filter(x => x.amountMan >= lo && x.amountMan <= priceMan).filter(fresh)),
+    over:  dedupe(items.filter(x => x.amountMan >  priceMan && x.amountMan <= hi).filter(fresh))
+  };
 }
-function dealLine(x){
+
+/* 🔴 v24.14 — 인근 구에서 온 줄만 **구 이름을 답니다.** 안내 문구는 두지 않습니다 —
+   구 이름이 보이면 사람은 압니다. 선택한 구의 줄에는 아무것도 안 붙습니다(소음).
+   예산 초과 줄에는 금액 옆에 **차액**만 답니다. 「+1억 2,000만원」이 아니라 「+1.2억」 수준으로 짧게. */
+function dealLine(x, priceMan){
   const area = x.areaM2 ? `${x.areaM2}㎡` : '';
-  const sub = [x.dong, area, x.buildYear ? `${x.buildYear}년` : ''].filter(Boolean).join(' · ');
+  const gu = (x.lawd && x.lawd !== S.sgg) ? sggName(x.lawd) : '';
+  const sub = [gu ? gu + ' ' + (x.dong||'') : x.dong, area, x.buildYear ? `${x.buildYear}년` : '']
+    .filter(Boolean).join(' · ');
+  const gap = (priceMan && x.amountMan > priceMan)
+    ? `<u>+${approxWon((x.amountMan - priceMan) * 10000)}</u>` : '';
   return `<div class="deal"><div class="nm">${esc(x.name)}<small>${esc(sub)}</small></div>`
-       + `<div class="amt">${formatWon(x.amountMan*10000)}</div></div>`;
+       + `<div class="amt">${formatWon(x.amountMan*10000)}${gap}</div></div>`;
 }
 const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function paintDeals(priceMan){
   const list=$('dealList'), lead=$('dealLead'), foot=$('dealFoot'), chips=$('dealChips');
-  const rows = pickDeals(DEAL.items || [], priceMan);
+  const {under, over} = splitDeals(DEAL.items || [], priceMan);
   chips.hidden = !(DEAL.items && DEAL.items.length);
+  /* 🔴 v24.14 — 「+10%까지」를 켜면 초과분에 **자리를 비워 줍니다.**
+     그냥 뒤에 잇기만 하면 5행 상한에서 잘려 **켜도 화면이 안 바뀝니다**(고장으로 보입니다).
+     ⚠ 총 행 수는 그대로 5입니다 — 칩을 켠다고 목록이 길어지지 않습니다. */
+  const keep = DEAL.over ? Math.min(2, over.length) : 0;
+  const rows = keep ? under.slice(0, DEAL.rows - keep).concat(over.slice(0, keep)) : under;
+  const total = under.length + (DEAL.over ? over.length : 0);
   if(!rows.length){
     list.innerHTML = `<p class="deal-msg">${DEAL.only
       ? '최근 3개월 안에 <b>이 예산대 신축 거래가 없어요.</b>'
@@ -2299,9 +2580,11 @@ function paintDeals(priceMan){
     foot.textContent = '지역이나 예산을 바꾸면 달라질 수 있어요.';
     return;
   }
-  list.innerHTML = rows.slice(0, DEAL.rows).map(dealLine).join('');
-  lead.textContent = `${regionLabel()} · 최근 3개월 · ${rows.length}건`;
-  foot.textContent = '국토교통부 실거래가입니다. 해제된 거래는 뺐어요.';
+  list.innerHTML = rows.slice(0, DEAL.rows).map(x => dealLine(x, priceMan)).join('');
+  /* 인근 구까지 봤으면 그 사실만 한 마디. 어느 구인지는 각 줄이 말합니다. */
+  lead.textContent = (DEAL.wide ? `${regionLabel()}와 인근 구` : regionLabel())
+    + ` · 최근 3개월 · ${total}건`;
+  foot.textContent = '국토교통부 실거래가예요. 해제된 거래는 뺐어요.';
 }
 
 function renderDeals(price){
@@ -2315,22 +2598,24 @@ function renderDeals(price){
   $('dealList').innerHTML = '<p class="deal-msg">불러오는 중이에요…</p>';
   $('dealFoot').textContent = '';
   $('dealChips').hidden = true;
-  fetchDeals(lawd).then(items => {
+  fetchDeals(lawd, priceMan).then(items => {
     if(my !== DEAL.req) return;
     DEAL.items = items;
-    if(!items.length){ card.hidden = true; return; }   /* 아무것도 못 받으면 카드를 지웁니다 */
+    /* 못 받았든 0건이든 **카드를 지웁니다.** 빈 카드도, 남의 사이트로 보내는 링크도 두지 않습니다. */
+    if(!items.length){ card.hidden = true; return; }
     paintDeals(priceMan);
   }).catch(() => { if(my === DEAL.req) card.hidden = true; });
 
-  const btn=$('dealNew');
-  btn.classList.toggle('is-on', DEAL.only);
-  btn.setAttribute('aria-pressed', String(DEAL.only));
-  btn.onclick = e => { e.preventDefault();
-    DEAL.only = !DEAL.only;
-    btn.classList.toggle('is-on', DEAL.only);
-    btn.setAttribute('aria-pressed', String(DEAL.only));
-    paintDeals(priceMan);
+  /* 칩 둘은 같은 방식으로 돕니다 — 상태를 켜고, 다시 그리기만. 새 부품을 만들지 않습니다. */
+  const bindChip = (id, get, set) => {
+    const btn = $(id); if(!btn) return;
+    const paint = () => { btn.classList.toggle('is-on', get());
+                          btn.setAttribute('aria-pressed', String(get())); };
+    paint();
+    btn.onclick = e => { e.preventDefault(); set(!get()); paint(); paintDeals(priceMan); };
   };
+  bindChip('dealNew',  () => DEAL.only, v => DEAL.only = v);
+  bindChip('dealOver', () => DEAL.over, v => DEAL.over = v);
 }
 
 function renderOutlinks(price){
@@ -2338,10 +2623,18 @@ function renderOutlinks(price){
   const band=Math.floor(price/100000000*10)/10;
   /* 🔴 v23.21 — 지역명을 뺐습니다. 바로 위 조건 칩에 「지역 서울 성동구」가 이미 있어
      2×2 바둑판 안에서 같은 말이 두 줄을 만들고 있었습니다(원칙 43 · 34). */
+  /* ⏹ v24.13 — v24.8에서 「지금 나온 매물 보기 / 네이버 부동산」으로 바꿨다가 **되돌렸습니다.**
+     되돌린 이유: 홈으로만 보내면 **예산대 필터가 사라져** 사용자가 할 일이 남습니다.
+       제목도 「지금 나온 매물 보기」는 어느 예산인지 말하지 않아 정보가 없습니다.
+     ⚠ 「추천」이 포지셔닝(우리는 추천하지 않는다)과 부딪힌다고 한 번 말씀드렸고,
+       기존대로 가기로 정해졌습니다. 다시 뒤집지 마세요 — 정해진 사항입니다. */
   $('outNaverT').textContent=`${band}억대 추천 단지 보기`;
   $('outNaverS').textContent=`네이버 부동산에서 이 예산대를 봐요`;
   $('outHogangT').textContent=`실거래가 확인하기`;
   /* 🔴 앵커는 href만 채웁니다. onclick으로 열지 않습니다(인앱 브라우저에서 막힙니다). */
+  /* 🔴 앵커는 href만 채웁니다. onclick으로 열지 않습니다(인앱 브라우저에서 막힙니다).
+     🟡 이 검색 주소는 **이 작업 환경에서 열어 확인하지 못했습니다**(7장 구멍 목록).
+        배포 후 실기에서 한 번 눌러 보세요 — 빈 화면이면 그때 홈으로 바꾸면 됩니다. */
   $('outNaver').href  = `https://new.land.naver.com/search?sk=${q}`;
   $('outSave').onclick   = e => { e.preventDefault(); saveImage(); };
 
@@ -2372,7 +2665,7 @@ function summaryText(){
   if(!LASTVIEW) return '';
   const {headline, isOverride} = LASTVIEW;
   const head = isOverride
-    ? `[영끌자금 리포트] ${regionLabel()}에서 이 집을 사려면 현금 ${approxWon(headline)} 선이 필요해요!`
+    ? `[영끌자금 리포트] ${regionLabel()}에서 이 집을 사려면 현금 ${approxWon(headline)} 선이 필요해요.`
     : `[영끌자금 리포트] 현금 ${formatWon(man(S.cash))}으로 ${regionLabel()} 예상 매수 가능 금액은 약 ${approxWon(headline)} 선이에요.`;
   return `${head}\n(※ 단순 시뮬레이션 추정치)\n${SERVICE_URL}`;
 }
@@ -2394,7 +2687,7 @@ async function copySummary(){
 }
 async function saveImage(){
   const btn=$('outSave'), t=btn.querySelector('b'), o=t.textContent;
-  t.textContent='이미지 만드는 중...';
+  t.textContent='이미지 만드는 중이에요…';
   try{
     const canvas=await html2canvas($('reportCard'),{backgroundColor:null,scale:2,useCORS:true});
     canvas.toBlob(async blob=>{
@@ -2460,7 +2753,7 @@ window.__selfcheck = function(){
     '--green':'#00CA71','--line':'#E5E8EB','--fill':'#F2F4F6'};
   const cs=getComputedStyle(document.documentElement);
   const drift=Object.keys(LOCK).filter(k=>cs.getPropertyValue(k).trim().toUpperCase()!==LOCK[k]);
-  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v24.3 그대로');
+  ok('디자인 락 유지', drift.length===0, drift.join(', ')||'v24.14 그대로');
 
   const cs2=getComputedStyle(document.documentElement);
   const L=h=>{h=(h||'').trim().replace('#','');if(h.length!==6)return null;
@@ -2526,22 +2819,76 @@ window.__selfcheck = function(){
   } else { boxDrift='🟡 측정 대상 0 — 칩이 있는 화면에서 다시 실행하세요'; }
   ok('G-17 선택해도 칩 상자가 안 커진다', boxOk, boxDrift);
 
-  /* 🔴 G-18 (v24.3) — 헬퍼가 **한 줄**인가.
+  /* 🔴 G-18 (v24.3 · v24.6에서 넓힘) — 설명 글이 **정해진 줄 수 안**인가.
      node test.js는 이걸 못 봅니다. 글자 수는 지표가 아닙니다 — 폭이 지표입니다.
      같은 32자라도 공백·중점(·)이 많으면 들어가고, 받침 많은 한글만이면 넘칩니다.
      실제로 v24.3에서 32자 두 개 중 하나만 두 줄이 됐습니다.
-     헬퍼가 두 줄이 되면 입력칸과 빠른 추가 칩 사이가 벌어져 덩어리가 흐려집니다.
+
+     🔴 v24.6 — 헬퍼만 보던 것을 **표**로 넓혔습니다.
+       면책(`.legal`)은 `test.js`가 「한 줄이다」라고 잠그고 있었는데,
+       그 검사는 면책 **블록의 개수**를 세고 있었습니다. 개수는 1이라 늘 초록이었고,
+       실제 화면은 360 · 390 · 430px **전부 두 줄**이었습니다. 여섯 판을 그렇게 갔습니다.
+       줄 수를 말하는 락은 줄 수를 재야 합니다(원칙 99).
+
+     상한의 근거
+       .helper  1줄 — 두 줄이 되면 입력칸과 빠른 추가 칩 사이가 벌어져 덩어리가 흐려집니다
+       .legal   2줄 — 내용을 줄일 수 없는 글입니다(정책대출 미반영·DSR 근거가 걸려 있음).
+                      **줄일 것은 문장이 아니라 줄 수**이고, 두 줄이 그 하한입니다.
      ⚠ 좁은 폭에서 재야 의미가 있습니다 — 360px에서 돌리세요. */
-  const helpers=[...document.querySelectorAll('.helper')].filter(el=>el.offsetParent);
-  const wrapped=helpers.filter(el=>{
-    const lh=parseFloat(getComputedStyle(el).lineHeight);
-    if(!Number.isFinite(lh) || lh<=0) return false;
-    return Math.round(el.getBoundingClientRect().height / lh) > 1;
+  const LINEMAX=[['.helper',1],['#result .legal',2]];
+  const lineOver=[], lineTally=[];
+  LINEMAX.forEach(([sel,max])=>{
+    let seen=0;
+    [...document.querySelectorAll(sel)].filter(el=>el.offsetParent).forEach(el=>{
+      const lh=parseFloat(getComputedStyle(el).lineHeight);
+      if(!Number.isFinite(lh) || lh<=0) return;
+      seen++;
+      const n=Math.round(el.getBoundingClientRect().height / lh);
+      if(n>max) lineOver.push(sel+' 「'+el.textContent.trim().slice(0,12)+'…」 '+n+'줄 (상한 '+max+')');
+    });
+    /* ⚠ **선택자별로** 적습니다. 합계만 적으면 한쪽이 0개여도 「n개 확인」으로 보입니다 —
+       결과 화면엔 .helper가 0개, 입력 화면엔 .legal이 0개입니다. 합계는 늘 초록입니다. */
+    lineTally.push(sel+' '+seen+'개'+(seen?'':' 🟡'));
   });
-  ok('G-18 헬퍼가 한 줄이다', wrapped.length===0,
-     wrapped.length ? wrapped.map(el=>'「'+el.textContent.trim().slice(0,14)+'…」').join(', ')+' 두 줄'
-     : helpers.length ? helpers.length+'개 확인 (창 폭 '+Math.round(document.documentElement.clientWidth)+'px)'
-     : '🟡 측정 대상 0 — 입력 01·02에서 다시 실행하세요');
+  ok('G-18 설명 글이 줄 수 상한 안이다', lineOver.length===0,
+     lineOver.length ? lineOver.join(' / ')
+     : lineTally.join(' · ')+' (창 폭 '+Math.round(document.documentElement.clientWidth)+'px)'
+       + (lineTally.some(t=>/🟡/.test(t)) ? ' — 🟡 0개인 쪽은 다른 화면에서 다시 실행하세요' : ''));
+
+  /* 🔴 G-19 (v24.7) — **보이는 모든 글자**의 대비를 렌더에서 잽니다.
+     G-16은 입력 「면」만, 공유 카드 검사는 `.report-*` 토큰만 봤습니다.
+     화면 본문 글자는 아무도 안 보고 있었고, 그래서 `.barlabel`이 배경 위에서
+     4.19:1인 것을 여섯 판 동안 못 봤습니다.
+     ⚠ **알파를 합성해야 합니다.** rgba(25,31,40,.04) 틴트를 불투명으로 읽으면
+       1.51:1 같은 헛값이 나옵니다 — 이 검사를 쓰다가 실제로 한 번 속았습니다. */
+  const _p=c=>{const m=(c||'').match(/[\d.]+/g); return m?{r:+m[0],g:+m[1],b:+m[2],a:m[3]!==undefined?+m[3]:1}:null;};
+  const _ov=(f,b)=>({r:f.r*f.a+b.r*(1-f.a),g:f.g*f.a+b.g*(1-f.a),b:f.b*f.a+b.b*(1-f.a),a:1});
+  const _bg=el=>{ let acc=null;
+    for(let n=el;n;n=n.parentElement){ const c=_p(getComputedStyle(n).backgroundColor);
+      if(!c||c.a===0) continue; acc=acc?_ov(acc,c):c; if(c.a>=1) break; }
+    return acc?_ov(acc,{r:255,g:255,b:255,a:1}):{r:255,g:255,b:255,a:1}; };
+  const _L=o=>{const c=[o.r,o.g,o.b].map(v=>{let x=v/255;return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)});
+    return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+  const lowC=[]; let textSeen=0, skipDis=0;
+  document.querySelectorAll('*').forEach(el=>{
+    if(!el.offsetParent || el.closest('.reportwrap')) return;   /* 공유 카드는 화면 밖 — 별도 검사 */
+    const t=[...el.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim());
+    if(!t.length) return;
+    /* ⚠ 비활성 컨트롤은 WCAG 1.4.3 예외입니다(비활성 「다음」이 3.75:1).
+       다만 **조용히 넘기지 않고 개수를 찍습니다** — 예외가 늘어나는 것을 보이게 둡니다. */
+    if(el.disabled || el.getAttribute('aria-disabled')==='true'
+       || el.closest('[disabled],[aria-disabled="true"]')){ skipDis++; return; }
+    const cs=getComputedStyle(el), fs=parseFloat(cs.fontSize);
+    const fg=_p(cs.color); if(!fg) return;
+    textSeen++;
+    const cr=(Math.max(_L(fg),_L(_bg(el)))+.05)/(Math.min(_L(fg),_L(_bg(el)))+.05);
+    const need=((fs>=18.66&&+cs.fontWeight>=700)||fs>=24)?3:4.5;
+    if(cr<need) lowC.push('「'+t.map(n=>n.textContent.trim()).join('').slice(0,10)+'」 '+cr.toFixed(2)+':1<'+need);
+  });
+  ok('G-19 화면 글자 대비 충족', lowC.length===0,
+     lowC.length ? lowC.slice(0,4).join(' / ')
+     : textSeen ? textSeen+'개 확인'+(skipDis?' · 비활성 '+skipDis+'개 제외(WCAG 예외)':'')
+     : '🟡 측정 대상 0 — 글자가 있는 화면에서 다시 실행하세요');
 
   const dark=document.querySelectorAll('#result .pkg, #result .hero').length;
   ok('화면에 다크 카드 없음', dark===0, dark+'개');
