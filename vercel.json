@@ -1,6 +1,7 @@
 {
   "cleanUrls": true,
-  "rewrites": [
-    { "source": "/", "destination": "/yeongkkeul-calculator.html" }
+  "redirects": [
+    { "source": "/rent", "destination": "/", "permanent": false },
+    { "source": "/rent.html", "destination": "/", "permanent": false }
   ]
 }
