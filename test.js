@@ -1189,17 +1189,40 @@ HYGIENE.forEach(([name, over]) => {
      const src = fs.readFileSync(FILE,'utf8');
      return /rt\.molit\.go\.kr/.test(src) && !/hogangnono/.test(src);
   })());
-  /* ⏹ v24.13 — 네이버는 **예산대 검색 주소**로 되돌렸습니다.
-     홈으로만 보내면 예산대 필터가 사라져 사용자가 할 일이 남습니다.
-     🟡 이 주소는 작업 환경에서 열어 확인하지 못했습니다 — 배포 후 실기 확인 필요(7장).
-     ⚠ 「추천」이 포지셔닝과 부딪힌다고 한 번 말씀드렸고 **기존대로 가기로 정해졌습니다.** */
-  tt('네이버가 예산대 검색으로 간다', (()=>{
-     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
-     return /outNaver'\)\.href\s*=\s*`https:\/\/new\.land\.naver\.com\/search\?sk=\$\{q\}`/.test(src);
+  /* 🔴 v24.16 — **실기에서 눌러 보고 되돌렸습니다**(2026.08.12).
+     `new.land.naver.com`은 `fin.land.naver.com`으로 리다이렉트되면서 **`?sk=`를 버립니다.**
+     도착지는 「MY」 탭(개인화 화면)이었습니다. 「이 예산대를 봐요」가 지키지 못하는 약속이 됐습니다.
+     ⚠ 이 검사가 잠그는 것은 **주소가 아니라 약속과 도착지의 일치**입니다 —
+       예산대를 약속하는 문구가 되살아나면 실패해야 합니다(원칙 39). */
+  tt('네이버 칸이 지키지 못할 예산대를 약속하지 않는다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return /outNaver'\)\.href\s*=\s*`https:\/\/fin\.land\.naver\.com\//.test(src)
+         && !/new\.land\.naver\.com/.test(src)
+         && !/sk=/.test(src)
+         && !/억대 추천 단지 보기/.test(src)
+         && !/이 예산대를 봐요/.test(src);
   })());
   /* 🔴 v23.27 — 밖으로 나가는 링크는 **진짜 앵커**여야 합니다.
      스크립트로 연 창은 인앱 브라우저(카톡·인스타)에서 막히거나 같은 탭에 뜹니다.
      같은 탭에 뜨면 뒤로가기에서 페이지가 다시 로드되고, 사용자는 계산을 잃습니다. */
+  /* 🆕 v24.16 — **밖으로 나가는 도메인의 전수를 잠급니다.**
+     남의 주소는 우리 코드가 아닙니다 — 도메인이 바뀌어도 에러가 안 나고, 검사는 문자열이 있는지만 봅니다.
+     `new.land.naver.com`이 조용히 죽어 있던 것을 **실기로 눌러 보기 전까지 아무도 몰랐습니다.**
+     여기 없는 도메인이 들어오면 실패합니다 — 그때 **실기 확인 목록에 같이 올리라는 신호**입니다. */
+  tt('밖으로 나가는 도메인이 확인된 것뿐이다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     const OK = ['fin.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com'];
+     const hosts = [...new Set([...src.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m=>m[1].toLowerCase()))]
+       .filter(h => !/^(www\.)?w3\.org$/.test(h) && !/googletagmanager|google-analytics|noah-choi\.vercel\.app/.test(h));
+     return hosts.every(h => OK.includes(h));
+  })(), (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     const OK = ['fin.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com'];
+     const bad = [...new Set([...src.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m=>m[1].toLowerCase()))]
+       .filter(h => !/^(www\.)?w3\.org$/.test(h) && !/googletagmanager|google-analytics|noah-choi\.vercel\.app/.test(h))
+       .filter(h => !OK.includes(h));
+     return bad.length ? ('미확인 도메인: '+bad.join(' · ')) : '';
+  })());
   tt('밖으로 나가는 넷이 전부 앵커다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      return ['outNaver','outHogang','outInterior','outMove'].every(id =>
@@ -1262,6 +1285,46 @@ HYGIENE.forEach(([name, over]) => {
      !/\[출시-후-도메인-연결-예정\]/.test(UI)
      && /const SERVICE_URL = 'https:\/\/[^'\[\]]+';/.test(UI));
   /* 🔴 v24.15 — 카드의 실거래 블록. **없을 때 안 그리는 것**이 요점입니다(원칙 53). */
+
+  /* ═══ v24.16 — 표시가 화면보다 덜 말하지 않게 잠급니다 ═══════════
+     ⚠ 아래 셋은 **주석을 지운 소스**로 봅니다(원칙 66). 이 파일과 본체의 설명 주석에
+       옛 문자열이 그대로 인용돼 있어, 원문으로 보면 부정 검사가 전부 헛돕니다. */
+  (() => {
+    const src = UI.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    /* 진단서는 **화면을 본 적 없는 사람**에게 전달됩니다. 거래가 모자라면 인근 구까지 넓히는데,
+       카드 맨 위의 지역은 사용자가 고른 구 하나뿐입니다. 구 이름을 안 달면
+       남의 구 거래가 그 구 거래로 읽힙니다(2026.08.12 실물 확인 · 종로구 카드에 성북·서대문). */
+    const body = (src.match(/function paintReportDeals[\s\S]*?\n\}/) || [''])[0];
+    tt('진단서 실거래 줄이 인근 구 이름을 단다',
+       /x\.lawd\s*!==\s*S\.sgg/.test(body) && /sggName\(x\.lawd\)/.test(body),
+       body ? '' : 'paintReportDeals를 못 찾음');
+    /* 화면(dealLine)과 **같은 규칙**이어야 합니다. 한쪽만 고치면 다음에 또 갈립니다. */
+    const line = (src.match(/function dealLine[\s\S]*?\n\}/) || [''])[0];
+    tt('진단서와 화면이 같은 규칙으로 구 이름을 판단한다',
+       /x\.lawd\s*!==\s*S\.sgg/.test(line) && /x\.lawd\s*!==\s*S\.sgg/.test(body));
+
+    /* 영수증의 기타비용. 이름 안에 이미 가운뎃점이 있어, 이름들을 ' · '로 이으면
+       세 항목이 여섯으로 읽힙니다. **켠 것마다 한 줄**이 원래 모양입니다. */
+    tt('영수증 기타비용이 항목별 한 줄이다',
+       /const ETC_ROWS\s*=/.test(src) && /ETC_ROWS\.forEach/.test(src) && !/etcLabel\s*\(/.test(src));
+    /* 순서가 어긋나면 영수증과 「부대비용 상세 설정」을 눈으로 대조할 수 없습니다. */
+    /* ⚠ 스위치는 **마크업**에 있습니다. `UI`는 BUILD 줄 뒤의 스크립트만 담으므로
+         여기서는 파일 전문을 다시 읽습니다(이걸 놓쳐 검사가 한 번 헛돌았습니다). */
+    tt('기타비용 순서가 상세 설정 스위치 순서와 같다', (() => {
+       const full = fs.readFileSync(FILE, 'utf8');
+       const m = src.match(/const ETC_ROWS\s*=\s*\[([\s\S]*?)\];/);
+       if(!m) return false;
+       const keys = [...m[1].matchAll(/\['(\w+)'/g)].map(x => x[1]).join(',');
+       const sws  = [...full.matchAll(/id="sw(Legal|Move|Appl)"/g)].map(x => x[1].toLowerCase()).join(',');
+       return keys === 'legal,move,appl' && sws === 'legal,move,appl';
+    })());
+
+    /* 인테리어 카드. 킥커가 「영수증에 더했어요」를 말하는데 설명 꼬리도 같은 말을 했습니다.
+       이 함수가 스스로 갈라 둔 역할(설명=무엇인지 / 킥커=영수증에 들어갔는지)을 지킵니다. */
+    tt('인테리어 설명이 킥커와 같은 말을 하지 않는다', !/영수증에도 더해져요/.test(src));
+    tt('인테리어 킥커는 영수증 반영 여부를 계속 말한다', /영수증에 더했어요/.test(src));
+  })();
+
   /* 🔴 v24.15 — 인접 구 표. 좌표가 없어 **손으로 적은 표**라 구조 검사만으로는 부족합니다.
      대조에서 실제로 다섯 줄이 틀렸습니다. **확인된 것을 값으로 잠급니다** —
      다음 사람이 「정리했다」는 문장만 보고 넘기지 않도록. */
@@ -1570,7 +1633,7 @@ HYGIENE.forEach(([name, over]) => {
      const spans = m[0].match(/<\/b><span>/g)||[];
      /* 네이버 칸의 span은 비어 있고 JS가 채웁니다 — 칸 수보다 하나 적게 셉니다. */
      return cards.length === 4 && spans.length >= 3
-         && /outNaverS'\)\.textContent=`네이버 부동산에서 이 예산대를 봐요`/.test(bare);
+         && /outNaverS'\)\.textContent=`예산 조건은 넘어가지 않아요`/.test(bare);
   })());
 
   tt('G-18이 면책 줄 수도 본다', (()=>{
