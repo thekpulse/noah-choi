@@ -1043,14 +1043,18 @@ HYGIENE.forEach(([name, over]) => {
      return BAN.every(w => !UI_BARE.includes(w));
   })(), (()=>{ const BAN=['정확한 금액','살짝','크게 올라','완벽','충분히','어느 정도','대략적으로'];
      return BAN.filter(w=>UI_BARE.includes(w)).join(', ')||'없음'; })());
-  tt('연소득을 묻는 이유가 화면에 있다', /소득 대비 대출 규제\(DSR\)에 쓰여요/.test(UI));
+  /* 🔴 v24.19 — 문장 전체를 잠그고 있었습니다(원칙 48). 360px에서 두 줄이라 줄여야 했는데
+     이 락이 막고 있었습니다. 잠글 것은 **「왜 묻는지가 화면에 있는가」**입니다. */
+  tt('연소득을 묻는 이유가 화면에 있다', /규제\(DSR\)에 쓰여요/.test(UI));
   /* 🔴 v24.5 — 원칙 0(약어 단독 금지)은 화면 어디서나 유효합니다.
      결과 화면은 G-3이 봅니다. **입력 화면은 아무도 안 보고 있었습니다.** */
   tt('입력 화면의 DSR에 한글 설명이 붙어 있다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const m = src.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
      if(!m) return false;
-     return !/DSR/.test(m[1]) || /소득 대비 대출 규제\(DSR\)/.test(m[1]);
+     /* 🔴 v24.19 — 기준선은 __selfcheck의 G-3과 **같은 것**을 씁니다: 「규제(DSR)」.
+        앞에 무슨 말이 더 붙는지는 문장의 문제이지 원칙 0의 문제가 아닙니다. */
+     return !/DSR/.test(m[1]) || /규제\(DSR\)/.test(m[1]);
   })());
   /* 🔴 v24.5 — DSR의 핵심 규칙(연소득의 몇 %)이 상시로 보이는 자리에 있어야 합니다.
      이전에는 결과 화면에서 `binding`이 DSR·DTI일 때만 나왔습니다 — 다른 게 걸리면
@@ -1154,12 +1158,24 @@ HYGIENE.forEach(([name, over]) => {
      return src.slice(Math.max(0, a-1200), a+1200).includes('id="roomTip"');
   })());
   /* 🔴 v23.23 — 퍼널(02)에 「항목별로 더하기」 아코디언이 하나 생겼습니다.
-     이 락이 지키려던 것은 **결과 화면**의 밀도입니다. 그쪽만 셉니다. */
-  tt('결과 화면 아코디언은 2종 (부대비용 · 한도)', (()=>{
+     이 락이 지키려던 것은 **결과 화면**의 밀도입니다. 그쪽만 셉니다.
+     🔴 v24.19 — 2종 → **3종**. 인테리어 카드를 접었습니다(노아초이님 요청).
+       ⚠ 숫자만 올린 것이 아닙니다 — **셋이 같은 문법을 쓰는지**를 아래에서 함께 봅니다.
+         접기가 늘 때마다 새 클래스를 만들면 결과 화면에 접기 문법이 둘이 됩니다. */
+  tt('결과 화면 아코디언은 3종 (부대비용 · 한도 · 인테리어)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
-     return (res.match(/class="disc"/g)||[]).length === 2;
+     return (res.match(/class="disc"/g)||[]).length === 3;
   })());
+  /* 인테리어는 **닫힌 채로 시작합니다.** 기본값이 열림이면 접은 의미가 없습니다. */
+  tt('인테리어 접기가 셋과 같은 문법이다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /class="disc" id="itToggle"[^>]*aria-controls="itBox"/.test(src)
+         && /class="costbox" id="itBox"/.test(src)
+         && /\['itToggle','itBox','itOpen'\]/.test(src);
+  })());
+  tt('인테리어는 닫힌 채로 시작한다',
+     /itOpen:\s*false/.test(fs.readFileSync(FILE,'utf8')));
   tt('퍼널 아코디언은 1종 (항목별 더하기)',
      (UI.match(/class="disc" id="debtPartsToggle"/g)||[]).length === 1);
   tt('「다른 집값으로 계산하기」가 없다',
@@ -1484,7 +1500,9 @@ HYGIENE.forEach(([name, over]) => {
      이름을 사실대로 바꿉니다. **렌더된 줄 수는 G-18이 봅니다**(상한 2줄). */
   /* 🔴 v24.7 — 「면책 블록이 하나다」(=== 1)가 이 검사를 완전히 포섭합니다.
      이 줄은 **단독으로 🔴가 될 수 없어** 지웠습니다(99-b). 상한이 필요하면 그 검사를 고치세요. */
-  tt('정책 변동 고지가 있다', /정부 정책 변화 및 은행 심사 기준에 따라/.test(UI));
+  /* 🔴 v24.19 — 문장 그대로가 아니라 **사실 둘**을 봅니다. 360px 세 줄을 두 줄로 줄이면서
+     「변화 및」이 「과」로 바뀌었는데, 고지의 내용은 한 글자도 안 줄었습니다(원칙 48). */
+  tt('정책 변동 고지가 있다', /정부 정책/.test(UI) && /은행 심사/.test(UI));
   tt('DSR·정책대출 안내는 한도 아코디언으로', /limitTip'\)\.innerHTML = bindingTip[\s\S]{0,300}본 DSR 한도/.test(UI));
 
   /* v23.10 — 마커가 오른쪽 텍스트를 덮던 버그 · 플로팅 독 · 칩 틴트 */
@@ -1650,8 +1668,16 @@ HYGIENE.forEach(([name, over]) => {
      const src = fs.readFileSync(FILE,'utf8');
      return /\['#result \.legal',2\]/.test(src) && /LINEMAX/.test(src);
   })());
-  tt('면책 한 줄에 추정치 · 정책 변동이 모두 들어 있다',
-     /본 결과는 시뮬레이션 추정치이며, 정부 정책 변화 및 은행 심사 기준에 따라/.test(UI));
+  /* 🔴 v24.19 — 소스 문자열을 통째로 잠그고 있었습니다(원칙 48 — 2-6장에서 이미 세 번 걸린 형태).
+     360px에서 세 줄이라 문장을 줄여야 하는데, 이 락이 「줄이면 빨개진다」로 막고 있었습니다.
+     → **문장이 아니라 사실 넷을 잠급니다** — 추정치 · 정부 정책 · 은행 심사 · 한도와 세금. */
+  tt('면책에 추정치 · 정책 · 은행 심사 · 한도와 세금이 모두 들어 있다', (()=>{
+     const m = UI.match(/<span class="legal">([\s\S]*?)<\/span>/);
+     if(!m) return false;
+     const t = m[1];
+     return /추정치/.test(t) && /정부 정책/.test(t) && /은행 심사/.test(t)
+         && /한도/.test(t) && /세금/.test(t);
+  })());
   /* 바로 위 조건 칩이 이미 지역을 말합니다. 2×2 칸에서 지역명이 두 줄을 만들었습니다. */
   tt('다음 걸음 문구에 지역명을 반복하지 않는다',
      !/\$\('outNaverT'\)\.textContent=`\$\{region\}/.test(UI)
@@ -2053,6 +2079,89 @@ HYGIENE.forEach(([name, over]) => {
      const tail = m[1].split('국민주택채권')[1] || '';
      return !/\d+\s*만원|\d+\s*백만/.test(tail);
   })());
+})();
+
+/* ═══ v24.19 — 🔴 템플릿 리터럴 안의 주석 ═════════════════════════
+   v24.18은 첫 화면에 **주석을 그대로 찍어서** 배포됐습니다.
+
+     h = eye + `<h2>…</h2>
+       (슬래시-별) 🔴 v24.18 — 전: 「대출 없이 살 거예요」 … (별-슬래시)   ← 이 글자가 화면에 나갔습니다
+       <label>…`
+
+   슬래시-별 기호는 **문자열 안에서 주석이 아니라 글자**입니다.
+   기존 검사 491개가 전부 초록이었습니다 — 계산은 멀쩡했고, 화면 문자열 검사도
+   「~습니다」를 소스에서 찾다가 이 자리를 지나쳤습니다.
+   __selfcheck()가 잡을 수 있었지만 **세 판 연속 안 돌렸습니다**(브라우저가 없었음).
+
+   → 그래서 여기서 잡습니다. 브라우저 없이, 소스만으로.
+
+   ⚠ 이 검사는 **자바스크립트를 한 글자씩 읽습니다.** 문자열 · 주석 · 정규식을
+     구분해야 템플릿 리터럴의 「안」을 알 수 있습니다. 정규식은 앞 토큰으로 판별합니다.
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const html = fs.readFileSync(FILE, 'utf8');
+  const blocks = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)];
+
+  /* 템플릿 리터럴 안에 들어간 주석 기호를 모읍니다 */
+  function leaks(src){
+    const out = [];
+    const tpl = [];              /* 템플릿 리터럴 중첩 스택 — ${ } 안에 또 리터럴이 옵니다 */
+    let prev = '';               /* 직전 유효 문자 — 정규식이냐 나눗셈이냐를 가릅니다 */
+    let i = 0;
+    while (i < src.length) {
+      const c = src[i], n = src[i+1];
+      /* 🔴 템플릿 리터럴 「안」이 먼저입니다. 여기서는 주석도 문자열도 정규식도 없고,
+         `${` 와 종료 백틱만 특별합니다. 이 순서를 바꾸면 검사가 스스로 주석을 먹습니다. */
+      if (tpl.length && tpl[tpl.length-1] === 'tpl') {
+        if (c === '\\') { i += 2; continue; }
+        if (c === '`') { tpl.pop(); i++; prev = '`'; continue; }
+        if (c === '$' && n === '{') { tpl.push('expr'); i += 2; prev = '{'; continue; }
+        if ((c === '/' && n === '*') || (c === '*' && n === '/')) {
+          out.push({ line: src.slice(0, i).split('\n').length,
+                     text: src.slice(i, i+60).replace(/\s+/g, ' ') });
+          i += 2; continue;
+        }
+        i++; continue;
+      }
+      if (c === '/' && n === '/') { const e = src.indexOf('\n', i); i = e < 0 ? src.length : e; continue; }
+      if (c === '/' && n === '*') { const e = src.indexOf('*/', i+2); i = e < 0 ? src.length : e+2; prev = ' '; continue; }
+      if (c === '/' && !/[\w$)\]'"`]/.test(prev)) {      /* 정규식 리터럴 */
+        i++; let cls = false;
+        while (i < src.length) { const d = src[i];
+          if (d === '\\') { i += 2; continue; }
+          if (d === '[') cls = true; else if (d === ']') cls = false;
+          else if (d === '/' && !cls) { i++; break; }
+          else if (d === '\n') break;
+          i++; }
+        prev = '/'; continue;
+      }
+      if (c === "'" || c === '"') { const q = c; i++;
+        while (i < src.length) { if (src[i] === '\\') { i += 2; continue; }
+          if (src[i] === q || src[i] === '\n') { i++; break; } i++; }
+        prev = q; continue;
+      }
+      if (c === '`') { tpl.push('tpl'); i++; prev = '`'; continue; }
+      if (c === '}' && tpl.length && tpl[tpl.length-1] === 'expr') { tpl.pop(); i++; prev = '}'; continue; }
+      if (!/\s/.test(c)) prev = c;
+      i++;
+    }
+    return out;
+  }
+
+  const all = blocks.flatMap(m => {
+    const base = html.slice(0, m.index + m[0].indexOf(m[1])).split('\n').length - 1;
+    return leaks(m[1]).map(x => ({ line: base + x.line, text: x.text }));
+  });
+  tt('템플릿 리터럴 안에 주석 기호가 없다', all.length === 0,
+     all.map(x => x.line + '행 ' + x.text).join(' / '));
+
+  /* 사보타주 — 검사가 실제로 무는지 확인합니다. 안 물면 없는 검사입니다(원칙 48). */
+  tt('사보타주: 리터럴 안 주석을 심으면 잡는다',
+     leaks('const h = `<p>가</p>\n  /* 설명 */\n  <b>나</b>`;').length > 0);
+  tt('사보타주: 리터럴 밖 주석은 안 잡는다',
+     leaks('/* 설명 */\nconst h = `<p>가</p>`;\nconst r = /a\\/*b/;').length === 0);
+  tt('사보타주: ${} 안의 주석은 안 잡는다',
+     leaks('const h = `<p>${ /* 계산 */ 1 + 2 }</p>`;').length === 0);
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
