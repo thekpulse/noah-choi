@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.18 · 정책 2026.08.05 -->
+<!-- BUILD v24.19 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -371,7 +371,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .answered:empty{display:none}
 .arow{width:100%;display:flex;align-items:center;gap:12px;padding:15px 4px;text-align:left;border-radius:var(--r-m)}
 .arow:hover{background:var(--line)}
-.arow .k{font-size:var(--t7);color:var(--ink-4);min-width:66px;flex:none}
+/* 🔴 v24.19 — --ink-4 → --ink-3. `.arow`는 흰 카드가 아니라 **페이지 면 위**에 있어
+   --ink-4가 4.19:1로 떨어집니다(G-19가 「가진 돈」·「연소득」에서 잡았습니다).
+   .minigrid .mini와 같은 자리·같은 처방입니다 — 흰 면이 아니면 --ink-3입니다. */
+.arow .k{font-size:var(--t7);color:var(--ink-3);min-width:66px;flex:none}
 .arow .v{font-size:var(--t6);font-weight:700;color:var(--ink-2);flex:1}
 .arow .go{font-size:var(--t7);font-weight:800;color:var(--ink-3);flex:none}
 
@@ -917,8 +920,18 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
       </div>
     </div>
 
+    <!-- 🔴 v24.19 — 인테리어는 **접힌 채로 시작합니다.**
+         이유: 집을 살 수 있는지 보러 온 화면인데, 평형 슬라이더·시공 수준 칩·견적 링크가
+         결과 아래에 늘 펼쳐져 있어 「아직 안 정한 것」이 「지금 정해야 할 것」처럼 읽혔습니다.
+         ⚠ 접는 방식은 **부대비용·대출 한도와 같은 것**입니다(.disc + .costbox + renderDiscs).
+           새 클래스를 만들지 마세요. 셋이 어긋나면 결과 화면에 접기 문법이 둘이 됩니다.
+         ⚠ 기본값이 「닫힘」이라도 계산은 그대로입니다 — 평형 0(모름)이면 인테리어비는 0이고,
+           열어서 평형을 정한 뒤 다시 접어도 영수증의 인테리어 줄은 남습니다(상태는 안 지웁니다). -->
     <div class="card">
       <h2 class="card-title">입주 전, 인테리어 예산도 궁금하시다면</h2>
+      <button class="disc" id="itToggle" aria-expanded="false" aria-controls="itBox">
+        <span>평형 · 시공 수준</span><span class="caret">▾</span></button>
+      <div class="costbox" id="itBox">
       <div class="tweak">
         <div class="slider-head"><span class="k">평형 (공급면적)</span><span class="v" id="pyeongVal">모름</span></div>
         <input type="range" id="pyeongRange" min="0" max="50" step="1" value="0" aria-label="평형">
@@ -936,6 +949,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
       <p class="fielderr" id="itErr" role="alert" aria-live="polite"></p>
       <div class="tip" id="itTip"></div>
       <a class="mini amber" id="outInterior" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outInteriorT"></b><span id="outInteriorS"></span></div><span class="arw">↗</span></a>
+      </div>
     </div>
 
     <!-- 🔴 v24.0 — 이 예산으로 실제 거래된 곳. 국토부 실거래가입니다.
@@ -1835,7 +1849,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v24.18 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.19 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1867,7 +1881,7 @@ const INTERIOR = [
 ];
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
-            group:null, sido:'', sgg:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false,
+            group:null, sido:'', sgg:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false, itOpen:false,
             legal:{on:true,v:65}, move:{on:false,v:175}, appl:{on:false,v:500} };
 
 const $ = id => document.getElementById(id);
@@ -1919,20 +1933,36 @@ function renderQuestion(){
   const V=visible(), eye = `<p class="eyebrow">${String(posOf(S.step)+1).padStart(2,'0')} / 0${V.length}</p>`;
   let h='';
   if(st.id==='cash'){
+    /* 🔴 v24.18 — 전: 「대출 없이 살 거예요」. **「사다」와 「살다」가 갈립니다** —
+       집을 사는 계산기에서 「살 거예요」는 「거주할 거예요」로도 읽힙니다.
+       대출 여부를 묻는 자리이므로 대출을 주어로 씁니다.
+       🔴 v24.19 — 헬퍼는 「…모든 돈이에요」 → 「…돈 전부예요」. 360px에서 두 줄이었습니다(G-18).
+         「모든」을 지우지 않고 「전부」로 옮겼습니다 — 줄 수를 줄이되 **사실은 안 버립니다.**
+       🔴 v24.19 — 이 주석은 **템플릿 리터럴 안에 있었습니다.**
+       슬래시-별 주석 기호는 문자열 안에서 주석이 아니라 **글자**입니다.
+       첫 화면에 주석이 그대로 찍혀 나갔고 그대로 배포됐습니다.
+       ⚠ 템플릿 리터럴 안에는 주석을 쓰지 마세요. 할 말은 리터럴 **밖**에 둡니다.
+         test.js가 이제 이 실수를 잡습니다 — v24.19 항목. */
     h = eye + `<h2 class="q-title">지금 모은 돈이 얼마인가요?</h2>
       ${moneyCard('cash', S.cash, '가진 돈',
-        '주택담보대출 말고 끌어모을 수 있는 모든 돈이에요.')}
+        '주택담보대출 말고 끌어모을 수 있는 돈 전부예요.')}
       <div class="chips">
         ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
-      /* 🔴 v24.18 — 전: 「대출 없이 살 거예요」. **「사다」와 「살다」가 갈립니다** —
-         집을 사는 계산기에서 「살 거예요」는 「거주할 거예요」로도 읽힙니다.
-         대출 여부를 묻는 자리이므로 대출을 주어로 씁니다. */
       <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>대출은 받지 않을 거예요</label>`;
   }
   if(st.id==='income'){
+    /* 🔴 v24.19 — 전: 헬퍼가 「소득 대비 대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.」
+       **360px에서 두 줄이었습니다**(G-18 상한 1줄).
+       360px에서 한 줄에 들어가는 후보를 여섯 개 실측했습니다. 전부 하나씩을 포기해야 했습니다 —
+         ①「소득 대비」를 빼거나 ②「쓰여요」를 「써요」로 줄이거나 ③가운뎃점 사이 공백을 없애거나.
+       뺀 것은 ①입니다. 근거는 이 파일의 G-3이 정한 기준선입니다 — 약어에 필요한 것은
+         「규제(DSR)」이지 「소득 대비 대출 규제(DSR)」이 아닙니다. ②는 말투가 사실 서술에서
+         멀어지고, ③은 이 파일의 가운뎃점 149곳이 전부 띄어쓰기라 혼자 어긋납니다.
+       ⏹ 「세전 · 부부 합산」을 칸 이름으로 올리는 안도 재 봤습니다 — **되돌렸습니다.**
+         칸 이름은 요약 줄(`.arow .k`)의 이름과 같아야 하고, test.js가 그걸 잠그고 있습니다. */
     h = eye + `<h2 class="q-title">연소득이 얼마인가요?</h2>
       ${moneyCard('income', S.income, '연소득',
-        '소득 대비 대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.')}
+        '대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.')}
       <div class="chips">
         ${[1000,5000,10000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
       <button class="debtlink" id="debtLink">${S.debtOpen ? '갚고 있는 대출 입력 닫기' : '갚고 있는 대출이 있어요 ›'}</button>
@@ -2388,7 +2418,7 @@ function showResult(keepScroll){
   /* 🔴 v23.21 — 두 줄이 같은 말을 두 번 하고 있었습니다(원칙 43). 한 줄로 합칩니다.
      정책 변동 고지는 반드시 남깁니다 — 정책대출 미반영분(약 7,657만원 과소)의 면책 근거입니다. */
   $('footNote').innerHTML =
-    `<span class="legal">※ 본 결과는 시뮬레이션 추정치이며, 정부 정책 변화 및 은행 심사 기준에 따라 실제 대출 한도와 세금은 변동될 수 있습니다.</span>`;
+    `<span class="legal">※ 단순 시뮬레이션 추정치입니다. 정부 정책과 은행 심사 기준에 따라 실제 대출 한도와 세금은 달라질 수 있습니다.</span>`;
   /* 2-Track — 왼쪽 35%: 조건만 고치기(세컨더리) / 오른쪽 65%: 처음부터(메인) */
   $('restartWrap').innerHTML =
     '<div class="restartrow">' +
@@ -2434,9 +2464,10 @@ function renderCondBar(price){
   });
 }
 
-/* 접기 2종 — 부대비용 · 한도 */
+/* 접기 3종 — 부대비용 · 한도 · 인테리어 (v24.19에서 셋이 됐습니다) */
 function renderDiscs(){
-  [['costToggle','costBox','costOpen'],['limitToggle','limitBox','limitOpen']].forEach(([t,b,k])=>{
+  [['costToggle','costBox','costOpen'],['limitToggle','limitBox','limitOpen'],
+   ['itToggle','itBox','itOpen']].forEach(([t,b,k])=>{
     const tog=$(t), box=$(b);
     box.classList.toggle('open', !!S[k]);
     tog.setAttribute('aria-expanded', String(!!S[k]));
@@ -2539,7 +2570,7 @@ function renderLimits(c, price){
            ③「금리 연 N% · N년 원리금균등 기준이에요.」
        ②와 ③은 **둘 다 「무엇을 전제로 한 숫자인가」** 하나를 말합니다. 한 줄이면 됩니다.
        ①은 「무엇이 안 들어갔는가」라 성격이 달라 남깁니다.
-       ⚠ 맨 아래 `.legal`(※ 본 결과는 시뮬레이션 추정치이며…)은 **그대로 둡니다** —
+       ⚠ 맨 아래 `.legal`(※ 단순 시뮬레이션 추정치입니다…)은 **그대로 둡니다** —
          법적 고지이고, 고지문만 문어체인 것은 오히려 「여기부터 법적 문구」라는 신호입니다. */
     + `<br><br>※ 시중은행 주담대 · 연 ${D.rate}% · ${D.years}년 원리금균등 기준이에요. 디딤돌·보금자리론 같은 정책대출을 받으면 한도가 더 늘어나요.`
     + `<br>※ 넣어 주신 소득과 기존 대출만 반영한 값이라, 실제 금액은 은행 심사에서 정해져요.`
@@ -3176,7 +3207,7 @@ document.addEventListener('keydown', e => {
 function restart(){
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
-    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,costOpen:false,limitOpen:false});
+    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,costOpen:false,limitOpen:false,itOpen:false});
   render(); window.scrollTo(0,0);
 }
 
