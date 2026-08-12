@@ -594,7 +594,16 @@ HYGIENE.forEach(([name, over]) => {
   tt('기본은 접혀 있다 (피로도 관리)', /debtOpen:false/.test(UI));
   tt('조건 칩에 갚는 대출이 노출', /갚는 대출<\/u>/.test(UI));
   tt('소득은 여전히 필수다', /id==='income'\)\s*return\s*!!S\.income/.test(UI));
-  tt('DSR 면책 문구가 있다', /본 DSR 한도는 입력하신 소득과 기존 대출만을 기준/.test(UI));
+  /* 🔴 v24.18 — 전: `/본 DSR 한도는 입력하신 소득과 기존 대출만을 기준/`
+     **소스 문자열을 그대로 잠그고 있었습니다.** 그래서 「~습니다」체를 「~어요」로 고치는
+     정당한 개선이 검사에 막혔습니다 — 원칙 48이 말한 바로 그 형태입니다.
+     잠글 것은 문장이 아니라 **한도가 무엇만 반영했는지 밝히는가**입니다. */
+  tt('한도가 소득·기존 대출만 반영했음을 밝힌다', (()=>{
+     const m = UI.match(/\$\('limitTip'\)\.innerHTML([\s\S]*?);\n/);
+     if(!m) return false;
+     const t = m[1].replace(/\/\*[\s\S]*?\*\//g,'');
+     return /소득/.test(t) && /기존 대출/.test(t) && /은행/.test(t);
+  })());
   tt('한도 안내가 부채 입력 여부를 반영', /갚는 대출을 반영한 값이에요/.test(UI));
   tt('정책대출 미반영을 면책에 밝힌다', /정책대출을 받을 수 있다면/.test(UI));
 
@@ -1048,15 +1057,16 @@ HYGIENE.forEach(([name, over]) => {
      소득을 왜 물었는지 끝까지 설명되지 않았습니다. */
   tt('시트에 DSR 규칙 행이 있다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
+     /* 🔴 v24.18 — 문말어미(「봅니다」)를 빼고 **숫자와 뜻**만 봅니다(원칙 48). */
      return /<b>소득 대비 대출 규제\(DSR\)<\/b>/.test(src)
-         && /연소득의 \d+%까지만 원리금 상환에 쓸 수 있게 봅니다/.test(src);
+         && /연소득의 \d+%까지만 원리금 상환에 쓸 수 있/.test(src);
   })());
   /* 🔴 v24.5 — **화면의 숫자와 POLICY가 어긋나는 것**을 막습니다.
      POLICY.ratio.dsr을 고치고 시트 문구를 안 고치면 화면이 거짓말을 합니다.
      지침 — 정책 수치는 POLICY에서만 정의하고, 화면에 쓴 값은 반드시 대조합니다. */
   tt('시트의 DSR 비율이 POLICY.ratio.dsr과 같다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     const m = src.match(/연소득의 (\d+)%까지만 원리금 상환에 쓸 수 있게 봅니다/);
+     const m = src.match(/연소득의 (\d+)%까지만 원리금 상환에 쓸 수 있/);
      return !!m && Number(m[1]) === Math.round(POLICY.ratio.dsr * 100);
   })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
      const m=src.match(/연소득의 (\d+)%까지만/);
@@ -1921,6 +1931,128 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 「다르기만」 하면 부족합니다. #1D1D1F와 #112A46은 다르지만 대비가 1.16:1이라
         나란히 놓으면 한 덩어리로 읽힙니다. 명암 대비까지 봅니다. */
   tt('막대 두 조각 대비 ≥ 3:1', cr >= 3, cr.toFixed(2) + ' : 1');
+})();
+
+/* ═══ v24.18 — 말투 ═══════════════════════════════════════════════
+   지침: 화면 문구는 **사실만 서술**합니다. 평가하거나 지시하지 않습니다.
+   이 판 전에는 「~습니다」체가 아홉 자리에 흩어져 있었습니다 —
+   히어로 부제 · 계산 기준 시트 여섯 행 · DSR 면책 · 인테리어 안내.
+   시트를 열면 다른 제품으로 넘어온 것처럼 읽혔습니다. */
+(function(){
+  const raw = fs.readFileSync(FILE,'utf8');
+  /* 화면에 실제로 나가는 부분만 남깁니다.
+     제외 ① 주석(/* *​/ 과 //) ② <style> ③ __selfcheck(개발자 콘솔 전용)
+          ④ .legal 한 줄 — **법적 고지는 문어체가 맞습니다.** 유일한 문어체라
+            「여기부터 법적 문구」라는 신호로 작동합니다. 의도된 예외입니다. */
+  let s = raw.replace(/\/\*[\s\S]*?\*\//g,'')
+             .replace(/<!--[\s\S]*?-->/g,'')
+             .replace(/<style>[\s\S]*?<\/style>/g,'')
+             .replace(/\/\/[^\n'"`]*$/gm,'')
+             .replace(/<span class="legal">[\s\S]*?<\/span>/g,'');
+  /* __selfcheck는 **개발자 콘솔 전용**입니다 — 사용자가 볼 수 없어 말투 규칙 밖입니다.
+     ⚠ 함수 하나가 아니라 그 뒤 검사 배열까지 전부 개발자용이라 통째로 잘라 냅니다. */
+  const cut = s.search(/function __selfcheck|const R\s*=\s*\[/); if(cut > 0) s = s.slice(0, cut);
+  /* 「다시 시도해 주세요」는 **실패 뒤 복구 안내**라 예외입니다 —
+     사용자를 평가하거나 재무 판단을 지시하는 문장이 아닙니다. */
+  s = s.replace(/다시 시도해 주세요/g,'');
+
+  /* 🔴 「습니다」만 보면 **절반을 놓칩니다** — 합쇼체는 「-습니다」와 「-ㅂ니다」 둘입니다.
+     「봅니다 · 달라집니다 · 계산합니다 · 뺍니다 · 기준입니다」가 전부 뒤쪽입니다.
+     자모(ㅂ)는 정규식으로 못 집으므로 **「니다」로 끝나는 한글 어절**을 봅니다.
+     ⚠ 「지니다 · 다니다」 같은 어간이 걸릴 수 있어 예외 목록을 둡니다 — 늘어나면 여기 적으세요. */
+  const EXEMPT = /(지니다|다니다|아니다)$/;
+  const formal = [...new Set(s.match(/[가-힣][가-힣 ,·()%]{0,45}(니다|십시오)/g) || [])]
+    .filter(x => !EXEMPT.test(x.trim()));
+  tt('화면 문구에 「~습니다」체가 없다 (.legal 제외)', formal.length === 0,
+     formal.slice(0,4).join(' | '));
+
+  const order = [...new Set(s.match(/[가-힣][가-힣 ,·()%]{0,45}(하세요|해 주세요|하십시오)/g) || [])];
+  tt('화면 문구가 사용자에게 지시하지 않는다', order.length === 0,
+     order.slice(0,4).join(' | '));
+
+  /* 과잉 존대 — 이 파일에서 「원하시는」이 유일했습니다.
+     시공 수준 설명 다섯 중 넷은 서술문인데 하나만 존대 지시문이었습니다. */
+  tt('과잉 존대가 없다', !/원하시는|하시겠어요|주시겠어요/.test(s));
+
+  /* 보유 상태 안내가 사용자가 고른 것과 다른 말을 하지 않습니다.
+     선택지는 「1주택 이상」인데 안내는 「다주택자」였습니다 — 1주택자는 다주택자가 아닙니다. */
+  tt('보유 안내가 「다주택자」로 단정하지 않는다', !/다주택자/.test(s));
+})();
+
+/* ═══ v24.17 — 공유 계열 ══════════════════════════════════════════
+   실물 카톡 캡쳐(2026.08.12)로 **한 번의 이미지 저장이 세 덩어리를 보낸다**는 것이 확인됐습니다.
+   ①이미지 ②요약 말풍선 ③링크 미리보기 카드. 셋 다 우리가 책임지는 표면입니다. */
+(function(){
+  const raw  = fs.readFileSync(FILE,'utf8');
+  const src  = raw.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  const head = (raw.match(/<head>([\s\S]*?)<\/head>/)||['',''])[1];
+
+  /* ── og 태그 ────────────────────────────────
+     없으면 카카오가 **자기 기본 문구**를 찍습니다 — 「여기를 눌러 링크를 확인하세요.」
+     그것이 실물에서 나갔습니다. 우리 화면 어디에도 없는 문장입니다. */
+  tt('og:title이 있다',       /property=["']og:title["']/.test(head));
+  tt('og:description이 있다', /property=["']og:description["']/.test(head));
+  tt('og:url이 있다',         /property=["']og:url["']/.test(head));
+  /* 🔴 **이 검사는 og:image가 있으면 실패합니다.** 저장소에 이미지 파일이 없어
+     경로를 적으면 404가 나고, 카카오는 그때 미리보기를 통째로 접습니다(지금보다 나빠집니다).
+     실제로 이미지를 올린 뒤에 이 검사를 뒤집으세요 — 그때가 근거가 바뀌는 시점입니다. */
+  tt('og:image는 아직 없다(이미지 파일이 없습니다)', !/property=["']og:image["']/.test(head));
+  /* og 설명이 화면 말투를 따르는지 — 평가·지시·단정 금지 */
+  tt('og 설명이 지시하거나 단정하지 않는다', (()=>{
+     const m = head.match(/property=["']og:description["'][^>]*content=["']([^"']+)["']/);
+     if(!m) return false;
+     return !/하세요|해보세요|확인하세요|최고|완벽|무리/.test(m[1]);
+  })(), (head.match(/property=["']og:description["'][^>]*content=["']([^"']+)["']/)||[])[1]);
+  /* og:url은 서비스 주소와 같아야 합니다 — 다르면 미리보기가 엉뚱한 곳을 가리킵니다 */
+  tt('og:url이 SERVICE_URL과 같다', (()=>{
+     const og = (head.match(/property=["']og:url["'][^>]*content=["']([^"']+)["']/)||[])[1];
+     const sv = (src.match(/SERVICE_URL\s*=\s*'([^']+)'/)||[])[1];
+     return !!og && !!sv && og.replace(/\/$/,'') === sv.replace(/\/$/,'');
+  })());
+
+  /* ── 이미지와 텍스트가 같이 나갈 때 ────────────
+     이미지가 이미 말한 것을 텍스트가 되풀이하면 안 됩니다.
+     ⚠ 잠그는 것은 **문자열이 아니라 경로**입니다(원칙 48) — 문구는 고쳐도 됩니다. */
+  tt('이미지 공유는 shareCaption을 보낸다',
+     /navigator\.share\(\{files:\[file\],\s*text:shareCaption\(\)\}\)/.test(src));
+  tt('이미지 공유가 열두 줄 요약을 다시 보내지 않는다',
+     !/files:\[file\][^)]*summaryText\(\)/.test(src));
+  /* 「요약 문구 보내기」는 이미지 없이 혼자 나갑니다 — 여기서는 열두 줄이 그대로여야 합니다 */
+  tt('요약 문구 보내기는 summaryText를 그대로 보낸다',
+     /navigator\.share\(\{text:txt\}\)/.test(src) && /txt\s*=\s*summaryText\(\)/.test(src));
+  /* 캡션에는 금액이 없어야 합니다 — 이미지가 말하고, 이 캡션만 뜨는 경로는 없습니다 */
+  tt('shareCaption이 금액을 담지 않는다', (()=>{
+     const m = src.match(/function shareCaption\(\)\{([\s\S]*?)\n\}/);
+     if(!m) return false;
+     return !/headline|cashNeeded|mortgageLoan|formatWon|approxWon/.test(m[1]);
+  })());
+  tt('shareCaption이 서비스 주소를 나른다', (()=>{
+     const m = src.match(/function shareCaption\(\)\{([\s\S]*?)\n\}/);
+     return !!m && /SERVICE_URL/.test(m[1]);
+  })());
+
+  /* ── 채권 문장의 자리 ──────────────────────────
+     비용을 대출 한도 옆에 두면 「한도를 깎는 무엇」으로 읽힙니다(원칙 53). */
+  tt('채권 문장이 대출 한도 산출 기준에 없다', (()=>{
+     const m = src.match(/\$\('limitTip'\)\.innerHTML([\s\S]*?);\n/);
+     return !!m && !/국민주택채권/.test(m[1]);
+  })());
+  tt('채권 문장이 부대비용 패널에 있다', (()=>{
+     const m = src.match(/\$\('costLead'\)\.innerHTML([\s\S]*?);\n/);
+     return !!m && /국민주택채권/.test(m[1]);
+  })());
+  /* 🔴 **왜 안 넣었는지**를 말해야 합니다. 이유가 없으면 그냥 빠뜨린 것으로 읽힙니다(원칙 39). */
+  tt('채권 문장이 못 넣은 이유를 함께 말한다', (()=>{
+     const m = src.match(/\$\('costLead'\)\.innerHTML([\s\S]*?);\n/);
+     return !!m && /달라져서|따라 달라/.test(m[1]);
+  })());
+  /* 금액을 추정해 넣으면 안 됩니다 — 시가표준액·할인율 둘 다 우리가 모릅니다 */
+  tt('채권 매입비에 금액을 적지 않는다', (()=>{
+     const m = src.match(/\$\('costLead'\)\.innerHTML([\s\S]*?);\n/);
+     if(!m) return false;
+     const tail = m[1].split('국민주택채권')[1] || '';
+     return !/\d+\s*만원|\d+\s*백만/.test(tail);
+  })());
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
