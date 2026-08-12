@@ -5,10 +5,25 @@
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>영끌계산기 — 내 현금으로 넘볼 수 있는 집</title>
+<!-- 🔴 v24.17 — **og 태그가 하나도 없었습니다.** (2026.08.12 · 실물 카톡 캡쳐로 확인)
+     공유 시트로 나간 링크의 미리보기 카드에 카카오 기본 문구인
+     「여기를 눌러 링크를 확인하세요.」가 찍히고 있었습니다 — **우리가 쓴 문장이 아닙니다.**
+     한 번의 「리포트 이미지 저장」으로 ①이미지 ②요약 말풍선 ③이 미리보기 카드,
+     **세 덩어리**가 함께 나갑니다. 셋 중 하나가 남의 문장이면 안 됩니다.
+     ⚠ **og:image는 넣지 않습니다.** 저장소에 올리는 것은 html·json·js·api뿐이고
+       이미지 파일이 없습니다. 없는 경로를 적으면 404가 나고, 카카오는 그때
+       **미리보기 자체를 접습니다**(지금보다 나빠집니다). 이미지를 실제로 올린 뒤에 넣으세요.
+     ⚠ og:description은 **화면 문구와 같은 말투**입니다 — 사실만 서술하고 지시하지 않습니다. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="영끌계산기">
+<meta property="og:title" content="영끌계산기 — 내 현금으로 넘볼 수 있는 집">
+<meta property="og:description" content="가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 준비할 현금을 함께 봐요.">
+<meta property="og:url" content="https://noah-choi.vercel.app">
+<meta name="description" content="가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 준비할 현금을 함께 봐요.">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.16 · 정책 2026.08.05 -->
+<!-- BUILD v24.18 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -849,7 +864,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 
   <header class="brand" id="brand">
     <h1 class="headline">내 예산에 맞춘<br>집 매수 예상 시나리오</h1>
-    <p class="subline">단 세 번의 입력으로 집을 사기 위한 현실적인 예산을 확인하세요.</p>
+    <!-- 🔴 v24.18 — 전: 「단 세 번의 입력으로 집을 사기 위한 현실적인 예산을 확인하세요.」
+         ①「확인하세요」는 지시문입니다 ②「단」·「현실적인」은 광고 어조입니다(평가).
+         길이는 그대로 두고 **사실 서술로만** 바꿨습니다. -->
+    <p class="subline">입력 세 번이면 집 살 때 실제로 드는 돈이 나와요.</p>
   </header>
 
   <main class="funnel" id="funnel">
@@ -992,18 +1010,22 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 <div class="sheet-back" id="sheetBack" hidden></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
   <div class="sheet-grip"></div>
+  <!-- 🔴 v24.18 — **이 시트 여섯 행이 통째로 「~습니다」체였습니다.**
+       나머지 화면은 전부 「~어요」라, 시트를 열면 다른 제품으로 넘어온 것처럼 읽혔습니다.
+       ⚠ 예외는 결과 맨 아래 `.legal` 한 줄뿐입니다 — 그건 법적 고지라 문어체가 맞고,
+         유일한 문어체이므로 「여기부터 법적 문구」라는 신호로 작동합니다. -->
   <h2 class="sheet-title" id="sheetTitle">계산 기준</h2>
   <!-- 🔴 v24.5 — DSR의 **핵심 규칙**이 어디에도 상시로는 없었습니다.
        「소득이 한도를 정했어요」는 결과 화면에서 binding이 DSR·DTI일 때만 나옵니다.
        ⚠ 40%는 POLICY.ratio.dsr입니다. 화면에 숫자를 쓰는 자리이므로 값이 바뀌면 여기도 고칩니다.
        ⚠ 정책대출은 DTI 60%(POLICY.ratio.dti)입니다. 지금은 **화면에서 도달할 수 없어**
          적지 않았습니다. 정책대출 UI가 붙는 판에서 이 행에 한 문장을 더하세요. -->
-  <div class="sheet-row"><b>소득 대비 대출 규제(DSR)</b><span>은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봅니다. 갚고 있는 대출의 원리금이 먼저 빠지고, 남은 몫으로 한도를 봅니다.</span></div>
-  <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 한도를 봅니다. 실제 금리보다 높게 잡아 한도가 보수적으로 나옵니다.</span></div>
-  <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라집니다. 대출을 받지 않아도 항상 계산에 넣습니다.</span></div>
-  <div class="sheet-row"><b>중개보수</b><span>거래 금액 구간별 상한요율로 계산합니다. 실제 보수는 협의로 더 낮아질 수 있습니다.</span></div>
-  <div class="sheet-row"><b>방공제(최우선변제금)</b><span>지역별 기준액을 승인 한도에서 뺍니다. 그만큼 실제로 나오는 돈이 줄어듭니다.</span></div>
-  <div class="sheet-row"><b>정책 확인일</b><span>2026.08.05 기준입니다. 정부 정책이 바뀌면 결과도 달라집니다.</span></div>
+  <div class="sheet-row"><b>소득 대비 대출 규제(DSR)</b><span>연소득의 40%까지만 원리금 상환에 쓸 수 있어요. 갚고 있는 대출이 먼저 빠지고, 남은 몫으로 한도를 봐요.</span></div>
+  <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 봐요. 실제보다 높게 잡아 한도가 보수적으로 나와요.</span></div>
+  <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라져요. 대출을 안 받아도 늘 계산에 넣어요.</span></div>
+  <div class="sheet-row"><b>중개보수</b><span>거래 금액 구간별 상한요율로 계산해요. 실제로는 협의로 더 낮아질 수 있어요.</span></div>
+  <div class="sheet-row"><b>방공제(최우선변제금)</b><span>지역별 기준액을 승인 한도에서 빼요. 그만큼 실제로 나오는 돈이 줄어요.</span></div>
+  <div class="sheet-row"><b>정책 확인일</b><span>2026.08.05 기준이에요. 정부 정책이 바뀌면 결과도 달라져요.</span></div>
   <button class="sheet-close" id="sheetClose">닫기</button>
 </div>
 
@@ -1813,7 +1835,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v24.16 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.18 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1838,7 +1860,10 @@ const INTERIOR = [
   {v:100, label:'부분 시공', desc:'도배, 장판, 필름 등 살릴 건 살리는 가성비 시공이에요. (평당 약 100만원)'},
   {v:150, label:'기본 수리', desc:'욕실, 주방 등 낡은 곳 위주로 고쳐요. 샷시 교체는 빠져 있어요. (평당 약 150만원)'},
   {v:200, label:'전체 수리', desc:'샷시 교체를 포함해 뼈대만 남기고 집 전체를 새롭게 바꿔요. (평당 약 200만원)'},
-  {v:IT_CUSTOM, label:'직접 입력', desc:'원하시는 총 인테리어 예산을 직접 입력해 주세요.'}
+  /* 🔴 v24.18 — 전: 「원하시는 총 인테리어 예산을 직접 입력해 주세요.」
+     같은 배열의 다른 넷은 **무슨 공사인지를 서술**하는데 이것만 지시문이었습니다.
+     「원하시는」은 이 파일에서 유일한 과잉 존대였습니다(지침 말투: 서술하고 지시하지 않습니다). */
+  {v:IT_CUSTOM, label:'직접 입력', desc:'평당 단가로 계산하지 않고, 넣은 금액을 그대로 써요.'}
 ];
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
@@ -1899,7 +1924,10 @@ function renderQuestion(){
         '주택담보대출 말고 끌어모을 수 있는 모든 돈이에요.')}
       <div class="chips">
         ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
-      <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>대출 없이 살 거예요</label>`;
+      /* 🔴 v24.18 — 전: 「대출 없이 살 거예요」. **「사다」와 「살다」가 갈립니다** —
+         집을 사는 계산기에서 「살 거예요」는 「거주할 거예요」로도 읽힙니다.
+         대출 여부를 묻는 자리이므로 대출을 주어로 씁니다. */
+      <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>대출은 받지 않을 거예요</label>`;
   }
   if(st.id==='income'){
     h = eye + `<h2 class="q-title">연소득이 얼마인가요?</h2>
@@ -2149,7 +2177,14 @@ function bind(){
     S.houseStatus=b.dataset.house;
     seg.querySelectorAll('button').forEach(x=>x.classList.toggle('is-on', x===b));
     $('houseEcho').textContent = b.dataset.house==='multi'
-      ? '다주택자는 취득세가 중과되며, 대출 한도가 크게 축소될 수 있어요.'
+      /* 🔴 v24.18 — 전: 「다주택자는 취득세가 중과되며, 대출 한도가 크게 축소될 수 있어요.」
+         **사용자가 고른 것은 「1주택 이상」입니다. 1주택자는 다주택자가 아닙니다.**
+         화면이 사용자가 누른 것과 다른 말을 하고 있었습니다.
+         「~되며」·「축소될」도 이 파일에서 드문 문어체였습니다.
+         ⚠ 계산 쪽 문제는 **여기서 안 고쳤습니다** — `POLICY.acqTax.heavyMulti.reg`가
+           「2주택 이상」에 3주택 요율(12%)을 먹입니다. 법령 확인이 먼저입니다(인수인계 참조).
+           문구를 계산에 맞추면 틀린 계산을 문장으로 굳히게 됩니다. */
+      ? '집이 있는 상태에서 더 사면 취득세가 중과되고, 대출 한도도 크게 줄어요.'
       : b.dataset.house==='first' ? '생애최초 기준이 적용돼 대출 한도가 늘어나요.' : '';
     syncCta();
   });
@@ -2421,7 +2456,9 @@ function renderBento(c){
     : `<div><span class="f1"></span>전부 내 돈으로 마련해야 해요 <b>100%</b></div>`;
   const m=monthlyPaymentCalc(loan, D.rate, D.years);
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
-  $('tileMonthlySub').textContent = m>0 ? `연 ${D.rate}% · ${D.years}년` : '빌리는 돈이 없어요';
+  /* 🔴 v24.18 — 전: 「빌리는 돈이 없어요」. 「돈이 없다」로 읽힐 여지가 있었고,
+     타일 이름이 「매달 갚는 돈」이므로 설명도 **갚는 쪽**을 말해야 눈이 이어집니다. */
+  $('tileMonthlySub').textContent = m>0 ? `연 ${D.rate}% · ${D.years}년` : '갚을 대출이 없어요';
   const g=$('gauge');
   if(!S.income || m<=0){ $('tileBurden').className='tile-v'; $('tileBurden').innerHTML='—';
     g.setAttribute('hidden',''); return; }
@@ -2458,7 +2495,22 @@ function renderReceipt(c, price){
   $('receipt').innerHTML=h;
 }
 function renderCostBox(c){
-  $('costLead').textContent = '취득세와 중개보수는 법정 기준이라 끄거나 고칠 수 없어요. 금액은 위 영수증에 있어요.';
+  /* 🔴 v24.17 — 채권 문장이 「대출 한도 산출 기준」에서 여기로 왔습니다(renderLimits 주석).
+     이 패널이 **비용이 사는 자리**이고, 바로 아래 첫 줄이 「법무사 · 등기비」입니다 —
+     채권 매입비는 그 등기와 같은 날 나가는 돈이라 눈이 이어집니다.
+     🟡 **금액을 넣지 않습니다.** 막힌 곳이 둘입니다.
+        ① 과세표준이 집값이 아니라 **시가표준액**입니다 — 단지마다 · 해마다 다릅니다.
+        ② **할인율이 매일 바뀝니다**(주택도시기금 고시). 17억 기준으로도 약 250만~550만원, 폭이 두 배입니다.
+        → 역산·근사로 채우지 않고, **못 넣은 이유를 그대로 말합니다**(지침: 못 찾으면 못 찾았다고 합니다).
+     출처: 주택도시기금법 제8조 · 같은 법 시행령 제8조제2항 별표 / 확인일 2026.08.12
+     ⏹ 「수백만원대가 더 듭니다」는 쓰지 않습니다 — 17억이면 300만원대지만 5억이면 100만원 안팎입니다(원칙 170).
+     ⚠ textContent가 아니라 innerHTML입니다. 사용자 입력이 섞이지 않는 고정 문자열 둘뿐입니다. */
+  /* 🔴 v24.18 — 네 문장에서 **두 줄**로 줄였습니다.
+     ⏹ 「금액은 위 영수증에 있어요」를 뺐습니다 — 영수증이 **바로 위**라 잉여였습니다(원칙 43).
+     ⏹ 채권 문장도 두 문장을 한 줄로 접었습니다. 「따로 있어요」 + 「달라져서 안 넣었어요」는
+       한 문장으로 붙여도 뜻이 다 남습니다. */
+  $('costLead').innerHTML = '취득세와 중개보수는 법정 기준이라 끄거나 고칠 수 없어요.'
+    + '<br>등기할 때 내는 국민주택채권 매입비는 공시가격 · 할인율에 따라 달라져서 아직 안 넣었어요.';
   [['swLegal','inLegal','legal'],['swMove','inMove','move'],['swAppl','inAppl','appl']].forEach(([sw,ip,key])=>{
     const w=$(sw), i=$(ip);
     w.classList.toggle('on', S[key].on); w.setAttribute('aria-checked', String(S[key].on));
@@ -2481,9 +2533,19 @@ function renderLimits(c, price){
       <span class="v">${formatWon(L[k])}</span></div>`).join('');
   }
   $('limitTip').innerHTML = bindingTip(c, price)
-    + `<br><br>※ 본 DSR 한도는 입력하신 소득과 기존 대출만을 기준으로 산출되었으므로, 실제 금액은 은행 상담으로 확인해 주세요.`
-    + `<br>※ 시중은행 주담대 기준이에요 — 디딤돌·보금자리론 같은 정책대출을 받을 수 있다면 한도가 더 늘어나요.`
-    + `<br>※ 금리 연 ${D.rate}% · ${D.years}년 원리금균등 기준이고, 국민주택채권 매입비는 아직 넣지 않았어요.`;
+    /* 🔴 v24.18 — **※ 세 줄을 두 줄로 합쳤습니다.**
+       전: ①「본 DSR 한도는 …산출되었으므로, 실제 금액은 은행 상담으로 확인해 주세요.」(유일한 「~습니다」체 + 한자투)
+           ②「시중은행 주담대 기준이에요 — 정책대출을 받을 수 있다면…」
+           ③「금리 연 N% · N년 원리금균등 기준이에요.」
+       ②와 ③은 **둘 다 「무엇을 전제로 한 숫자인가」** 하나를 말합니다. 한 줄이면 됩니다.
+       ①은 「무엇이 안 들어갔는가」라 성격이 달라 남깁니다.
+       ⚠ 맨 아래 `.legal`(※ 본 결과는 시뮬레이션 추정치이며…)은 **그대로 둡니다** —
+         법적 고지이고, 고지문만 문어체인 것은 오히려 「여기부터 법적 문구」라는 신호입니다. */
+    + `<br><br>※ 시중은행 주담대 · 연 ${D.rate}% · ${D.years}년 원리금균등 기준이에요. 디딤돌·보금자리론 같은 정책대출을 받으면 한도가 더 늘어나요.`
+    + `<br>※ 넣어 주신 소득과 기존 대출만 반영한 값이라, 실제 금액은 은행 심사에서 정해져요.`
+    /* 🔴 v24.17 — 채권 문장은 「부대비용 상세 설정」으로 옮겼습니다(renderCostBox).
+       비용을 한도 옆에 두면 「한도를 깎는 무엇」으로 읽힙니다(원칙 53).
+       🔴 v24.18 — 금리·기간 줄은 바로 위 줄에 합쳤습니다. 이 자리는 비었습니다. */;
   $('roomTip').innerHTML = c.roomCut>0
     ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자를 보호하려고 은행이 미리 떼어두는 금액이라, 승인된 한도보다 실제로 나오는 돈이 그만큼 줄어들어요.`
     : '';
@@ -2586,7 +2648,8 @@ function refreshPkg(){
   const meta = INTERIOR.find(o => o.v === S.interior);
   const nextTip = custom ? meta.desc
     : (S.interior === 0)
-      ? '<b>인테리어비를 계산에 넣지 않습니다.</b> 시공 수준을 고르면 그때 더해요.'
+      /* 🔴 v24.18 — 전: 「…넣지 않습니다.」 **화면에 나오는 유일한 「~습니다」체**였습니다. */
+      ? '<b>인테리어비를 계산에 넣지 않아요.</b> 시공 수준을 고르면 그때 더해요.'
       /* ⚠ 평형 미정일 때 「평형을 정하면…」을 덧붙이지 않습니다 —
          바로 위 킥커가 이미 「평형을 정하면 예산이 나와요」라고 말합니다(G-8).
          덧붙이면 같은 말이 두 번 나오고 설명이 세 줄로 늘어집니다. */
@@ -2919,7 +2982,10 @@ function renderReport(v){
          둘을 맞추고 싶으면 summaryText의 해당 줄 하나만 지우면 됩니다.
      ⏹ 이걸 빼면서 #rLines가 통째로 없어졌습니다 — 남은 두 값은 위 막대 줄이 이미 말합니다. */
   $('rWm').textContent = '영끌계산기';
-  $('rNote').textContent = '단순 시뮬레이션 추정치입니다';
+  /* 🔴 v24.18 — 전: 「단순 시뮬레이션 추정치입니다」. 세 자리에 같은 말이 있는데
+     **어미가 둘로 갈려 있었습니다**(카드·요약은 「~입니다」, 캡션은 명사형).
+     셋 다 명사형으로 맞춥니다 — 꼬리표 자리라 어미가 필요 없고, 말투 규칙도 안 건드립니다. */
+  $('rNote').textContent = '단순 시뮬레이션 추정치';
   /* 🔴 v24.15 — **만원 단위로 넘깁니다.** 여기서 실제로 틀렸습니다:
      LASTVIEW.price는 **원 단위**인데 그대로 넘겨 22억이 2,250,000,000으로 들어갔고,
      예산의 85~100% 구간에 걸리는 거래가 **하나도 없어 블록이 통째로 안 나왔습니다.**
@@ -2956,8 +3022,11 @@ function paintReportDeals(priceMan){
     ? SERVICE_URL.replace(/^https?:\/\//,'').replace(/\/$/,'') : '';
   const host = raw.length <= HOST_MAX ? raw : '';
   cta.hidden = false;
+  /* 🔴 v24.18 — 전: 주소가 길면 「영끌계산기에서 확인하세요」로 대체했습니다.
+     ①지시문이고 ②카드 맨 아래에 이미 「영끌계산기」 워드마크가 있어 같은 말이 두 번이었습니다.
+     → **줄을 아예 접습니다.** 못 칠 주소 자리에 안내를 채우는 것보다 비우는 편이 카드가 조용합니다. */
   cta.innerHTML = `<b>이 예산으로 어느 단지까지 되는지 보기</b>`
-    + `<span>${host ? esc(host) : '영끌계산기에서 확인하세요'}</span>`;
+    + (host ? `<span>${esc(host)}</span>` : '');
 
   /* 칩(신축·면적)은 **안 겁니다.** 보낸 사람이 화면에서 켠 취향이 받는 사람의 취향은 아닙니다.
      카드에는 그 예산대의 있는 그대로가 들어갑니다. */
@@ -3007,10 +3076,26 @@ function summaryText(){
   if(c.mortgageLoan > 0) L.push(`· 주택담보대출 ${formatWon(c.mortgageLoan)}`);
   if(m > 0) L.push(`· 매달 갚는 돈 ${formatWon(m)} (연 ${D.rate}% · ${D.years}년)`);
   L.push('');
-  L.push('단순 시뮬레이션 추정치입니다');
+  L.push('단순 시뮬레이션 추정치');
   L.push('내 조건으로 계산해 보기');
   L.push(SERVICE_URL);
   return L.join('\n');
+}
+/* 🔴 v24.17 — **이미지와 함께 나갈 때 쓰는 짧은 캡션.**
+   실물 카톡 캡쳐(2026.08.12)로 확인된 사실: `saveImage()`는 이미지와 텍스트를 **같이** 보냅니다.
+   그런데 넘기던 텍스트가 `summaryText()`(열두 줄)라, 바로 위 이미지가 이미 말한 것을
+   **여섯 줄이 그대로 반복**하고 있었습니다 — 지역 · 보유 · 매수 가능 금액 · 준비할 현금 · 주담대 · 링크.
+
+   이미지가 다 말하는 자리에서 텍스트의 일은 하나입니다 — **누를 수 있는 링크를 나르는 것.**
+   이미지 안의 URL은 픽셀이라 못 누릅니다. 그것만 텍스트가 대신합니다.
+
+   ⚠ `summaryText()`는 **그대로 둡니다.** 「요약 문구 보내기」는 이미지 없이 혼자 나가므로
+     열두 줄이 전부 필요합니다. 두 경로가 서로 다른 것을 나르는 것이 이번 변경의 전부입니다.
+   ⚠ 금액을 여기 넣지 않습니다 — 이미지에 이미 있고, 이미지 없이 이 캡션만 뜨는 경로는 없습니다. */
+function shareCaption(){
+  return ['영끌계산기 · 단순 시뮬레이션 추정치',
+          '내 조건으로 계산해 보기',
+          SERVICE_URL].join('\n');
 }
 /* 🔴 v24.15 — **조건이 뒤집혀 있었습니다.**
    `navigator.share && !navigator.canShare` — 요즘 모바일 브라우저는 **둘 다** 있습니다.
@@ -3050,7 +3135,8 @@ async function saveImage(){
       if(!blob){ t.textContent='저장에 실패했어요. 다시 시도해 주세요'; setTimeout(()=>t.textContent=o,2400); return; }
       const file=new File([blob],'영끌계산기-리포트.png',{type:'image/png'});
       if(navigator.canShare && navigator.canShare({files:[file]})){
-        try{ await navigator.share({files:[file], text:summaryText()}); t.textContent=o; return; }
+        /* 🔴 v24.17 — `summaryText()` → `shareCaption()`. 위 함수 주석에 근거가 있습니다. */
+        try{ await navigator.share({files:[file], text:shareCaption()}); t.textContent=o; return; }
         catch(e){ if(e && e.name==='AbortError'){ t.textContent=o; return; } }
       }
       const url=URL.createObjectURL(blob), a=document.createElement('a');
