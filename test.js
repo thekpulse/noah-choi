@@ -1975,12 +1975,19 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 지시서는 「`:focus` 기본 아웃라인을 제거하라」고 했습니다. 절반만 맞습니다 —
      **지우는 것과 대신 줄 것은 한 쌍**이고, 지우기만 하면 키보드 사용자가 자기 위치를 잃습니다.
      `.mfield`는 처음부터 짝을 맞춰 뒀는데 `.costrow .amt`와 슬라이더는 지우기만 했습니다.
-     이 검사는 **`outline:none`을 쓴 자리마다 짝이 있는지**를 봅니다. */
+     이 검사는 **`outline:none`을 쓴 자리마다 짝이 있는지**를 봅니다.
+     🔴 v24.29 — 슬라이더 쪽 짝을 **`outline:2px solid`라는 표현**으로 잠그고 있었습니다.
+       상자가 44px이 되면서 링을 트랙 의사요소의 두 겹 그림자로 옮기자 **이 검사가 빨간불**이었습니다.
+       고친 것은 코드가 아니라 검사입니다 — 잠글 것은 「어떤 속성을 썼나」가 아니라
+       **「포커스가 보이는 표시가 있는가」**입니다(원칙 120 · 115와 같은 종류).
+       ⚠ 느슨해진 것이 아닙니다. 짝의 색(--espresso/--green)은 그대로 요구하고,
+         받는 자리를 **상자 또는 트랙** 둘로 넓혔을 뿐입니다. */
   tt('outline을 지운 자리마다 대체 포커스 표시가 있다', (()=>{
      const need = [
        [/\.mfield input:focus\{outline:none\}/,        /\.mfield:focus-within\{outline:2px solid var\(--green\)/],
        [/\.costrow \.amt input:focus\{outline:none\}/, /\.costrow \.amt:focus-within\{outline:2px solid var\(--green\)/],
-       [/input\[type=range\]\{[^}]*outline:none/,      /input\[type=range\]:focus-visible\{outline:2px solid/],
+       [/input\[type=range\]\{[^}]*outline:none/,
+        /input\[type=range\]:focus-visible(::-webkit-slider-runnable-track|::-moz-range-track)?\s*\{[^}]*(outline:2px solid var\(--espresso\)|box-shadow:[^}]*var\(--espresso\))/],
        [/\.quote-edit input:focus[^{]*\{outline:none\}/, /\.quote-edit:focus-within\{border-bottom-color:var\(--green\)/],
      ];
      return need.every(([kill, give]) => !kill.test(css2) || give.test(css2));
@@ -2584,7 +2591,7 @@ HYGIENE.forEach(([name, over]) => {
      자기 복사본을 돌리고 있었으니 본체가 어떻게 되든 알 수가 없습니다(원칙 58을 검사 쪽에서 어긴 것).
      → 규칙을 베끼지 않고 **본체 함수를 떼어다 실행해** 결과 HTML에 wide가 붙는지 봅니다. */
   tt('본체 tagGrid가 실제 목록에서 열 수를 갈라 준다', (()=>{
-     const src = BARE.match(/const TAG_WIDE = \d+;[\s\S]*?const tagGrid = list => \{[\s\S]*?\n\};/);
+     const src = BARE.match(/const TAG_WIDE = \d+;[\s\S]*?const tagGrid = \(list[\s\S]*?\n\};/);
      const pk  = BARE.match(/const picksOf = [^\n]*\n/);
      const raw = fs.readFileSync(FILE,'utf8');
      const ss  = raw.match(/const SIDO_SHORT\s*=\s*\{[\s\S]*?\};/);
@@ -2688,7 +2695,7 @@ HYGIENE.forEach(([name, over]) => {
   tt('갈리는 시 이름에는 구가 붙는다', E.pickLabel('41117') === '수원시 영통구');
   /* 판정을 통째로 꺼 버리는 사보타주는 위 검사가 잡습니다. 아래는 **규칙의 모양**만 봅니다. */
   tt('열 수를 지역 이름으로 하드코딩하지 않는다', (()=>{
-     const m = BARE.match(/const tagGrid = list =>[\s\S]*?\n\};/);
+     const m = BARE.match(/const tagGrid = \(list[\s\S]*?\n\};/);
      if(!m) return false;
      return /list\.some\(/.test(m[0]) && !/METRO|SEOUL|'경기'|'인천'/.test(m[0]);
   })());
@@ -3101,6 +3108,129 @@ HYGIENE.forEach(([name, over]) => {
      const m = RAW.match(/\['#result \.legal',(\d+)\]/);
      return !!m && +m[1] <= 6;
   })());
+
+  /* ═══════════════════════════════════════════════════════════
+     🆕 v24.29 — CPO 지시서(마이크로 디자인) 대조 결과
+     ⚠ 이 장은 **채택한 셋**과 **미채택한 넷**을 같이 잠급니다.
+       미채택을 안 잠그면 다음 판에 같은 지시서가 오면 조용히 들어옵니다 —
+       그때 남는 것은 「왜 안 했는지」가 아니라 「누가 되돌렸는지」뿐입니다(5층).
+     ═══════════════════════════════════════════════════════════ */
+  /* 🔴 **주석을 먼저 걷어냅니다.** 아래 검사들은 「지시서의 #F5F5F7은 안 씁니다」 같은
+     **설명 문장**을 코드로 오인합니다 — 원칙 121이 정확히 이 자리입니다.
+     이 파일은 주석에 코드 조각을 인용하는 문화라 이 종류의 실패가 **주석을 잘 쓸수록 자주** 납니다. */
+  const SRC = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+
+  /* ── ① 터치 면적 — v24.27이 --tap을 만들고 한 자리에만 붙였습니다 ── */
+  /* 🔴 「--tap을 썼는가」가 아니라 **「몇 자리에 썼는가」**를 셉니다.
+     v24.27 시점에 이 값은 **1**이었고, 그래서 `.trust`·`.wordmark`·`.debtlink`·`.sw`·슬라이더가
+     남아 있는데도 검사는 전부 초록이었습니다. 어디에 안 붙였는지는 정적으로 못 봅니다 —
+     그건 `__selfcheck()`의 **G-22**가 렌더에서 잽니다. 여기서는 **후퇴만** 막습니다. */
+  tt('터치 면을 여러 자리에서 --tap으로 넓힌다',
+     (SRC.match(/height:var\(--tap\)/g)||[]).length >= 5,
+     (SRC.match(/height:var\(--tap\)/g)||[]).length + '자리');
+  /* 🔴 스위치는 `::after`를 **손잡이**로 이미 쓰고 있었습니다. 거기에 터치 면을 얹으면 손잡이가
+     사라집니다 — 같은 문법이라도 **빈 의사요소를 먼저 확인**해야 합니다. */
+  tt('스위치 터치 면이 손잡이를 덮지 않는다',
+     /\.sw::before\{[^}]*height:var\(--tap\)/.test(SRC)
+     && /\.sw::after\{[^}]*width:21px/.test(SRC)
+     && /\.sw\.on::after\{transform:translateX\(19px\)\}/.test(SRC));
+  /* 🔴 슬라이더는 ::after가 안 생깁니다(입력 요소). 상자를 키우고 **칠을 트랙으로 옮깁니다** —
+     안 옮기면 44px 전체가 초록으로 칠해집니다. */
+  tt('슬라이더 상자가 --tap이고 칠은 트랙이 한다',
+     /input\[type=range\]\{[^}]*height:var\(--tap\)/.test(SRC)
+     && /input\[type=range\]\{[^}]*background:transparent/.test(SRC)
+     && /::-webkit-slider-runnable-track\{[^}]*linear-gradient/.test(SRC));
+  /* 🔴 상자가 커진 만큼 레이아웃 점유는 되돌립니다. **음수 마진은 히트 영역을 줄이지 않습니다.**
+     ⚠ -19px·-9px을 손으로 적으면 --tap을 고칠 때 조용히 어긋납니다(원칙 84 · 115). */
+  tt('슬라이더 레이아웃 상쇄를 손으로 적지 않았다',
+     /margin-top:calc\(\(var\(--thumb\) - var\(--tap\)\)\/2\)/.test(SRC)
+     && /\.ratesim input\[type=range\]\{margin-top:calc\(6px \+ \(var\(--thumb\) - var\(--tap\)\)\/2\)\}/.test(SRC));
+  /* 🔴 트랙 두께·썸 지름이 규칙 넷에 리터럴로 흩어져 있었습니다. 토큰 하나로 모읍니다. */
+  tt('트랙 · 썸 치수가 토큰 하나에서만 온다', (()=>{
+     const one = n => (SRC.match(new RegExp('--'+n+':\\s*\\d+px','g'))||[]).length === 1;
+     const rangeRules = (SRC.match(/input\[type=range\][^{]*\{[^}]*\}/g)||[]).join('');
+     return one('track') && one('thumb') && !/(height|width):(6|26)px/.test(rangeRules);
+  })());
+  /* 🔴 지시서는 「모든 버튼·칩·입력창의 **높이**를 44px 이상으로」였습니다. 그대로 하면 안 됩니다 —
+     `.condchip`(35px)이 46px 옵션칩과 같은 덩치가 되면 「읽는 표시」가 「고르는 것」이 됩니다.
+     넓히는 것은 **손가락 면**이고 그리는 크기는 그대로입니다(지침 6-3 · 원칙 112). */
+  tt('보이는 칩 높이는 그대로 --h-chip이다',
+     /\.condchip\{[^}]*height:var\(--h-chip\)/.test(SRC)
+     && /\.trust\{[^}]*height:var\(--h-chip\)/.test(SRC));
+
+  /* ── ② 지역 선택 서랍 — 누른 칩 바로 아래 ── */
+  /* 🔴 v24.28은 하위 구 목록을 격자 **뒤**에 붙였고, 경기·인천(42칸)에서 누른 칩과 1,146px
+     떨어져 있었습니다(390px 실측). 자리는 `tagGrid`가 정합니다 — 어느 격자인지는 안 적습니다. */
+  tt('하위 구 서랍이 누른 칩 다음 자리에 들어간다',
+     /\(\(drawer && op\.id===key\) \? drawer : ''\)/.test(SRC));
+  tt('서랍이 격자 한 줄을 통째로 먹는다',
+     /\.taggrid \.drawer\{[^}]*grid-column:1\/-1/.test(SRC));
+  /* 🔴 지시서의 `#F5F5F7`·`border-radius:12px`은 **새 값**입니다 — --fill(#F2F4F6)과 사실상 같은
+     회색이 하나 더 생기고, 12px은 곡률 스케일(10·14·20·26) 밖입니다(원칙 84 · 117). */
+  tt('서랍이 팔레트 · 곡률 스케일 안에 있다',
+     /\.taggrid \.drawer\{[^}]*background:var\(--fill\)/.test(SRC)
+     && /\.taggrid \.drawer\{[^}]*border-radius:var\(--r-m\)/.test(SRC)
+     && !/#f5f5f7/i.test(SRC));
+  /* 🔴 **면이 바뀌면 같은 토큰의 대비가 바뀝니다.** 바깥 `.pane-title`은 흰 카드 위라 --ink-4로
+     4.62:1인데, 서랍 안은 --fill 위라 같은 값이 4.19:1입니다(원칙 97 · G-19가 렌더에서 잡습니다). */
+  tt('서랍 제목이 --fill 면에서 대비를 지킨다',
+     /\.drawer-t\{[^}]*color:var\(--ink-3\)/.test(SRC));
+  /* 🔴 서랍 안에서 또 서랍을 열면 자기를 무한히 엽니다. 지금은 키가 코드라 안 맞지만 **잠급니다.** */
+  tt('서랍 안에서 또 서랍을 열지 않는다',
+     /tagGrid\(op\.kids\.map\(k => \[k\.code, k\.name\]\), true\)/.test(SRC)
+     && /const drawer = \(!inDrawer/.test(SRC));
+
+  /* ── ③ Copyright 꼬리말 ── */
+  tt('저작권 줄이 결과 밖 · 앱 안에 있다', (()=>{
+     const a = SRC.indexOf('</section>'), b = SRC.indexOf('class="copyright"');
+     return a > 0 && b > a && b < SRC.indexOf('<div class="dock"');
+  })());
+  /* 🔴 연도를 마크업에 적으면 1월 1일에 조용히 틀립니다. 아무도 신고하지 않는 종류의 오류입니다. */
+  tt('저작권 연도를 손으로 적지 않았다',
+     /\$\('copyright'\)\.textContent = `© \$\{new Date\(\)\.getFullYear\(\)\}/.test(SRC)
+     && !/©\s*20\d\d/.test(SRC));
+  /* 🔴 지시서의 `#9E9E9E`는 앱 배경(--bg) 위에서 **2.43:1**입니다. 한 단 위인 --ink-4도 4.19:1로
+     모자랍니다 — `.barlabel`이 여섯 판 동안 걸려 있던 **같은 자리**입니다(원칙 97). */
+  tt('저작권 색이 배경 위에서 대비를 지킨다',
+     /\.copyright\{[^}]*color:var\(--ink-3\)/.test(SRC) && !/#9e9e9e/i.test(SRC));
+  /* 🔴 지시서의 `font-size:12px`은 활자 스케일 밖입니다(원칙 117 — 12.5px을 지운 것과 같은 규칙). */
+  tt('저작권 크기가 활자 스케일 안이다',
+     /\.copyright\{[^}]*font-size:var\(--t7\)/.test(SRC));
+  /* 🔴 결과 화면은 `.app.no-dock`이라 padding-bottom이 0입니다 — 화면 맨 아래를 책임지는 값이
+     이제 **이 하나뿐**입니다(v24.28에서 `.result`에 같은 판단을 했습니다). */
+  tt('저작권이 결과 화면에서 안전영역을 피한다',
+     /\.app\.no-dock \.copyright\{padding-bottom:calc\(24px \+ env\(safe-area-inset-bottom\)\)\}/.test(SRC));
+
+  /* ── ④ 미채택 넷을 잠급니다 (실기 대조로 되돌린 것들) ── */
+  /* 🔴 지시서: 「고객님의 예산으로 …노려볼 수 있는 집은 최대 O억입니다」.
+     실기에서 셋이 한꺼번에 났습니다 — 지역명이 히어로와 조건칩에 **두 번**(원칙 43),
+     라벨이 1줄 → 2줄, 그리고 「최대 …입니다」가 현행보다 **단정형**이라
+     같은 지시서 3번이 뱃지에서 없애려던 보증 오인 리스크를 히어로에서 되살립니다. */
+  tt('히어로가 헤지된 표현을 지킨다',
+     /'현재 조건으로 예상되는 매수 가능 금액은'/.test(SRC)
+     && /\$\('heroTail'\)\.textContent = '수준이에요'/.test(SRC)
+     && !/노려볼 수 있는/.test(SRC));
+  /* 🔴 지시서: 영수증 제목을 「필요 자금 총액」으로. 첫 화면이 「입력 세 번이면 **집 살 때 실제로
+     드는 돈**이 나와요」라고 약속하고 이 제목이 그 약속을 받습니다 — 바꾸면 약속과 받는 말이
+     어긋납니다(v24.28이 영수증 접기를 미채택한 것과 같은 근거).
+     ⚠ 이 검사는 **둘이 같은 말인지**를 봅니다. 한쪽만 고치면 빨간불입니다. */
+  tt('첫 화면의 약속과 영수증 제목이 같은 말이다',
+     /class="subline">입력 세 번이면 집 살 때 실제로 드는 돈이 나와요\./.test(SRC)
+     && /<h2 class="card-title">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
+  /* 🔴 지시서: 「(34평)에 Bold + 포인트 컬러」. 흰 카드 위 --green은 **2.17:1**이라 G-19에서
+     즉시 빨간불입니다. 강조는 **굵기와 잉크 한 단**으로만 냅니다(지침 6-3 · 원칙 62).
+     ⚠ 괄호 포맷도 미채택입니다 — 두 자가 늘면서 390px에서 「2018년」이 잘렸습니다(실측). */
+  tt('실거래 평 강조에 포인트 컬러를 쓰지 않는다',
+     /\.deal \.nm small b\{color:var\(--ink-3\);font-weight:700\}/.test(SRC));
+  tt('실거래 면적이 가운뎃점 리듬을 지킨다',
+     /esc\(a\.m2\) \+ \(a\.py \? ` · <b>\$\{esc\(a\.py\)\}<\/b>` : ''\)/.test(SRC));
+  /* 🔴 「2018년」 → 「18년」도 미채택입니다. 같은 카드 안에 「신축 (10년)」 칩이 있어
+     「N년」이 **기간과 연도** 두 뜻이 됩니다 — 2023년 준공(3년 차)이 「23년 된 집」으로 읽힙니다
+     (원칙 91). 그리고 v24.26이 순서를 동 · 면적 · 평 · 연식으로 잡아 둔 이유가
+     **「모자라면 연식부터 잘리게」**라, 폭 문제는 이미 처리돼 있습니다. */
+  tt('연식이 네 자리 연도 그대로다',
+     /x\.buildYear \? esc\(`\$\{x\.buildYear\}년`\)/.test(SRC)
+     && /id="dealNew"[^>]*>신축 \(10년\)/.test(SRC));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
