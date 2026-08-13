@@ -61,7 +61,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.25 · 정책 2026.08.05 -->
+<!-- BUILD v24.27 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -130,7 +130,17 @@
   --h-cta:54px;     /* 메인 CTA — 화면 하단 고정 · 16px SemiBold */
   --h-opt:46px;     /* 옵션 · 선택 버튼 — 칩 · 세그먼트 · 14px */
   --h-chip:35px;    /* 상태 칩 · 뱃지 — 결과 요약부 · 13px */
-  --r-m:14px; --r-l:20px; --r-xl:26px; --r-pill:999px;
+  /* 🔴 v24.27 — **터치 최소 면적.** 「보이는 높이」가 아니라 「손가락이 닿아야 하는 높이」입니다.
+     --h-* 셋은 화면에 그려지는 크기이고, 이 값은 그 위에 겹치는 투명 면입니다.
+     ⚠ 44를 손으로 적으면 자리마다 43·45가 생깁니다 — 늘릴 곳이 생기면 여기만 고칩니다(원칙 84). */
+  --tap:44px;
+  /* 🔴 v24.26 — **--r-s를 신설했습니다.** 값은 안 바꿨습니다 — `.seg button`과
+     `.costrow .amt`가 `border-radius:10px` **리터럴을 각자 들고 있었습니다.**
+     같은 값이 두 곳에 손으로 적혀 있으면 곡률은 「스케일」이 아니라 「그때그때」가 됩니다(원칙 84).
+   ⚠ 네 단(10·14·20·26)을 **한 값으로 통일하지 않습니다.** 곡률은 크기가 정합니다 —
+     26px 카드와 10px 입력칸에 같은 반경을 주면 큰 면이 뭉툭해지고 작은 면이 동그래집니다.
+     지켜야 할 것은 「한 값」이 아니라 **「스케일 밖 값이 없을 것」**입니다. */
+  --r-s:10px; --r-m:14px; --r-l:20px; --r-xl:26px; --r-pill:999px;
   /* 🔴 v23.21 — 카드 안쪽 여백을 24 → 20px으로 줄였습니다.
      바깥 여백(16px)은 이미 목표치였고, 폭을 실제로 먹고 있던 것은 **카드 자신의 패딩**입니다.
      360px 화면에서 내용 폭 280 → 296px. 「10억」·「0만」 입력칸이 그만큼 숨을 쉽니다. */
@@ -299,7 +309,9 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    혼자 다음 줄로 떨어졌습니다. **위치가 화면마다 달라지면 그건 자리가 없는 것**입니다.
    지우기는 「빠른 추가」의 형제가 아니라 **그 입력칸에 딸린 동작**입니다. 라벨 옆이 제자리입니다. */
 .flabel{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-  margin:22px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
+  /* 🔴 v24.26 — 22 → 24px. 22는 4의 배수가 아니어서 옆 간격들(8·16·20·24)과 눈으로 안 맞았습니다.
+     값 하나를 스케일 안으로 되돌리는 것이지 「더 띄우는」 판이 아닙니다(v24.15 · 26→24와 같은 규칙). */
+  margin:24px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
   letter-spacing:-.02em;line-height:1.4}
 .flabel:first-child{margin-top:0}
 /* 값이 없을 때는 숨깁니다 — 지울 게 없는데 「지우기」가 떠 있으면 소음입니다. */
@@ -392,7 +404,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .seg{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
   padding:5px;border-radius:var(--r-m)}
 /* 세그먼트도 칩과 같은 선택 언어입니다 — 폭 고정 1.5px, 색만 바뀝니다. */
-.seg button{min-height:var(--h-opt);padding:0 4px;border:1.5px solid transparent;border-radius:10px;
+.seg button{min-height:var(--h-opt);padding:0 4px;border:1.5px solid transparent;border-radius:var(--r-s);
   font-size:var(--t6);font-weight:700;color:var(--ink-3);transition:.14s}
 .seg button.is-on{background:var(--card);border-color:var(--green);color:var(--ink);
   box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -509,6 +521,14 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .condchip{display:inline-flex;align-items:center;gap:6px;height:var(--h-chip);padding:0 12px;border-radius:var(--r-pill);
   background:var(--card);border:1px solid var(--line);font-size:var(--t7);font-weight:700;color:var(--ink-2);
   letter-spacing:-.02em;transition:.12s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+/* 🔴 v24.27 — 이 칩은 **누르면 그 단계로 돌아가는 버튼**인데 높이가 35px이었습니다(--h-chip).
+   지침의 44px을 유일하게 못 지키던 자리입니다.
+   ⚠ 높이를 44로 올리지 않습니다 — 이 칩은 결과 요약부에서 **읽는 줄에 얹힌 표시**라
+     46px 옵션칩과 같은 덩치가 되면 「고르는 것」으로 읽힙니다(채널 A 혼선 · 지침 6-3).
+   → 보이는 크기는 35px 그대로 두고 **터치 면만 44px로 넓힙니다.** 투명 ::after라 화면은 안 바뀝니다.
+   ⚠ `<span class="condchip">`(안 눌리는 판)에도 붙지만, span에는 클릭 핸들러가 없어 무해합니다. */
+.condchip{position:relative}
+.condchip::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:var(--tap)}
 .condchip:hover{border-color:var(--ink-4);color:var(--ink)}
 .condchip:active{background:var(--fill);transform:scale(.97)}
 .condchip .cc{font-size:9px;color:var(--ink-4);font-weight:400;margin-left:1px}
@@ -636,12 +656,18 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .costrow .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:600;color:var(--ink-2)}
 .costrow .nm small{display:block;font-size:var(--t7);font-weight:400;color:var(--ink-4);margin-top:3px;line-height:1.6}
 .costrow .amt{width:108px;flex:none;display:flex;align-items:baseline;gap:0;
-  border-radius:10px;padding:8px 11px;background:var(--fill)}
+  border-radius:var(--r-s);padding:8px 11px;background:var(--fill)}
 /* 🔴 v23.24 — 14px이었습니다. iOS Safari는 **16px 미만 입력에 포커스하면 화면을 확대**합니다.
    지침의 「폼 컨트롤은 16px 이상」을 그동안 이 칸만 어기고 있었습니다. */
 .costrow .amt input{width:100%;border:0;padding:0;background:none;text-align:right;
   font-size:var(--t5);font-weight:700;color:var(--ink)}
+/* 🔴 v24.27 — `outline:none`만 있고 **대신 줄 것이 없었습니다.** 키보드로 이 칸에 들어오면
+   포커스가 어디 있는지 화면이 말하지 않습니다. `.mfield`는 같은 문제를 이미
+   `:focus-within`으로 풀어 뒀는데(283줄) 이 칸만 빠져 있었습니다 — **같은 문법으로 맞춥니다.**
+   ⚠ 아웃라인을 안쪽으로(-2px) 넣습니다. 이 칸은 `.costrow` 안에 딱 붙어 있어
+     바깥으로 그리면 옆 줄과 겹칩니다. */
 .costrow .amt input:focus{outline:none}
+.costrow .amt:focus-within{outline:2px solid var(--green);outline-offset:-2px}
 .costrow .amt input:disabled{color:var(--ink-4)}
 .costrow .amt u{text-decoration:none;font-size:var(--t7);color:var(--ink-4);flex:none}
 .costrow .fixed{width:98px;flex:none;text-align:right;font-size:var(--t6);font-weight:700;color:var(--ink-2)}
@@ -665,6 +691,11 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:var(--r-pill);
   outline:none;cursor:pointer;
   background:linear-gradient(to right, var(--green) 0 var(--fill-pct,0%), var(--line) var(--fill-pct,0%) 100%)}
+/* 🔴 v24.27 — 위 `outline:none`은 **기본 트랙을 덮기 위한 것**인데, 그 김에 포커스 표시까지
+   같이 사라졌습니다. 슬라이더는 키보드(←→)로 조작하는 컨트롤이라 포커스가 안 보이면
+   평형·금리를 키보드로 못 씁니다. 트랙은 계속 덮고, **포커스만 되돌려 줍니다.**
+   ⚠ 트랙이 6px이라 아웃라인을 붙여 그리면 선처럼 보입니다 — 4px 띄웁니다. */
+input[type=range]:focus-visible{outline:2px solid var(--espresso);outline-offset:4px}
 input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:var(--r-pill);background:transparent}
 input[type=range]::-moz-range-track{height:6px;border-radius:var(--r-pill);background:var(--line)}
 input[type=range]::-moz-range-progress{height:6px;border-radius:var(--r-pill);background:var(--green)}
@@ -737,6 +768,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
   letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .deal .nm small{display:block;margin-top:3px;font-size:var(--t7);font-weight:400;
   color:var(--ink-4);letter-spacing:-.01em;white-space:nowrap}
+/* 🔴 v24.26 — 평 강조. **새 색을 만들지 않습니다** — 잉크 한 단 + 굵기뿐이고,
+   `.helper b`(--ink-4 바탕에 --ink-3 700)와 **같은 문법**입니다(지침 6-7 · 원칙 62).
+   포인트 컬러를 쓰면 채널 A(누를 수 있는 것)·B(판정)와 섞입니다. */
+.deal .nm small b{color:var(--ink-3);font-weight:700}
 .deal .amt{flex:none;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em;text-align:right}
 /* 🔴 v24.14 — 차액은 금액 **아래 줄**입니다. 옆에 붙이면 「15억 5,000만원+8,000만원」이
    한 덩어리로 읽혀 23억처럼 보입니다(실제로 그렇게 났습니다).
@@ -810,7 +845,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 /* ── 공유용 진단서 (화면 밖에서 렌더) ───────── */
 .reportwrap{position:fixed;left:0;top:0;width:440px;height:0;overflow:hidden;
   opacity:0;pointer-events:none;z-index:-1}
-.report{width:440px;background:var(--card);border-radius:28px;overflow:hidden;border:1px solid var(--line)}
+/* 🔴 v24.27 — 28px은 **스케일(10·14·20·26) 밖에 혼자 있던 값**입니다. 26으로 내립니다.
+   지시서는 「모든 곡률을 한 값으로 통일」을 요구했지만 그것은 안 합니다 — 26px 카드와
+   10px 입력칸에 같은 반경을 주면 큰 면이 뭉툭해지고 작은 면이 동그래집니다(v24.26 판단 유지).
+   지켜야 할 것은 「한 값」이 아니라 **「스케일 밖 값이 없을 것」**이고, 이것이 그 마지막 하나였습니다. */
+.report{width:440px;background:var(--card);border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--line)}
 /* 🔴 v24.1 — 공유 카드 상단을 **브랜드 그린 면**으로 올렸습니다.
    v23.27에서 다크 그라데이션 → 라이트 그레이로 바꿨고, 이번에 한 걸음 더 갑니다.
    카톡에서 받은 사람이 보는 첫 화면이 이 카드이고, **거기서 브랜드가 먼저 읽혀야 합니다.**
@@ -1026,9 +1065,9 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
         <span>부대비용 상세 설정</span><span class="caret">▾</span></button>
       <div class="costbox" id="costBox">
         <p class="tile-s" id="costLead"></p>
-        <div class="costrow"><div class="nm">법무사 · 등기비</div><button class="sw" id="swLegal" role="switch"></button><div class="amt"><input id="inLegal" inputmode="numeric" value="65"><u>만</u></div></div>
-        <div class="costrow"><div class="nm">이사 · 입주청소</div><button class="sw" id="swMove" role="switch"></button><div class="amt"><input id="inMove" inputmode="numeric" value="175"><u>만</u></div></div>
-        <div class="costrow"><div class="nm">가전 · 가구</div><button class="sw" id="swAppl" role="switch"></button><div class="amt"><input id="inAppl" inputmode="numeric" value="500"><u>만</u></div></div>
+        <div class="costrow"><div class="nm">법무사 · 등기비</div><button class="sw" id="swLegal" role="switch"></button><div class="amt"><input id="inLegal" inputmode="numeric" pattern="[0-9]*" value="65"><u>만</u></div></div>
+        <div class="costrow"><div class="nm">이사 · 입주청소</div><button class="sw" id="swMove" role="switch"></button><div class="amt"><input id="inMove" inputmode="numeric" pattern="[0-9]*" value="175"><u>만</u></div></div>
+        <div class="costrow"><div class="nm">가전 · 가구</div><button class="sw" id="swAppl" role="switch"></button><div class="amt"><input id="inAppl" inputmode="numeric" pattern="[0-9]*" value="500"><u>만</u></div></div>
         <a class="mini sm" id="outMove" target="_blank" rel="noopener noreferrer"><div class="txt"><b>이사 · 입주청소 견적 비교하기</b></div><span class="arw">↗</span></a>
       </div>
 
@@ -1066,7 +1105,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
              그대로 입력칸이 됩니다. 두 노드를 형제로 두고 하나만 보입니다.
              ⚠ 이 칸은 칩을 다시 그릴 때 **재생성하지 않습니다** — 타이핑 중에 포커스가 날아갑니다. -->
         <div class="quote-edit" id="itEditWrap" hidden>
-          <input id="itInput" inputmode="numeric" placeholder="0" aria-label="총 인테리어 예산(만원)"><span>만원</span>
+          <input id="itInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" aria-label="총 인테리어 예산(만원)"><span>만원</span>
         </div>
       </div>
       <p class="fielderr" id="itErr" role="alert" aria-live="polite"></p>
@@ -2019,7 +2058,7 @@ const LAWD = {
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info('영끌계산기 BUILD v24.25 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.27 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -2157,7 +2196,7 @@ function renderQuestion(){
       <div class="debtbox ${S.debtOpen?'open':''}">
         <p class="flabel">매달 나가는 대출 원리금<button class="clearbtn" data-debt="0" hidden>지우기</button></p>
         <div class="moneycard debtcard">
-          <div class="mfield"><input id="inDebt" inputmode="numeric" placeholder="0"
+          <div class="mfield"><input id="inDebt" inputmode="numeric" pattern="[0-9]*" placeholder="0"
             value="${S.debtMonthly?comma(S.debtMonthly):''}" aria-label="매달 나가는 대출 원리금"><span>만</span></div>
         </div>
         <p class="helper">신용대출 · 자동차 · 학자금 등 <b>매달 나가는 원리금</b>이에요.</p>
@@ -2171,10 +2210,10 @@ function renderQuestion(){
           <span>대출이 여러 개인가요? 항목별로 더하기</span><span class="caret">▾</span></button>
         <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts">
           <div class="costrow"><div class="nm">신용대출</div>
-            <div class="amt"><input id="inDebtCredit" inputmode="numeric" placeholder="0"
+            <div class="amt"><input id="inDebtCredit" inputmode="numeric" pattern="[0-9]*" placeholder="0"
               value="${S.debtParts.credit?comma(S.debtParts.credit):''}" aria-label="신용대출 월 상환액"><u>만</u></div></div>
           <div class="costrow"><div class="nm">기타 대출<small>마이너스통장 · 자동차 · 학자금 등</small></div>
-            <div class="amt"><input id="inDebtEtc" inputmode="numeric" placeholder="0"
+            <div class="amt"><input id="inDebtEtc" inputmode="numeric" pattern="[0-9]*" placeholder="0"
               value="${S.debtParts.etc?comma(S.debtParts.etc):''}" aria-label="기타 대출 월 상환액"><u>만</u></div></div>
         </div>
       </div>
@@ -2220,7 +2259,7 @@ function moneyCard(field, val, label, helper){
     <div class="moneycard"><div class="mgrid">
     <div class="mfield"><input id="inEok" inputmode="decimal" autocomplete="off" placeholder="0"
       value="${e||''}" aria-label="${label} 억 단위"><span>억</span></div>
-    <div class="mfield"><input id="inMan" inputmode="numeric" autocomplete="off" placeholder="0"
+    <div class="mfield"><input id="inMan" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0"
       value="${m?comma(m):''}" aria-label="${label} 만 단위"><span>만</span></div></div></div>
     <p class="helper">${helper}</p>
     <p class="fielderr" role="alert" aria-live="polite"></p>`;
@@ -2762,8 +2801,10 @@ function renderBento(c){
   const band = ratio<0.20 ? 'ok' : ratio<0.35 ? 'mid' : 'bad';
   $('tileBurden').className='tile-v '+band;
   $('tileBurden').innerHTML=richPct(pct);
-  /* 게이지는 은행 상한 40%를 만석으로 봅니다 */
-  g.innerHTML=`<i class="${band}" style="width:${Math.min(100,Math.round(ratio/0.40*100))}%"></i>`;
+  /* 게이지는 은행 상한(DSR 40%)을 만석으로 봅니다.
+     🔴 v24.26 — `0.40` 리터럴을 `DSR_RATIO`로 바꿨습니다. 바로 위 안내 문구가 같은 숫자를
+        화면에 적으므로, 두 벌로 두면 정책이 바뀔 때 **막대와 설명이 갈립니다**(원칙 58 · 91). */
+  g.innerHTML=`<i class="${band}" style="width:${Math.min(100,Math.round(ratio/DSR_RATIO*100))}%"></i>`;
 }
 /* 🔴 v24.23 — 금리 시뮬레이터를 그립니다.
    ⚠ **대출이 없으면 통째로 숨깁니다.** 갚을 것이 없는데 금리를 물을 이유가 없습니다.
@@ -3157,18 +3198,42 @@ function splitDeals(items, priceMan){
 /* 🔴 v24.14 — 인근 구에서 온 줄만 **구 이름을 답니다.** 안내 문구는 두지 않습니다 —
    구 이름이 보이면 사람은 압니다. 선택한 구의 줄에는 아무것도 안 붙습니다(소음).
    예산 초과 줄에는 금액 옆에 **차액**만 답니다. 「+1억 2,000만원」이 아니라 「+1.2억」 수준으로 짧게. */
+/* 🔴 v24.26 — **면적에 평을 함께 답니다.** 이 화면에서 사람이 실제로 쓰는 단위는 평인데,
+   목록은 ㎡만 말하고 있었습니다. 「84㎡가 몇 평이냐」는 이 도구를 쓰러 온 사람의 두 번째 질문입니다.
+   ⚠ **공급면적은 우리에게 없습니다.** 국토부 API가 주는 것은 `excluUseAr`(전용면적) 하나뿐이라
+     「112/84㎡」 같은 공급/전용 병기는 **지어내지 않는 한 못 합니다**(지침 5층 — 없는 데이터).
+   ⚠ 대신 **이미 갖고 있는 환산 상수**를 씁니다 — `POLICY.area.pyeongToM2`(1평 = 3.3058㎡ × 전용률 74%).
+     인테리어 평형 슬라이더가 쓰는 바로 그 값입니다. 두 번째 상수를 만들면 같은 집이 화면 두 곳에서
+     다른 평수로 불립니다(원칙 58 · 91). 84㎡ → 34평 · 59㎡ → 24평 · 114㎡ → 47평.
+   ⚠ 「전용」 라벨은 **뗄 수 없습니다.** 84㎡(전용)와 34평(공급 기준 통칭)은 기준이 다른 두 값이고,
+     라벨을 떼면 v24.15가 고친 「84㎡인데 왜 34평이냐」가 그대로 돌아옵니다.
+   ⚠ 강조는 **굵기와 잉크 한 단**으로만 냅니다. 포인트 컬러를 쓰면 채널 A(조작)·B(판정)와
+     섞여 「눌리는 것」이나 「경고」로 읽힙니다(지침 6-3 · 원칙 62). `.helper b`와 같은 문법입니다. */
+const areaParts = m2 => {
+  const v = Number(m2);
+  if(!(v > 0) || !isFinite(v)) return null;
+  const p = Math.round(v / POLICY.area.pyeongToM2);
+  return {m2: `전용 ${m2}㎡`, py: (isFinite(p) && p > 0) ? `${p}평` : ''};
+};
+const areaText = m2 => { const a = areaParts(m2); return a ? [a.m2, a.py].filter(Boolean).join(' · ') : ''; };
+
 function dealLine(x, priceMan){
   /* 🔴 v24.15 — **「전용」을 붙입니다.** 같은 결과 화면에 기준이 다른 두 면적이 있습니다:
        · 실거래 목록 — API의 excluUseAr = **전용면적**
        · 인테리어 평형 — 사용자가 고르는 **공급면적**(전용률 74%로 환산해서 씁니다)
      라벨이 없으면 「84㎡인데 왜 25평이라 하지」로 읽힙니다. 숫자가 아니라 **기준이 다른 것**입니다. */
-  const area = x.areaM2 ? `전용 ${x.areaM2}㎡` : '';
+  /* 🔴 v24.26 — 평은 `<b>`로 한 단 올립니다. 순서는 **동 · 면적 · 평 · 연식**입니다 —
+     좁은 화면에서 말줄임이 뒤에서부터 먹으므로, 가장 덜 중요한 연식이 먼저 잘립니다
+     (연식은 「신축」 칩이 따로 답합니다). 글자를 조여 맞추지 않습니다(원칙 111). */
+  const a = areaParts(x.areaM2);
+  const area = a ? esc(a.m2) + (a.py ? ` · <b>${esc(a.py)}</b>` : '') : '';
   const gu = (x.lawd && x.lawd !== S.sgg) ? sggName(x.lawd) : '';
-  const sub = [gu ? gu + ' ' + (x.dong||'') : x.dong, area, x.buildYear ? `${x.buildYear}년` : '']
+  const where = gu ? gu + ' ' + (x.dong||'') : (x.dong||'');
+  const sub = [where ? esc(where) : '', area, x.buildYear ? esc(`${x.buildYear}년`) : '']
     .filter(Boolean).join(' · ');
   const gap = (priceMan && x.amountMan > priceMan)
     ? `<u>+${approxWon((x.amountMan - priceMan) * 10000)}</u>` : '';
-  return `<div class="deal"><div class="nm">${esc(x.name)}<small>${esc(sub)}</small></div>`
+  return `<div class="deal"><div class="nm">${esc(x.name)}<small>${sub}</small></div>`
        + `<div class="amt">${formatWon(x.amountMan*10000)}${gap}</div></div>`;
 }
 const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -3414,7 +3479,11 @@ function paintReportDeals(priceMan){
              화면보다 **덜** 말하면 안 되는 자리입니다(원칙 173 — 틀린 항목이 빠진 항목보다 나쁩니다). */
         const gu = (x.lawd && x.lawd !== S.sgg) ? sggName(x.lawd) : '';
         const where = gu ? (gu + ' ' + (x.dong || '')).trim() : x.dong;
-        const sub = [where, x.areaM2 ? `전용 ${x.areaM2}㎡` : ''].filter(Boolean).join(' · ');
+        /* 🔴 v24.26 — 면적 문구는 **화면(dealLine)과 같은 함수**에서 나옵니다.
+           v24.16에서 구 이름 규칙이 갈렸던 자리와 같은 종류의 위험입니다 — 두 벌로 두면
+           카드에는 평이 없고 화면에는 있는 상태로 조용히 굳습니다(원칙 58).
+           ⚠ 평은 **재산이 역산되는 값이 아닙니다** — 면적일 뿐이라 카드에 나가도 됩니다(원칙 110). */
+        const sub = [where, areaText(x.areaM2)].filter(Boolean).join(' · ');
         return `<div class="d"><span class="n">${esc(x.name)}<small>${esc(sub)}</small></span>`
              + `<span class="a">${formatWon(x.amountMan*10000)}</span></div>`;
       }).join('');
