@@ -5,6 +5,13 @@
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>영끌계산기 — 내 현금으로 넘볼 수 있는 집</title>
+<!-- 🔴 v24.25 — **favicon 404를 없앱니다.** 실기 콘솔에 매 접속마다 빨간 에러가 하나씩
+     찍히고 있었습니다(`/favicon.ico 404`). 기능에는 영향이 없지만, **콘솔에 상시 빨간불이
+     있으면 진짜 에러가 묻힙니다** — 이번에도 그 옆에서 GA4가 도는지 확인해야 했습니다.
+     ⚠ **파일을 늘리지 않습니다.** 이 프로젝트는 단일 정적 HTML을 GitHub 웹으로 올립니다.
+       `.ico`를 따로 두면 배포 절차에 파일이 하나 더 생깁니다 — data URI로 인라인합니다.
+     ⚠ 워드마크와 같은 그린(--green #00CA71) 원 안에 흰 「영」. 새 색을 만들지 않습니다. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300CA71'/%3E%3Ctext x='32' y='45' font-family='system-ui,sans-serif' font-size='38' font-weight='700' fill='%23fff' text-anchor='middle'%3E%EC%98%81%3C/text%3E%3C/svg%3E">
 <!-- 🔴 v24.23 — Google Analytics 4.
      🔴 **ID를 바꾸기 전에는 아무것도 로드되지 않습니다.** 자리표시자 그대로 두면
        구글 스크립트를 부르지도, 쿠키를 심지도 않습니다. 이 가드가 없으면 배포 즉시
@@ -54,7 +61,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.24 · 정책 2026.08.05 -->
+<!-- BUILD v24.25 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -486,7 +493,17 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .rhead-why{display:block;margin:16px 0 0;padding:12px 14px;border-radius:var(--r-m);
   background:var(--ink-tint);font-size:var(--t6);font-weight:600;
   color:var(--ink-2);line-height:1.6}
-.rhead-why.bad{background:var(--warn-tint);color:var(--warn)}
+/* 🔴 v24.25 — **`__selfcheck()`의 G-19가 4.19:1로 잡았습니다.**
+   원인은 색이 아니라 **놓인 자리**입니다(원칙 97) —
+     `--warn`은 주석에 「흰 면 위 5.00:1」로 적혀 있고 실제로 흰 카드 위에서는 4.61:1입니다.
+     그런데 이 알약은 흰 카드가 아니라 **회색 배경(--bg) 위**에 얹힙니다 → 4.19:1.
+   ⚠ **규제·구간한도에 걸린 사람에게만 뜨는 알약**이라 G-19 신설(v24.7) 뒤 처음 측정됐습니다.
+     「검사가 있다」와 「그 조건이 화면에 뜬 적 있다」는 다릅니다.
+   → 원칙 100대로 **면이 아니라 글자를 뒤집습니다.** `--bad`는 같은 자리에서 **6.17:1**입니다.
+   🔴 그리고 이건 채널을 섞는 게 아닙니다 — **클래스 이름이 이미 `.bad`였는데 색만 `--warn`**이었습니다.
+     이름과 값이 어긋나 있던 자리라, 값을 이름에 맞추는 쪽이 맞습니다(원칙 91 · 지침 6-3).
+   ⚠ 면(`--warn-tint`)은 그대로 둡니다. 면까지 바꾸면 톤이 달라져 색만 바꾸는 판이 아니게 됩니다. */
+.rhead-why.bad{background:var(--warn-tint);color:var(--bad)}
 .condbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
 /* 🔴 v23.24 계층 3 — 상태 칩 · 뱃지. 높이 --h-chip · 13px. */
 .condchip{display:inline-flex;align-items:center;gap:6px;height:var(--h-chip);padding:0 12px;border-radius:var(--r-pill);
@@ -510,7 +527,9 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 값은 `--ink`입니다. **판정색(--warn·--bad)을 쓰지 않습니다.** 금리 자체는 좋고 나쁨이
      아니라 그냥 조건입니다. 판정은 아래 부담 게이지가 이미 합니다(지침 6-3 · 원칙 104).
    ⚠ 자간은 숫자 규칙(-.04em)입니다 — `.tile-v`와 같은 계열이라 같이 갑니다. */
-.ratesim{padding-top:18px;padding-bottom:18px}
+/* 🔴 v24.25 — 별도 타일 → **부담 타일 안쪽 구획.** 자기 면을 갖지 않습니다.
+   위와 선 하나로 갈라 「같은 카드 안의 다른 이야기」임을 말합니다(원칙 53). */
+.ratesim{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .ratesim-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .ratesim-v{font-size:var(--t3);line-height:1.15;font-weight:900;letter-spacing:-.04em;
   margin:0;color:var(--ink);white-space:nowrap}
@@ -977,21 +996,25 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
            전에는 **확정된 사실**처럼 읽혔습니다. 금리(연 5.4%)도 기간(30년)도 **우리가 둔 가정**이고,
            실제 금리는 은행·신용도마다 다릅니다. 현재형을 미래형으로 돌리고 아래 줄에 「가정」을 답니다. -->
       <div class="tile"><p class="tile-k">매달 갚을 원리금</p><p class="tile-v" id="tileMonthly"></p><p class="tile-s" id="tileMonthlySub"></p></div>
-      <div class="tile"><p class="tile-k">소득 대비 부담</p><p class="tile-v" id="tileBurden"></p><div class="gauge" id="gauge"></div></div>
-      <!-- 🔴 v24.23 — **금리 스트레스 시뮬레이터.** 두 타일에 걸쳐 전폭입니다.
-           왜 전폭인가: 이 값이 **위 두 타일을 동시에** 움직입니다. 한쪽 타일 안에 넣으면
-             다른 타일이 왜 같이 변하는지 설명이 안 됩니다(원칙 53 — 옆에 두면 그것의 일부로 읽힙니다).
-           🔴 **무엇을 지웠는가**(4층 관문 3): 「매달 갚을 원리금」 타일의 부속 줄이
-             「연 5.4% · 30년 가정」이었습니다. 그 줄의 **금리 부분이 이 슬라이더가 됐습니다.**
-             새 카드를 더한 것이 아니라 **고정 문구를 움직이는 값으로 바꾼 것**입니다.
-           🔴 **이 값은 엔진에 안 들어갑니다.** 위 매수 가능 금액과 대출 한도는 그대로입니다 —
-             한도는 **스트레스 금리(6.9%)**로 잡고 상환액은 실제 금리로 계산하는 구조라,
-             여기서 엔진을 건드리면 그 관계가 깨집니다. 그래서 이름이 「금리가 오르면」입니다.
-           ⚠ 대출이 없으면 통째로 숨깁니다 — 갚을 것이 없는데 금리를 물을 이유가 없습니다. -->
-      <div class="tile wide ratesim" id="rateSim" hidden>
-        <div class="ratesim-hd"><p class="tile-k">금리가 오르면</p><p class="ratesim-v" id="rateSimV"></p></div>
-        <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
-        <p class="tile-s" id="rateSimNote"></p>
+      <!-- 🔴 v24.25 — **금리 시뮬레이터를 「소득 대비 부담」 타일 안으로 넣었습니다.**
+           ⏹ v24.23에서는 두 타일 아래 **별도 전폭 타일**이었습니다. 근거는 「이 값이 두 타일을
+             동시에 움직이므로 한쪽에 넣으면 설명이 안 된다」였습니다. **그 판단이 틀렸습니다** —
+             `__selfcheck()`의 「결과 블록 ≤ 8」이 실기에서 **9개**로 빨간불을 냈습니다.
+           🔴 4층 관문 3번(무엇을 지우는가)에 제가 「부속 줄의 금리」라고 답했는데,
+             **그건 줄이지 블록이 아닙니다.** 관문을 통과 못 한 상태로 넣었던 것입니다.
+             상한을 9로 올리는 길도 있었지만, 그건 관문을 검사 쪽에서 무르는 일입니다.
+           → 부담 타일 안에 둡니다. 금리가 **부담률을 바꾸는 값**이라 자리가 맞고,
+             블록은 **8개로 돌아옵니다.** 「매달 갚을 원리금」이 같이 움직이는 것은
+             `rateSimNote`가 말합니다.
+           ⚠ 대출이 없으면 통째로 숨깁니다 — 갚을 것이 없는데 금리를 물을 이유가 없습니다.
+           ⚠ 이 값은 **엔진에 안 들어갑니다.** 한도는 스트레스 금리(6.9%)로 잡고 상환액만
+             실제 금리로 계산하는 구조라, 여기서 엔진을 건드리면 그 관계가 깨집니다. -->
+      <div class="tile wide"><p class="tile-k">소득 대비 부담</p><p class="tile-v" id="tileBurden"></p><div class="gauge" id="gauge"></div>
+        <div class="ratesim" id="rateSim" hidden>
+          <div class="ratesim-hd"><p class="tile-k">금리가 오르면</p><p class="ratesim-v" id="rateSimV"></p></div>
+          <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
+          <p class="tile-s" id="rateSimNote"></p>
+        </div>
       </div>
     </div>
 
@@ -1996,7 +2019,7 @@ const LAWD = {
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info('영끌계산기 BUILD v24.24 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.25 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3620,10 +3643,15 @@ window.__selfcheck = function(){
 
      상한의 근거
        .helper  1줄 — 두 줄이 되면 입력칸과 빠른 추가 칩 사이가 벌어져 덩어리가 흐려집니다
-       .legal   2줄 — 내용을 줄일 수 없는 글입니다(정책대출 미반영·DSR 근거가 걸려 있음).
-                      **줄일 것은 문장이 아니라 줄 수**이고, 두 줄이 그 하한입니다.
+       .legal   5줄 — 🔴 v24.25에서 2 → 5. **전제가 바뀌었습니다.**
+                      전에는 법적 고지가 **한 문장**(시뮬레이션 추정치)이라 두 줄이 하한이었습니다.
+                      v24.23에서 **금소법 문구가 더해져 두 문장**이 됐습니다 —
+                      「금융상품 판매 대리·중개업자가 아닙니다」는 우리가 줄일 수 있는 글이 아닙니다.
+                      ⚠ 상한을 올려 빨간불을 없앤 것이 아닙니다. **문장 수가 늘어난 만큼만** 올렸습니다.
+                        세 번째 문장이 붙어 6줄이 되면 다시 빨간불이 되고, 그때 물어야 할 것은
+                        「상한을 올릴까」가 아니라 **「이 문장이 정말 필요한가」**입니다.
      ⚠ 좁은 폭에서 재야 의미가 있습니다 — 360px에서 돌리세요. */
-  const LINEMAX=[['.helper',1],['#result .legal',2]];
+  const LINEMAX=[['.helper',1],['#result .legal',5]];
   const lineOver=[], lineTally=[];
   LINEMAX.forEach(([sel,max])=>{
     let seen=0;
