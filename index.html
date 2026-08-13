@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.20 · 정책 2026.08.05 -->
+<!-- BUILD v24.21 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -320,9 +320,33 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .pane{margin-top:26px}
 .pane-title{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px;letter-spacing:.02em}
 .taggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.taggrid .chip{padding:0 8px;font-size:var(--t6);text-align:center;line-height:1.35;
-  letter-spacing:-.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.taggrid .chip{display:inline-flex}
+/* 🔴 v24.21 — **열 수는 가장 긴 이름이 정합니다.** 지역별로 하드코딩하지 않습니다.
+   처음에는 「경기·인천만 2열」로 짰습니다. **틀렸습니다.** 목록을 전부 재 보니 같은 결함이
+   여섯 곳 더 있었고, 최장 이름은 경기가 아니라 **「창원시 마산합포구」**였습니다 —
+     경기·인천 9자(경기 고양시 일산동구) · 경남 8 · 세종 7 · 충북·충남·전북 6 · 경북 5
+     서울 4(동대문구) · 부산 4 · 제주 4 · 강원 3 · 대구 3 · 대전 3 · 울산 3 · 광주전남 3
+   → 이름을 보고 정하게 두면 **다음에 지역이 늘어도 저절로 맞습니다**(원칙 58 — 사실은 한 곳에서).
+
+   폭 계산(360px 기준 — 가장 좁은 실기):
+     화면 360 − .funnel 24 − .q 40 = 296 → 3열 칸 안쪽 ≈ 83px(5.9자) · 2열 ≈ 131px(9.3자)
+   → 다섯 자부터 3열을 넘칩니다. 그래서 기준이 5자입니다(공백 제외).
+   ⚠ 접두어(「경기 」)를 지워서 줄이는 길은 **막혀 있습니다.** 「중구 · 동구 · 서구」만 남으면
+     서울 자치구와 구별이 안 됩니다(원칙 39). 지울 것은 글자가 아니라 열입니다. */
+.taggrid.wide{grid-template-columns:repeat(2,1fr)}
+/* 2열은 칸이 넓으니 좌우 여백을 줄여 글자에 3px을 더 줍니다 — 360px에서 최장 이름이
+   여기서 갈립니다(128.6px 필요 / 8px 여백이면 127px · 6px이면 131px). */
+.taggrid.wide .chip{padding:0 6px}
+/* 🔴 v24.21 — **말줄임이 여태 한 번도 돌지 않았습니다.**
+   `text-overflow:ellipsis`는 바로 아래 줄의 `display:inline-flex`가 덮어써서 죽어 있었습니다
+   (flex 컨테이너의 글자는 익명 flex 아이템이 되어 말줄임 규칙이 안 걸립니다).
+   `overflow:hidden`만 살아 있었고 `justify-content:center` 때문에 **양끝이 같이 잘렸습니다** —
+   「ㅕ기 고양시 일산동ㄱ」로 보이던 것이 이 조합입니다.
+   → 글자를 span으로 감싸 **flex 아이템에** 말줄임을 겁니다. `min-width:0`이 있어야 줄어듭니다.
+   ⚠ 이건 2열 조치의 대체가 아니라 **그물**입니다. 이름이 더 길어져도 글자가 반토막 나지 않습니다. */
+.taggrid .chip{padding:0 8px;font-size:var(--t6);line-height:1.35;
+  letter-spacing:-.03em;display:inline-flex;overflow:hidden}
+.taggrid .chip>span{display:block;min-width:0;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sidoscroll{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
 .sidoscroll::-webkit-scrollbar{display:none}
 .sidoscroll .chip{flex:none;padding:0 16px;font-size:var(--t6)}
@@ -813,6 +837,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
 .report-mix .lg .k{color:var(--ink-3);font-weight:var(--w-sub)}
 .report-mix .lg .v{font-weight:var(--w-key);color:var(--ink)}
 .report-mix .lg .a{font-weight:var(--w-sub);color:var(--ink-4)}
+/* 🔴 v24.21 — 「준비할 현금」이 무엇까지 담았는지 한 줄. 범례에 딸린 각주라 면을 깔지 않습니다.
+   ⚠ 440px 고정 캔버스입니다. 항목을 다 켜면 두 줄이 되는데, 잘라내지 않고 흐르게 둡니다 —
+     여기서 잘리면 「무엇이 빠졌는지」를 못 보고, 그게 이 줄을 넣은 이유 자체를 무너뜨립니다. */
+.report-mix .nt{margin:10px 0 0;font-size:var(--t7);font-weight:var(--w-sub);
+  line-height:var(--lh-body);letter-spacing:var(--ls-body);color:var(--ink-4)}
 
 /* ⏹ v24.15 — .report-line 네 줄을 **삭제했습니다.** 「매달 갚는 돈」이 빠지면서
    #rLines가 통째로 없어졌고, 남은 두 값은 .report-mix .lg가 말합니다.
@@ -1000,10 +1029,15 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
            **아래가 통째로 빈 자리가 됩니다.** 격자에서 빈 자리는 글자보다 더 눈에 띕니다.
            「구질구질하지 않게」의 답이 「지우기」가 아니었던 자리입니다.
            ⚠ 카드를 얇게 만들고 싶으면 문구가 아니라 **패딩·높이**를 건드리세요. -->
-      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b><span>메신저와 SNS 어디든 바로 공유할 수 있어요</span></div><span class="arw">↓</span></button>
+      <!-- 🔴 v24.21 — 아래 두 칸의 설명이 **같은 말을 하고 있었습니다.**
+           전: 「메신저와 SNS 어디든 바로 공유할 수 있어요」 / 「카톡·문자로 바로 보내거나 복사할 수 있어요」
+           둘 다 「어디로 보낼 수 있는가」만 말합니다 — 그건 두 칸이 똑같아서 **고르는 데 도움이 안 됩니다.**
+           후: 갈리는 것은 **매체와 내용**입니다. 하나는 단지까지 담은 그림, 하나는 금액만 담은 글자입니다.
+           ⚠ 설명 줄 자체는 지우지 않습니다 — 위 v24.6 주석의 격자 이유가 그대로 삽니다. -->
+      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b><span>금액과 단지까지 그림 한 장에 담겨요</span></div><span class="arw">↓</span></button>
       <!-- 🔴 v24.15 — 이름을 「복사하기」에서 바꿨습니다. 이제 폰에서는 **공유 시트가 바로 열립니다.**
            「복사하기」라고 적어 두면 사람이 앱을 나가서 붙여넣을 준비를 합니다 — 안 그래도 되는데. -->
-      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 보내기</b><span>카톡·문자로 바로 보내거나 복사할 수 있어요</span></div><span class="arw">⧉</span></button>
+      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 보내기</b><span>금액만 글자로 보내거나 복사해요</span></div><span class="arw">⧉</span></button>
       </div>
     </div>
 
@@ -1852,7 +1886,7 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v24.20 · 정책 2026.08.05');
+console.info('영끌계산기 BUILD v24.21 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -2058,8 +2092,17 @@ function regionPane(){
     : '<b>수도권 밖이에요.</b> 대출 기준이 가장 여유로운 편이에요.'}</div>` : '';
   return inner + tag;
 }
-const tagGrid = list => `<div class="taggrid">${list.map(([c,nm])=>
-  `<button class="chip ${S.sgg===c?'is-on':''}" data-sgg="${c}">${nm}</button>`).join('')}</div>`;
+/* 🔴 v24.21 — 글자를 span으로 감쌉니다. 말줄임은 **flex 아이템에** 걸어야 돕니다(.taggrid CSS 주석).
+   🔴 열 수는 **목록이 정합니다.** 다섯 자(공백 제외)를 넘는 이름이 하나라도 있으면 2열입니다.
+      한 칸이라도 잘리면 그 칸은 못 고르는 칸이라, 그리드 전체가 긴 쪽에 맞춥니다.
+   ⚠ 지역 이름을 여기 적어 두지 않습니다 — 적는 순간 LAWD가 늘 때마다 같이 고쳐야 하고,
+     실제로 「경기·인천만」으로 적었다가 여섯 곳을 놓쳤습니다. */
+const TAG_WIDE = 5;
+const tagGrid = list => {
+  const wide = list.some(([,nm]) => nm.replace(/\s/g,'').length >= TAG_WIDE);
+  return `<div class="taggrid${wide?' wide':''}">${list.map(([c,nm])=>
+    `<button class="chip ${S.sgg===c?'is-on':''}" data-sgg="${c}"><span>${nm}</span></button>`).join('')}</div>`;
+};
 
 function answeredVal(id){
   if(id==='cash')   return S.cash ? formatWon(man(S.cash)) + (S.noLoan?' · 대출 없이':'') : '—';
@@ -2490,13 +2533,31 @@ function renderDiscs(){
 
 const row=(k,v,cls)=>`<div class="line ${cls||''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
 
+/* 🔴 v24.21 — **「준비할 현금」이 가진 돈보다 큰 이유를 한 줄로 답합니다.**
+   화면에는 이미 답이 있습니다 — 영수증이 항목을 줄줄이 적고 그 아래 「가진 돈보다 N원이 더 필요해요」가 뜹니다.
+   그런데 **밖으로 나가는 둘(공유 이미지·요약 문구)에는 그 답이 없었습니다.** 금액만 크게 나가고,
+   받는 사람도 보낸 사람도 「왜 10억을 넣었는데 10억 4,050만이지」에 답을 못 얻습니다.
+   ⚠ 카드와 요약 문구가 **같은 함수**를 씁니다. 두 벌로 두면 반드시 어긋납니다(원칙 58).
+   ⚠ 구분자는 **쉼표**입니다. 가운뎃점으로 이으면 「법무사 · 등기비」가 두 항목으로 읽힙니다 —
+     v24.16 영수증 기타비용에서 실제로 겪은 함정입니다(1-2장). 이름 안에 이미 가운뎃점이 있습니다.
+   ⚠ 켠 것만 셉니다. 안 켠 항목을 적으면 영수증과 어긋납니다.
+   ⚠ 「~까지」로 닫습니다 — 「~를/을」로 닫으면 마지막 항목의 받침에 따라 조사가 갈립니다. */
+function cashNote(c){
+  const p = ['취득세', '중개보수'];
+  if(S.legal.on && S.legal.v > 0) p.push('법무사 · 등기비');
+  if(c.interiorCost > 0)          p.push('인테리어');
+  if(S.move.on && S.move.v > 0)   p.push('이사 · 입주청소');
+  if(S.appl.on && S.appl.v > 0)   p.push('가전 · 가구');
+  return `집값 말고 ${p.join(', ')}까지 들어 있어요`;
+}
+
 function renderBento(c){
   const total=c.totalNeeded, loan=c.mortgageLoan, own=Math.max(0,total-loan);
   const ownPct = total>0 ? Math.round(own/total*100) : 100;
   $('fundStack').innerHTML=`<i class="f1" style="width:${ownPct}%"></i><i class="f2" style="width:${100-ownPct}%"></i>`;
   $('fundLegend').innerHTML = loan>0
-    ? `<div><span class="f1"></span>내 돈 <b>${ownPct}%</b></div><div><span class="f2"></span>주택담보대출 <b>${100-ownPct}%</b></div>`
-    : `<div><span class="f1"></span>전부 내 돈으로 마련해야 해요 <b>100%</b></div>`;
+    ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b></div><div><span class="f2"></span>주택담보대출 <b>${100-ownPct}%</b></div>`
+    : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>100%</b></div>`;
   const m=monthlyPaymentCalc(loan, D.rate, D.years);
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
   /* 🔴 v24.18 — 전: 「빌리는 돈이 없어요」. 「돈이 없다」로 읽힐 여지가 있었고,
@@ -2527,12 +2588,16 @@ function renderReceipt(c, price){
         + row('취득세 · 지방교육세', formatWon(c.tax))
         + row('중개보수 (부가세 포함)', formatWon(c.brokerFee));
   if(c.interiorCost>0) h += row('인테리어', formatWon(c.interiorCost));
-  /* 켠 것만, 켠 순서대로. 합계는 아래 「내가 준비할 현금」이 이미 말합니다. */
+  /* 켠 것만, 켠 순서대로. 합계는 아래 「준비할 현금」이 이미 말합니다. */
   ETC_ROWS.forEach(([k,label]) => {
     if(S[k].on && S[k].v > 0) h += row(label, formatWon(S[k].v * 10000));
   });
   if(c.mortgageLoan>0) h += row('주택담보대출','-'+formatWon(c.mortgageLoan),'minus');
-  h += row('내가 준비할 현금', richWon(Math.max(0,c.cashNeeded)),'total');
+  /* 🔴 v24.21 — 「내가 준비할 현금」 → 「준비할 현금」.
+     같은 값이 네 자리에서 「내 돈」·「내가 준비할 현금」·「준비할 현금」 셋으로 불리고 있었고,
+     그중 둘(공유 이미지·요약 문구)은 **한 번의 공유로 같이 나갑니다.**
+     받는 사람은 두 값이 같은 것인지 알 수 없었습니다(원칙 91). 넷을 「준비할 현금」으로 맞춥니다. */
+  h += row('준비할 현금', richWon(Math.max(0,c.cashNeeded)),'total');
   const over = c.cashNeeded - man(S.cash);
   if(over > 10000) h += `<div class="overnote">가진 돈보다 <b>${formatWon(over)}</b>이 더 필요해요</div>`;
   $('receipt').innerHTML=h;
@@ -2920,8 +2985,13 @@ function paintDeals(priceMan){
   }
   list.innerHTML = rows.slice(0, DEAL.rows).map(x => dealLine(x, priceMan)).join('');
   /* 인근 구까지 봤으면 그 사실만 한 마디. 어느 구인지는 각 줄이 말합니다. */
+  /* 🔴 v24.21 — **몇 건 중 몇 곳을 보여 주는지 말합니다.**
+     실물에서 헤더가 「147건」이라고 하고 목록은 다섯 줄이었습니다 — 3.4%입니다.
+     사용자는 147건을 다 본 줄 알거나, 목록이 고장 난 줄 압니다. 둘 다 사실이 아닙니다.
+     ⚠ 잘린 게 없으면 「중 N곳」을 붙이지 않습니다 — 「5건 중 5곳」은 잉여입니다(원칙 43). */
+  const shown = Math.min(rows.length, DEAL.rows);
   lead.textContent = (DEAL.wide ? `${regionLabel()}와 인근 구` : regionLabel())
-    + ` · 최근 3개월 · ${total}건`;
+    + ` · 최근 3개월 · ${total}건` + (total > shown ? ` 중 ${shown}곳` : '');
   foot.textContent = '국토교통부 실거래가예요. 해제된 거래는 뺐어요.';
 }
 
@@ -2997,7 +3067,9 @@ function renderOutlinks(price){
 /* ── 공유 ─────────────────────────────────── */
 function renderReport(v){
   const {c, headline, isOverride} = v;
-  const m = monthlyPaymentCalc(c.mortgageLoan, D.rate, D.years);
+  /* ⏹ v24.21 — `const m = monthlyPaymentCalc(...)`를 지웠습니다. **v24.15에서 월 상환 줄을 빼면서
+     쓰는 곳이 없어졌는데 계산만 남아 있었습니다.** 죽은 코드는 다음 사람에게 「아직 쓰는 것」으로
+     보입니다(원칙 47). 이 카드는 이제 월 상환을 말하지 않습니다. */
   /* 🔴 v24.15 — **조건 줄에서 현금을 뺐습니다.**
      카톡 이미지는 단톡방에서 재전달됩니다. 「현금 10억원」은 **입력한 재산 그 자체**입니다.
      지역·보유 상태만으로도 카드의 맥락은 충분합니다. */
@@ -3010,16 +3082,32 @@ function renderReport(v){
      막대는 비율, 아래 줄은 그 비율의 실제 금액입니다 — 같은 두 값을 두 방식으로 한 번에 보여 줍니다. */
   const own = Math.max(0, c.totalNeeded - c.mortgageLoan);
   const ownPct = c.totalNeeded > 0 ? Math.round(own / c.totalNeeded * 100) : 100;
-  /* 이름 → 비율 → 금액 순입니다. 비율이 막대에 딸린 값이라 막대에 가깝게 둡니다. */
-  const mixRow = (dot, name, won, pct) =>
+  /* 이름 → 비율. **금액은 찍지 않습니다** — 아래 v24.21 주석. */
+  const mixRow = (dot, name, pct) =>
     `<div class="r"><i class="${dot}"></i><span class="k">${name}</span>`
-    + `<span class="v">${pct}%</span><span class="a">(${formatWon(won)})</span></div>`;
+    + `<span class="v">${pct}%</span></div>`;
+  /* 🔴 v24.21 — 「내 돈」 → 「준비할 현금」, 그리고 **괄호 금액을 뺐습니다.**
+     ⏹ 이름 — 「내 돈」은 **「내가 지금 가진 돈」으로 읽힙니다.** 실제 값은 인테리어·부대비용까지
+       더한 「내야 하는 현금」이라, 이름이 값보다 작게 약속하고 있었습니다(원칙 39 · 91).
+       같은 값이 네 자리에서 세 이름으로 불렸고 그중 둘은 **한 번의 공유로 같이 나갑니다.**
+     🔴 금액 — 이건 되돌리기가 아니라 **코드를 제 주석에 맞추는 일**입니다.
+       바로 위 v24.15 주석이 이 막대를 두는 근거로 「비율이라서 **재산이 역산되지 않습니다**」를
+       적어 뒀는데, **정작 같은 판에서 괄호로 금액을 찍었습니다.** 주석과 코드가 어긋나 있었습니다.
+       실물에서 가진 돈 10억을 넣은 사람의 카드에 「(10억원)」이 그대로 실렸습니다 —
+       인테리어를 안 켜면 준비할 현금 = 가진 돈이라, **단톡방에 재전달되는 그림에 통장 잔고가 나갑니다.**
+       규모는 카드 맨 위 「14억 7,600만원 선」이 이미 말합니다. 아래 둘은 그걸 쪼갠 것뿐이고,
+       쪼갠 값 하나가 하필 사용자의 재산입니다.
+     ⚠ **요약 문구(텍스트)에는 금액을 남깁니다.** 그림은 저장돼 재전달되지만, 텍스트는 보내기 전에
+       본인이 문장을 눈으로 읽습니다. 매체가 다르면 판단도 갈립니다.
+     ⚠ 되돌리려면 mixRow에 won 인자를 되살리고 `<span class="a">(${formatWon(won)})</span>`를
+       붙이면 됩니다. .report-mix .lg .a 규칙은 그대로 뒀습니다. */
+  const note = `<p class="nt">${cashNote(c)}</p>`;
   $('rMix').innerHTML = c.mortgageLoan > 0
     ? `<div class="bar"><i class="f1" style="width:${ownPct}%"></i><i class="f2" style="width:${100-ownPct}%"></i></div>`
-      + `<div class="lg">${mixRow('d1','내 돈', Math.max(0,c.cashNeeded), ownPct)}`
-      + `${mixRow('d2','주택담보대출', c.mortgageLoan, 100-ownPct)}</div>`
+      + `<div class="lg">${mixRow('d1','준비할 현금', ownPct)}`
+      + `${mixRow('d2','주택담보대출', 100-ownPct)}</div>` + note
     : `<div class="bar"><i class="f1" style="width:100%"></i></div>`
-      + `<div class="lg">${mixRow('d1','전부 내 돈', Math.max(0,c.cashNeeded), 100)}</div>`;
+      + `<div class="lg">${mixRow('d1','전부 현금', 100)}</div>` + note;
 
   /* ⏹ v24.15 — 「매달 갚는 돈」과 「소득 대비 부담」·「무엇이 정했나」를 **전부 뺐습니다.**
      · 소득 대비 부담 — 「매달 갚는 돈」과 같이 있으면 **연소득이 역산됩니다**(301만 × 12 ÷ 0.18 ≈ 2억)
@@ -3112,7 +3200,6 @@ function paintReportDeals(priceMan){
 function summaryText(){
   if(!LASTVIEW) return '';
   const {c, headline, isOverride} = LASTVIEW;
-  const m = monthlyPaymentCalc(c.mortgageLoan, D.rate, D.years);
   const L = [];
   L.push('영끌계산기 · 자금 진단서');
   L.push(`${regionLabel()} · ${HOUSE[S.houseStatus]}`);
@@ -3122,7 +3209,18 @@ function summaryText(){
   L.push('');
   L.push(`· 준비할 현금 ${formatWon(Math.max(0, c.cashNeeded))}`);
   if(c.mortgageLoan > 0) L.push(`· 주택담보대출 ${formatWon(c.mortgageLoan)}`);
-  if(m > 0) L.push(`· 매달 갚을 원리금 ${formatWon(m)} (연 ${D.rate}% · ${D.years}년 가정)`);
+  /* 🔴 v24.21 — **「매달 갚을 원리금」 줄을 뺐습니다.**
+     ⏹ v24.15가 이미지에서 뺀 이유가 그대로 여기에도 걸립니다: 금리·기간을 같이 달아야 해석이 되고,
+       그 조건까지 붙이면 세 줄짜리 요약에 **가정이 사실보다 길어집니다.**
+       당시 「텍스트는 밀도를 견딘다」로 남겨 뒀는데, 실물에서 보니 견디는 것과 필요한 것은 다릅니다.
+     ⏹ 이 문구는 **받는 사람에게 보내는 것**입니다. 남의 월 상환액은 받는 사람이 쓸 데가 없고,
+       보낸 사람의 재무 상태만 한 겹 더 흘립니다(원칙 43 · v24.15의 재산 노출 판단과 같은 방향).
+     ⚠ 화면 타일 「매달 갚을 원리금」은 **그대로 둡니다.** 거기는 본인이 보는 자리입니다.
+     ⚠ monthlyPaymentCalc 호출도 같이 지웠습니다 — 쓰는 곳이 없는 계산을 남기지 않습니다(원칙 47). */
+  /* 🔴 v24.21 — 앞에 빈 줄을 둡니다. 실물에서 불릿 두 개에 바로 붙어 **세 번째 불릿처럼**
+     보였습니다. 이 줄은 항목이 아니라 위 두 줄에 대한 각주입니다. */
+  L.push('');
+  L.push(cashNote(c));
   L.push('');
   L.push('단순 시뮬레이션 추정치');
   L.push('내 조건으로 계산해 보기');
