@@ -376,8 +376,11 @@ HYGIENE.forEach(([name, over]) => {
      검사가 그 오타를 그대로 고정해 주고 있었습니다. 새로고침하면 고급(250)이 일반(150)이 되어
      25평 기준 필요현금이 2,500만원 줄었습니다 — **유리한 쪽 오차**(원칙 28).
      지금은 목록을 손으로 적지 않고 INTERIOR에서 끌어오는지를 봅니다. */
+  /* 🔴 v24.22 — 상한을 **숫자 50으로** 잠그고 있었습니다. 상한을 올리는 정당한 변경을
+     검사가 막았습니다(원칙 48). 잠글 사실은 「50인가」가 아니라 **「클램프가 있는가」**입니다.
+     실제 값이 슬라이더와 같은지는 바로 아래 검사가 따로 봅니다. */
   tt('되살린 파생값도 검사한다',
-     /S\.pyeong = Math\.max\(0, Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, 50\)\);/.test(UI)
+     /S\.pyeong = Math\.max\(0, Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, PYEONG_MAX\)\);/.test(UI)
      && /const IT_OK = INTERIOR\.map\(o => o\.v\);/.test(UI)
      && /S\.interior = IT_OK\.indexOf\(\+S\.interior\) >= 0/.test(UI));
   /* 🔴 v24.7 — 손으로 적은 목록이 다시 들어오는 것을 막습니다.
@@ -396,15 +399,18 @@ HYGIENE.forEach(([name, over]) => {
      if(draft.length < 100) return false;                    /* 구간을 못 자르면 🔴 */
      return !/\[\s*0\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\]/.test(draft);
   })());
-  /* 슬라이더 상한(50)과 복원 상한(50)이 같은지 — 다르면 되살릴 때 값이 잘립니다. */
-  tt('평형 복원 상한이 슬라이더 max와 같다', (()=>{
-     const src = fs.readFileSync(FILE,'utf8');
-     const m = src.match(/id="pyeongRange"[^>]*max="(\d+)"/);
-     const n = UI.match(/Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, (\d+)\)/);
-     return !!m && !!n && m[1] === n[1];
-  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8');
-     const m=src.match(/id="pyeongRange"[^>]*max="(\d+)"/), n=UI.match(/\|\| 0, (\d+)\)/);
-     return '슬라이더 '+(m?m[1]:'?')+' / 복원 '+(n?n[1]:'?'); })());
+  /* 🔴 v24.22 — 상한이 **마크업과 JS 두 곳**에 있었습니다. 둘이 갈리면 화면은 「100평」이라
+     해 놓고 계산은 50평으로 도는, 가장 찾기 어려운 어긋남이 납니다.
+     이제 `PYEONG_MAX` 하나에서 나오고 `renderPkg()`가 슬라이더 `max`를 덮어씁니다.
+     → 잠글 사실은 **「덮어쓰는 코드가 있는가」**와 **「클램프가 같은 상수를 쓰는가」**입니다. */
+  tt('평형 상한이 한 곳에서만 나온다', (()=>{
+     const n = UI.match(/const PYEONG_MAX = (\d+);/);
+     if(!n) return false;
+     return +n[1] >= 100                                  /* 대형 평형을 자르지 않습니다 */
+         && /r\.max = PYEONG_MAX;/.test(UI)                /* 슬라이더를 덮어씁니다 */
+         && /\|\| 0, PYEONG_MAX\)/.test(UI)                /* 복원 클램프도 같은 상수 */
+         && (UI.match(/Math\.min\(parseInt\(S\.pyeong,10\) \|\| 0, \d+\)/g)||[]).length === 0;
+  })(), (()=>{ const n=UI.match(/const PYEONG_MAX = (\d+);/); return 'PYEONG_MAX '+(n?n[1]:'없음'); })());
   /* render()가 퍼널을 그릴 때마다 결과 플래그를 내려야 합니다. 안 내리면 영영 결과로 돌아갑니다. */
   tt('퍼널로 가면 결과 플래그가 내려간다',
      /function render\(\)\{\s*S\.onResult = false;/.test(UI)
@@ -581,16 +587,37 @@ HYGIENE.forEach(([name, over]) => {
          && /--t7:13px/.test(src);
   })());
   /* 🔴 v23.27 — 입력 피드백 */
-  tt('콤마를 다시 찍어도 캐럿이 유지된다',
-     /function setCommaValue\(el, digits\)/.test(UI)
+  /* 🔴 v24.22 — 캐럿 복원을 **모든 숫자 입력이 같은 길로** 지나가게 했습니다.
+     전에는 만원 필드만 이 길을 쓰고 억 필드는 `.value`에 직접 써서, 값이 정리되는 순간
+     캐럿이 끝으로 튀었습니다(「1.5」의 1 뒤에서 「.」 → 「1..5」 → 「1.5」).
+     ⚠ 옛 검사는 `digitsBeforeCaret`이라는 **변수 이름**을 잠그고 있었습니다 — 이름은 사실이 아닙니다. */
+  tt('캐럿 복원이 한 곳에서만 나온다',
+     /function setMaskedValue\(el, next, isKeep\)/.test(UI)
      && /el\.setSelectionRange\(i, i\)/.test(UI)
-     && /digitsBeforeCaret/.test(UI));
+     && (UI.match(/setSelectionRange/g)||[]).length === 1);
+  tt('억 필드가 value에 직접 쓰지 않는다', (()=>{
+     const m = UI.match(/eokEl\.oninput = \(\) => \{[\s\S]*?\n  \};/);
+     if(!m) return false;
+     return /setMaskedValue\(eokEl,[\s\S]*?isDigitOrDot\)/.test(m[0])
+         && !/eokEl\.value\s*=/.test(m[0]);
+  })());
+  /* `g`가 붙은 정규식의 test()는 lastIndex를 들고 다녀 호출 순서에 결과가 달라집니다. */
+  tt('캐럿 판정이 정규식이 아니라 함수다',
+     /const isDigit\s+= ch =>/.test(UI) && /const isDigitOrDot = ch =>/.test(UI));
   /* 값이 잘렸는데 아무 말도 안 하면 사용자는 자기가 잘못 눌렀다고 생각합니다. */
   tt('잘린 입력을 화면으로 말한다', (()=>{
      /* 🔴 v24.7 — 셋째 문구를 라벨과 같은 이름으로 고쳤습니다(G-8). 예전엔 「월 상환액」이었는데
         그 입력칸의 라벨은 「매달 나가는 대출 원리금」이라 화면에서 두 이름이 됐습니다. */
-     const msgs = ['억 단위는 9,999까지','만 단위는 99,999까지','매달 나가는 대출 원리금은 9,999만원까지'];
-     return msgs.every(m => UI.includes(m)) && (UI.match(/fieldErr\(/g)||[]).length >= 4;   /* 정의 1 + 호출 3 */
+     /* 🔴 v24.22 — 문구를 **제한 수치가 먼저 오도록** 다시 썼습니다. 에러 줄은 읽는 것이 아니라
+        보이는 것이라, 목적어가 앞에 오면 스캔이 한 박자 늦습니다.
+        ⚠ 그래서 이 검사도 **문장이 아니라 형태**를 봅니다 — 네 문구가 전부 「최대」로 시작하는가.
+        ⚠ 「99,999만원」처럼 사람이 못 읽는 단위도 같이 고쳤습니다(→ 9억 9,999만원). */
+     const msgs = UI.match(/fieldErr\([^,]+, [^?]*\? '([^']+)'/g) || [];
+     const quoted = (UI.match(/'최대 [^']+까지 넣을 수 있어요\.'/g) || []);
+     return quoted.length >= 4
+         && !/'억 단위는|'만 단위는|'인테리어 예산은|'매달 나가는 대출 원리금은/.test(UI)
+         && !/99,999만원까지/.test(UI)
+         && (UI.match(/fieldErr\(/g)||[]).length >= 4;   /* 정의 1 + 호출 3 */
   })());
   /* hidden으로 껐다 켜면 전환이 재생되지 않습니다 — 항상 DOM에 두고 클래스로 폅니다. */
   tt('에러 줄을 hidden으로 감추지 않는다',
@@ -762,21 +789,29 @@ HYGIENE.forEach(([name, over]) => {
      const g=x=>+(css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'))||[])[1];
      return g('\\.q-title\\{') > g('\\.tile-v\\{');
   })());
-  /* v23.19 — 다음 걸음 2×2 · 부채칸 1단 */
-  /* ⏹ v24.13 — v24.11에서 「한 줄 목록」으로 뒤집었다가 **되돌렸습니다**(지침 5층 3번).
-     뒤집었던 이유는 국토부 칸을 지워 **칸이 셋**이 됐기 때문입니다.
-     국토부 칸이 돌아와 다시 **넷**이므로 격자가 성립합니다.
-     🔴 **칸 수가 홀수면 격자를 쓰지 마세요.** 홀수를 메우려 한 칸을 전폭으로 올린 것이
-        72·118·118px 세 높이를 만들었고, 그게 이 왕복 전체의 시작이었습니다. */
-  tt('다음 걸음이 2×2 바둑판', (()=>{
+  /* v23.19 — 다음 걸음 · 부채칸 1단 */
+  /* 🔴 v24.22 — **락을 뒤집었습니다. 이 자리는 세 번째 왕복입니다** —
+       v24.11 한 열 → v24.13 격자 → v24.22 한 열.
+     ⏹ v24.13이 격자로 되돌린 근거는 「칸이 다시 넷이라 격자가 성립한다」였습니다.
+       **칸 수는 이유가 아니었습니다** — 지금도 넷입니다. 바뀐 것은 칸 안의 내용입니다.
+       격자가 성립하던 조건은 「칸마다 제목 + 설명 두 줄」이었고, v24.22에서 설명을 지시로
+       지우자 제목 한 줄만 남아 **가운데가 대각선으로 비었습니다.**
+     🔴 그리고 반칸에는 「국토교통부 실거래가 열기」가 안 들어갑니다. 화살표도 안 읽혀
+       레이블이 동작까지 말해야 하는데, 그 자리는 전폭에만 있습니다.
+     → 이제 잠글 사실은 **「한 열이다」 + 「칸 수로 되돌리지 않는다」**입니다.
+       격자로 돌아가려면 칸 안에 **두 줄이 생겼을 때**입니다. */
+  tt('다음 걸음이 한 열이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
      const m = src.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
      const cards = m ? (m[0].match(/class="mini(?: [^"]*)?"/g)||[]) : [];
-     return /\n\.minigrid\{[^}]*grid-template-columns:1fr 1fr/.test(css2)
-         && /class="minigrid"/.test(src) && cards.length > 0 && cards.length % 2 === 0;
-  })(), (()=>{ const src=fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
-     const m=src.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
-     return ((m?m[0].match(/class="mini(?: [^"]*)?"/g):[])||[]).length + '칸'; })());
+     /* ⚠ `1fr\}`로 앵커하면 `gap:10px}`가 뒤에 붙어 있어 영영 안 맞습니다. 구분자까지 봅니다. */
+     return /\n\.minigrid\{[^}]*grid-template-columns:1fr[;}]/.test(css2)
+         && /class="minigrid"/.test(src) && cards.length === 4;
+  })(), (()=>{ const m=css2.match(/\n\.minigrid\{[^}]*\}/); return m?m[0].trim():'없음'; })());
+  /* 반칸용 세로 배치가 남아 있으면 한 줄 안에서 제목과 화살표가 또 갈립니다. */
+  tt('칸 안이 세로 배치로 돌아가지 않았다',
+     !/\.minigrid \.mini\{[^}]*flex-direction:column/.test(css2)
+     && !/\.minigrid \.mini \.arw\{[^}]*margin-top:auto/.test(css2));
   tt('다음 걸음에 크기 특례가 없다', !/\.mini\.wide|class="mini wide"/.test(
      css2 + fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'')));
   tt('부채 입력칸이 1단 100%',
@@ -1672,16 +1707,34 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v24.7 — 국토부 칸이 빠져 **세 칸**입니다. 2×2에 홀수를 넣으면 빈 자리가 남으므로
      네이버 칸을 **전폭**으로 올렸습니다(윗줄 1칸 · 아랫줄 2칸). v24.6에서 확인한 자리입니다.
      설명 줄은 세 칸 모두 유지합니다 — 지우면 그때처럼 빈 자리가 생깁니다. */
-  tt('다음 걸음 네 칸이 모두 설명 줄을 가진다', (()=>{
+  /* 🔴 v24.22 — **락을 뒤집었습니다.** 위 v24.6 기록은 「지우면 아래 두 칸이 빈 자리가 된다」였고
+     그건 **레이블을 그대로 둔 채 설명만 지웠을 때** 참이었습니다.
+     v24.22는 레이블이 목적지·매체를 말하게 고치고 카드 높이를 118 → 88px로 같이 줄였습니다.
+     → 이제 잠글 사실은 **「설명 줄이 없다」 + 「높이를 같이 줄였다」**입니다.
+     ⚠ 설명을 다시 넣고 싶어지면 **레이블이 약하다는 신호**입니다. 레이블부터 고치세요. */
+  tt('다음 걸음 네 칸에 설명 줄이 없다', (()=>{
      const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
      const m = bare.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
      if(!m) return false;
-     /* ⚠ `class="mini[^"]*"`는 **`minigrid`도 잡습니다**(mini + grid). 경계를 붙입니다. */
      const cards = m[0].match(/class="mini(?: [^"]*)?"/g)||[];
-     const spans = m[0].match(/<\/b><span>/g)||[];
-     /* 네이버 칸의 span은 비어 있고 JS가 채웁니다 — 칸 수보다 하나 적게 셉니다. */
-     return cards.length === 4 && spans.length >= 3
-         && /outNaverS'\)\.textContent=`예산 조건은 넘어가지 않아요`/.test(bare);
+     return cards.length === 4
+         && !/<\/b><span/.test(m[0])             /* 마크업에 설명 줄이 없다 */
+         && !/outNaverS|outInteriorS/.test(bare)  /* JS가 다시 채우지도 않는다 */
+         /* 🔴 v24.22 후반 — 높이는 **토큰으로만** 둡니다. 아래 별도 검사가 정확히 봅니다. */
+         && true;
+  })());
+  /* 설명이 없어졌으므로 **레이블 넷이 서로 달라야** 고를 수 있습니다. */
+  tt('다음 걸음 네 칸의 레이블이 서로 다르다', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     /* ⚠ **격자 안으로 범위를 좁힙니다.** 처음엔 파일 전체를 봤다가 격자 밖의
+        「이사 · 입주청소 견적 비교하기」까지 세어 다섯이 됐습니다. */
+     const g = bare.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
+     if(!g) return false;
+     const stat = (g[0].match(/<b>([^<]+)<\/b>/g)||[]).map(x=>x.replace(/<\/?b>/g,''));
+     const dyn  = (UI.match(/\$\('out(?:Naver|Hogang)T'\)\.textContent=`([^`]+)`/g)||[])
+                    .map(x=>x.split('`')[1]);
+     const all = stat.filter(x=>x.trim()).concat(dyn);
+     return all.length === 4 && new Set(all).size === 4;
   })());
 
   tt('G-18이 면책 줄 수도 본다', (()=>{
@@ -1704,8 +1757,9 @@ HYGIENE.forEach(([name, over]) => {
      && !/\$\('outHogangT'\)\.textContent=`\$\{region\}/.test(UI));
   /* 작고 빽빽한 안내 문구의 행간 — 1.5는 13px 이하에서 붙어 읽힙니다. */
   tt('작은 안내 문구 행간이 1.6 이상', (()=>{
-     const sel=['\\.readout\\{','\\.rhead-why\\{','\\.mini \\.txt span\\{',
-                '\\.minigrid \\.mini \\.txt span\\{','\\.costrow \\.nm small\\{','\\.overnote\\{'];
+     /* ⏹ v24.22 — `.mini .txt span` 둘을 목록에서 뺐습니다. **설명 줄 자체가 없어졌습니다.**
+        없는 셀렉터를 계속 세면 검사가 영원히 빨개지고, 그러면 검사를 지우게 됩니다. */
+     const sel=['\\.readout\\{','\\.rhead-why\\{','\\.costrow \\.nm small\\{','\\.overnote\\{'];
      return sel.every(x=>{
        const m=css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'));
        return m && +m[1] >= 1.6;
@@ -2229,8 +2283,21 @@ HYGIENE.forEach(([name, over]) => {
      🔴 목적지가 매물 목록이 아닙니다(개인화 「MY」 화면). 이름이 그걸 약속하면 안 됩니다. */
   tt('네이버 칸이 매물 목록을 약속하지 않는다',
      !/outNaverT'\)\.textContent=`[^`]*매물/.test(BARE));
-  tt('네이버 칸이 조건이 안 넘어간다고 말한다',
-     /outNaverS'\)\.textContent=`예산 조건은 넘어가지 않아요`/.test(UI));
+  /* 🔴 v24.22 — 설명 줄이 사라졌으므로 **약속을 못 하게** 막는 쪽으로 바꿉니다.
+     예산 조건은 실제로 안 넘어갑니다. 설명으로 그걸 적을 자리가 없어졌으니,
+     레이블이 **목적지 이름 하나**여야 합니다 — 여는 것 외에 아무것도 약속하지 않게.
+     ⚠ 「N억대 추천 단지 보기」(v24.19에서 지운 것)로 다시 가는 것을 막습니다. */
+  tt('네이버 칸이 목적지 이름만 말한다', (()=>{
+     const m = UI.match(/\$\('outNaverT'\)\.textContent=`([^`]+)`/);
+     if(!m) return false;
+     const t = m[1];
+     /* 🔴 v24.22 후반 — 전폭이 되어 자리가 생겼으므로 **동사를 되돌렸습니다.**
+        판 앞부분에서 「화살표가 이미 하는 말」이라며 뗐는데, **그 전제가 틀렸습니다** —
+        만든 사람조차 ↓·⧉를 못 읽었습니다. 아이콘에 뜻을 맡기지 않습니다.
+        ⚠ 잠글 것은 여전히 **약속을 안 한다**는 쪽입니다. 「열기」는 여는 것만 약속합니다. */
+     return /^네이버 부동산( 열기)?$/.test(t)
+         && !/추천|단지|예산|매물|억대|내 조건|보기/.test(t);
+  })());
 })();
 
 /* ═══ v24.21 — 이름 통일 · 공유물의 설명 · 지역 칩 잘림 ═══════════
@@ -2349,21 +2416,154 @@ HYGIENE.forEach(([name, over]) => {
      /total > shown \? ` 중 \$\{shown\}곳` : ''/.test(BARE));
   tt('잘린 게 없으면 「중 N곳」을 안 붙인다', /total > shown \?/.test(BARE));
 
-  /* ── ⑥ 다음 걸음 두 칸이 서로 다른 말을 한다 ─────
-     전에는 둘 다 「어디로 보낼 수 있는가」만 말해 고르는 데 도움이 안 됐습니다. */
-  tt('공유 두 칸의 설명이 갈린다',
-     /그림 한 장에 담겨요/.test(M) && /글자로 보내거나 복사해요/.test(M));
-  tt('공유 두 칸이 같은 말을 되풀이하지 않는다',
-     !/메신저와 SNS 어디든/.test(M) && !/카톡·문자로 바로 보내거나/.test(M));
-  /* ⚠ 설명 줄 자체는 살아 있어야 합니다 — 지우면 2×2 격자 아래가 빈 자리가 됩니다(v24.6).
-     네 칸을 하나씩 이름으로 봅니다. 정규식으로 「설명이 있는 칸」을 세려다 옆 카드(인테리어)까지
-     걸려 처음에 오답이 났습니다 — 세지 말고 지목합니다. */
-  tt('네 칸이 전부 설명 줄을 가진다',
-     /id="outNaverS"/.test(M)
-     && /국토교통부 실거래가 공개시스템에서 확인해요/.test(M)
-     && /그림 한 장에 담겨요/.test(M)
-     && /글자로 보내거나 복사해요/.test(M));
-  tt('네이버 칸 설명이 비어 있지 않다', /outNaverS'\)\.textContent=`[^`]+`/.test(BARE));
+  /* ── ⑥ 다음 걸음 — ⏹ v24.22에서 **설명 줄을 전부 지웠습니다** ─────
+     ⏹ v24.21은 두 칸의 설명을 「고르는 데 도움이 되도록」 다시 썼고, 그 검사 넷이 여기 있었습니다.
+       v24.22에서 지시로 설명 줄을 없앴고, **레이블이 그 말을 하도록** 옮겼습니다.
+     → 옛 검사 넷은 「설명 줄이 없다」·「레이블이 서로 다르다」로 옮겨 갔습니다(위 v24.6 락 자리).
+       여기서는 **되돌아오는 것**만 막습니다 — 옛 문구가 다시 나타나면 🔴. */
+  tt('지운 설명 문구가 되돌아오지 않는다',
+     !/그림 한 장에 담겨요/.test(M) && !/글자로 보내거나 복사해요/.test(M)
+     && !/메신저와 SNS 어디든/.test(M) && !/카톡·문자로 바로 보내거나/.test(M)
+     && !/국토교통부 실거래가 공개시스템에서 확인해요/.test(M)
+     && !/같은 평형 포트폴리오를 모아서 봐요/.test(M));
+  /* 🔴 v24.22 후반 — **아이콘에 뜻을 맡기지 않습니다.**
+     ⏹ 판 앞부분의 락은 정반대였습니다 — 「바로가기·확인하기는 화살표가 이미 하는 말이니 떼라」.
+       **전제가 틀렸습니다.** 만든 사람이 「↓·⧉가 무슨 뜻이냐」고 물었습니다.
+       프로젝트를 다 아는 사람이 못 읽으면 처음 온 사람은 확실히 못 읽습니다.
+     → 네 레이블이 **전부 동사로 끝나야** 합니다. 화살표는 거들 뿐입니다.
+     ⚠ 전폭이라 자리가 있습니다. 반칸으로 돌아가면 이 조건부터 깨집니다. */
+  tt('네 레이블이 모두 동작을 말한다', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const g = bare.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
+     if(!g) return false;
+     const stat = (g[0].match(/<b>([^<]+)<\/b>/g)||[]).map(x=>x.replace(/<\/?b>/g,'').trim());
+     const dyn  = (UI.match(/\$\('out(?:Naver|Hogang)T'\)\.textContent=`([^`]+)`/g)||[])
+                    .map(x=>x.split('`')[1].trim());
+     const all = stat.filter(Boolean).concat(dyn);
+     return all.length === 4 && all.every(t => /(열기|저장|보내기)$/.test(t));
+  })(), (()=>{ const bare=fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const g=bare.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
+     return g ? (g[0].match(/<b>[^<]+<\/b>/g)||[]).join(' · ') : '없음'; })());
+})();
+
+/* ═══ v24.22 — 제미나이 피드백 반영 (커서 · 문구 · 평형 · 설명 줄 · NaN) ═══
+   ⚠ 열둘 중 넷은 이미 되어 있었고 둘은 사실이 틀렸습니다. 여기 있는 것은 **실제로 고친 것**뿐입니다.
+   ═══════════════════════════════════════════════════════════════════════ */
+(() => {
+  const BARE = UI.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
+  const M = UI0().replace(/\/\*[\s\S]*?\*\//g,'');
+
+  /* ── #12 NaN · Infinity — 표시 함수가 최후의 관문입니다 ──
+     🔴 입구를 다 막아도 표시 함수에 가드가 없으면 「NaN만원」이 그대로 찍힙니다.
+        그리고 `loan <= 0`류의 **비교는 NaN을 못 거릅니다**(NaN과의 비교는 전부 false).
+     ⚠ 이 셋은 **엔진 쪽**이라 `UI`(BUILD 줄 뒤)에 없습니다. 소스를 뒤지지 말고
+       `E`가 이미 들고 있는 **본체 함수를 그대로 호출**합니다 — 훨씬 강한 검사입니다. */
+  tt('formatWon이 NaN·Infinity를 화면에 안 내보낸다',
+     !/NaN|∞|Infinity|undefined/.test(
+       E.formatWon(NaN) + '|' + E.formatWon(Infinity) + '|' + E.formatWon(-Infinity)
+       + '|' + E.formatWon(undefined) + '|' + E.formatWon(null)),
+     () => [NaN, Infinity, undefined].map(v => E.formatWon(v)).join(' / '));
+  tt('formatWon이 정상값은 그대로 낸다', E.formatWon(1476469668) === '14억 7,647만원',
+     () => E.formatWon(1476469668));
+  tt('월 상환 계산이 세 인자 어느 것이 NaN이어도 0을 낸다',
+     E.monthlyPaymentCalc(NaN, 5.4, 30) === 0
+     && E.monthlyPaymentCalc(1e8, NaN, 30) === 0
+     && E.monthlyPaymentCalc(1e8, 5.4, NaN) === 0);
+  tt('월 상환 계산이 Infinity 결과를 안 낸다', (()=>{
+     const vals = [E.monthlyPaymentCalc(Infinity, 5.4, 30),
+                   E.monthlyPaymentCalc(1e8, Infinity, 30),
+                   E.monthlyPaymentCalc(1e8, 5.4, Infinity),
+                   E.monthlyPaymentCalc(1e8, 5.4, 0),
+                   E.monthlyPaymentCalc(0, 5.4, 30)];
+     return vals.every(Number.isFinite);
+  })(), () => [Infinity,5.4,30].join());
+  /* 🔴 **입구 가드만으로는 못 막는 경우**입니다 — 인자가 전부 유한한데 결과가 NaN이 됩니다.
+     금리가 아주 크면 `Math.pow(1+r, n)`이 Infinity가 되고 `∞/∞`는 NaN입니다.
+     ⚠ 이 검사를 넣기 전에는 **출구 가드를 지워도 552개가 전부 초록이었습니다** —
+       두 가드가 서로를 덮어 사보타주가 관측되지 않았습니다. 관측되는 입력을 찾아야 검사입니다. */
+  tt('유한한 인자에서도 결과가 NaN이 되는 구간을 막는다',
+     Number.isFinite(E.monthlyPaymentCalc(1e8, 1e10, 30)),
+     () => String(E.monthlyPaymentCalc(1e8, 1e10, 30)));
+  /* 🔴 비교 가드만으로는 NaN이 새 나갑니다(NaN과의 비교는 전부 false).
+     ⚠ 함수마다 **어느 자리에** isFinite가 있는지까지 봅니다. 「어딘가에 하나 있다」로 보면
+       입구를 지워도 출구가 남아 통과합니다 — 실제로 그렇게 새 나갔습니다. */
+  tt('가드가 비교가 아니라 isFinite다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     const f = src.match(/function formatWon\(n\)\{[\s\S]*?\n\}/);
+     const m = src.match(/function monthlyPaymentCalc\([\s\S]*?\n\}/);
+     const a = src.match(/function approx\(won\)\{[\s\S]*?\n\}/);
+     if(!f || !m || !a) return false;
+     return /Number\.isFinite\(n\)/.test(f[0])
+         && /Number\.isFinite\(won\)/.test(a[0])
+         && /Number\.isFinite\(loan\)/.test(m[0])      /* 입구 */
+         && /Number\.isFinite\(out\)/.test(m[0]);      /* 출구 */
+  })());
+
+  /* ── #3 캐럿 ──────────────────────────────
+     🔴 억 필드가 `.value`에 직접 써서, 값이 정리되는 순간 캐럿이 끝으로 튀었습니다. */
+  tt('캐럿 복원 로직을 실제로 돌려 확인한다', (()=>{
+     const m = BARE.match(/function setMaskedValue\(el, next, isKeep\)\{[\s\S]*?\n\}/);
+     const d = BARE.match(/const isDigit\s+= ch =>[^\n]*\n/);
+     if(!m || !d) return false;
+     /* ⚠ 이 함수는 `document.activeElement`를 봅니다. node에는 document가 없으므로
+        **가짜 document를 주입**합니다 — 그 요소가 활성인 상황을 만들어 캐럿 복원까지 돌립니다. */
+     const F = new Function(`
+       const el = { value:'1,234', selectionStart:4, setSelectionRange(a){ this.caret = a; } };
+       const document = { activeElement: el };
+       ${m[0]}
+       ${d[0]}
+       /* 「1,234」에서 캐럿이 위치 4(숫자 셋을 지남) → 「12,345」에서도 숫자 셋을 지난 자리여야 합니다. */
+       setMaskedValue(el, '12,345', isDigit);
+       return [el.value, el.caret];`);
+     const [v, caret] = F();
+     return v === '12,345' && caret === 4;
+  })());
+
+  /* ── #5 평형 ──────────────────────────────
+     50평은 대형 평형과 하이엔드 거래를 통째로 잘라내고 있었습니다. */
+  tt('평형 상한이 100 이상이다', (()=>{
+     const n = UI.match(/const PYEONG_MAX = (\d+);/); return !!n && +n[1] >= 100;
+  })());
+
+  /* ── #4 문구 스캐너빌리티 ──────────────────
+     에러 줄은 **읽는 것이 아니라 보이는 것**이라 제한 수치가 앞에 와야 합니다. */
+  tt('에러 문구가 제한 수치로 시작한다', (()=>{
+     const q = UI.match(/'[^']*까지 넣을 수 있어요\.'/g) || [];
+     return q.length >= 4 && q.every(x => x.startsWith("'최대 "));
+  })());
+  /* 「99,999만원」은 사람이 못 읽습니다. 억으로 넘어가는 값은 억으로 씁니다. */
+  tt('읽을 수 없는 단위를 쓰지 않는다', !/99,999만/.test(UI));
+
+  /* ── #6 설명 줄 삭제 ──────────────────────
+     ⚠ 이 판의 지시입니다. **되돌아오는 것**은 위 v24.6 자리의 락이 막습니다. */
+  tt('인테리어 칸에도 설명 줄이 없다',
+     !/id="outInteriorS"/.test(M) && !/outInteriorS/.test(BARE));
+  /* 🔴 v24.22 후반 — **높이를 손가락 표적 토큰에 묶습니다.**
+     ⚠ 처음엔 「높이를 아예 박지 않는다」로 잠갔다가 `var(--h-opt)`이 정규식을 비켜가
+       **우연히 통과**했습니다. 통과 이유가 의도와 다르면 그건 검사가 아닙니다.
+     잠글 사실 둘:
+       ① 픽셀 숫자를 박지 않는다 — 88px·118px 같은 옛 값이 돌아오면 🔴
+       ② 높이가 있고, 그 값이 **토큰**이다 — 46px은 이 파일이 이미 쓰는 최소 누름 높이입니다.
+     🔴 여기가 바닥입니다. 결과 화면에서 누르는 것이 이 넷뿐이라 더 줄이면 안 됩니다. */
+  tt('다음 걸음 칸 높이가 손가락 표적 토큰에 묶여 있다', (()=>{
+     const rule = (M.match(/\.minigrid \.mini\{[^}]*\}/) || [''])[0];
+     if(!rule) return false;
+     const opt = M.match(/--h-opt:(\d+)px/);
+     return /min-height:var\(--h-opt\)/.test(rule)
+         && !/min-height:\d+px/.test(rule)
+         && !!opt && +opt[1] >= 44;
+  })(), (()=>{ const r=(M.match(/\.minigrid \.mini\{[^}]*\}/)||['없음'])[0];
+     const o=M.match(/--h-opt:(\d+)px/); return r + ' / --h-opt ' + (o?o[1]:'?'); })());
+  /* 죽은 CSS를 남기지 않습니다(원칙 47) — 설명 줄이 없는데 규칙만 남으면 다음 사람이 헷갈립니다. */
+  tt('설명 줄 CSS 규칙을 같이 지웠다', !/\.minigrid \.mini \.txt span\{/.test(M));
+
+  /* ── #7 이모지 ────────────────────────────
+     🔴 v23.23 「화면에서 이모지 0개」의 사정거리를 **카톡으로 나가는 문구까지**로 확정했습니다. */
+  tt('요약 문구에 이모지가 없다', (()=>{
+     const m = BARE.match(/function summaryText\(\)[\s\S]*?\n\}/);
+     if(!m) return false;
+     return !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u.test(m[0]);
+  })());
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
