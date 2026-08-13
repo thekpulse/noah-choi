@@ -19,13 +19,26 @@ const path = require('path');
 const FILE = process.argv[2] || path.join(__dirname, 'index.html');
 
 /* ── 엔진 적재 ────────────────────────────────────────────────── */
+/* 🔴 v24.24 — 엔진/화면 경계 표식. **한 곳에서만 정의합니다**(원칙 58).
+   index.html의 같은 문자열과 짝입니다. 한쪽만 고치면 검사가 전부 헛돕니다 —
+   그래서 아래 「경계 표식이 정확히 한 번 있다」 검사가 따로 있습니다. */
+/* ⚠ 표식은 **주석 여는 기호까지** 포함합니다. `/*` 뒤에서 자르면 엔진 쪽이
+   열린 주석으로 끝나 파싱이 죽습니다 — 실제로 그렇게 한 번 죽였습니다. */
+const ENGINE_MARK = '/* ══════════ ENGINE END ══════════';
+
 let UI = '';   /* 화면 코드 — 단위 경계 검사(19장)에 씁니다 */
 function loadEngine(file){
   const html = fs.readFileSync(file, 'utf8');
   const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
   let src = blocks[blocks.length - 1];
-  /* 엔진과 화면 코드는 BUILD 로그 줄로 갈립니다. 화면 코드를 실행하면 DOM이 없어 죽습니다. */
-  const cut = src.indexOf("console.info('영끌계산기 BUILD");
+  /* 🔴 v24.24 — 엔진과 화면 코드는 **전용 표식**으로 갈립니다(index.html의 `ENGINE END`).
+     ⏹ 전에는 `console.info('영끌계산기 BUILD` **로그 한 줄**을 경계로 썼습니다.
+       로그를 지우거나 문구만 바꿔도 검사 570개가 조용히 엉뚱한 코드를 읽는 구조였고,
+       그 의존이 어디에도 안 적혀 있었습니다. 로그는 로그의 일입니다. */
+  const cut = src.indexOf(ENGINE_MARK);
+  /* 🔴 표식이 없으면 **여기서 멈춥니다.** 없는 채로 진행하면 화면 코드까지 실행해
+     「onclick of null」 같은 엉뚱한 에러로 죽고, 진짜 원인(표식 소실)이 안 보입니다. */
+  if(cut <= 0) throw new Error('엔진 경계 표식을 못 찾았습니다 — index.html의 ENGINE END 줄을 확인하세요');
   if (cut > 0) { UI = src.slice(cut); src = src.slice(0, cut); }
   const NEED = ['formatWon','POLICY','POLICY_DEFS','STRESS','computeStressBp','getLTV',
                 'repaymentCapLimit','acquisitionTaxRate','calcCosts','solveMaxPrice',
@@ -1076,7 +1089,7 @@ HYGIENE.forEach(([name, over]) => {
      이 경계를 안 그으면 검사가 자기 자신을 보고 영원히 🔴입니다. */
   tt('화면 노출 이모지가 0개다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     const from = src.indexOf("console.info('영끌계산기 BUILD");
+     const from = src.indexOf(ENGINE_MARK);
      const ui  = src.slice(from, src.indexOf('window.__selfcheck', from));
      const body = src.slice(src.indexOf('<body>'), src.indexOf('<script>', src.indexOf('<body>')));
      const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
@@ -1948,8 +1961,36 @@ HYGIENE.forEach(([name, over]) => {
      늘어난 하나가 「소득 대비 대출 규제(DSR)」입니다.
      ⚠ 이 검사는 **개수만** 봅니다 — 무엇이 들어 있는지는 못 봅니다. 내용은 위쪽의
        「시트에 DSR 규칙 행이 있다」 · 「시트의 DSR 비율이 POLICY와 같다」가 봅니다(원칙 99). */
-  tt('시트 안에 계산 기준 6항목이 있다',
-     (fs.readFileSync(FILE,'utf8').match(/class="sheet-row"/g)||[]).length === 6);
+  /* 🔴 v24.24 — **개수 락을 버립니다.** 6 → 9가 됐는데, 다음에 늘 때 또 숫자를 고쳐야 합니다.
+     숫자는 사실이 아니라 그때의 상태입니다(원칙 48 — 이번 세션에만 열넷을 이 이유로 다시 썼습니다).
+     🔴 잠글 사실은 **「화면에서 쓰는 말을 시트가 설명하는가」**입니다.
+        결과 화면이 「LTV가 한도를 정했어요」라고 말하는데 LTV 설명이 없던 것이 실제 구멍이었습니다.
+     ⚠ 목록에 말을 더할 때는 **화면에 그 말이 실제로 있는지** 먼저 보세요.
+       화면에 없는 말을 시트에 넣는 것은 검색을 노린 글자 채우기입니다 — 그건 이 검사가 못 막습니다. */
+  tt('시트가 화면에서 쓰는 말을 전부 설명한다', (()=>{
+     const raw = fs.readFileSync(FILE,'utf8');
+     /* ⚠ 시트를 **여는 태그와 닫기 버튼 사이**로 정확히 자릅니다.
+        처음엔 `</div>\s*</div>`로 끝을 잡았다가 **시트 밖까지 삼켜서**,
+        LTV 행을 지운 사보타주가 통과했습니다 — 다른 곳의 LTV를 세고 있었습니다. */
+     const a = raw.indexOf('<div class="sheet" id="sheet"');
+     const b = raw.indexOf('id="sheetClose"', a);
+     const sheet = (a < 0 || b < 0) ? '' : raw.slice(a, b).replace(/<!--[\s\S]*?-->/g,'');
+     /* ⚠ **행 제목(<b>)만** 봅니다. 본문까지 세면 다른 행의 설명에 그 말이 스쳐 지나가도
+        「설명이 있다」로 읽힙니다 — 실제로 「정부 상한」 설명 안의 'LTV' 때문에
+        LTV 행을 통째로 지운 사보타주가 통과했습니다. */
+     const titles = (sheet.match(/<b>([^<]+)<\/b>/g)||[]).join(' | ');
+     const need = ['LTV','DSR','스트레스','취득세','중개보수','방공제','정부 상한','원리금균등'];
+     return need.every(t => titles.includes(t))
+         && (raw.match(/class="sheet-row"/g)||[]).length >= need.length;
+  })(), (()=>{
+     const raw = fs.readFileSync(FILE,'utf8');
+     const a = raw.indexOf('<div class="sheet" id="sheet"');
+     const b = raw.indexOf('id="sheetClose"', a);
+     const sheet = (a < 0 || b < 0) ? '' : raw.slice(a, b).replace(/<!--[\s\S]*?-->/g,'');
+     const titles = (sheet.match(/<b>([^<]+)<\/b>/g)||[]).join(' | ');
+     return ['LTV','DSR','스트레스','취득세','중개보수','방공제','정부 상한','원리금균등']
+              .filter(t => !titles.includes(t)).join(', ') || '없음';
+  })());
 
   /* v23.15: 라임 → 핀테크 그린. 면·테두리와 글자 색을 나눕니다. */
   tt('핀테크 그린 복귀', /--green:#00CA71/.test(css2));
@@ -2254,8 +2295,20 @@ HYGIENE.forEach(([name, over]) => {
      const strip = t => t.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
      return strip('A/* 지운 문구 */B\n// 줄 주석\nC').replace(/\s/g,'') === 'ABC';
   })());
-  tt('월 상환 타일이 금리·기간을 가정이라고 말한다',
-     /tileMonthlySub'\)\.textContent = m>0 \? `연 \$\{D\.rate\}% · \$\{D\.years\}년 가정`/.test(UI));
+  /* 🔴 v24.23 — 이 검사는 **문장을 통째로** 잠그고 있었습니다(원칙 48).
+     금리가 슬라이더로 움직이게 되면서 부속 줄에서 금리를 뺐고 — 두 곳에 같은 값을 적으면
+     슬라이더를 움직였을 때 한쪽이 거짓이 됩니다(원칙 91) — 검사가 그 개선을 막았습니다.
+     잠글 사실은 **「확정처럼 말하지 않는가」**입니다. 어느 문장이냐가 아닙니다. */
+  tt('월 상환 타일이 가정임을 말한다', (()=>{
+     const m = UI.match(/tileMonthlySub'\)\.textContent = m>0 \? `([^`]+)`/);
+     return !!m && /가정/.test(m[1]) && /\$\{D\.years\}년/.test(m[1]);
+  })(), (()=>{ const m=UI.match(/tileMonthlySub'\)\.textContent = m>0 \? `([^`]+)`/);
+     return m ? m[1] : '없음'; })());
+  /* 🔴 금리가 부속 줄과 슬라이더 **양쪽에** 있으면 안 됩니다 — 움직이면 한쪽이 거짓이 됩니다. */
+  tt('금리를 두 곳에서 말하지 않는다', (()=>{
+     const m = UI.match(/tileMonthlySub'\)\.textContent = m>0 \? `([^`]+)`/);
+     return !!m && !/연 |D\.rate/.test(m[1]);
+  })());
   /* 🔴 v24.21 — 이 검사는 전에 `/· 매달 갚을 원리금 /`로 **요약 문구의 문장을 잠그고 있었습니다.**
      v24.21에서 그 줄을 의도적으로 뺐고, 검사가 정당한 개선을 막았습니다 — 원칙 48의 사례입니다.
      잠글 사실은 「같은 문장이 있는가」가 아니라 **「이름이 갈리지 않는가」**입니다.
@@ -2564,6 +2617,125 @@ HYGIENE.forEach(([name, over]) => {
      if(!m) return false;
      return !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u.test(m[0]);
   })());
+})();
+
+/* ═══ v24.23 — 금리 시뮬레이터 · GA4 · 금소법 면책 ═══════════════════ */
+(() => {
+  const BARE = UI.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
+  const M = UI0().replace(/\/\*[\s\S]*?\*\//g,'');
+  const RAW = fs.readFileSync(FILE,'utf8');
+
+  /* ── 🔴 스크립트 블록이 둘이 됐습니다 ────────────
+     `loadEngine`은 **마지막 블록**을 엔진으로 삼습니다. GA4가 head에 들어가면서
+     블록이 둘이 됐고, 지금은 순서가 우연히 맞습니다. **우연에 기대면 안 됩니다.**
+     head에 스크립트를 하나 더 넣는 순간 검사 전체가 엉뚱한 코드를 읽습니다. */
+  tt('엔진이 마지막 스크립트 블록에 있다', (()=>{
+     const blocks = [...RAW.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
+     const last = blocks[blocks.length-1];
+     return /function solveMaxPrice\(/.test(last) && /const POLICY/.test(last);
+  })(), (()=>{ const b=[...RAW.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+     return b.length + '개 블록'; })());
+
+  /* ── GA4 — 자리표시자면 아무것도 안 합니다 ────────
+     🔴 가드가 없으면 배포 즉시 없는 ID로 요청이 나가고 **이유 없는 서드파티 쿠키**만 남습니다. */
+  /* 🔴 이 검사는 처음에 **코드를 실행하지 않고 빈 문자열을 실행**했습니다
+     (`m[1]`이 캡처 그룹 없이 undefined라 삼항이 항상 `''`를 골랐습니다).
+     가드를 지우는 사보타주가 **통과했고**, 그제서야 알았습니다.
+     → 우연한 초록은 빨강보다 위험합니다. 실행한 뒤 **부수효과를 셉니다.** */
+  tt('GA4가 자리표시자일 때 로드되지 않는다', (()=>{
+     const m = RAW.match(/<script>(\s*\(function\(\)\{[\s\S]*?GA_ID[\s\S]*?\}\)\(\);\s*)<\/script>/);
+     if(!m) return false;
+     let made = 0, appended = 0;
+     const doc = { createElement: () => { made++; return {}; },
+                   head: { appendChild: () => { appended++; } } };
+     const win = {};
+     new Function('document','window', m[1])(doc, win);
+     return made === 0 && appended === 0 && !win.gtag;
+  })());
+  /* 🔴 그리고 **진짜 ID를 넣으면 켜져야** 합니다. 안 켜지는 것만 확인하면
+     「영영 안 켜지는 코드」도 통과합니다 — 가드가 아니라 벽돌입니다. */
+  tt('GA4가 진짜 ID에서는 켜진다', (()=>{
+     const m = RAW.match(/<script>(\s*\(function\(\)\{[\s\S]*?GA_ID[\s\S]*?\}\)\(\);\s*)<\/script>/);
+     if(!m) return false;
+     const body = m[1].replace(/var GA_ID = '[^']*';/, "var GA_ID = 'G-AB12CD34EF';");
+     let made = 0, appended = 0, src = '';
+     const doc = { createElement: () => { made++; return { set src(v){ src = v; } }; },
+                   head: { appendChild: () => { appended++; } } };
+     const win = {};
+     new Function('document','window', body)(doc, win);
+     return made === 1 && appended === 1
+         && /googletagmanager\.com\/gtag\/js\?id=G-AB12CD34EF/.test(src)
+         && typeof win.gtag === 'function';
+  })());
+  tt('GA4 측정 ID가 한 곳에만 있다', (RAW.match(/G-XXXXXXXXXX/g)||[]).length === 1);
+  /* 이 도구는 사용자가 넣은 금액을 밖으로 보내지 않습니다. GA에도 안 보냅니다. */
+  tt('GA에 입력값을 보내지 않는다',
+     !/gtag\('event'[\s\S]{0,200}(cash|income|price|S\.)/.test(RAW));
+
+  /* ── 금소법 면책 ─────────────────────────────── */
+  tt('금소법 면책 문구가 있다',
+     /금융상품 판매 대리·중개업자가 아닙니다/.test(BARE)
+     && /실제 대출 가능 여부는 금융기관 심사에 따릅니다/.test(BARE));
+  /* 🔴 위계가 가장 낮은 자리(.legal) 안이어야 합니다. 밖으로 나오면 본문처럼 읽힙니다. */
+  tt('면책이 .legal 안에 있다', (()=>{
+     const m = BARE.match(/<span class="legal">[\s\S]*?<\/span>/);
+     return !!m && /금융상품 판매 대리·중개업자가 아닙니다/.test(m[0]);
+  })());
+
+  /* ── 금리 시뮬레이터 ──────────────────────────
+     🔴 **엔진과 격리되어야 합니다.** 한도는 스트레스 금리(6.9%)로 잡고 상환액만 실제
+        금리로 계산하는 구조라, 여기서 D.rate를 건드리면 그 관계가 깨집니다. */
+  tt('시뮬레이터가 엔진 금리를 안 건드린다', (()=>{
+     /* D.rate에 대입하는 곳이 하나도 없어야 합니다. */
+     return !/D\.rate\s*=/.test(BARE) && /let SIM_RATE = null;/.test(BARE);
+  })());
+  tt('시뮬레이터 값이 별도 변수다',
+     /const simRate = \(\) => SIM_RATE == null \? D\.rate : SIM_RATE;/.test(BARE));
+  /* 결과를 다시 계산하면 기준으로 되돌아가야 합니다 — 지난 조작이 묻어가면
+     사용자는 자기가 만진 줄 모르고 그 숫자를 사실로 읽습니다. */
+  tt('결과를 다시 계산하면 기준 금리로 되돌아간다',
+     /SIM_RATE = null;\s*\n\s*renderBento\(c\);/.test(BARE));
+  /* 대출이 없으면 숨깁니다 — 갚을 것이 없는데 금리를 물을 이유가 없습니다. */
+  tt('대출이 없으면 시뮬레이터를 숨긴다',
+     /if\(!\(loan > 0\)\)\{ box\.setAttribute\('hidden',''\); return; \}/.test(BARE));
+  /* 🔴 금리 값에 판정색을 쓰지 않습니다 — 금리는 좋고 나쁨이 아니라 조건입니다(지침 6-3). */
+  tt('금리 값에 판정색을 쓰지 않는다', (()=>{
+     const r = (M.match(/\.ratesim-v\{[^}]*\}/)||[''])[0];
+     return /color:var\(--ink\)/.test(r) && !/--warn|--bad|--ok|--green/.test(r);
+  })());
+  /* 슬라이더는 정수 ×10입니다 — step="0.1"은 브라우저마다 부동소수 오차가 납니다. */
+  tt('금리 슬라이더가 정수 눈금이다',
+     /id="rateRange"[^>]*min="30"[^>]*max="100"[^>]*step="1"/.test(M));
+  /* 새 모양을 만들지 않았습니다 — 평형 슬라이더와 같은 전역 규칙을 씁니다. */
+  tt('슬라이더 문법을 새로 만들지 않았다',
+     !/#rateRange\{|#rateRange::/.test(M));
+
+  /* ── 🔴 실제로 돌려 봅니다 — 금리를 올리면 상환액이 늘어야 합니다 ── */
+  tt('금리를 올리면 월 상환액이 는다', (()=>{
+     const lo = E.monthlyPaymentCalc(5e8, 3.0, 30);
+     const hi = E.monthlyPaymentCalc(5e8, 10.0, 30);
+     return Number.isFinite(lo) && Number.isFinite(hi) && hi > lo * 1.4;
+  })());
+})();
+
+/* ═══ v24.24 — 엔진 경계 표식 · 계산 기준 확장 ══════════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  /* 🔴 표식이 여러 번 나오면 어디서 잘릴지 모릅니다. 정확히 한 번이어야 합니다. */
+  tt('엔진 경계 표식이 정확히 한 번 있다',
+     (RAW.split(ENGINE_MARK).length - 1) === 1,
+     () => (RAW.split(ENGINE_MARK).length - 1) + '번');
+  /* 🔴 표식 **위쪽만** 떼어 실행했을 때 문법이 성립해야 합니다.
+     표식을 주석 안쪽에 두면 열린 `/*`로 끝나 파싱이 죽습니다 — 실제로 한 번 죽였습니다. */
+  tt('표식 위쪽만 떼어도 문법이 성립한다', (()=>{
+     const src = RAW.match(/<script>([\s\S]*?)<\/script>/g).pop().replace(/<\/?script>/g,'');
+     const cut = src.indexOf(ENGINE_MARK);
+     if(cut <= 0) return false;
+     try { new Function(src.slice(0, cut)); return true; } catch(e){ return false; }
+  })());
+  /* 로그 줄에 다시 의존하지 않습니다 — 로그는 로그의 일입니다. */
+  tt('경계가 로그 줄에 의존하지 않는다',
+     !/indexOf\("console\.info\('영끌계산기 BUILD"\)/.test(fs.readFileSync(__filename,'utf8')));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
