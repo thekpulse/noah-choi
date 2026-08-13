@@ -49,6 +49,21 @@ const { formatWon, POLICY, getLTV, acquisitionTaxRate, calcCosts, solveMaxPrice,
         monthlyPaymentCalc, computeStressBp, zoneFromSgg, roomDeductFromSgg, LAWD } = E;
 
 
+/* v24.21 — summaryText()의 **몸통만** 떼어 봅니다.
+   ⚠ 주석을 걷어낸 뒤 자릅니다. 안 그러면 「왜 뺐는지」를 적어 둔 주석이 검사를 통과시킵니다
+     (v24.20에서 실제로 걸린 함정 — 1-6장). */
+function sumBody(){
+  const bare = UI.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
+  const m = bare.match(/function summaryText\(\)[\s\S]*?\n\}/);
+  return m ? m[0] : '';
+}
+/* v24.21 — renderReport()의 몸통. 공유 이미지 카드가 무엇을 찍는지 보는 자리입니다. */
+function repBody(){
+  const bare = UI.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
+  const m = bare.match(/function renderReport\(v\)[\s\S]*?\n\}/);
+  return m ? m[0] : '';
+}
+
 /* v24.20 — 마크업(<script> 밖)까지 봐야 하는 검사용. 주석은 걷어냅니다. */
 let _ui0 = null;
 function UI0(){ if(_ui0===null) _ui0 = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,''); return _ui0; }
@@ -2187,8 +2202,13 @@ HYGIENE.forEach(([name, over]) => {
   })());
   tt('월 상환 타일이 금리·기간을 가정이라고 말한다',
      /tileMonthlySub'\)\.textContent = m>0 \? `연 \$\{D\.rate\}% · \$\{D\.years\}년 가정`/.test(UI));
-  /* 요약 문구(카톡으로 나가는 텍스트)도 같은 말을 해야 합니다 — 두 매체가 갈리면 안 됩니다. */
-  tt('요약 문구도 같은 이름을 쓴다', /· 매달 갚을 원리금 /.test(UI));
+  /* 🔴 v24.21 — 이 검사는 전에 `/· 매달 갚을 원리금 /`로 **요약 문구의 문장을 잠그고 있었습니다.**
+     v24.21에서 그 줄을 의도적으로 뺐고, 검사가 정당한 개선을 막았습니다 — 원칙 48의 사례입니다.
+     잠글 사실은 「같은 문장이 있는가」가 아니라 **「이름이 갈리지 않는가」**입니다.
+     → 화면 타일이 「매달 갚을 원리금」인 동안 요약 문구가 **다른 이름**을 쓰지 않는지만 봅니다.
+       (요약 문구에 그 줄이 아예 없는 것은 통과입니다. 있는데 이름이 다르면 실패합니다.) */
+  tt('요약 문구가 월 상환에 다른 이름을 쓰지 않는다',
+     !/매달 갚는 돈|월 상환액|월 납입금/.test(sumBody()));
 
   /* ── 입력 03 — 지역 ────────────────────────────
      설명 줄을 지웠으므로 **구를 고르면 뜨는 안내가 세 갈래 전부 살아 있어야** 합니다.
@@ -2211,6 +2231,139 @@ HYGIENE.forEach(([name, over]) => {
      !/outNaverT'\)\.textContent=`[^`]*매물/.test(BARE));
   tt('네이버 칸이 조건이 안 넘어간다고 말한다',
      /outNaverS'\)\.textContent=`예산 조건은 넘어가지 않아요`/.test(UI));
+})();
+
+/* ═══ v24.21 — 이름 통일 · 공유물의 설명 · 지역 칩 잘림 ═══════════
+   ① 같은 값이 네 자리에서 세 이름으로 불렸고, 그중 둘은 한 번의 공유로 같이 나갑니다(원칙 91).
+   ② 밖으로 나가는 둘에 「왜 가진 돈보다 큰가」의 답이 없었습니다.
+   ③ 지역 칩의 말줄임이 CSS 구조 때문에 **한 번도 돈 적이 없습니다.**
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const BARE = UI.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
+  const M = UI0().replace(/\/\*[\s\S]*?\*\//g,'');
+
+  /* ── ① 이름 하나 (원칙 91) ─────────────────────
+     금액이 **붙는** 자리 셋을 봅니다. 화면 자금 구성은 비율만 찍지만,
+     같은 막대 그림이 카드에도 있어 이름이 갈리면 「다른 값인가」가 됩니다. */
+  tt('영수증 합계가 「준비할 현금」이다',
+     /row\('준비할 현금',/.test(BARE) && !/내가 준비할 현금/.test(BARE));
+  tt('공유 카드가 「준비할 현금」이다',
+     /mixRow\('d1','준비할 현금'/.test(repBody()));
+  tt('공유 카드에 「내 돈」이 없다', !/'내 돈'|내 돈 /.test(repBody()));
+  /* ── 공유 카드가 재산을 흘리지 않는다 ────────────
+     🔴 v24.15 주석은 이 막대의 근거로 「비율이라서 **재산이 역산되지 않습니다**」를 적어 뒀는데
+        같은 판에서 괄호로 금액을 찍었습니다. 실물에서 가진 돈 10억이 「(10억원)」으로 그대로 나갔습니다 —
+        인테리어를 안 켜면 준비할 현금 = 가진 돈입니다. 그림은 저장돼 재전달됩니다.
+     ⚠ 헤드라인(매수 가능 금액)은 남습니다 — 그건 집값이지 재산이 아닙니다. */
+  tt('공유 카드가 현금·대출 금액을 찍지 않는다', (()=>{
+     const b = repBody();
+     /* 금액을 그리는 길은 헤드라인 하나뿐이어야 합니다. */
+     return !/formatWon\(/.test(b)
+         && (b.match(/richWon\(/g)||[]).length === 1
+         && /richWon\(approx\(headline\)\)/.test(b);
+  })());
+  tt('mixRow가 금액 인자를 받지 않는다',
+     /const mixRow = \(dot, name, pct\) =>/.test(repBody()));
+  /* ⚠ 요약 문구(텍스트)에는 금액을 **남깁니다.** 매체가 다르면 판단도 갈립니다 —
+     그림은 재전달되지만 텍스트는 보내기 전에 본인이 읽습니다. 여기서 같이 지우면 과잉입니다. */
+  tt('요약 문구에는 금액이 남아 있다',
+     /준비할 현금 \$\{formatWon/.test(sumBody()));
+  /* v24.15에서 쓰는 곳이 없어진 계산이 남아 있었습니다(원칙 47). */
+  tt('공유 카드에 죽은 월 상환 계산이 없다', !/monthlyPaymentCalc/.test(repBody()));
+  tt('화면 자금 구성도 같은 이름을 쓴다', /준비할 현금 <b>\$\{ownPct\}%/.test(BARE));
+  /* 대출이 없을 때도 이름이 갈리면 안 됩니다 — 「전부 내 돈」은 예전 이름입니다. */
+  tt('대출 없을 때도 「내 돈」으로 돌아가지 않는다', !/전부 내 돈/.test(BARE));
+
+  /* ── ② 공유물이 구성을 설명한다 ─────────────────
+     🔴 한 함수를 둘이 나눠 씁니다. 두 벌로 두면 반드시 어긋납니다(원칙 58). */
+  tt('cashNote가 하나뿐이다', (BARE.match(/function cashNote\(/g)||[]).length === 1);
+  tt('공유 카드가 cashNote를 쓴다', /cashNote\(c\)/.test(repBody()));
+  tt('요약 문구가 cashNote를 쓴다', /cashNote\(c\)/.test(sumBody()));
+  /* 🔴 각주 앞에 빈 줄이 있어야 합니다. 실물에서 불릿 두 개에 바로 붙어 **세 번째 불릿처럼**
+     보였습니다. 이 줄은 항목이 아니라 위 두 줄에 대한 각주입니다. */
+  tt('요약 문구에서 각주가 불릿과 붙지 않는다',
+     /L\.push\(''\);\s*\n\s*L\.push\(cashNote\(c\)\);/.test(sumBody()));
+  /* 🔴 구분자가 가운뎃점이면 「법무사 · 등기비」가 두 항목으로 읽힙니다(v24.16 함정). */
+  tt('cashNote가 쉼표로 잇는다', /p\.join\(', '\)/.test(BARE));
+  /* 켠 것만 셉니다 — 안 켠 항목을 적으면 영수증과 어긋납니다. */
+  tt('cashNote가 켠 항목만 센다',
+     /S\.legal\.on/.test(BARE) && /S\.move\.on/.test(BARE) && /S\.appl\.on/.test(BARE)
+     && /c\.interiorCost > 0/.test(BARE));
+
+  /* ── ③ 요약 문구에서 월 상환을 뺐다 ─────────────
+     ⚠ 화면 타일은 **살아 있어야** 합니다. 뺀 것은 밖으로 나가는 텍스트뿐입니다. */
+  tt('요약 문구에 월 상환 줄이 없다', !/원리금/.test(sumBody()));
+  tt('요약 문구가 월 상환을 계산하지도 않는다', !/monthlyPaymentCalc/.test(sumBody()));
+  tt('화면 월 상환 타일은 그대로 있다', /class="tile-k">매달 갚을 원리금</.test(M));
+
+  /* ── ④ 지역 칩 — 말줄임이 실제로 걸리는가 ────────
+     🔴 `text-overflow`를 flex **컨테이너**에 걸면 아무 일도 안 일어납니다.
+        글자가 익명 flex 아이템이 되기 때문입니다. 실물에서 「ㅕ기 고양시 일산동ㄱ」로 양끝이 잘렸습니다. */
+  tt('말줄임이 flex 아이템에 걸려 있다', /\.taggrid \.chip>span\{[^}]*text-overflow:ellipsis/.test(M));
+  tt('말줄임 대상이 줄어들 수 있다', /\.taggrid \.chip>span\{[^}]*min-width:0/.test(M));
+  tt('tagGrid가 글자를 span으로 감싼다', /data-sgg="\$\{c\}"><span>\$\{nm\}<\/span>/.test(BARE));
+  /* ── 열 수는 목록이 정합니다 ────────────────────
+     🔴 처음에 「경기·인천만 2열」로 하드코딩했다가 같은 결함이 있는 시·도 **여섯 곳**을 놓쳤습니다.
+        그래서 지역 이름이 아니라 **이름 길이**를 검사합니다 — 데이터가 늘어도 같이 삽니다. */
+  tt('긴 이름 목록이 2열로 간다', /\.taggrid\.wide\{grid-template-columns:repeat\(2,1fr\)\}/.test(M));
+  /* 🔴 v24.21 — **본체의 tagGrid를 실제로 돌립니다.**
+     처음에는 이 검사가 판정 규칙을 test.js 안에 다시 구현해서 LAWD에 물어봤습니다.
+     사보타주로 본체를 `const wide = false && list.some(...)`로 망가뜨렸더니 **검사가 통과했습니다** —
+     자기 복사본을 돌리고 있었으니 본체가 어떻게 되든 알 수가 없습니다(원칙 58을 검사 쪽에서 어긴 것).
+     → 규칙을 베끼지 않고 **본체 함수를 떼어다 실행해** 결과 HTML에 wide가 붙는지 봅니다. */
+  tt('본체 tagGrid가 실제 목록에서 열 수를 갈라 준다', (()=>{
+     const src = BARE.match(/const TAG_WIDE = \d+;[\s\S]*?const tagGrid = list => \{[\s\S]*?\n\};/);
+     const raw = fs.readFileSync(FILE,'utf8');
+     const lw  = raw.match(/const LAWD\s*=\s*\{[\s\S]*?\n\};/);
+     const ss  = raw.match(/const SIDO_SHORT\s*=\s*\{[\s\S]*?\};/);
+     if(!src || !lw || !ss) return false;
+     const r = new Function(`const S={sgg:''};\n${lw[0]}\n${ss[0]}\n${src[0]}
+       const short = s => SIDO_SHORT[s] || s;
+       return {
+         seoul: tagGrid(LAWD['서울특별시']),
+         metro: tagGrid(['경기도','인천광역시'].flatMap(s =>
+                  LAWD[s].map(x => [x[0], short(s)+' '+x[1]]))),
+         gn:    tagGrid(LAWD['경상남도']),
+         gw:    tagGrid(LAWD['강원특별자치도'])
+       };`)();
+     const W = h => /class="taggrid wide"/.test(h);
+     return !W(r.seoul)   /* 서울 최장 「동대문구」 4자 — 3열이어야 합니다 */
+         &&  W(r.metro)   /* 「경기 고양시 일산동구」 9자 — 2열 */
+         &&  W(r.gn)      /* 「창원시 마산합포구」 8자 — 처음에 놓쳤던 자리 */
+         && !W(r.gw);     /* 강원 최장 「춘천시」 3자 — 3열 */
+  })());
+  /* 판정을 통째로 꺼 버리는 사보타주는 위 검사가 잡습니다. 아래는 **규칙의 모양**만 봅니다. */
+  tt('열 수를 지역 이름으로 하드코딩하지 않는다', (()=>{
+     const m = BARE.match(/const tagGrid = list =>[\s\S]*?\n\};/);
+     if(!m) return false;
+     return /list\.some\(/.test(m[0]) && !/METRO|SEOUL|'경기'|'인천'/.test(m[0]);
+  })());
+  /* 접두어를 지우면 「중구 · 동구 · 서구」가 서울 자치구와 구별이 안 됩니다. */
+  tt('시 · 도 접두어를 지우지 않았다', /shortSido\(s\)\+' '\+x\[1\]/.test(BARE));
+  /* 2열은 좌우 여백을 줄여 글자에 3px을 줍니다 — 360px에서 최장 이름이 여기서 갈립니다. */
+  tt('2열 칩이 여백을 줄여 글자 자리를 낸다', /\.taggrid\.wide \.chip\{padding:0 6px\}/.test(M));
+
+  /* ── ⑤ 실거래 헤더가 잘린 것을 말한다 ────────────
+     실물에서 「147건」이라 해 놓고 다섯 줄만 보여 줬습니다 — 3.4%입니다. */
+  tt('실거래 헤더가 몇 곳을 보여 주는지 말한다',
+     /total > shown \? ` 중 \$\{shown\}곳` : ''/.test(BARE));
+  tt('잘린 게 없으면 「중 N곳」을 안 붙인다', /total > shown \?/.test(BARE));
+
+  /* ── ⑥ 다음 걸음 두 칸이 서로 다른 말을 한다 ─────
+     전에는 둘 다 「어디로 보낼 수 있는가」만 말해 고르는 데 도움이 안 됐습니다. */
+  tt('공유 두 칸의 설명이 갈린다',
+     /그림 한 장에 담겨요/.test(M) && /글자로 보내거나 복사해요/.test(M));
+  tt('공유 두 칸이 같은 말을 되풀이하지 않는다',
+     !/메신저와 SNS 어디든/.test(M) && !/카톡·문자로 바로 보내거나/.test(M));
+  /* ⚠ 설명 줄 자체는 살아 있어야 합니다 — 지우면 2×2 격자 아래가 빈 자리가 됩니다(v24.6).
+     네 칸을 하나씩 이름으로 봅니다. 정규식으로 「설명이 있는 칸」을 세려다 옆 카드(인테리어)까지
+     걸려 처음에 오답이 났습니다 — 세지 말고 지목합니다. */
+  tt('네 칸이 전부 설명 줄을 가진다',
+     /id="outNaverS"/.test(M)
+     && /국토교통부 실거래가 공개시스템에서 확인해요/.test(M)
+     && /그림 한 장에 담겨요/.test(M)
+     && /글자로 보내거나 복사해요/.test(M));
+  tt('네이버 칸 설명이 비어 있지 않다', /outNaverS'\)\.textContent=`[^`]+`/.test(BARE));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
