@@ -42,7 +42,10 @@ function loadEngine(file){
   if (cut > 0) { UI = src.slice(cut); src = src.slice(0, cut); }
   const NEED = ['formatWon','POLICY','POLICY_DEFS','STRESS','computeStressBp','getLTV',
                 'repaymentCapLimit','acquisitionTaxRate','calcCosts','solveMaxPrice',
-                'monthlyPaymentCalc','zoneFromSgg','roomDeductFromSgg','LAWD','isGunArea'];
+                'monthlyPaymentCalc','zoneFromSgg','roomDeductFromSgg','LAWD','isGunArea',
+                /* 🔴 v24.28 — 선택 단위(행정구 → 시 묶음). **규칙을 여기 베끼지 않습니다** —
+                   본체 함수를 그대로 떼어다 돌려서 그 결과를 봅니다(원칙 106). */
+                'PICKS','buildPicks','pickSig','GU_IN_SI','pickOfCode','pickLabel','lawdCodesOf'];
   const stub = `
     const window = {}, document = { getElementById:()=>null, querySelector:()=>null,
       querySelectorAll:()=>[], createElement:()=>({style:{},classList:{add(){},remove(){},toggle(){}}}) };
@@ -355,6 +358,23 @@ HYGIENE.forEach(([name, over]) => {
      sessionStorage는 **탭을 닫으면 사라지므로 기기에 남지 않습니다** — 취지가 유지됩니다.
      localStorage는 남습니다. 그래서 그쪽만 그대로 막습니다. */
   tt('localStorage 미사용 (기기에 남기지 않는다)', !/localStorage/.test(noComment));
+  /* ── 🆕 v24.28 안내 시트가 「입력값 보관」을 말한다 ─────────────
+     🔴 이 도구는 연소득과 현금을 받는데, **어디로 가느냐를 화면이 한 번도 답한 적이 없었습니다.**
+     ⚠ 문구가 있는지만 세면 안 됩니다 — **그 주장이 사실인지**를 같은 자리에서 잠급니다.
+       사실이 아닌 안심 문구는 없는 것보다 나쁩니다(원칙 39 · 28). */
+  tt('안내 시트가 입력값 보관을 말한다',
+     /<b>입력값 보관<\/b>/.test(html) && /서버로 보내지 않아요/.test(html));
+  tt('그 주장이 사실이다 — 밖으로 나가는 요청에 금액이 없다', (()=>{
+     /* 실제 fetch 호출을 전부 세고, 쿼리에 지역 코드·연월 말고 다른 값이 붙었는지 봅니다. */
+     const calls = [...noComment.matchAll(/fetch\(\s*[`'"]([^`'"]+)/g)].map(m => m[1]);
+     if(!calls.length) return false;
+     return calls.every(u => {
+       const q = (u.split('?')[1] || '');
+       const keys = [...q.matchAll(/([\w]+)=/g)].map(m => m[1]);
+       return keys.every(k => ['lawd','ymd'].indexOf(k) >= 0);
+     });
+  })(), (()=>{ const calls=[...noComment.matchAll(/fetch\(\s*[`'"]([^`'"]+)/g)].map(m=>m[1]);
+     return calls.join(' · ')||'fetch 없음'; })());
   tt('임시 저장은 sessionStorage 한 키뿐이다', (()=>{
      const keys = [...noComment.matchAll(/sessionStorage\.\w+\(\s*([A-Za-z_$][\w$]*|'[^']*')/g)]
        .map(m => m[1]);
@@ -1408,14 +1428,25 @@ HYGIENE.forEach(([name, over]) => {
     /* 진단서는 **화면을 본 적 없는 사람**에게 전달됩니다. 거래가 모자라면 인근 구까지 넓히는데,
        카드 맨 위의 지역은 사용자가 고른 구 하나뿐입니다. 구 이름을 안 달면
        남의 구 거래가 그 구 거래로 읽힙니다(2026.08.12 실물 확인 · 종로구 카드에 성북·서대문). */
+    /* 🔴 v24.28 — 규칙이 **함수 하나(dealGu)로 모였습니다.**
+       ⏹ 전에는 `x.lawd !== S.sgg`라는 **조건식 자체**를 두 곳에서 찾았습니다.
+         그 검사는 「두 곳이 같은 규칙인가」를 물은 것이 아니라 **같은 글자가 두 번 있는가**를
+         물은 것이라, 규칙이 셋으로 늘어난 이 판에서 대상을 잃었습니다.
+         빨간불의 원인은 코드가 틀린 것이 아니라 **근거가 없어진 것**입니다(원칙 115).
+       → 「두 곳이 같은 함수를 부르는가」로 다시 씁니다. 규칙이 몇 갈래가 되든 삽니다.
+       ⚠ 이 검사는 이전보다 **강합니다** — 전에는 한쪽에서만 조건을 바꿔도
+         두 정규식이 각각 통과할 수 있었습니다. 지금은 한 함수라 갈릴 수가 없습니다. */
     const body = (src.match(/function paintReportDeals[\s\S]*?\n\}/) || [''])[0];
+    const line = (src.match(/function dealLine\(x, priceMan\)[\s\S]*?\n\}/) || [''])[0];
+    const gu   = (src.match(/function dealGu\(code\)[\s\S]*?\n\}/) || [''])[0];
     tt('진단서 실거래 줄이 인근 구 이름을 단다',
-       /x\.lawd\s*!==\s*S\.sgg/.test(body) && /sggName\(x\.lawd\)/.test(body),
+       /dealGu\(x\.lawd\)/.test(body) && /sggName\(code\)/.test(gu),
        body ? '' : 'paintReportDeals를 못 찾음');
-    /* 화면(dealLine)과 **같은 규칙**이어야 합니다. 한쪽만 고치면 다음에 또 갈립니다. */
-    const line = (src.match(/function dealLine[\s\S]*?\n\}/) || [''])[0];
     tt('진단서와 화면이 같은 규칙으로 구 이름을 판단한다',
-       /x\.lawd\s*!==\s*S\.sgg/.test(line) && /x\.lawd\s*!==\s*S\.sgg/.test(body));
+       /dealGu\(x\.lawd\)/.test(line) && /dealGu\(x\.lawd\)/.test(body)
+       && (src.match(/function dealGu\(/g)||[]).length === 1);
+    /* 🆕 v24.28 — 묶인 시 안의 형제 구는 **구 이름만** 답니다. 줄마다 「청주시」를 두 번 말하지 않습니다. */
+    tt('묶인 시 안의 거래는 구 이름만 단다', /GU_IN_SI\.exec\(sggName\(code\)\)/.test(gu) && /m\[2\]/.test(gu));
 
     /* 영수증의 기타비용. 이름 안에 이미 가운뎃점이 있어, 이름들을 ' · '로 이으면
        세 항목이 여섯으로 읽힙니다. **켠 것마다 한 줄**이 원래 모양입니다. */
@@ -1787,13 +1818,23 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v24.19 — 소스 문자열을 통째로 잠그고 있었습니다(원칙 48 — 2-6장에서 이미 세 번 걸린 형태).
      360px에서 세 줄이라 문장을 줄여야 하는데, 이 락이 「줄이면 빨개진다」로 막고 있었습니다.
      → **문장이 아니라 사실 넷을 잠급니다** — 추정치 · 정부 정책 · 은행 심사 · 한도와 세금. */
-  tt('면책에 추정치 · 정책 · 은행 심사 · 한도와 세금이 모두 들어 있다', (()=>{
+  /* 🔴 v24.28 — 「은행 심사」라는 **낱말**을 잠그고 있었습니다. 그건 사실이 아니라 표현입니다.
+     ⏹ v24.28에서 첫 문장의 「은행 심사 기준에 따라 … 세금은 달라질 수 있습니다」를 지웠습니다 —
+       **취득세·중개보수는 은행 심사와 아무 관계가 없어 틀린 문장이었고**, 대출 쪽 심사는
+       둘째 문장이 「실제 대출 가능 여부는 금융기관 심사에 따릅니다」로 정확히 말합니다.
+       그런데 이 검사가 낱말을 붙들고 있어 **틀린 문장을 고치면 빨간불**이 났습니다(원칙 115 · 48).
+     → 심사는 **「은행」이든 「금융기관」이든** 통과시키고, 대신 **기준일**을 사실 목록에 더합니다.
+       느슨해진 것이 아니라 **재는 대상이 표현에서 사실로 옮긴 것**이고, 항목은 넷 → 다섯입니다. */
+  tt('면책에 기준일 · 추정치 · 정책 · 심사 · 한도와 세금이 모두 들어 있다', (()=>{
      const m = UI.match(/<span class="legal">([\s\S]*?)<\/span>/);
      if(!m) return false;
      const t = m[1];
-     return /추정치/.test(t) && /정부 정책/.test(t) && /은행 심사/.test(t)
+     return /POLICY_ASOF_KO|POLICY_ASOF/.test(t)      /* 언제 기준의 계산인가 */
+         && /추정치/.test(t) && /정부 정책/.test(t)
+         && /(은행|금융기관) 심사/.test(t)
          && /한도/.test(t) && /세금/.test(t);
-  })());
+  })(), (()=>{ const m=UI.match(/<span class="legal">([\s\S]*?)<\/span>/);
+     return m ? m[1].replace(/<br>/g,' ⏎ ').slice(0,90)+'…' : '없음'; })());
   /* 바로 위 조건 칩이 이미 지역을 말합니다. 2×2 칸에서 지역명이 두 줄을 만들었습니다. */
   tt('다음 걸음 문구에 지역명을 반복하지 않는다',
      !/\$\('outNaverT'\)\.textContent=`\$\{region\}/.test(UI)
@@ -1984,16 +2025,21 @@ HYGIENE.forEach(([name, over]) => {
   tt('clamp 입력도 16px 이상이다',
      clampRules.length > 0 && clampRules.every(([, v]) => v >= 16),   /* 대상 0개면 🔴 */
      clampRules.length ? clampRules.map(([sel,v]) => sel+' '+v+'px').join(' / ') : '대상 0개');
+  /* 🔴 v24.28 — **주석을 걷어내고 봅니다**(원칙 66).
+     `[^{}]*input[^{}]*\{` 의 앞부분은 중괄호만 피하면 무엇이든 삼킵니다. 그래서 바로 위 주석에
+     「`input:disabled`」라고 적힌 순간, 그 주석 + 아래의 `<u>` 규칙이 한 덩어리로 잡혀
+     **13px 단위 글자를 「입력창」으로 오인**했습니다. 코드가 아니라 설명이 검사를 깬 자리입니다. */
+  const cssNC = css2.replace(/\/\*[\s\S]*?\*\//g,'');
   tt('모든 텍스트 입력이 16px 이상이다', (()=>{
-     const rules = css2.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[];
+     const rules = cssNC.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[];
      const bad = rules.filter(r => {
        const m = r.match(/font-size:\s*var\((--t\d)\)/);
        if(!m) return false;                       /* clamp() 등은 따로 봅니다 */
-       const px = +(css2.match(new RegExp(m[1]+':([\\d.]+)px'))||[])[1];
+       const px = +(cssNC.match(new RegExp(m[1]+':([\\d.]+)px'))||[])[1];
        return px < 16;
      });
      return bad.length === 0;
-  })(), (css2.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[])
+  })(), (cssNC.match(/[^{}]*input[^{}]*\{[^}]*font-size:[^;}]+/g)||[])
         .filter(r=>/var\(--t[67]\)/.test(r)).slice(0,2).join(' | '));
   /* 0.5px 단위는 지침이 금지합니다 — 12.5px이 스케일에 남아 있었습니다. */
   tt('타입 스케일에 0.5px 단위가 없다', !/--t\d:[\d]+\.5px/.test(css2));
@@ -2129,8 +2175,41 @@ HYGIENE.forEach(([name, over]) => {
   /* 선택해도 테두리 두께는 변하지 않아야 합니다 — 굵어지면 상자가 커져 줄이 흔들립니다(원칙 34). */
   tt('선택 상태에 2px 테두리가 없다',
      !/\.(chip|zonecard)\.is-on\{[^}]*border:2px/.test(css2));
-  tt('날짜 하드코딩이 화면 문구에 없다',
-     !/textContent\s*=\s*'[^']*2026\.08\.05/.test(UI) && !/innerHTML\s*=\s*`[^`]*2026\.08\.05/.test(UI));
+  /* 🔴 v24.28 — **락을 다시 썼습니다**(지침 5층 3번 — 지우지 말고 새 규칙으로).
+     ⏹ v23.15의 락은 「화면 문구에 날짜를 쓰지 마라」였고, 근거는 날짜가 아니라 **중복**이었습니다
+       (「관리 지옥」). 그런데 그 검사는 `textContent='…'`·`innerHTML=\`…\`` 두 모양만 봤기 때문에
+       안내 시트에 **정적 마크업으로** 들어온 「2026.08.05 기준이에요」를 못 봤습니다.
+       규칙이 막으려던 것이 규칙을 비켜 들어와 있었습니다(원칙 107 — 통과 이유가 의도와 다름).
+     → 새 규칙: **화면에 뜨는 날짜는 `POLICY_ASOF` 한 곳에서만 온다.**
+       원래 우려(중복)를 더 넓게 막으면서, 법적 고지에 기준일을 밝히는 길을 엽니다.
+     ⚠ 이 검사는 이전보다 **강합니다** — 마크업까지 봅니다. */
+  tt('정책 확인일 상수가 한 번만 선언된다',
+     (fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'')
+       .match(/const POLICY_ASOF\s*=/g)||[]).length === 1);
+  /* ⚠ **셈에서 뺄 것을 먼저 정합니다**(원칙 117). 다른 날짜까지 막으면 검사가 영원히 빨간불이고,
+       그러면 사람이 검사를 끕니다. 여기서 막는 것은 **`POLICY_ASOF`와 같은 값이 두 번째로
+       손으로 적히는 것**뿐입니다. 금리 공시일(`RATE_*.asOf` · `KFB_DISCLOSURE`)은 다른 사실이라
+       자기 날짜를 갖습니다 — 값이 우연히 같은 날이어도 같은 사실이 아닙니다. */
+  tt('정책 확인일이 마크업에 손으로 적혀 있지 않다', (()=>{
+     const raw = fs.readFileSync(FILE,'utf8');
+     const asof = (raw.match(/const POLICY_ASOF\s*=\s*'([\d.]+)'/)||[])[1];
+     if(!asof) return false;
+     /* 스크립트와 주석을 걷어낸 **순수 마크업**만 봅니다. 시트 행이 여기로 새어 들어왔던 자리입니다. */
+     const markup = raw.replace(/<!--[\s\S]*?-->/g,'').replace(/<script[\s\S]*?<\/script>/g,'');
+     return markup.indexOf(asof) < 0;
+  })(), (()=>{ const raw=fs.readFileSync(FILE,'utf8');
+     const asof=(raw.match(/const POLICY_ASOF\s*=\s*'([\d.]+)'/)||[])[1]||'?';
+     const markup=raw.replace(/<!--[\s\S]*?-->/g,'').replace(/<script[\s\S]*?<\/script>/g,'');
+     const i=markup.indexOf(asof);
+     return i<0 ? asof+' 마크업에 없음' : '「'+markup.slice(Math.max(0,i-30), i+15)+'」'; })());
+  tt('시트의 정책 확인일이 상수에서 온다',
+     /<b>정책 확인일<\/b><span id="asOfNote"><\/span>/.test(fs.readFileSync(FILE,'utf8'))
+     && /\$\('asOfNote'\)\.textContent = `\$\{POLICY_ASOF\}/.test(UI));
+  /* 🆕 면책 첫 문장이 **언제 기준의 계산인지** 말한다. 없으면 반년 뒤의 오차와 오늘의 오차가 구별되지 않습니다. */
+  tt('면책이 정책 기준일을 밝힌다',
+     /class="legal">※ \$\{POLICY_ASOF_KO\} 정책 기준의 추정치입니다/.test(UI));
+  tt('면책이 여전히 두 문장이다',            /* 세 번째가 붙으면 G-18(5줄)이 먼저 물어야 합니다 */
+     (( (UI.match(/<span class="legal">[\s\S]*?<\/span>/)||[''])[0] ).match(/※/g)||[]).length === 2);
   tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.05/.test(css2));
 
   /* 입력 첫 화면 네이비 밴드 */
@@ -2494,7 +2573,7 @@ HYGIENE.forEach(([name, over]) => {
         글자가 익명 flex 아이템이 되기 때문입니다. 실물에서 「ㅕ기 고양시 일산동ㄱ」로 양끝이 잘렸습니다. */
   tt('말줄임이 flex 아이템에 걸려 있다', /\.taggrid \.chip>span\{[^}]*text-overflow:ellipsis/.test(M));
   tt('말줄임 대상이 줄어들 수 있다', /\.taggrid \.chip>span\{[^}]*min-width:0/.test(M));
-  tt('tagGrid가 글자를 span으로 감싼다', /data-sgg="\$\{c\}"><span>\$\{nm\}<\/span>/.test(BARE));
+  tt('tagGrid가 글자를 span으로 감싼다', /data-pick="\$\{key\}"><span>\$\{nm\}<\/span>/.test(BARE));
   /* ── 열 수는 목록이 정합니다 ────────────────────
      🔴 처음에 「경기·인천만 2열」로 하드코딩했다가 같은 결함이 있는 시·도 **여섯 곳**을 놓쳤습니다.
         그래서 지역 이름이 아니라 **이름 길이**를 검사합니다 — 데이터가 늘어도 같이 삽니다. */
@@ -2506,33 +2585,123 @@ HYGIENE.forEach(([name, over]) => {
      → 규칙을 베끼지 않고 **본체 함수를 떼어다 실행해** 결과 HTML에 wide가 붙는지 봅니다. */
   tt('본체 tagGrid가 실제 목록에서 열 수를 갈라 준다', (()=>{
      const src = BARE.match(/const TAG_WIDE = \d+;[\s\S]*?const tagGrid = list => \{[\s\S]*?\n\};/);
+     const pk  = BARE.match(/const picksOf = [^\n]*\n/);
      const raw = fs.readFileSync(FILE,'utf8');
-     const lw  = raw.match(/const LAWD\s*=\s*\{[\s\S]*?\n\};/);
      const ss  = raw.match(/const SIDO_SHORT\s*=\s*\{[\s\S]*?\};/);
-     if(!src || !lw || !ss) return false;
-     const r = new Function(`const S={sgg:''};\n${lw[0]}\n${ss[0]}\n${src[0]}
+     if(!src || !pk || !ss) return false;
+     /* 🔴 v24.28 — **PICKS를 본체에서 가져옵니다.** LAWD를 직접 넣으면 「묶기 전 목록」을 재게 되고,
+        그러면 이 검사는 화면이 실제로 그리는 것과 다른 것을 보게 됩니다(원칙 107). */
+     const r = new Function('PICKS','SIDO_SHORT',`const S={sgg:''};
+       const openPick = () => null;
+       ${src[0]}
+       ${pk[0]}
        const short = s => SIDO_SHORT[s] || s;
        return {
-         seoul: tagGrid(LAWD['서울특별시']),
-         metro: tagGrid(['경기도','인천광역시'].flatMap(s =>
-                  LAWD[s].map(x => [x[0], short(s)+' '+x[1]]))),
-         gn:    tagGrid(LAWD['경상남도']),
-         gw:    tagGrid(LAWD['강원특별자치도'])
-       };`)();
+         seoul: tagGrid(picksOf('서울특별시')),
+         metro: tagGrid(['경기도','인천광역시'].flatMap(s => picksOf(s, short(s)+' '))),
+         gn:    tagGrid(picksOf('경상남도')),
+         gw:    tagGrid(picksOf('강원특별자치도'))
+       };`)(E.PICKS, JSON.parse(JSON.stringify(eval('('+ss[0].replace(/^const SIDO_SHORT\s*=\s*/,'').replace(/;$/,'')+')'))));
      const W = h => /class="taggrid wide"/.test(h);
-     return !W(r.seoul)   /* 서울 최장 「동대문구」 4자 — 3열이어야 합니다 */
-         &&  W(r.metro)   /* 「경기 고양시 일산동구」 9자 — 2열 */
-         &&  W(r.gn)      /* 「창원시 마산합포구」 8자 — 처음에 놓쳤던 자리 */
+     return !W(r.seoul)   /* 서울 최장 「동대문구」 4자 — 3열 */
+         &&  W(r.metro)   /* 「경기 의정부시」 6자 — 2열 */
+         && !W(r.gn)      /* 🔴 v24.28 — 「창원시 마산합포구」 8자가 「창원시」 3자가 되어 3열로 올라갔습니다 */
          && !W(r.gw);     /* 강원 최장 「춘천시」 3자 — 3열 */
   })());
+
+  /* ── 🆕 v24.28 행정구 → 시 묶음 ─────────────────
+     🔴 이 검사들은 **본체 함수를 돌린 결과**를 봅니다. 규칙을 베끼면 본체가 죽어도 초록입니다(원칙 106). */
+  /* ① 자치구와 행정구를 이름 모양으로 가른다 — 지역 이름을 코드에 안 적었는가(원칙 111) */
+  tt('묶는 규칙을 지역 이름으로 적지 않는다', (()=>{
+     /* ⚠ GU_IN_SI · buildPicks는 **엔진 쪽**입니다. UI만 보면 못 찾고 조용히 통과합니다(원칙 107). */
+     const eng = fs.readFileSync(FILE,'utf8').split(ENGINE_MARK)[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     const m = eng.match(/const GU_IN_SI = [\s\S]*?function buildPicks[\s\S]*?\n\}/);
+     if(!m) return false;
+     return !/청주|천안|전주|창원|포항|고양|부천|안산|성남|수원|안양|용인|화성/.test(m[0]);
+  })());
+  /* ② 자치구는 한 개도 안 묶였다 — 서울·부산·인천 등은 급이 시·군과 같습니다 */
+  tt('자치구는 묶지 않는다', ['서울특별시','부산광역시','대구광역시','인천광역시','대전광역시','울산광역시']
+     .every(s => E.PICKS[s].length === E.LAWD[s].length));
+  /* ③ 행정구는 하나도 안 남았다 — 「○○시 ○○구」가 목록 맨 위에 그대로 있으면 안 됩니다 */
+  tt('행정구가 1차 목록에 남아 있지 않다', (()=>{
+     const left = Object.keys(E.PICKS).flatMap(s => E.PICKS[s].filter(p => E.GU_IN_SI.test(p.name)).map(p=>p.name));
+     return left.length === 0;
+  })(), (()=>{ const left = Object.keys(E.PICKS).flatMap(s => E.PICKS[s].filter(p => E.GU_IN_SI.test(p.name)).map(p=>p.name));
+     return left.length ? left.join(', ') : Object.values(E.LAWD).flat().length + '개 → ' + Object.values(E.PICKS).flat().length + '개'; })());
+  /* ④ 🔴 **묶은 시는 구마다 정책이 같아야 합니다.** 여기가 이 판에서 제일 비싼 자리입니다 —
+        수원 권선구(비규제)를 영통구(규제)와 묶으면 LTV가 40%↔70%로 갈려 수억이 틀립니다(원칙 28). */
+  tt('묶은 시는 구마다 정책값이 같다', (()=>{
+     const bad = [];
+     Object.keys(E.PICKS).forEach(s => E.PICKS[s].forEach(p => {
+       if(!p.kids || p.split) return;
+       const sig = p.kids.map(k => E.pickSig(k.code));
+       if(sig.some(x => x !== sig[0])) bad.push(p.name);
+     }));
+     return bad.length === 0;
+  })());
+  /* ⑤ 반대 방향 — 정책이 갈리는 시는 **반드시** split이어야 합니다.
+        ④만 있으면 「전부 split」으로 도망가도 통과합니다(원칙 108 — 관측되는 차이를 만듭니다). */
+  tt('정책이 갈리는 시는 구를 한 번 더 묻는다', (()=>{
+     const split = [], must = [];
+     Object.keys(E.PICKS).forEach(s => E.PICKS[s].forEach(p => {
+       if(!p.kids) return;
+       const sig = p.kids.map(k => E.pickSig(k.code));
+       const varies = sig.some(x => x !== sig[0]);
+       if(varies) must.push(p.name);
+       if(p.split) split.push(p.name);
+     }));
+     return must.length > 0 && must.length === split.length && must.every(n => split.indexOf(n) >= 0);
+  })(), (()=>{ const out=[]; Object.keys(E.PICKS).forEach(s => E.PICKS[s].forEach(p => { if(p.split) out.push(p.name); }));
+     return '구 유지: ' + (out.join(' · ')||'없음'); })());
+  /* ⑥ 실제로 갈리는 곳이 있다 — 전부 묶여 버리면 ⑤가 공회전합니다(원칙 107) */
+  tt('수원 · 안양 · 용인 · 화성이 갈리는 쪽에 있다', (()=>{
+     const split = E.PICKS['경기도'].filter(p=>p.split).map(p=>p.name);
+     return ['수원시','안양시','용인시','화성시'].every(n => split.indexOf(n) >= 0);
+  })());
+  /* ⑦ 묶인 시는 **구 코드를 전부 들고 있다** — 실거래가가 대표 구만 보면 「청주시 147건」이 거짓말이 됩니다 */
+  tt('묶인 시가 구 코드를 전부 들고 있다', (()=>{
+     let seen = 0;
+     const ok = Object.keys(E.PICKS).every(s => E.PICKS[s].every(p => {
+       if(!p.kids || p.split) return true;
+       seen++;
+       return E.lawdCodesOf(p.code).length === p.kids.length;
+     }));
+     return ok && seen >= 9;      /* 성남·부천·안산·고양·청주·천안·포항·창원·전주 */
+  })(), (()=>{ const m=[]; Object.keys(E.PICKS).forEach(s=>E.PICKS[s].forEach(p=>{ if(p.kids&&!p.split) m.push(p.name+'('+p.codes.length+')'); }));
+     return m.join(' · '); })());
+  /* ⑦-b 갈리는 시를 고르면 **새 질문이 눈에 들어오게** 합니다.
+     경기·인천은 42칸이라 두 번째 질문이 화면 밖입니다. 안 데려가면
+     「아무 일도 안 일어났는데 다음 버튼이 안 눌리는」 상태가 됩니다. */
+  tt('갈리는 시를 고르면 두 번째 질문으로 데려간다',
+     /op\.split && !S\.sgg[\s\S]{0,200}?scrollIntoView\(\{block:'nearest'/.test(UI));
+  tt('두 번째 질문이 왜 뜨는지 화면이 말한다',
+     /class="pane-note">\$\{op\.name\}는 구마다 대출 비율이 달라요\./.test(UI));
+  /* ⑧ 실거래가가 그 목록을 **실제로 부른다** — codes를 들고만 있고 안 쓰면 ⑦은 헛돕니다 */
+  tt('실거래가가 묶인 구를 전부 부른다', /lawdCodesOf\(lawd\)[\s\S]{0,200}?own\.map\(c => fetchOne\(c\)\)/.test(UI));
+  /* ⑨ 화면 이름이 묶인 이름을 쓴다 — 「충북 청주시 상당구」로 돌아가면 묶은 뜻이 없습니다 */
+  tt('결과 라벨이 묶인 시 이름을 쓴다',
+     /const regionLabel = \(\) => S\.sgg \? shortSido\(sidoOfCode\(S\.sgg\)\)\+' '\+pickLabel\(S\.sgg\)/.test(UI));
+  /* ⚠ **깨끗하게 실패해야 합니다.** 「청주시」가 목록에서 사라지는 사보타주에서 이 줄이 그대로
+     예외를 던져 러너를 죽였고, 그러면 「검사가 못 잡음」과 구별이 안 됩니다(원칙 114 · 지침 6-10). */
+  tt('묶은 시 이름에 구가 안 붙는다',
+     E.pickLabel((E.PICKS['충청북도'].find(p=>p.name==='청주시')||{}).code) === '청주시');
+  tt('갈리는 시 이름에는 구가 붙는다', E.pickLabel('41117') === '수원시 영통구');
   /* 판정을 통째로 꺼 버리는 사보타주는 위 검사가 잡습니다. 아래는 **규칙의 모양**만 봅니다. */
   tt('열 수를 지역 이름으로 하드코딩하지 않는다', (()=>{
      const m = BARE.match(/const tagGrid = list =>[\s\S]*?\n\};/);
      if(!m) return false;
      return /list\.some\(/.test(m[0]) && !/METRO|SEOUL|'경기'|'인천'/.test(m[0]);
   })());
-  /* 접두어를 지우면 「중구 · 동구 · 서구」가 서울 자치구와 구별이 안 됩니다. */
-  tt('시 · 도 접두어를 지우지 않았다', /shortSido\(s\)\+' '\+x\[1\]/.test(BARE));
+  /* 접두어를 지우면 「중구 · 동구 · 서구」가 서울 자치구와 구별이 안 됩니다.
+     🔴 v24.28 — 접두어를 붙이는 자리가 `x[1]` 뒤에서 `picksOf`의 인자로 옮겼습니다.
+        **글자를 좇지 말고 결과를 봅니다**(원칙 115) — 경기·인천 칩에 실제로 접두어가 붙는지. */
+  tt('시 · 도 접두어를 지우지 않았다', (()=>{
+     const pk = BARE.match(/const picksOf = [^\n]*\n/);
+     if(!pk || !/shortSido\(s\)\+' '/.test(BARE)) return false;
+     const names = new Function('PICKS', `${pk[0]}
+        return picksOf('경기도','경기 ').concat(picksOf('인천광역시','인천 ')).map(x=>x[1]);`)(E.PICKS);
+     return names.length > 40 && names.every(n => /^(경기|인천) /.test(n));
+  })());
   /* 2열은 좌우 여백을 줄여 글자에 3px을 줍니다 — 360px에서 최장 이름이 여기서 갈립니다. */
   tt('2열 칩이 여백을 줄여 글자 자리를 낸다', /\.taggrid\.wide \.chip\{padding:0 6px\}/.test(M));
 
@@ -2843,6 +3012,48 @@ HYGIENE.forEach(([name, over]) => {
   tt('금리 시뮬레이터가 자기 블록을 갖지 않는다',
      !/class="tile[^"]*ratesim"|class="ratesim[^"]*tile"/.test(M)
      && /<div class="ratesim" id="rateSim"/.test(M));
+
+  /* ── 🆕 v24.28 결과 격자에 빈칸이 생길 구조가 없다 ────────────
+     🔴 실기 지적: 「원리금 옆이 붕 떠 있다」. 원인은 CSS 버그가 아니라 **격자 구조**였습니다 —
+        2열 격자에서 전폭 타일이 새 줄을 시작하면 앞 줄의 반칸이 그대로 빕니다.
+     ⚠ 「지금 빈칸이 없다」만 재면 다음에 반칸 타일이 하나 생기는 순간 그대로 돌아옵니다.
+        **빈칸이 생길 수 있는 구조인가**를 잠급니다(원칙 101 — 근거를 세어 둡니다). */
+  tt('결과 격자가 한 열이다', (()=>{
+     const b = M.match(/\n\.bento\{[^}]*\}/);
+     return !!b && !/grid-template-columns/.test(b[0]);
+  })(), (M.match(/\n\.bento\{[^}]*\}/)||['없음'])[0]);
+  tt('반칸 타일 규칙이 남아 있지 않다', !/\.tile\.wide\{/.test(M) && !/class="tile wide"/.test(RAW));
+  /* 두 값이 **한 타일 안 한 줄**에 있는가. 마크업 순서까지 봅니다 — 떨어지면 격자가 다시 갈립니다. */
+  tt('원리금과 부담이 한 타일 안에 있다', (()=>{
+     const bare = RAW.replace(/<!--[\s\S]*?-->/g,'');
+     const row = bare.match(/<div class="payrow">[\s\S]*?<\/div>\s*<\/div>/);
+     if(!row) return false;
+     return /id="tileMonthly"/.test(row[0]) && /id="tileBurden"/.test(row[0]);
+  })());
+  /* 🔴 wrap을 허용하면 좁은 화면에서 오른쪽 값만 아래로 떨어집니다 — **그게 그 빈칸입니다.** */
+  tt('두 값이 줄바꿈하지 않는다', /\.payrow\{[^}]*flex-wrap:nowrap/.test(M));
+  tt('줄이는 쪽이 오른쪽이 아니다', /\.payitem\.end\{[^}]*flex:none/.test(M)
+     && /\.payitem\{[^}]*min-width:0/.test(M));
+
+  /* ── 🆕 v24.28 활자 사다리 ────────────────────────
+     지적: 「핵심 메시지의 임팩트가 죽어 있다」. 값 하나가 아니라 **간격**이 문제였습니다.
+     ⚠ 크기를 손으로 적어 잠그지 않습니다 — 토큰을 좇아 **실제 간격**을 봅니다(원칙 115). */
+  tt('히어로 · 핵심값 · 부속값이 스케일 안의 서로 다른 단이다', (()=>{
+     const tok = n => { const m = M.match(new RegExp('--'+n+':(\\d+)px')); return m ? +m[1] : null; };
+     const sizeOf = sel => { const m = M.match(new RegExp('\\'+'.'+sel+'\\{[^}]*font-size:var\\(--(t\\d)\\)'));
+                             return m ? tok(m[1]) : null; };
+     const t1 = tok('t1'), tileV = sizeOf('tile-v'), simV = sizeOf('ratesim-v');
+     const heroMin = +( (M.match(/\.rhead-amount\{[^}]*font-size:clamp\((\d+)px/)||[])[1] );
+     if(!t1 || !tileV || !simV || !heroMin) return false;
+     /* 히어로는 핵심값보다 **눈에 띄게** 커야 합니다. 1.5배로는 「둘 다 크다」로 읽힙니다. */
+     return heroMin >= tileV * 1.5 && tileV > simV;
+  })(), (()=>{
+     const tok = n => { const m = M.match(new RegExp('--'+n+':(\\d+)px')); return m ? +m[1] : '?'; };
+     const sizeOf = sel => { const m = M.match(new RegExp('\\'+'.'+sel+'\\{[^}]*font-size:var\\(--(t\\d)\\)'));
+                             return m ? tok(m[1]) : '?'; };
+     const heroMin = (M.match(/\.rhead-amount\{[^}]*font-size:clamp\((\d+)px/)||['','?'])[1];
+     return `히어로 ${heroMin}+ / 핵심 ${sizeOf('tile-v')} / 부속 ${sizeOf('ratesim-v')}`;
+  })());
 
   /* ── ② 판정 알약의 이름과 색이 맞는다 ──────────
      🔴 클래스는 `.bad`인데 색만 `--warn`이었습니다. 그 조합이 **회색 배경 위에서 4.19:1**이라
