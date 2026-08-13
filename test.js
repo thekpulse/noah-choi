@@ -902,17 +902,37 @@ HYGIENE.forEach(([name, over]) => {
      && !/\.app\.hero-on \.funnel > \.q\{/.test(css2));
 
   /* 게이지 어댑티브 컬러 — 임계값을 40/60으로 되돌리면 세 색 중 하나만 나타납니다 */
-  /* 🔴 v23.26 — 「임계가 40/60인가」를 **「막대와 색이 같은 눈금을 쓰는가」**로 다시 씁니다.
+  /* 🔴 v23.26 — 「임계가 40/60인가」를 **「막대와 색이 같은 눈금을 쓰는가」**로 다시 썼습니다.
      이전 락은 값만 지켰고, 그 값 때문에 경고 두 색이 한 번도 뜨지 않았습니다.
      막대의 만석이 0.40이면 색 경계도 그 안(0 < a < b < 0.40)에 있어야 합니다. */
-  tt('게이지가 DSR 상한 40%를 만석으로 봐다', /ratio\/0\.40\*100/.test(UI));
+  /* 🔴 v24.27 — 두 검사가 **리터럴 `0.40`을 찾고 있었습니다.**
+     v24.26이 원칙 58을 지켜 `0.40`을 `DSR_RATIO`로 바꾸자 검사가 곧바로 빨간불이 됐습니다 —
+     **코드가 옳아진 순간 검사가 틀린 것**이지, 코드가 깨진 것이 아니었습니다.
+     이제 만석값을 「눈으로 찾은 숫자」가 아니라 **상수를 풀어서** 구합니다:
+       ① `ratio/X*100`에서 X를 뽑고 ② X가 이름이면 그 선언을 좇아 ③ `POLICY.ratio.dsr`까지 내려갑니다.
+     이렇게 하면 리터럴로 되돌려도(두 벌 발생) · 다른 상수로 바꿔치기해도 둘 다 걸립니다.
+     ⚠ 정책이 바뀌어 dsr이 0.40이 아니게 되어도 이 검사는 따라옵니다 — 숫자를 손으로 안 적습니다. */
+  const gaugeFull = (()=>{
+     const m = UI.match(/ratio\/([A-Za-z_$][\w$]*|[\d.]+)\*100/);
+     if(!m) return null;
+     const tok = m[1];
+     if(/^[\d.]+$/.test(tok)) return +tok;          /* 리터럴을 직접 적은 경우 */
+     const decl = (fs.readFileSync(FILE,'utf8')
+       .match(new RegExp('const\\s+' + tok + '\\s*=\\s*([^;]+);')) || [])[1];
+     if(!decl) return null;
+     const d = decl.trim();
+     if(/^[\d.]+$/.test(d)) return +d;              /* 상수가 리터럴을 들고 있는 경우 */
+     return /POLICY\.ratio\.dsr/.test(d) ? E.POLICY.ratio.dsr : null;
+  })();
+  tt('게이지가 DSR 상한을 만석으로 본다',
+     gaugeFull !== null && gaugeFull === E.POLICY.ratio.dsr, String(gaugeFull));
   tt('색 단계가 게이지 눈금 안에 있다', (()=>{
      const m = UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)\s*\?\s*'mid'/);
-     const full = (UI.match(/ratio\/([\d.]+)\*100/)||[])[1];
-     if(!m || !full) return false;
-     const a=+m[1], b=+m[2], F=+full;
-     return 0 < a && a < b && b < F;          /* 두 경계가 만석 안쪽에 있어야 합니다 */
-  })(), (UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)/)||[]).slice(1).join(' / '));
+     if(!m || !gaugeFull) return false;
+     const a=+m[1], b=+m[2];
+     return 0 < a && a < b && b < gaugeFull;   /* 두 경계가 만석 안쪽에 있어야 합니다 */
+  })(), (UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)/)||[]).slice(1).join(' / ')
+        + ' / 만석 ' + gaugeFull);
   /* 경고 두 색이 실제로 도달 가능한가 — 화면 부담률은 스트레스 금리 때문에 최대 ~34%입니다. */
   tt('경고 두 색이 도달 가능하다', (()=>{
      const m = UI.match(/ratio<([\d.]+)\s*\?\s*'ok'\s*:\s*ratio<([\d.]+)\s*\?\s*'mid'/);
@@ -1907,6 +1927,49 @@ HYGIENE.forEach(([name, over]) => {
   tt('버튼 높이를 px로 하드코딩한 곳이 없다', (()=>{
      const btn = css2.match(/\.(cta|restart-cta|reedit-cta|chip|seg button|condchip|trust|sheet-close)[^{]*\{[^}]*\}/g)||[];
      return !btn.some(r => /(^|[^-])height:\d+px/.test(r));
+  })());
+
+  /* ══ v24.27 — 지시서에서 실제로 유효했던 넷을 잠급니다 ══ */
+
+  /* 🔴 지시서는 「`:focus` 기본 아웃라인을 제거하라」고 했습니다. 절반만 맞습니다 —
+     **지우는 것과 대신 줄 것은 한 쌍**이고, 지우기만 하면 키보드 사용자가 자기 위치를 잃습니다.
+     `.mfield`는 처음부터 짝을 맞춰 뒀는데 `.costrow .amt`와 슬라이더는 지우기만 했습니다.
+     이 검사는 **`outline:none`을 쓴 자리마다 짝이 있는지**를 봅니다. */
+  tt('outline을 지운 자리마다 대체 포커스 표시가 있다', (()=>{
+     const need = [
+       [/\.mfield input:focus\{outline:none\}/,        /\.mfield:focus-within\{outline:2px solid var\(--green\)/],
+       [/\.costrow \.amt input:focus\{outline:none\}/, /\.costrow \.amt:focus-within\{outline:2px solid var\(--green\)/],
+       [/input\[type=range\]\{[^}]*outline:none/,      /input\[type=range\]:focus-visible\{outline:2px solid/],
+       [/\.quote-edit input:focus[^{]*\{outline:none\}/, /\.quote-edit:focus-within\{border-bottom-color:var\(--green\)/],
+     ];
+     return need.every(([kill, give]) => !kill.test(css2) || give.test(css2));
+  })());
+
+  /* 🔴 터치 최소 44px은 **값 하나**입니다. 자리마다 손으로 적으면 43·45가 생깁니다(원칙 84).
+     ⚠ 「44가 있는가」가 아니라 **「토큰 밖 44가 없는가」**를 봅니다 — 앞엣것은 리터럴을
+       하나 더 적어도 통과합니다. */
+  tt('터치 최소는 --tap 토큰 하나로만 관리된다',
+     /--tap:\s*44px/.test(css2) && !/(^|[^-\w])height:44px/.test(css2.replace(/--tap:\s*44px/g,'')));
+
+  /* 🔴 지시서는 「모든 곡률을 한 값으로 통일」을 요구했습니다. 그건 안 합니다 —
+     26px 카드와 10px 입력칸에 같은 반경을 주면 큰 면이 뭉툭해지고 작은 면이 동그래집니다.
+     지켜야 할 것은 「한 값」이 아니라 **「스케일 밖 값이 없을 것」**입니다.
+     ⚠ 8px 미만(체크표시·범례점·막대 끝)은 곡률이 아니라 **모양**이라 셈에서 뺍니다. */
+  tt('곡률에 스케일(10·14·20·26) 밖 값이 없다', (()=>{
+     const lit = [...css2.matchAll(/border-radius:(\d+)px/g)].map(m => +m[1])
+       .filter(v => v >= 8);                    /* 8px 미만은 모양입니다 */
+     const scale = [10,14,20,26];
+     return lit.every(v => scale.includes(v) || v === 8);   /* 8 = :focus-visible 링 */
+  })(), (css2.match(/border-radius:\d+px/g)||[]).join(' '));
+
+  /* 🔴 지시서는 「**모든** 금액 입력에 `pattern="[0-9]*"`」을 요구했습니다. 그대로 하면 안 됩니다 —
+     억 칸은 `inputmode="decimal"`이고 사람이 **「5.5」를 칩니다.** `[0-9]*`는 소수점을 막습니다.
+     이 검사는 **정수 칸에는 있고 · 소수 칸에는 없는지** 둘 다 봅니다. */
+  tt('정수 금액 칸에만 pattern이 붙어 있다', (()=>{
+     const html = fs.readFileSync(FILE,'utf8');
+     const tags = [...html.matchAll(/<input[^>]*inputmode="(numeric|decimal)"[^>]*>/g)];
+     if(tags.length < 8) return false;
+     return tags.every(m => /pattern="\[0-9\]\*"/.test(m[0]) === (m[1] === 'numeric'));
   })());
   /* 🔴 지침 — 폼 컨트롤은 16px 이상. 미만이면 iOS가 포커스 시 화면을 확대합니다. */
   /* 🔴 v24.7 — 화면에서 가장 큰 입력인 `.mfield input`은 clamp()라 아래 정규식에 안 걸려
