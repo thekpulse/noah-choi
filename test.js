@@ -1750,10 +1750,20 @@ HYGIENE.forEach(([name, over]) => {
      return all.length === 4 && new Set(all).size === 4;
   })());
 
-  tt('G-18이 면책 줄 수도 본다', (()=>{
+  /* 🔴 v24.25 — **숫자 2를 잠그고 있었습니다**(원칙 48 — 이 세션에만 열아홉 번째).
+     v24.23에서 금소법 문구가 더해져 법적 고지가 **한 문장에서 두 문장**이 됐고,
+     `__selfcheck()`의 G-18이 실기에서 빨간불로 잡았습니다. 상한은 5로 올라갔습니다.
+     잠글 사실은 **「법적 문구도 줄 수 상한을 받는가」**이지 그 값이 몇이냐가 아닙니다.
+     ⚠ 다만 **상한이 무한정 올라가는 것**은 막아야 합니다 — 상한을 올려 빨간불을 없애는 길이
+       열리면 이 검사는 의미가 없어집니다. 그래서 **천장(6)**을 둡니다.
+       6을 넘겨야 할 상황이 오면, 물어야 할 것은 「상한을 올릴까」가 아니라
+       **「이 문장이 정말 필요한가」**입니다. */
+  tt('G-18이 면책 줄 수도 본다 (상한에 천장이 있다)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return /\['#result \.legal',2\]/.test(src) && /LINEMAX/.test(src);
-  })());
+     const m = src.match(/\['#result \.legal',(\d+)\]/);
+     return !!m && /LINEMAX/.test(src) && +m[1] >= 2 && +m[1] <= 6;
+  })(), (()=>{ const m=fs.readFileSync(FILE,'utf8').match(/\['#result \.legal',(\d+)\]/);
+     return m ? '상한 '+m[1]+'줄' : '없음'; })());
   /* 🔴 v24.19 — 소스 문자열을 통째로 잠그고 있었습니다(원칙 48 — 2-6장에서 이미 세 번 걸린 형태).
      360px에서 세 줄이라 문장을 줄여야 하는데, 이 락이 「줄이면 빨개진다」로 막고 있었습니다.
      → **문장이 아니라 사실 넷을 잠급니다** — 추정치 · 정부 정책 · 은행 심사 · 한도와 세금. */
@@ -2736,6 +2746,87 @@ HYGIENE.forEach(([name, over]) => {
   /* 로그 줄에 다시 의존하지 않습니다 — 로그는 로그의 일입니다. */
   tt('경계가 로그 줄에 의존하지 않는다',
      !/indexOf\("console\.info\('영끌계산기 BUILD"\)/.test(fs.readFileSync(__filename,'utf8')));
+})();
+
+/* ═══ v24.25 — __selfcheck()가 실기에서 잡은 셋 ════════════════════
+   🔴 **셋 다 이 세션에 제가 만든 것이고, test.js는 하나도 못 잡았습니다.**
+      `__selfcheck()`는 **렌더된 화면**을 재고 `test.js`는 **소스**를 봅니다.
+      둘의 사정거리가 다르다는 것을 알면서도, 소스로 잴 수 있는 부분까지 놓쳤습니다.
+      → 소스로 잴 수 있는 것은 여기서 잡습니다. 렌더에서만 보이는 것은 여전히 __selfcheck 몫입니다.
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const M = UI0().replace(/\/\*[\s\S]*?\*\//g,'');
+  const RAW = fs.readFileSync(FILE,'utf8');
+
+  /* ── ① 결과 블록 ≤ 8 — 소스에서 미리 셉니다 ──────
+     __selfcheck의 「결과 블록 ≤ 8」과 **같은 셈**입니다: 1(히어로) + .bento .tile + #result .card.
+     v24.23이 시뮬레이터를 별도 타일로 더해 9개가 됐고, 실기에서야 걸렸습니다. */
+  tt('결과 블록이 여덟을 넘지 않는다', (()=>{
+     const bare = RAW.replace(/<!--[\s\S]*?-->/g,'');
+     const bento = (bare.match(/<div class="bento"[\s\S]*?\n    <\/div>/)||[''])[0];
+     const tiles = (bento.match(/class="tile(?: [^"]*)?"/g)||[]).length;
+     const res = bare.slice(bare.indexOf('id="result"'));
+     const cards = (res.match(/<div class="card"/g)||[]).length;
+     return 1 + tiles + cards <= 8;
+  })(), (()=>{
+     const bare = RAW.replace(/<!--[\s\S]*?-->/g,'');
+     const bento = (bento_ => bento_)((bare.match(/<div class="bento"[\s\S]*?\n    <\/div>/)||[''])[0]);
+     const tiles = (bento.match(/class="tile(?: [^"]*)?"/g)||[]).length;
+     const res = bare.slice(bare.indexOf('id="result"'));
+     const cards = (res.match(/<div class="card"/g)||[]).length;
+     return `1 + 타일 ${tiles} + 카드 ${cards} = ${1+tiles+cards}개`;
+  })());
+  /* 시뮬레이터가 다시 **자기 블록**을 갖지 않게 막습니다. */
+  tt('금리 시뮬레이터가 자기 블록을 갖지 않는다',
+     !/class="tile[^"]*ratesim"|class="ratesim[^"]*tile"/.test(M)
+     && /<div class="ratesim" id="rateSim"/.test(M));
+
+  /* ── ② 판정 알약의 이름과 색이 맞는다 ──────────
+     🔴 클래스는 `.bad`인데 색만 `--warn`이었습니다. 그 조합이 **회색 배경 위에서 4.19:1**이라
+        G-19에 걸렸습니다 — 흰 카드 위(4.61:1)에서는 통과했기 때문에 여태 안 보였습니다.
+     ⚠ 값이 아니라 **이름과 값의 일치**를 잠급니다(원칙 91). */
+  tt('.bad 알약이 --bad 글자를 쓴다',
+     /\.rhead-why\.bad\{[^}]*color:var\(--bad\)/.test(M)
+     && !/\.rhead-why\.bad\{[^}]*color:var\(--warn\)/.test(M));
+
+  /* ── ③ 대비를 실제로 계산해 봅니다 ─────────────
+     🔴 소스에 색만 적어 두면 「흰 면 위 5.00:1」 같은 **주석의 값**을 믿게 됩니다.
+        원칙 97 — 같은 토큰도 **놓인 자리**가 바뀌면 값이 달라집니다.
+        이 알약은 흰 카드가 아니라 회색 배경(--bg) 위에 얹힙니다. 그 조건으로 잽니다. */
+  tt('판정 알약이 회색 배경 위에서도 4.5:1을 넘는다', (()=>{
+     const tok = n => (M.match(new RegExp('--'+n+':\\s*([^;]+);'))||[])[1];
+     const hex = h => { h=(h||'').trim().replace('#',''); if(h.length!==6) return null;
+       return {r:parseInt(h.substr(0,2),16),g:parseInt(h.substr(2,2),16),b:parseInt(h.substr(4,2),16)}; };
+     const rgba = s2 => { const m=(s2||'').match(/[\d.]+/g);
+       return m && m.length>=3 ? {r:+m[0],g:+m[1],b:+m[2],a:m[3]!==undefined?+m[3]:1} : null; };
+     const over = (f,b) => ({r:f.r*f.a+b.r*(1-f.a), g:f.g*f.a+b.g*(1-f.a), b:f.b*f.a+b.b*(1-f.a)});
+     const L = o => { const c=[o.r,o.g,o.b].map(v=>{let x=v/255;
+       return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)}); return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
+     const bad = hex(tok('bad')), bg = hex(tok('bg')), tint = rgba(tok('warn-tint'));
+     if(!bad || !bg || !tint) return false;
+     const face = over(tint, bg);
+     const cr = (Math.max(L(bad),L(face))+.05)/(Math.min(L(bad),L(face))+.05);
+     return cr >= 4.5;
+  })(), (()=>{
+     const tok = n => (M.match(new RegExp('--'+n+':\\s*([^;]+);'))||[])[1];
+     return '토큰 --bad ' + (tok('bad')||'?').trim();
+  })());
+
+  /* ── ④ favicon — 콘솔에 상시 빨간불을 두지 않습니다 ──
+     🔴 실기 콘솔에 매 접속마다 `/favicon.ico 404`가 찍히고 있었습니다.
+        기능에는 영향이 없지만 **상시 빨간불이 있으면 진짜 에러가 묻힙니다.**
+     ⚠ 파일을 늘리지 않습니다 — 단일 정적 HTML 배포라 data URI로 인라인합니다. */
+  tt('favicon이 인라인으로 선언돼 있다',
+     /<link rel="icon" href="data:image\/svg\+xml,/.test(RAW));
+  tt('favicon이 외부 파일을 요구하지 않는다',
+     !/<link[^>]*rel="(?:shortcut )?icon"[^>]*href="(?!data:)/.test(RAW));
+
+  /* ── ⑤ 법적 고지 줄 수 상한에 천장 ─────────────
+     상한을 올려 빨간불을 없애는 길이 열리면 G-18은 의미가 없어집니다. */
+  tt('면책 줄 수 상한이 6을 넘지 않는다', (()=>{
+     const m = RAW.match(/\['#result \.legal',(\d+)\]/);
+     return !!m && +m[1] <= 6;
+  })());
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
