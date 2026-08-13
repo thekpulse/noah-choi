@@ -5,6 +5,37 @@
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>영끌계산기 — 내 현금으로 넘볼 수 있는 집</title>
+<!-- 🔴 v24.23 — Google Analytics 4.
+     🔴 **ID를 바꾸기 전에는 아무것도 로드되지 않습니다.** 자리표시자 그대로 두면
+       구글 스크립트를 부르지도, 쿠키를 심지도 않습니다. 이 가드가 없으면 배포 즉시
+       존재하지 않는 ID로 요청이 나가고, 사용자에게는 **이유 없는 서드파티 쿠키**만 남습니다.
+     ⚠ 바꿀 곳은 **아래 GA_ID 한 곳**입니다. 두 곳에 적으면 반드시 어긋납니다(원칙 58).
+     ⚠ 개인정보를 넘기지 않습니다 — 이 도구는 로그인도 입력 전송도 하지 않습니다.
+       사용자가 넣은 금액은 **브라우저 밖으로 나가지 않습니다.** GA에도 안 보냅니다. -->
+<script>
+(function(){
+  var GA_ID = 'G-XXXXXXXXXX';
+  /* 🔴 자리표시자를 **두 번 적지 않습니다.** 처음엔 위 값과 같은 문자열을 여기 한 번 더
+     써서 비교했는데, 그러면 ID를 위에서만 바꾸고 여기를 안 고쳤을 때 **조용히 안 켜집니다.**
+     자리표시자는 X가 이어지는 형태이므로 **모양으로** 판정합니다(원칙 58).
+     ⚠ 이 주석에도 그 문자열을 적지 마세요 — 검사가 「한 곳에만」을 셉니다. */
+  if(!/^G-(?!X+$)[A-Z0-9]{6,}$/.test(GA_ID)) return;
+  var el = document.createElement('script');
+  el.async = true;
+  el.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+  document.head.appendChild(el);
+  window.dataLayer = window.dataLayer || [];
+  /* ⚠ 구글이 배포하는 표준 조각은 `dataLayer.push(...)`로 **암묵 전역**을 씁니다.
+     브라우저에서는 `window.dataLayer = ...`가 전역 바인딩을 만들어 돌지만,
+     그 밖의 실행 문맥에서는 죽습니다 — 검사에서 실제로 죽었습니다.
+     한 글자 더 적고 어디서나 돌게 둡니다. */
+  function gtag(){ window.dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag('js', new Date());
+  /* IP 익명화 · 광고 신호 끄기 — 계산기에 필요 없는 수집을 켜지 않습니다. */
+  gtag('config', GA_ID, { anonymize_ip: true, allow_google_signals: false });
+})();
+</script>
 <!-- 🔴 v24.17 — **og 태그가 하나도 없었습니다.** (2026.08.12 · 실물 카톡 캡쳐로 확인)
      공유 시트로 나간 링크의 미리보기 카드에 카카오 기본 문구인
      「여기를 눌러 링크를 확인하세요.」가 찍히고 있었습니다 — **우리가 쓴 문장이 아닙니다.**
@@ -23,7 +54,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.22 · 정책 2026.08.05 -->
+<!-- BUILD v24.24 · 정책 2026.08.05 -->
 <style>
 /* ===================================================================
    v23.20 — 네오 브루탈리즘 폐기. 쿨 그레이 + 핀테크 그린 + 앰비언트 섀도우.
@@ -473,6 +504,17 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .tile-v{font-size:var(--t1);line-height:1.15;font-weight:900;letter-spacing:-.04em;margin:10px 0 0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-s{font-size:var(--t7);font-weight:400;color:var(--ink-4);margin:7px 0 0}
+
+/* 🔴 v24.23 — 금리 시뮬레이터. 슬라이더 스타일은 **평형 슬라이더와 같은 규칙**을 씁니다
+   (input[type=range] 전역). 새 모양을 만들지 않습니다 — 같은 조작에 두 문법을 두지 않습니다.
+   ⚠ 값은 `--ink`입니다. **판정색(--warn·--bad)을 쓰지 않습니다.** 금리 자체는 좋고 나쁨이
+     아니라 그냥 조건입니다. 판정은 아래 부담 게이지가 이미 합니다(지침 6-3 · 원칙 104).
+   ⚠ 자간은 숫자 규칙(-.04em)입니다 — `.tile-v`와 같은 계열이라 같이 갑니다. */
+.ratesim{padding-top:18px;padding-bottom:18px}
+.ratesim-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ratesim-v{font-size:var(--t3);line-height:1.15;font-weight:900;letter-spacing:-.04em;
+  margin:0;color:var(--ink);white-space:nowrap}
+.ratesim input[type=range]{margin-top:16px}
 
 .card{margin-top:var(--gap);background:var(--card);border-radius:var(--r-xl);padding:var(--pad);box-shadow:var(--sh)}
 .card-title{font-size:var(--t4);font-weight:800;line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}
@@ -936,6 +978,21 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
            실제 금리는 은행·신용도마다 다릅니다. 현재형을 미래형으로 돌리고 아래 줄에 「가정」을 답니다. -->
       <div class="tile"><p class="tile-k">매달 갚을 원리금</p><p class="tile-v" id="tileMonthly"></p><p class="tile-s" id="tileMonthlySub"></p></div>
       <div class="tile"><p class="tile-k">소득 대비 부담</p><p class="tile-v" id="tileBurden"></p><div class="gauge" id="gauge"></div></div>
+      <!-- 🔴 v24.23 — **금리 스트레스 시뮬레이터.** 두 타일에 걸쳐 전폭입니다.
+           왜 전폭인가: 이 값이 **위 두 타일을 동시에** 움직입니다. 한쪽 타일 안에 넣으면
+             다른 타일이 왜 같이 변하는지 설명이 안 됩니다(원칙 53 — 옆에 두면 그것의 일부로 읽힙니다).
+           🔴 **무엇을 지웠는가**(4층 관문 3): 「매달 갚을 원리금」 타일의 부속 줄이
+             「연 5.4% · 30년 가정」이었습니다. 그 줄의 **금리 부분이 이 슬라이더가 됐습니다.**
+             새 카드를 더한 것이 아니라 **고정 문구를 움직이는 값으로 바꾼 것**입니다.
+           🔴 **이 값은 엔진에 안 들어갑니다.** 위 매수 가능 금액과 대출 한도는 그대로입니다 —
+             한도는 **스트레스 금리(6.9%)**로 잡고 상환액은 실제 금리로 계산하는 구조라,
+             여기서 엔진을 건드리면 그 관계가 깨집니다. 그래서 이름이 「금리가 오르면」입니다.
+           ⚠ 대출이 없으면 통째로 숨깁니다 — 갚을 것이 없는데 금리를 물을 이유가 없습니다. -->
+      <div class="tile wide ratesim" id="rateSim" hidden>
+        <div class="ratesim-hd"><p class="tile-k">금리가 오르면</p><p class="ratesim-v" id="rateSimV"></p></div>
+        <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
+        <p class="tile-s" id="rateSimNote"></p>
+      </div>
     </div>
 
     <div class="card">
@@ -1089,11 +1146,23 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:var(--r
        ⚠ 40%는 POLICY.ratio.dsr입니다. 화면에 숫자를 쓰는 자리이므로 값이 바뀌면 여기도 고칩니다.
        ⚠ 정책대출은 DTI 60%(POLICY.ratio.dti)입니다. 지금은 **화면에서 도달할 수 없어**
          적지 않았습니다. 정책대출 UI가 붙는 판에서 이 행에 한 문장을 더하세요. -->
+  <!-- 🔴 v24.24 — **화면에 나오는 말인데 여기 설명이 없던 것 셋**을 채웠습니다.
+       고른 기준은 「더 적으면 좋을 것」이 아니라 **「이미 화면에서 쓰는 말인가」**입니다.
+         · LTV — 결과 화면에서 **가장 자주 뜨는 구속 조건**인데(「LTV가 한도를 정했어요」)
+           설명이 한 줄도 없었습니다. 그래서 DSR보다 **앞**에 둡니다.
+         · 정부 상한 — 한도 막대에 이름만 있고 무엇인지 없었습니다.
+         · 원리금균등 — 월 상환 타일이 「30년 원리금균등 가정」이라 말하는데 뜻이 없었습니다.
+       ⚠ 검색을 노려 글자 수를 채우지 않습니다. **읽으라고 쓰는 글**만 둡니다 —
+         숨기려고 만든 글은 정책 위반이자, 이 도구가 지켜 온 것과도 반대입니다.
+       ⚠ 숫자(40% · 6억)는 POLICY 값입니다. 정책이 바뀌면 **여기도 같이** 고치세요. -->
+  <div class="sheet-row"><b>주택담보대출 비율(LTV)</b><span>집값의 몇 %까지 빌릴 수 있는지예요. 규제지역인지, 집이 몇 채인지, 생애최초인지에 따라 달라져요. 여기서 막히면 소득이 아무리 높아도 한도가 안 늘어요.</span></div>
   <div class="sheet-row"><b>소득 대비 대출 규제(DSR)</b><span>연소득의 40%까지만 원리금 상환에 쓸 수 있어요. 갚고 있는 대출이 먼저 빠지고, 남은 몫으로 한도를 봐요.</span></div>
   <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 봐요. 실제보다 높게 잡아 한도가 보수적으로 나와요.</span></div>
   <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라져요. 대출을 안 받아도 늘 계산에 넣어요.</span></div>
   <div class="sheet-row"><b>중개보수</b><span>거래 금액 구간별 상한요율로 계산해요. 실제로는 협의로 더 낮아질 수 있어요.</span></div>
   <div class="sheet-row"><b>방공제(최우선변제금)</b><span>지역별 기준액을 승인 한도에서 빼요. 그만큼 실제로 나오는 돈이 줄어요.</span></div>
+  <div class="sheet-row"><b>정부 상한</b><span>수도권·규제지역에서는 주택담보대출 자체에 상한이 있어요. LTV로 계산한 값이 이보다 크면 상한까지만 나와요.</span></div>
+  <div class="sheet-row"><b>원리금균등 상환</b><span>매달 같은 금액을 갚는 방식이에요. 처음엔 이자 비중이 크고 갈수록 원금 비중이 커져요. 매달 갚을 원리금은 이 방식으로 계산했어요.</span></div>
   <div class="sheet-row"><b>정책 확인일</b><span>2026.08.05 기준이에요. 정부 정책이 바뀌면 결과도 달라져요.</span></div>
   <button class="sheet-close" id="sheetClose">닫기</button>
 </div>
@@ -1919,7 +1988,15 @@ const LAWD = {
   "전북특별자치도": [["52111","전주시 완산구"], ["52113","전주시 덕진구"], ["52130","군산시"], ["52140","익산시"], ["52180","정읍시"], ["52190","남원시"], ["52210","김제시"], ["52710","완주군"], ["52720","진안군"], ["52730","무주군"], ["52740","장수군"], ["52750","임실군"], ["52770","순창군"], ["52790","고창군"], ["52800","부안군"]],
 };
 
-console.info('영끌계산기 BUILD v24.22 · 정책 2026.08.05');
+/* ══════════ ENGINE END ══════════
+   🔴 v24.24 — **엔진과 화면 코드의 경계입니다. `test.js`가 이 줄에서 자릅니다.**
+   ⚠ 이 줄을 지우거나 문구를 바꾸면 **검사가 조용히 엉뚱한 코드를 읽습니다.**
+     전에는 바로 아래 `console.info` **로그 한 줄**이 경계였습니다 — 로그를 지우거나
+     문구를 손대는 순간 검사 전체가 무너지는데, 그 사실이 어디에도 안 적혀 있었습니다.
+     로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
+   ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
+   ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
+console.info('영끌계산기 BUILD v24.24 · 정책 2026.08.05');
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -1955,6 +2032,16 @@ const INTERIOR = [
    「100평」이라 해 놓고 계산은 50평으로 도는, 가장 찾기 어려운 종류의 어긋남입니다.
    ⚠ 이 값은 **정책 수치가 아닙니다.** 법령 근거가 없으므로 POLICY에 두지 않습니다. */
 const PYEONG_MAX = 100;
+
+/* 🔴 v24.23 — **보기 전용 금리.** 엔진의 `D.rate`와 **일부러 다른 변수**입니다.
+   ⚠ `D.rate`를 직접 움직이면 안 됩니다. 대출 한도는 **스트레스 금리(6.9%)**로 잡고
+     상환액만 실제 금리로 계산하는 구조라(v23.26 주석), 여기서 엔진을 건드리면
+     「한도는 그대로인데 부담률만 요동치는」 어긋남이 생깁니다.
+   → 이 값은 **월 상환액 타일과 부담 게이지에만** 닿습니다. 위 매수 가능 금액은 안 움직입니다.
+   ⚠ 결과를 다시 계산할 때마다 `D.rate`로 되돌립니다 — 지난 조작이 다음 결과에 묻어가면
+     사용자는 자기가 만진 줄 모르고 그 숫자를 사실로 읽습니다. */
+let SIM_RATE = null;                       /* null이면 D.rate를 씁니다 */
+const simRate = () => SIM_RATE == null ? D.rate : SIM_RATE;
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
             group:null, sido:'', sgg:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false, itOpen:false,
@@ -2522,15 +2609,26 @@ function showResult(keepScroll){
   const pill=$('heroPill'); pill.className='rhead-why '+tone; pill.querySelector('span').textContent=short;
   renderCondBar(price);
 
+  /* 🔴 v24.23 — 결과를 다시 계산할 때마다 시뮬레이터를 기준 금리로 되돌립니다.
+     지난 조작이 다음 결과에 묻어가면 사용자는 자기가 만진 줄 모르고 그 숫자를 사실로 읽습니다. */
+  SIM_RATE = null;
   renderBento(c); renderReceipt(c, price); renderLimits(c, price); renderDiscs();
   renderCostBox(c); renderPkg(); renderOutlinks(price); renderDeals(price);
+  bindRateSim();
   LASTVIEW = {c, price, headline, isOverride, short};
   renderReport(LASTVIEW);
 
   /* 🔴 v23.21 — 두 줄이 같은 말을 두 번 하고 있었습니다(원칙 43). 한 줄로 합칩니다.
      정책 변동 고지는 반드시 남깁니다 — 정책대출 미반영분(약 7,657만원 과소)의 면책 근거입니다. */
   $('footNote').innerHTML =
-    `<span class="legal">※ 단순 시뮬레이션 추정치입니다. 정부 정책과 은행 심사 기준에 따라 실제 대출 한도와 세금은 달라질 수 있습니다.</span>`;
+    /* 🔴 v24.23 — **금소법 대응 문구를 더했습니다.** 이 도구는 대출 한도를 계산해 보여 주므로
+       「우리가 무엇이 아닌지」를 밝혀 둘 필요가 있습니다.
+       ⚠ 문장은 주신 것 그대로입니다 — 법적 고지문은 제가 매끄럽게 다듬을 자리가 아닙니다.
+       ⚠ **`.legal` 안에 둡니다.** 시각 위계가 가장 낮은 자리이고, 문어체(~습니다)도
+         여기서는 의도된 신호입니다 — 「여기부터 법적 문구」(v24.18 주석).
+       ⚠ 두 문장을 **한 span에 둡니다.** 나누면 위계가 달라 보여 하나가 본문처럼 읽힙니다. */
+    `<span class="legal">※ 단순 시뮬레이션 추정치입니다. 정부 정책과 은행 심사 기준에 따라 실제 대출 한도와 세금은 달라질 수 있습니다.`
+    + `<br>※ 영끌계산기는 공공데이터 기반의 단순 계산 도구이며 금융상품 판매 대리·중개업자가 아닙니다. 실제 대출 가능 여부는 금융기관 심사에 따릅니다.</span>`;
   /* 2-Track — 왼쪽 35%: 조건만 고치기(세컨더리) / 오른쪽 65%: 처음부터(메인) */
   $('restartWrap').innerHTML =
     '<div class="restartrow">' +
@@ -2615,11 +2713,15 @@ function renderBento(c){
   $('fundLegend').innerHTML = loan>0
     ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b></div><div><span class="f2"></span>주택담보대출 <b>${100-ownPct}%</b></div>`
     : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>100%</b></div>`;
-  const m=monthlyPaymentCalc(loan, D.rate, D.years);
+  const rate = simRate();
+  const m=monthlyPaymentCalc(loan, rate, D.years);
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
+  paintRateSim(loan, rate);
   /* 🔴 v24.18 — 전: 「빌리는 돈이 없어요」. 「돈이 없다」로 읽힐 여지가 있었고,
      타일 이름이 「매달 갚을 원리금」이므로 설명도 **갚는 쪽**을 말해야 눈이 이어집니다. */
-  $('tileMonthlySub').textContent = m>0 ? `연 ${D.rate}% · ${D.years}년 가정` : '갚을 대출이 없어요';
+  /* 🔴 v24.23 — 금리는 아래 슬라이더가 말하므로 여기서는 **기간만** 답니다.
+     같은 값을 두 곳에 적으면 슬라이더를 움직였을 때 한쪽이 거짓이 됩니다(원칙 91). */
+  $('tileMonthlySub').textContent = m>0 ? `${D.years}년 원리금균등 가정` : '갚을 대출이 없어요';
   const g=$('gauge');
   if(!S.income || m<=0){ $('tileBurden').className='tile-v'; $('tileBurden').innerHTML='—';
     g.setAttribute('hidden',''); return; }
@@ -2640,6 +2742,37 @@ function renderBento(c){
   /* 게이지는 은행 상한 40%를 만석으로 봅니다 */
   g.innerHTML=`<i class="${band}" style="width:${Math.min(100,Math.round(ratio/0.40*100))}%"></i>`;
 }
+/* 🔴 v24.23 — 금리 시뮬레이터를 그립니다.
+   ⚠ **대출이 없으면 통째로 숨깁니다.** 갚을 것이 없는데 금리를 물을 이유가 없습니다.
+   ⚠ 슬라이더는 정수 ×10으로 다룹니다(3.0%~10.0% → 30~100). `step="0.1"`은 브라우저마다
+     부동소수 오차로 「5.400000000000001」이 나옵니다.
+   ⚠ 기준값(D.rate)에서 벗어났을 때만 「기준 대비」를 말합니다 — 안 움직였는데
+     「+0만원」이 떠 있으면 사용자는 자기가 무언가 바꾼 줄 압니다. */
+function paintRateSim(loan, rate){
+  const box = $('rateSim'); if(!box) return;
+  if(!(loan > 0)){ box.setAttribute('hidden',''); return; }
+  box.removeAttribute('hidden');
+  $('rateSimV').textContent = `연 ${rate.toFixed(1)}%`;
+  const r = $('rateRange');
+  if(r){
+    r.value = Math.round(rate * 10);
+    const pct = (r.value - r.min) / (r.max - r.min) * 100;
+    r.style.setProperty('--fill-pct', pct + '%');
+  }
+  const base = monthlyPaymentCalc(loan, D.rate, D.years);
+  const now  = monthlyPaymentCalc(loan, rate,   D.years);
+  const diff = Math.round(now - base);
+  /* 🔴 기준일 때는 「무엇 기준인가」만, 움직였을 때는 「기준 대비 얼마」를 말합니다. */
+  $('rateSimNote').textContent = (Math.abs(diff) < 5000)
+    ? `한도는 연 ${D.rate}% 기준이에요. 금리를 움직여도 위 금액은 그대로예요.`
+    : `연 ${D.rate}%일 때보다 매달 ${formatWon(Math.abs(diff))} ${diff > 0 ? '더' : '덜'} 나가요.`;
+}
+
+function bindRateSim(){
+  const r = $('rateRange'); if(!r) return;
+  r.oninput = () => { SIM_RATE = +r.value / 10; renderBento(LASTVIEW.c); };
+}
+
 function renderReceipt(c, price){
   let h = row('집값', formatWon(price))
         + row('취득세 · 지방교육세', formatWon(c.tax))
