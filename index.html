@@ -61,7 +61,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.29 · 정책 2026.08.05 -->
+<!-- BUILD v24.30 · 정책 2026.08.05 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -189,11 +189,23 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;min-width:0}
 [hidden]{display:none!important}
 html,body{margin:0;padding:0;overflow-x:hidden;color-scheme:light}
-/* 시스템이 다크모드여도 우리 톤을 그대로 쓴다 */
-@media (prefers-color-scheme:dark){
-  html,body{background:var(--bg);color:var(--ink)}
-  input,select,button,textarea{color-scheme:light}
-}
+/* 🔴 v24.30 — **테마 분기를 코드에서 없앴습니다.** 여기 있던
+     `@media (prefers-color-scheme:dark){ html,body{background:var(--bg);color:var(--ink)}
+       input,select,button,textarea{color-scheme:light} }`
+   블록을 지웠습니다. **다크 모드 싹이라서가 아니라 아무 일도 안 하고 있었기 때문입니다.**
+   390px Chromium을 `colorScheme:'dark'`로 띄워 지우기 전/후를 렌더해 픽셀로 대조했습니다 —
+   **1,316,640 픽셀 중 0 차이.** 두 규칙 다 이미 다른 자리가 하고 있었습니다.
+     · `html,body{background;color}` — `body`가 이미 무조건 들고 있고, `html`은 배경이 없으면
+       body 배경이 캔버스로 전파됩니다(background propagation).
+     · `input,…{color-scheme:light}` — `color-scheme`은 **상속되는 속성**입니다.
+       `:root`의 선언이 이미 모든 요소에 닿아 있습니다(다크 에뮬레이션에서 폼 요소 계산값 = light).
+   🔴 **지우면 안 되는 것은 `color-scheme:light` 세 자리입니다**(meta · :root · html,body).
+     셋까지 지운 변형(C)을 같은 조건으로 돌리면 계산값이 **normal**로 떨어집니다 —
+     그때부터 폼 컨트롤 · 캐럿 · 스크롤바를 UA가 시스템 테마로 그립니다.
+     **일하고 있던 것은 이 세 줄이고, 지운 블록은 그 위에 얹힌 중복이었습니다**(원칙 43 · 84).
+   ⚠ 위 주석에 그 미디어 쿼리 문자열이 **일부러 그대로 남아 있습니다.** 새 검사(다크 동결)는
+     주석을 걷어내고 봅니다 — 원본을 그대로 훑는 검사를 쓰면 **이 설명이 코드로 오인돼**
+     즉시 빨간불입니다(원칙 121이 실제로 그렇게 걸렸던 자리입니다). */
 img,svg{forced-color-adjust:none}
 /* clip은 스크롤 컨테이너를 만들지 않아 position:sticky를 깨지 않습니다 */
 .app{overflow-x:clip}
@@ -971,10 +983,27 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
        올리면 면책이 360px에서 6줄이 되어 G-18(5줄)에 걸립니다. 남은 것으로 적어 둡니다.
    ⚠ 아래 여백만 `env()`를 탑니다. `.app.no-dock`(결과 화면)은 padding-bottom이 0이라
      **화면 맨 아래를 책임지는 값이 이 하나뿐**입니다(v24.28 `.result`와 같은 이유).
-     입력 화면은 `.app`이 이미 dock + 안전영역을 비워 두므로 그쪽은 안 겹칩니다. */
+   🔴 v24.30 — 바로 아래 줄에 v24.29가 이렇게 적어 뒀습니다.
+        「입력 화면은 `.app`이 이미 dock + 안전영역을 비워 두므로 그쪽은 안 겹칩니다.」
+      **틀린 문장입니다. 실기 캡쳐에서 겹쳤습니다.** 사용자가 보낸 인앱 브라우저 화면에서
+      「© 2026 …」이 「다음」 버튼 뒤로 깔리고, 「이전」과 「다음」 **사이 틈으로 「0」 한 자만**
+      비어져 나왔습니다. 재현하면 세로 폭에 따라 갈립니다(dock↔꼬리말 겹침, 스크롤 0에서 측정):
+        375×667 **+54px** · 390×720 **+23px** · 414×736 **+19px** / 390×844 −101 · 430×932 −176
+      **`padding-bottom`은 겹침을 막는 값이 아닙니다** — 그건 문서 **끝**에 자리를 비워 둘 뿐이고,
+      꼬리말이 어디에 놓이는지는 **본문 길이와 화면 높이**가 정합니다. 둘이 만나면
+      스크롤 맨 위에서 꼬리말이 그대로 도크 띠 안에 들어앉습니다. 인앱 브라우저는 위아래 크롬이
+      dvh를 60~90px 먹어서 **실사용자가 가장 많이 보는 높이대가 정확히 겹치는 구간**입니다.
+      ⏹ `.app`을 flex로 바꿔 꼬리말을 아래로 미는 안을 먼저 재 봤습니다 — 본문이 짧은 화면만
+        고쳐지고(−101 → −36) **겹치던 셋은 그대로**였습니다. 본문이 화면보다 길면 밀 자리가 없습니다.
+      → **입력 화면에서는 꼬리말을 걸지 않습니다.** 그 화면의 맨 아래는 **도크가 책임지는 자리**이고,
+        저작권은 「문서의 끝」 표시입니다. 3단계 중 1단계는 끝이 아닙니다.
+        결과 화면(`.no-dock`)에는 그대로 둡니다 — 거기가 유일하게 도크가 없는, 진짜 끝입니다.
+      ⚠ 마크업은 **안 옮겼습니다.** `.result` 안으로 넣으면 480px 상한 밖으로 나가는 문제를
+        v24.29가 이미 정리해 뒀습니다(위 문단). 옮길 것은 자리가 아니라 **보이는 조건**입니다. */
 .copyright{margin:0;padding:40px 0 24px;text-align:center;
   font-size:var(--t7);font-weight:var(--w-sub);line-height:var(--lh-body);
   letter-spacing:var(--ls-body);color:var(--ink-3)}
+.app:not(.no-dock) .copyright{display:none}
 .app.no-dock .copyright{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 /* ⏹ .cta.ghost · .textbtn 은 v23.22에서 삭제했습니다 — 어떤 마크업도 쓰지 않는 죽은 규칙입니다.
    죽은 CSS는 죽은 값이 아니라 「살아 있는 두 번째 정의」입니다(원칙 84 · 지침 6-6). */
@@ -2363,7 +2392,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v24.29 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v24.30 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4259,6 +4288,63 @@ window.__selfcheck = function(){
        +' · 간격 '+(isFinite(_gap)?_gap.toFixed(0):'?')+'px'+(_r?' (칩 '+_r.height.toFixed(0)+'px)':''));
   } else ok('G-23 하위 구 서랍이 누른 칩 바로 아래다', true,
      '🟡 측정 대상 0 — 입력 03에서 수원 · 안양 · 용인 · 화성을 고르고 실행하세요');
+
+  /* 🔴 G-24 (v24.30) — **화면이 실제로 한 벌인가.** 다크 모드 동결의 렌더 쪽 잠금입니다.
+     `test.js`는 「테마 분기 코드가 없는가」를 셀 수 있지만, 그건 **소스의 사실**입니다.
+     여기서는 **칠해진 결과**를 봅니다 — 시스템이 다크일 때 UA가 캔버스와 폼 컨트롤을
+     뒤집어 놓았는지는 소스만 봐서는 모릅니다(원칙 98 · 122 — 「썼는가」와 「닿았는가」).
+     ⚠ `matchMedia`를 **강제할 수 없습니다.** 검사하는 사람의 시스템이 라이트면 이 항목은
+       쉽게 초록입니다 — 그래서 **지금 어느 테마에서 쟀는지를 값에 적습니다**(원칙 124의 ⚠).
+       기기 설정을 다크로 바꾸고 한 번 더 돌리는 것이 이 검사의 본래 자리입니다.
+     ⚠ 색을 리터럴로 안 적습니다. `--bg`를 임시 요소에 칠해 **브라우저가 푼 값**과 맞댑니다
+       (팔레트를 바꾸면 기준도 따라옵니다 — 원칙 115). */
+  const _sysDark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const _probe=document.createElement('i');
+  _probe.style.cssText='position:absolute;left:-9999px;background:var(--bg);color:var(--ink)';
+  document.body.appendChild(_probe);
+  const _wantBg=getComputedStyle(_probe).backgroundColor, _wantInk=getComputedStyle(_probe).color;
+  _probe.remove();
+  const _bodyS=getComputedStyle(document.body), _rootS=getComputedStyle(document.documentElement);
+  const _inp=document.querySelector('input:not([type=range])');
+  const _csOK=_rootS.colorScheme==='light' && (!_inp || getComputedStyle(_inp).colorScheme==='light');
+  ok('G-24 시스템 테마와 무관하게 한 벌로 칠해진다',
+     _csOK && _bodyS.backgroundColor===_wantBg && _bodyS.color===_wantInk,
+     (_sysDark?'시스템 다크에서 측정':'🟡 시스템 라이트에서 측정 — 기기를 다크로 바꿔 한 번 더')
+     +' · color-scheme '+_rootS.colorScheme+(_inp?'/'+getComputedStyle(_inp).colorScheme:'')
+     +' · 배경 '+_bodyS.backgroundColor+(_bodyS.backgroundColor===_wantBg?' = --bg':' 🔴 ≠ --bg '+_wantBg));
+
+  /* 🔴 G-25 (v24.30) — **꼬리말이 도크와 같은 화면에 있지 않은가.**
+     v24.29는 저작권을 `.app` 안에 넣고 인수인계에 「입력 화면은 `.app`이 이미 dock을 비워
+     두므로 안 겹칩니다」라고 적었습니다. **실기에서 겹쳤습니다** — 375×667 +54px ·
+     390×720 +23px · 414×736 +19px(스크롤 0). 사용자 캡쳐에서는 「이전」과 「다음」 사이 틈으로
+     「0」 한 자만 비어져 나왔습니다. `padding-bottom`은 문서 **끝**을 비우는 값이지
+     꼬리말이 **어디에 놓이는지**를 정하지 않습니다(원칙 116의 반대 방향 — 비운 자리와 놓인 자리).
+     🔴 「안 겹친다」로 쓰면 안 됩니다. 꼬리말이 숨겨진 순간 **잴 것이 없어져 조용히 초록**이 되고,
+       그건 검사가 막으려던 상태(= 꼬리말이 도크 뒤로 들어감)와 구별이 안 됩니다(원칙 124).
+       → **양쪽 다 적극적으로** 잽니다. 도크가 있으면 「없어야 한다」, 없으면 「보이고 맨 아래여야 한다」. */
+  const _cp=document.querySelector('.copyright'), _dk=document.getElementById('dock');
+  /* 🔴 도크는 `position:fixed`입니다 — **`offsetParent`가 언제나 null입니다.**
+     처음에 `_dk.offsetParent`로 「도크가 떠 있나」를 물었고, 그래서 **입력 화면에서도 늘
+     「도크 없음」으로 갈려** 결과 화면용 판정(= 꼬리말이 보여야 한다)을 먹였습니다.
+     사보타주를 돌리자 **여덟 개 중 일곱이 무관한데도 G-25가 빨갛고, 정작 잡아야 할 ⑦은
+     초록**이라 드러났습니다 — 판정이 뒤집혀 있었던 것입니다(지침 6-10 · 원칙 124).
+     ⚠ 「보이는가」는 `offsetParent`가 아니라 **그려진 사각형**으로 묻습니다. */
+  const _shown=el=>!!(el && !el.hidden && el.getClientRects().length>0
+                      && getComputedStyle(el).visibility!=='hidden');
+  const _dockOn=_shown(_dk), _cpOn=_shown(_cp);
+  if(_dockOn){
+    ok('G-25 도크가 있는 화면에는 꼬리말이 없다', _cp && !_cpOn,
+       !_cp ? '🔴 꼬리말 자체가 사라졌습니다 — 결과 화면에서는 있어야 합니다'
+       : _cpOn ? '🔴 도크와 같은 화면에 떠 있습니다' : '마크업은 있고 화면에는 없음 ✅');
+  } else {
+    const _r2=_cp?_cp.getBoundingClientRect():null;
+    const _last=[...document.querySelectorAll("#app > *")].filter(e=>_shown(e))
+      .reduce((m,e)=>Math.max(m,e.getBoundingClientRect().bottom),-1e9);
+    ok('G-25 도크가 없는 화면에서 꼬리말이 맨 아래에 있다',
+       _cpOn && _r2 && _r2.bottom>=_last-0.5 && _r2.width>0,
+       !_cpOn ? '🔴 결과 화면인데 꼬리말이 없습니다'
+       : (_r2.bottom>=_last-0.5?'맨 아래 ✅':'🔴 아래에 다른 것이 '+(_last-_r2.bottom).toFixed(0)+'px 더 있습니다'));
+  }
 
   const dark=document.querySelectorAll('#result .pkg, #result .hero').length;
   ok('화면에 다크 카드 없음', dark===0, dark+'개');
