@@ -61,7 +61,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.30 · 정책 2026.08.05 -->
+<!-- BUILD v24.32 · 정책 2026.08.05 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -581,6 +581,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 면(`--warn-tint`)은 그대로 둡니다. 면까지 바꾸면 톤이 달라져 색만 바꾸는 판이 아니게 됩니다. */
 .rhead-why.bad{background:var(--warn-tint);color:var(--bad)}
 .condbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
+/* 🔴 v24.31 — 히어로 안으로 들어온 자금 구조 막대(블록 1).
+   ⚠ `--ink-4`가 아니라 `--ink-3`입니다. 위 마크업 주석의 이유(원칙 97 — 놓인 면이 다릅니다). */
+.fundwrap{margin-top:24px}
+.fund-k{font-size:var(--t7);font-weight:500;color:var(--ink-3);margin:0;letter-spacing:.04em}
 /* 🔴 v23.24 계층 3 — 상태 칩 · 뱃지. 높이 --h-chip · 13px. */
 .condchip{display:inline-flex;align-items:center;gap:6px;height:var(--h-chip);padding:0 12px;border-radius:var(--r-pill);
   background:var(--card);border:1px solid var(--line);font-size:var(--t7);font-weight:700;color:var(--ink-2);
@@ -719,6 +723,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    v23.18~19의 그린 ok는 「부담이 낮다」를 「좋다」로 바꿔 읽게 만들었습니다. */
 .gauge i.ok{background:var(--ok)} .gauge i.mid{background:var(--warn)} .gauge i.bad{background:var(--bad)}
 .tile-v.ok{color:var(--ok)} .tile-v.mid{color:var(--warn)} .tile-v.bad{color:var(--bad)}
+/* 🔴 v24.31 — 부담 판정 뱃지. **세 단은 위 줄과 같은 토큰을 나눠 씁니다** — 색을 새로 만들면
+   같은 판정이 화면 두 곳에서 다른 색이 됩니다(원칙 84 · 91). 선택자만 얹습니다. */
+.verdict{display:block;margin-top:3px;font-size:var(--t7);font-weight:700;letter-spacing:-.01em}
+.verdict.ok{color:var(--ok)} .verdict.mid{color:var(--warn)} .verdict.bad{color:var(--bad)}
 
 .limitrow{display:flex;align-items:center;gap:12px;padding:10px 0}
 .limitrow .k{font-size:var(--t7);color:var(--ink-4);min-width:80px;flex:none}
@@ -738,7 +746,25 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .disc:hover .caret{color:var(--ink)}
 .disc .caret{transition:transform .22s,color .14s;font-size:var(--t7);color:var(--ink-4)}
 .disc[aria-expanded="true"] .caret{transform:rotate(180deg);color:var(--ink)}
+/* 🔴 v24.31 — 영수증 줄로 앉은 접기. **`.line`의 활자를 그대로 씁니다** — 이 줄은
+   버튼처럼 생길 필요가 없습니다. 같은 표 안의 한 줄인데 **누를 수 있을 뿐**이고,
+   누를 수 있다는 것은 ▾가 말합니다(채널 A는 모양이 아니라 표식으로 냅니다 · 원칙 62 · 112).
+   ⚠ 값(--ink-2)과 이름(--ink-3)을 `.line`과 **같은 토큰**으로 둡니다. 한 단이라도 달라지면
+     접힌 줄만 다른 표처럼 읽힙니다. */
+/* 🔴 G-22가 잡았습니다 — `.line`의 여백(11px)을 그대로 쓰니 손가락 면이 **40px**이 됐습니다.
+   보이는 크기는 그대로 두고 **투명 면만** 넓힙니다(v24.27 문법 · 원칙 122 · 123).
+   ⚠ `.disc`는 `::after`를 안 쓰고 있습니다(꺾쇠는 `.caret` 스팬입니다). 붙이기 전에 확인한 자리입니다. */
+.disc.discline{position:relative;margin-top:0;padding:11px 0;border-top:0;font-size:var(--t6);font-weight:400}
+.disc.discline::after{content:'';position:absolute;left:0;right:0;top:50%;
+  transform:translateY(-50%);height:var(--tap)}
+.disc.discline .k{flex:1;text-align:left;color:var(--ink-3);font-weight:400}
+.disc.discline .v{font-weight:700;color:var(--ink-2);white-space:nowrap}
+.disc.discline .caret{margin-left:2px}
 .costbox{display:none;margin-top:12px;margin-bottom:8px} .costbox.open{display:block}
+/* 서랍 안의 항목 줄은 한 단 들여씁니다 — 「이 소계에 속한 것들」이 자리로 보입니다.
+   ⚠ **왼쪽 세로선을 긋지 않습니다.** 그건 폐기된 인용문 문법이고 검사가 막고 있습니다.
+     들여쓰기는 여백으로만 냅니다(선을 하나 더 그으면 카드 안에 표가 둘로 보입니다). */
+#costItems{margin:0 0 4px;padding-left:10px}
 /* ⚠ 선은 --line, 면은 --fill입니다. 여기서 --fill을 선으로 쓰고 있었습니다(토큰 혼용). */
 /* 🔴 v24.15 — 18 → 14. 영수증 줄(.line)은 11px(=22px 간격)인데 여기는 18px(=36px)이었습니다.
    같은 「한 줄에 이름과 금액」인데 상세 쪽이 1.6배 벌어져 있었습니다.
@@ -894,8 +920,17 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .deal:last-of-type{border-bottom:0}
 .deal .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:700;color:var(--ink);
   letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 🔴 v24.31 — **부속 줄의 `white-space:nowrap`을 뗐습니다.**
+   `.nm`이 말줄임을 걸고 있어 부속 줄까지 한 줄로 눌려 있었고, 390px에서 **37px 넘쳐**
+   「2017년」이 「2017ㄴ」으로 잘렸습니다(사용자 캡쳐로 확인 · 실측 재현).
+   v24.26이 순서를 「동 · 면적 · 평 · 연식」으로 잡은 근거가 「모자라면 연식부터 잘리게」였는데,
+   **잘리는 것을 전제로 한 설계였습니다.** 잘린 「2017ㄴ」은 절약이 아니라 고장으로 읽힙니다.
+   → 두 줄로 흐르게 둡니다(실측 넘침 0). 넓은 화면에서는 그대로 한 줄입니다 —
+     미디어 쿼리가 필요 없는 자리입니다.
+   ⚠ **단지 이름(`.nm` 자신)은 여전히 한 줄 + 말줄임입니다.** 긴 단지 이름이 두 줄로 흐르면
+     금액과의 기준선이 어긋납니다. 푸는 것은 부속 줄뿐입니다. */
 .deal .nm small{display:block;margin-top:3px;font-size:var(--t7);font-weight:400;
-  color:var(--ink-4);letter-spacing:-.01em;white-space:nowrap}
+  color:var(--ink-4);letter-spacing:-.01em;white-space:normal}
 /* 🔴 v24.26 — 평 강조. **새 색을 만들지 않습니다** — 잉크 한 단 + 굵기뿐이고,
    `.helper b`(--ink-4 바탕에 --ink-3 700)와 **같은 문법**입니다(지침 6-7 · 원칙 62).
    포인트 컬러를 쓰면 채널 A(누를 수 있는 것)·B(판정)와 섞입니다. */
@@ -965,11 +1000,22 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 /* 🔴 v23.23 — 검정 솔리드를 폐기하고 01·02·03의 「다음」과 **같은 버튼**으로 맞췄습니다.
    프라이머리 액션이 화면마다 다른 색이면 그 색은 더 이상 「액션」을 뜻하지 않습니다.
    ⚠ 지침 6-5의 「재계산 CTA는 예외로 검정 면」 조항은 v23.23에서 폐기했습니다. */
+/* 🔴 v24.31 — **그린을 뗐습니다.** 위 v23.23의 규칙(「프라이머리는 화면마다 같은 색」)은
+   그대로 지킵니다 — 결과 화면의 그린 하나는 이제 **`.gocta`(네이버 아웃링크)**입니다.
+   재계산은 **입력을 전부 지우는 파괴적 행동**이고, 파괴적 행동은 프라이머리 자리에 두지 않습니다.
+   ⚠ 그래도 왼쪽 「이전 단계」와 **같아 보이면 안 됩니다.** 둘 다 흰 면이므로 위계는
+     ① 폭(35 : 65) ② 글자 잉크 한 단(--ink-2 ↔ --ink) ③ 그림자(--sh ↔ --sh-lift)로 냅니다.
+     색을 하나 더 만들지 않습니다(원칙 84 · G-6 색 예산). */
 .restart-cta{width:100%;height:var(--h-cta);margin-top:10px;border-radius:var(--r-m);
-  background:var(--green);color:var(--espresso);box-shadow:var(--sh-lift);
-  font-size:var(--t5);font-weight:600;letter-spacing:-.02em;transition:.14s;
+  background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh-lift);
+  font-size:var(--t5);font-weight:700;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
-.restart-cta:hover{filter:brightness(.94)}
+.restart-cta:hover{background:var(--line)}
+/* ⏹ v24.32 — `.gocta`(v24.31의 계층 1 아웃링크)를 **정의부터 지웠습니다.**
+   네이버 칸이 다시 `.mini` 한 행이 되면서 쓰는 자리가 없어졌습니다.
+   **죽은 CSS는 죽은 값이 아니라 「살아 있는 두 번째 정의」입니다**(원칙 84 · 지침 6-6) —
+   남겨 두면 다음 사람이 「초록 큰 버튼 문법이 둘」로 읽습니다.
+   ⚠ 되살리려면 **G-26을 먼저 보세요.** 결과 화면에 그린 솔리드가 생기는 순간 빨간불입니다. */
 .foot{padding:8px 12px 0;text-align:center;font-size:12px;line-height:1.7;color:var(--ink-3)}
 .foot .legal{display:block;margin:0;color:var(--ink-3);font-weight:400;
   word-break:keep-all;overflow-wrap:anywhere}
@@ -1224,14 +1270,23 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
       <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p>
       <p class="rhead-why" id="heroPill"><span></span></p>
       <div class="condbar" id="condBar"></div>
-    </header>
-
-    <div class="bento">
-      <div class="tile">
-        <p class="tile-k">이 돈이 어디서 오나요?</p>
+      <!-- 🔴 v24.31 — **비율 막대를 히어로 안으로 들였습니다(블록 1 — 자금 구조).**
+           ⏹ 전에는 `.bento`의 첫 타일(흰 카드)이었습니다. 그런데 이 막대가 말하는 것은
+             **바로 위 금액이 어디서 오는가**입니다 — 같은 한 문장을 카드 경계가 끊고 있었습니다.
+           ⚠ 카드로 감싸지 않습니다. `.rhead`는 v23에서 **큰 검은 박스를 걷어낸 자리**이고,
+             여기에 흰 면을 도로 세우면 그때 지운 덩치가 이름만 바꿔 돌아옵니다.
+           ⚠ 라벨에 `.tile-k`(--ink-4)를 그대로 못 씁니다 — 그건 **흰 카드 위에서** 4.62:1로
+             검증된 값이고, 여기는 앱 배경(--bg)이라 **4.19:1**입니다. `.barlabel`·`.arow`와
+             정확히 같은 자리입니다(원칙 97). → `--ink-3`(6.45:1)로 쓰는 `.fund-k`를 둡니다.
+           → 결과 블록 7 → 6. -->
+      <div class="fundwrap">
+        <p class="fund-k">이 돈이 어디서 오나요?</p>
         <div class="stack" id="fundStack"></div>
         <div class="legend" id="fundLegend"></div>
       </div>
+    </header>
+
+    <div class="bento">
       <!-- 🔴 v24.20 — 「매달 갚는 돈」 → 「매달 갚을 원리금」.
            전에는 **확정된 사실**처럼 읽혔습니다. 금리(연 5.4%)도 기간(30년)도 **우리가 둔 가정**이고,
            실제 금리는 은행·신용도마다 다릅니다. 현재형을 미래형으로 돌리고 아래 줄에 「가정」을 답니다. -->
@@ -1252,8 +1307,17 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
           <div class="payitem">
             <p class="tile-k">매달 갚을 원리금</p><p class="tile-v" id="tileMonthly"></p>
           </div>
+          <!-- 🔴 v24.31 — **판정 뱃지를 답니다(블록 2 — 월 현금흐름).**
+               지금까지 이 값의 판정은 **색 하나뿐**이었습니다(--ok 무채색 / --warn / --bad).
+               색만으로 판정을 말하면 ① 색각 이상인 사람에게는 판정이 아예 없고
+               ② 무채색(--ok)은 「판정이 없는 상태」와 구별이 안 됩니다.
+               게이지 막대도 같은 색을 쓰므로 **채널이 하나 더 필요한 자리**였습니다.
+             ⚠ 새 색을 만들지 않습니다 — `.tile-v`가 이미 쓰는 세 단을 그대로 씁니다.
+             ⚠ 조언이 아니라 **구간 이름**입니다. 「줄이세요」 같은 말은 금융 조언이 됩니다.
+             ⚠ 소득이 없거나 갚을 대출이 없으면 값이 「—」입니다 — 그때는 **뱃지도 없습니다.** -->
           <div class="payitem end">
             <p class="tile-k">소득 대비 부담</p><p class="tile-v" id="tileBurden"></p>
+            <span class="verdict" id="burdenVerdict" hidden></span>
           </div>
         </div>
         <p class="tile-s" id="tileMonthlySub"></p>
@@ -1286,15 +1350,32 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
       <h2 class="card-title">이 집을 살 때 실제로 드는 돈</h2>
       <div id="receipt"></div>
 
-      <button class="disc" id="costToggle" aria-expanded="false" aria-controls="costBox">
-        <span>부대비용 상세 설정</span><span class="caret">▾</span></button>
+      <!-- 🔴 v24.31 — **부대비용을 영수증 한 줄로 접었습니다(블록 3).**
+           ⏹ 전에는 취득세 · 중개보수 · 켠 항목이 **영수증 본문에 흩어져** 있고, 그것들을 고치는
+             「부대비용 상세 설정」이 **아래 따로** 있었습니다. 같은 말이 화면에 두 번 있었고
+             (원칙 43), 「어느 줄이 어느 스위치인지」를 눈으로 이어야 했습니다.
+           → 소계 한 줄로 접습니다. 펼치면 **읽는 것과 고치는 것이 한 표 안에** 있습니다.
+           ⚠ **접는 것은 부대비용뿐입니다. 영수증 자체는 안 접습니다** — 첫 화면이
+             「입력 세 번이면 집 살 때 실제로 드는 돈이 나와요」라고 약속하고, 그 약속을 받는 것은
+             **「준비할 현금」**입니다(v24.28이 영수증 접기를 미채택한 근거 그대로 유효합니다).
+             집값 · 부대비용 소계 · 대출 · 준비할 현금은 **접힌 상태에서도 전부 보입니다.**
+           ⚠ `.disc`는 셋을 넘기지 않습니다(부대비용 · 한도 · 인테리어). 여기서 하나를 **늘린 게
+             아니라** 기존 것을 영수증 줄 자리로 옮겼습니다 — 접기 문법은 여전히 한 가지입니다.
+           ⚠ 이름을 「부대비용 상세 설정」에서 **「집값 외 부대비용」**으로 바꿨습니다.
+             이제 이 줄은 설정 버튼이 아니라 **금액을 말하는 영수증 줄**이고, 설정은 그 안에 있습니다. -->
+      <button class="disc discline" id="costToggle" aria-expanded="false" aria-controls="costBox">
+        <span class="k">집값 외 부대비용</span><span class="v" id="etcTotal">—</span><span class="caret">▾</span></button>
       <div class="costbox" id="costBox">
+        <div id="costItems"></div>
         <p class="tile-s" id="costLead"></p>
         <div class="costrow"><div class="nm">법무사 · 등기비</div><button class="sw" id="swLegal" role="switch"></button><div class="amt"><input id="inLegal" inputmode="numeric" pattern="[0-9]*" value="65"><u>만</u></div></div>
         <div class="costrow"><div class="nm">이사 · 입주청소</div><button class="sw" id="swMove" role="switch"></button><div class="amt"><input id="inMove" inputmode="numeric" pattern="[0-9]*" value="175"><u>만</u></div></div>
         <div class="costrow"><div class="nm">가전 · 가구</div><button class="sw" id="swAppl" role="switch"></button><div class="amt"><input id="inAppl" inputmode="numeric" pattern="[0-9]*" value="500"><u>만</u></div></div>
         <a class="mini sm" id="outMove" target="_blank" rel="noopener noreferrer"><div class="txt"><b>이사 · 입주청소 견적 비교하기</b></div><span class="arw">↗</span></a>
       </div>
+      <!-- 🔴 v24.31 — 영수증의 **아랫단**입니다. 부대비용 서랍이 열리든 닫히든
+           「주택담보대출 −」과 「준비할 현금」은 **언제나 여기 있습니다.** 위 주석의 약속입니다. -->
+      <div id="receiptBot"></div>
 
       <button class="disc" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
         <span>대출 한도 산출 기준</span><span class="caret">▾</span></button>
@@ -1369,13 +1450,34 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 
     <div class="card">
       <h2 class="card-title">다음 걸음</h2>
+      <!-- 🔴 v24.32 — **네이버를 다시 다른 셋과 같은 행으로 되돌렸습니다.**
+           ⏹ v24.31이 이 칸을 그린 솔리드(계층 1)로 올렸습니다. 근거는 「결과 화면에서 사람이
+             하려는 다음 일은 매물을 보는 것」이었고, **그 근거 자체는 지금도 맞습니다.**
+             그런데 실기에서 프로덕트 오너가 본 것은 「하나만 유독 튄다」였습니다 —
+             조용한 회색 행 셋 옆에 채도 높은 초록 면 하나가 서니 **고르는 넷이 아니라
+             「이것을 눌러라」가 됐습니다.** 화면 결정은 화면이 이깁니다(지침 6-14).
+           ⚠ **위계를 지우는 것이 아니라 자리로 냅니다.** 네이버는 여전히 **맨 위 칸**입니다 —
+             v24.22가 순서로 위계를 낸 그 방식 그대로이고, 색을 하나 더 쓰지 않습니다(원칙 62 · G-6).
+           ⚠ 아래 `.restart-cta`는 **흰 면 그대로 둡니다.** v24.31이 그것을 내린 근거는
+             「그린을 옮기려고」가 아니라 **「파괴적 행동은 프라이머리 자리에 두지 않는다」**
+             (원칙 130)였고, 네이버가 내려온다고 그 근거가 사라지지 않습니다.
+           → **결과 화면에는 이제 그린 솔리드 버튼이 하나도 없습니다.** 의도한 상태입니다 —
+             결과 화면은 **결론을 읽는 화면**이고, 여기서 강요되는 다음 행동은 없습니다.
+             입력 화면(01·02·03)의 「다음」만이 이 앱의 유일한 계층 1입니다. G-26이 그것을 셉니다.
+           🔴 **문구는 지시서대로 못 씁니다.** 지시는 「네이버 부동산에서 **이 가격대** 매물보기」인데,
+             이 링크의 목적지는 `https://fin.land.naver.com/` — **가격대는커녕 지역도 안 넘어갑니다.**
+             적으면 지키지 못할 약속이 됩니다. v24.22가 이 칸에서 「예산 조건은 넘어가지 않아요」를
+             지우면서 **레이블을 「목적지 이름」으로만 줄인 이유가 정확히 이것**입니다.
+             폭은 남습니다(360px에서 넘침 0) — 못 쓰는 이유는 자리가 아니라 **사실**입니다.
+             ⏹ 조건을 URL에 실어 보내면 쓸 수 있습니다. 그건 네이버 쿼리 규격을 **확인한 뒤**의 일이고,
+               지어내면 링크가 조용히 엉뚱한 데로 갑니다(지침 5층 — 없는 데이터). -->
       <div class="minigrid">
+      <a class="mini" id="outNaver" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outNaverT"></b></div><span class="arw">↗</span></a>
       <!-- ⏹ v24.13 — 밖으로 나가는 칸은 **둘**입니다(네이버 · 국토부).
            v24.8에서 국토부 칸을 지웠다가 되돌렸습니다.
            지운 근거는 「실거래가는 앱 안에서 보여준다」였는데, 그 카드는 API 키가 있어야 뜹니다.
            키를 넣기 전에는 실거래가가 화면 어디에도 없게 됩니다.
            ⚠ 네 칸이라 2×2가 성립합니다. **칸을 빼면 격자부터 다시 보세요.** -->
-      <a class="mini" id="outNaver" target="_blank" rel="noopener noreferrer"><div class="txt"><b id="outNaverT"></b></div><span class="arw">↗</span></a>
       <a class="mini" id="outHogang" target="_blank" rel="noopener noreferrer" href="https://rt.molit.go.kr/"><div class="txt"><b id="outHogangT"></b></div><span class="arw">↗</span></a>
       <!-- 🔴 v24.6 — **네 칸 모두 설명 줄을 가집니다. 지우지 마세요.**
            v24.6 작업 중에 「제목이 이미 한 말을 설명이 되풀이한다」는 이유로 서술을 걷어내고
@@ -2392,7 +2494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v24.30 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v24.32 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3194,7 +3296,10 @@ function renderBento(c){
      같은 값을 두 곳에 적으면 슬라이더를 움직였을 때 한쪽이 거짓이 됩니다(원칙 91). */
   $('tileMonthlySub').textContent = m>0 ? `${D.years}년 원리금균등 가정` : '갚을 대출이 없어요';
   const g=$('gauge');
+  const vd=$('burdenVerdict');
   if(!S.income || m<=0){ $('tileBurden').className='tile-v'; $('tileBurden').innerHTML='—';
+    /* 🔴 값이 「—」인데 뱃지가 남아 있으면 **없는 판정이 화면에 붙습니다.** 같이 끕니다. */
+    if(vd){ vd.setAttribute('hidden',''); vd.className='verdict'; vd.textContent=''; }
     g.setAttribute('hidden',''); return; }
   g.removeAttribute('hidden');
   const ratio=m*12/man(S.income), pct=Math.min(100,Math.round(ratio*100));
@@ -3210,6 +3315,10 @@ function renderBento(c){
   const band = ratio<0.20 ? 'ok' : ratio<0.35 ? 'mid' : 'bad';
   $('tileBurden').className='tile-v '+band;
   $('tileBurden').innerHTML=richPct(pct);
+  /* 🔴 v24.31 — 같은 `band`가 색과 글자를 **동시에** 정합니다. 임계를 옮기면 둘이 같이 따라옵니다 —
+     문구를 따로 판정하면 「색은 주의인데 글자는 적정」이 납니다(원칙 91). */
+  if(vd){ vd.removeAttribute('hidden'); vd.className='verdict '+band;
+    vd.textContent = band==='ok' ? '적정' : band==='mid' ? '주의' : '부담 큼'; }
   /* 게이지는 은행 상한(DSR 40%)을 만석으로 봅니다.
      🔴 v24.26 — `0.40` 리터럴을 `DSR_RATIO`로 바꿨습니다. 바로 위 안내 문구가 같은 숫자를
         화면에 적으므로, 두 벌로 두면 정책이 바뀔 때 **막대와 설명이 갈립니다**(원칙 58 · 91). */
@@ -3247,14 +3356,30 @@ function bindRateSim(){
 }
 
 function renderReceipt(c, price){
-  let h = row('집값', formatWon(price))
-        + row('취득세 · 지방교육세', formatWon(c.tax))
+  /* 🔴 v24.31 — 영수증이 **세 토막**입니다: 위(집값) · 접히는 부대비용 · 아래(대출 · 준비할 현금).
+     ⚠ 합계를 **여기서 다시 더하지 않습니다.** 아래 `etcSum`은 화면에 적힌 항목들의 합이고,
+       「준비할 현금」은 엔진이 준 `c.cashNeeded`입니다. 둘이 어긋나면 그건 화면 버그가 아니라
+       **엔진과 화면이 다른 항목을 세고 있다는 뜻**이라, 그 자리를 검사가 따로 봅니다(G-11). */
+  let h = row('집값', formatWon(price));
+  /* 접힌 줄에 적히는 소계 — 취득세 · 중개보수 · (인테리어) · 켠 항목.
+     🔴 **화면에 적힌 값끼리 더합니다.** 원 단위 원값을 그냥 더하면 소계가
+       4,872 + 974 + 65 = 5,911인데 화면에는 **5,912**로 뜹니다(항목마다 만원으로 반올림되고
+       소계는 반올림 전 합을 다시 반올림하기 때문). 실기에서 실제로 1만원 어긋났습니다.
+       **사람은 이 표를 더해 봅니다** — 눈으로 맞지 않는 표는 계산이 틀린 것으로 읽힙니다(원칙 91).
+     ⚠ 정확도를 버리는 것이 아닙니다. 화면의 단위가 만원이므로 **화면의 단위로 합산**하는 것이고,
+       엔진의 「준비할 현금」은 여전히 원값으로 계산됩니다(G-11이 그쪽을 봅니다). */
+  const man10k = v => Math.round(v/10000)*10000;
+  let etcSum = man10k(c.tax) + man10k(c.brokerFee) + (c.interiorCost>0 ? man10k(c.interiorCost) : 0);
+  let d = row('취득세 · 지방교육세', formatWon(c.tax))
         + row('중개보수 (부가세 포함)', formatWon(c.brokerFee));
-  if(c.interiorCost>0) h += row('인테리어', formatWon(c.interiorCost));
-  /* 켠 것만, 켠 순서대로. 합계는 아래 「준비할 현금」이 이미 말합니다. */
-  ETC_ROWS.forEach(([k,label]) => {
-    if(S[k].on && S[k].v > 0) h += row(label, formatWon(S[k].v * 10000));
-  });
+  if(c.interiorCost>0) d += row('인테리어', formatWon(c.interiorCost));
+  /* 켠 것만, 켠 순서대로. **금액은 아래 스위치 줄이 이미 말하므로** 여기서는 소계만 더합니다 —
+     같은 값을 한 서랍 안에 두 번 적으면 스위치를 껐을 때 어느 쪽이 진짜인지 알 수 없습니다(원칙 43 · 91). */
+  ETC_ROWS.forEach(([k]) => { if(S[k].on && S[k].v > 0) etcSum += man10k(S[k].v * 10000); });
+  $('costItems').innerHTML = d;
+  $('etcTotal').textContent = formatWon(etcSum);
+  $('receipt').innerHTML = h;
+  h = '';
   if(c.mortgageLoan>0) h += row('주택담보대출','-'+formatWon(c.mortgageLoan),'minus');
   /* 🔴 v24.21 — 「내가 준비할 현금」 → 「준비할 현금」.
      같은 값이 네 자리에서 「내 돈」·「내가 준비할 현금」·「준비할 현금」 셋으로 불리고 있었고,
@@ -3263,7 +3388,7 @@ function renderReceipt(c, price){
   h += row('준비할 현금', richWon(Math.max(0,c.cashNeeded)),'total');
   const over = c.cashNeeded - man(S.cash);
   if(over > 10000) h += `<div class="overnote">가진 돈보다 <b>${formatWon(over)}</b>이 더 필요해요</div>`;
-  $('receipt').innerHTML=h;
+  $('receiptBot').innerHTML=h;
 }
 function renderCostBox(c){
   /* 🔴 v24.17 — 채권 문장이 「대출 한도 산출 기준」에서 여기로 왔습니다(renderLimits 주석).
@@ -3698,7 +3823,16 @@ function paintDeals(priceMan){
   const shown = Math.min(rows.length, DEAL.rows);
   lead.textContent = (DEAL.wide ? `${regionLabel()}와 인근 구` : regionLabel())
     + ` · 최근 3개월 · ${total}건` + (total > shown ? ` 중 ${shown}곳` : '');
-  foot.textContent = '국토교통부 실거래가예요. 해제된 거래는 뺐어요.';
+  /* 🔴 v24.31 — **「평」이 무엇의 평인지 여기서 한 번 말합니다.**
+     지시서 요구는 줄마다 「전용 OO㎡ (공급 약 OO평형)」이었습니다. 실측하면 **못 씁니다** —
+     390px에서 부속 줄이 쓸 수 있는 폭은 198px인데 그 포맷은 **97px 넘칩니다**(현행도 이미 37px
+     넘쳐 「2017년」이 잘리고 있었습니다 — 사용자 캡쳐에서 「2017ㄴ」으로 확인).
+     ⚠ 그래도 **지적 자체는 맞습니다.** 이 화면의 평은 전용면적을 그대로 환산한 값이 아니라
+       `POLICY.area.pyeongToM2`(1평 = 3.3058㎡ × 전용률 74%)로 **공급 기준으로 되돌린 추정치**이고,
+       그 사실이 화면 어디에도 없었습니다. 84㎡가 34평으로 적히는 이유가 여기 있습니다.
+     → 줄마다 두 자를 늘리는 대신 **목록 아래에서 한 번** 말합니다. 폭 비용 0, 다섯 줄 전부에 적용.
+     ⚠ 「추정」을 뺄 수 없습니다. 공급면적은 국토부 API가 주지 않는 값입니다(지침 5층 — 없는 데이터). */
+  foot.textContent = '국토교통부 실거래가예요. 평은 공급면적 기준 추정이에요. 해제된 거래는 뺐어요.';
 }
 
 function renderDeals(price){
@@ -4346,6 +4480,58 @@ window.__selfcheck = function(){
        : (_r2.bottom>=_last-0.5?'맨 아래 ✅':'🔴 아래에 다른 것이 '+(_last-_r2.bottom).toFixed(0)+'px 더 있습니다'));
   }
 
+  /* 🔴 G-26 (v24.31) — **한 화면에 그린 솔리드 큰 버튼은 하나.**
+     v23.23이 「프라이머리는 화면이 달라도 같은 버튼」으로 잡아 둔 규칙의 렌더 쪽 짝입니다.
+     정적 검사는 「어느 선택자가 --green 배경을 쓰는가」를 셀 수 있지만, **그 규칙이 실제로
+     같은 화면에 동시에 그려지는지는 못 셉니다**(원칙 122 — 「썼는가」와 「닿았는가」).
+     v24.31에서 그린이 재계산 → 아웃링크로 옮겨 갔고, 옮기는 김에 **둘 다 초록으로 두는 실수**가
+     가장 나기 쉬운 자리라 여기서 잠급니다.
+     ⚠ 스위치(`.sw.on`)도 --green 면입니다 — 그건 **판정이 아니라 상태**라 크기로 가릅니다.
+       잣대는 `--h-cta`이고, 숫자를 여기 적지 않습니다(원칙 115). */
+  const _ctaH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--h-cta'))||54;
+  const _gp=document.createElement('i');
+  _gp.style.cssText='position:absolute;left:-9999px;background:var(--green)';
+  document.body.appendChild(_gp); const _green=getComputedStyle(_gp).backgroundColor; _gp.remove();
+  const _solid=[...document.querySelectorAll('button, a[href]')].filter(el=>
+    el.getClientRects().length && el.getBoundingClientRect().height >= _ctaH-1
+    && getComputedStyle(el).backgroundColor===_green && !el.closest('.reportwrap'));
+  /* 🔴 v24.32 — **화면마다 답이 다릅니다.** 입력 화면은 도크의 「다음」 하나, 결과 화면은 **0개**입니다.
+     결과 화면은 결론을 읽는 화면이고 여기서 강요되는 다음 행동이 없습니다 —
+     v24.31이 네이버를 초록으로 올렸다가 실기에서 「하나만 유독 튄다」로 되돌린 자리입니다.
+     ⚠ 「하나 이하」로만 쓰면 **입력 화면에서 프라이머리가 통째로 사라져도 초록**입니다.
+       양쪽 다 적극적으로 잽니다(원칙 124 · G-25와 같은 문법). */
+  if(_dockOn){
+    /* ⚠ 첫 화면의 「다음」은 **비활성입니다**(`.cta:disabled`는 --line 면). 그때 초록이 0인 것은
+       정상이라, 「하나여야 한다」로 쓰면 무결한 코드가 빨간불입니다 — 실제로 그렇게 났습니다.
+       → **「하나를 넘지 않는다」 + 「활성일 때는 그것이 도크의 다음이다」** 둘로 나눠 잽니다. */
+    const _dc=$('ctaBtn'), _live=!!(_dc && !_dc.disabled);
+    ok('G-26 입력 화면의 그린 솔리드가 「다음」뿐이다',
+       _solid.length<=1 && (!_live || (_solid.length===1 && _solid[0]===_dc)),
+       _solid.length>1 ? '🔴 '+_solid.map(e=>'「'+(e.id||e.className)+'」').join(' · ')
+       : _live ? (_solid[0]===_dc ? '「ctaBtn」 하나 ✅' : '🔴 활성인데 「다음」이 초록이 아닙니다')
+       : '🟡 「다음」이 비활성 — 값을 채운 뒤 다시 실행하세요');
+  } else {
+    ok('G-26 결과 화면에 그린 솔리드가 없다', _solid.length===0,
+       _solid.length ? '🔴 '+_solid.map(e=>'「'+(e.id||e.className)+'」').join(' · ')+' — 결과 화면은 읽는 화면입니다'
+                     : '0개 ✅');
+  }
+
+  /* 🔴 G-27 (v24.31) — **부대비용을 접어도 영수증이 답을 말하는가.**
+     v24.31이 부대비용을 소계 한 줄로 접었습니다. 첫 화면은 「입력 세 번이면 집 살 때 실제로
+     드는 돈이 나와요」라고 약속하고, 그 약속을 받는 것은 **「준비할 현금」**입니다.
+     v24.28이 영수증 접기를 미채택한 근거가 그것이고, 이번 접기는 그 선을 안 넘습니다 —
+     **넘지 않았다는 것을 접힌 상태에서 재서** 잠급니다(지침 6-13).
+     ⚠ 「접혀 있는가」를 조건으로 걸지 않습니다. 펼쳐 놓고 돌려도 세 줄은 보여야 합니다. */
+  const _rcTxt=[...document.querySelectorAll('#receipt, #costToggle, #receiptBot')]
+    .filter(el=>el && el.getClientRects().length).map(el=>el.textContent).join(' ');
+  const _need=['집값','집값 외 부대비용','준비할 현금'];
+  const _miss=_need.filter(k=>!_rcTxt.includes(k));
+  if($('result') && !$('result').hidden){
+    ok('G-27 영수증이 접힌 채로도 집값 · 부대비용 · 준비할 현금을 말한다', _miss.length===0,
+       _miss.length ? '🔴 안 보임: '+_miss.join(' / ') : '세 줄 다 보임');
+  } else ok('G-27 영수증이 접힌 채로도 집값 · 부대비용 · 준비할 현금을 말한다', true,
+     '🟡 측정 대상 0 — 결과 화면에서 실행하세요');
+
   const dark=document.querySelectorAll('#result .pkg, #result .hero').length;
   ok('화면에 다크 카드 없음', dark===0, dark+'개');
   const blocks=1+document.querySelectorAll('.bento .tile').length+document.querySelectorAll('#result .card').length;
@@ -4434,8 +4620,16 @@ $('homeBtn').onclick=goHome;
    ⚠ 한 번만 채우면 됩니다 — 시트는 다시 그리지 않고 열고 닫기만 합니다. */
 $('asOfNote').textContent = `${POLICY_ASOF} 기준이에요. 정부 정책이 바뀌면 결과도 달라져요.`;
 /* 🔴 v24.29 — 저작권 연도는 **기기 시계**에서 옵니다. 마크업에 적으면 1월 1일에 조용히 틀리고,
-   그런 종류의 오류는 아무도 신고하지 않습니다. 화면 문구에 손으로 적힌 연도가 없는지는 검사가 셉니다. */
-$('copyright').textContent = `© ${new Date().getFullYear()} 영끌계산기. All rights reserved.`;
+   그런 종류의 오류는 아무도 신고하지 않습니다. 화면 문구에 손으로 적힌 연도가 없는지는 검사가 셉니다.
+   🔴 v24.31 — 명의를 **`noahchoi` 하나로** 단일화했습니다(프로덕트 오너 지시).
+     ⏹ 전: 「© 2026 영끌계산기. All rights reserved.」
+     ⚠ **저작권자와 서비스 이름은 다른 사실입니다.** 「영끌계산기」는 이 도구의 이름이고,
+       저작권은 **사람**에게 있습니다. 둘을 한 문자열이 겸하고 있어서 이름을 바꾸면
+       저작권 표시가 따라 바뀌는 구조였습니다(원칙 91).
+     ⚠ 「All rights reserved.」는 뗐습니다 — 베른협약 이후 **법적 효력이 없는 관용구**이고,
+       지시가 「정확히 `© 2026 noahchoi`」였습니다. 문자 그대로 씁니다.
+     ⚠ 연도는 **여전히 손으로 안 적습니다.** 위 문단의 근거가 그대로 유효합니다. */
+$('copyright').textContent = `© ${new Date().getFullYear()} noahchoi`;
 loadDraft();          /* ⚠ render() 앞이어야 합니다. 뒤면 화면을 두 번 그립니다 */
 /* 🔴 v23.27 — 결과 화면에서 밖으로 나갔다 돌아온 경우, 결과로 바로 되돌립니다.
    ⚠ render()는 S.onResult를 false로 되돌리므로 **여기서 값을 먼저 떠 둡니다.**
