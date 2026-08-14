@@ -61,7 +61,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v24.32 · 정책 2026.08.05 -->
+<!-- BUILD v25.0 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -349,6 +349,18 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   margin:24px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
   letter-spacing:-.02em;line-height:1.4}
 .flabel:first-child{margin-top:0}
+/* 🔴 v25.0 — 라벨을 뗀 줄. 「지우기」만 남으므로 오른쪽으로 붙입니다.
+   ⚠ `.flabel`의 `justify-content:space-between`은 **부채 칸이 계속 씁니다** — 규칙을 바꾸지 않고
+     이 줄에만 수식자를 얹습니다(원칙 84 — 살아 있는 규칙을 고쳐서 새 자리를 만들지 않습니다).
+   ⚠ 위 여백(24px)도 줄입니다. 머리글이 라벨을 겸하므로 머리글↔입력 사이가 두 배로 벌어집니다. */
+.flabel.only-clear{margin-top:12px;justify-content:flex-end;min-height:20px}
+/* 🔴 v25.0 — 보유 주택 수 서랍. `.drawer`(지역)와 **같은 문법 · 다른 이름**입니다 —
+   G-23이 `.drawer`를 화면 전체에서 찾기 때문에 이름을 겹치면 그 게이트가 오인합니다.
+   ⚠ 세그먼트 바로 아래에 붙습니다(누른 것 다음 자리 · 원칙 111). 위 여백은 세그먼트와의
+     관계가 보일 만큼만 — 더 띄우면 「다른 질문」으로 읽힙니다. */
+.ownbox{margin-top:14px;padding:14px;border-radius:var(--r-m);background:var(--fill)}
+.ownbox .drawer-t{margin-top:0}
+.ownbox .seg{margin-top:10px;background:var(--card)}
 /* 값이 없을 때는 숨깁니다 — 지울 게 없는데 「지우기」가 떠 있으면 소음입니다. */
 .clearbtn{flex:none;padding:2px 0;font-size:var(--t7);font-weight:600;color:var(--ink-4);
   letter-spacing:-.02em;line-height:1.4;transition:color .14s}
@@ -930,11 +942,23 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    ⚠ **단지 이름(`.nm` 자신)은 여전히 한 줄 + 말줄임입니다.** 긴 단지 이름이 두 줄로 흐르면
      금액과의 기준선이 어긋납니다. 푸는 것은 부속 줄뿐입니다. */
 .deal .nm small{display:block;margin-top:3px;font-size:var(--t7);font-weight:400;
+  /* 🔴 v25.0 — 행간을 **명시**합니다. v24.31에서 두 줄로 흐르게 풀었는데, 그때까지 한 줄이라
+     본문 행간(1.5)을 물려받아도 눈에 안 띄었습니다. 두 줄이 되는 순간 그 값이 보입니다.
+     ⚠ 1.45입니다 — 작은 글자(13px)가 두 줄로 뭉치지 않으면서, 줄 하나가 통째로 늘지 않는 값. */
+  line-height:1.45;
   color:var(--ink-4);letter-spacing:-.01em;white-space:normal}
 /* 🔴 v24.26 — 평 강조. **새 색을 만들지 않습니다** — 잉크 한 단 + 굵기뿐이고,
    `.helper b`(--ink-4 바탕에 --ink-3 700)와 **같은 문법**입니다(지침 6-7 · 원칙 62).
    포인트 컬러를 쓰면 채널 A(누를 수 있는 것)·B(판정)와 섞입니다. */
 .deal .nm small b{color:var(--ink-3);font-weight:700}
+/* 🔴 v25.0 — 「거래 활발」 뱃지. **새 색을 만들지 않습니다** — 면은 `--fill`, 글자는 `--ink-3`으로
+   v24.29의 지역 서랍과 같은 짝입니다(그 면 위 6.45:1로 검증된 조합).
+   ⚠ 점도 `--ink-3`입니다. `--ink-4`는 `--fill` 위에서 4.19:1이라 G-19가 잡습니다(원칙 97).
+   ⚠ 이 뱃지는 **채널 B(판정)가 아닙니다.** 좋고 나쁨이 아니라 「두 번 이상 거래됨」이라는
+     사실이라, 판정색(--warn·--bad)을 쓰지 않습니다. */
+.deal .nm small .hot{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:var(--r-pill);
+  background:var(--fill);color:var(--ink-3);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.deal .nm small .hot::before{content:'•';margin-right:5px}
 .deal .amt{flex:none;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em;text-align:right}
 /* 🔴 v24.14 — 차액은 금액 **아래 줄**입니다. 옆에 붙이면 「15억 5,000만원+8,000만원」이
    한 덩어리로 읽혀 23억처럼 보입니다(실제로 그렇게 났습니다).
@@ -1563,6 +1587,21 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
   <div class="sheet-row"><b>원리금균등 상환</b><span>매달 같은 금액을 갚는 방식이에요. 처음엔 이자 비중이 크고 갈수록 원금 비중이 커져요. 매달 갚을 원리금은 이 방식으로 계산했어요.</span></div>
   <!-- 🔴 v24.28 — 날짜를 마크업에서 뻈습니다. `POLICY_ASOF` 한 곳에서 채웁니다(원칙 58 · 84). -->
   <div class="sheet-row"><b>정책 확인일</b><span id="asOfNote"></span></div>
+  <!-- 🔴 v25.0 — **아직 시행 전인 것들.** 2026.8.13 금융위 「부동산 시장 안정을 위한 금융
+       종합대책」·국토부 「주택 신속공급 방안」에서 나왔고, **이 계산에는 안 들어가 있습니다.**
+     ⚠ 시행 전 규칙을 미리 넣으면 **오늘 대출받는 사람에게 틀린 답**을 줍니다(원칙 28).
+       그렇다고 안 적으면 「곧 바뀌는데 왜 말 안 했나」가 됩니다 — 계산이 아니라 **안내**로 답합니다.
+     ⚠ **시행일과 「무엇을 고쳐야 시행되는가」를 같이 적습니다.** 내규·행정지도로 되는 것과
+       국회에서 법을 고쳐야 하는 것은 확실성이 다릅니다. 그 차이를 지우면 안내가 예측이 됩니다.
+     ⚠ 여기 적은 것 중 **계산을 바꾸는 것은 하나도 없습니다.** 값이 바뀌는 것(LTV·DSR·주담대
+       한도)은 같은 대책이 「확고하게 유지」라고 못박았고, 이 파일의 값과 대조해 넷 다 같았습니다. -->
+  <div class="sheet-row"><b>곧 바뀌는 것 (아직 계산에 없음)</b><span>
+    · <b>생애최초 인정 예외</b> — 미성년 때 지분 상속 같은 불가피한 사유는 심사를 거쳐 생애최초로 봐줘요. 2026년 8월 31일, 행정지도·시행세칙.<br>
+    · <b>장래소득 고지 의무화</b> — 청년 무주택 근로자는 장래소득으로 한도를 더 받을 수 있는데, 앞으로 은행이 먼저 알려줘야 해요. 2026년 8월 31일, 가이드라인.<br>
+    · <b>보금자리론 결혼 페널티 해소</b> — 신혼부부는 부부 중 한 명 소득이 7천만원 이하면 돼요. 2026년 10월, 내규.<br>
+    · <b>DSR 소득 산정</b> — 소득이 1년 새 20% 넘게 오르면 2년, 30% 넘게 오르면 3년 평균으로 봐요. 2027년 1월, 시행세칙.<br>
+    · <b>청년미래보금자리론</b> — 4억원 이하 비아파트, LTV 최대 80%. 2027년 1월, <b>법률 개정이 필요</b>해요(오피스텔을 지원 대상에 넣는 부분).
+  </span></div>
   <!-- 🔴 v24.28 — **입력값이 어디까지 가는지.** 이 도구는 연소득과 현금을 받습니다.
        그런데 「어디로 가느냐」에 대해 화면이 한 번도 답한 적이 없었습니다.
        ⚠ 지어내지 않고 **코드가 실제로 하는 것**만 적습니다 —
@@ -1627,7 +1666,18 @@ function formatWon(n){
    왜 법적 고지에 기준일이 필요한가 — 이 도구는 **정부 정책이 바뀌면 결과가 틀려집니다.**
    「달라질 수 있습니다」만 적으면 *언제 기준의 계산인지*를 아무도 알 수 없고,
    그러면 반년 뒤의 오차도 오늘의 오차와 구별되지 않습니다. 기준일은 면책이 아니라 **사실**입니다. */
-const POLICY_ASOF = '2026.08.05';
+/* 🔴 v25.0 — 기준일을 **2026.08.13**으로 올렸습니다. 그날 두 안건이 같이 나왔습니다 —
+   금융위 「부동산 시장 안정을 위한 금융 종합대책」 · 국토부 「주택 신속공급 방안」.
+   ⚠ **값을 바꾼 것이 아니라 대조한 날짜입니다.** 금융위 안건 9쪽이 이렇게 적었습니다:
+     「LTV·DSR 규제비율, 주담대 대출한도 등 가계부채 수요관리의 근간이 되는 대출규제는
+      확고하게 유지」 — LTV 규제 40%/비규제 70%, DSR 은행 40%, 주담대 15억 이하 6억 ·
+      15~25억 4억 · 25억 초과 2억. **이 파일의 값과 넷 다 같습니다.**
+   ⚠ 기준일만 올리고 값을 안 바꾼 것이 **맞습니다.** 「대책이 나왔으니 뭔가 바꿔야 한다」로
+     움직이면 유지된 것을 흔들게 됩니다 — 대조는 바꾸지 않는 결론도 냅니다(원칙 113).
+   ⚠ 이번 대책 중 **아직 시행 전인 것들**은 계산에 안 넣었습니다. 시행일과 근거는
+     안내 시트의 「곧 바뀌는 것」이 말합니다 — 시행 전 규칙을 계산에 미리 넣으면
+     오늘 대출받는 사람에게 틀린 답을 줍니다(원칙 28). */
+const POLICY_ASOF = '2026.08.13';
 const POLICY_ASOF_KO = POLICY_ASOF.replace(/(\d{4})\.(\d{2})\.(\d{2})/,
   (_, y, m, d) => `${y}년 ${+m}월 ${+d}일`);
 
@@ -1681,7 +1731,30 @@ const POLICY = {
   /* 취득세 — 중과는 '규제지역'(조정대상지역) 기준
      출처: 지방세법 제11조·제13조의2, 지방세법 시행령 / 확인일 2026.08.05 */
   acqTax: {
-    heavyMulti:  {reg: 0.12, other: 0.08},   // 2주택 이상
+    /* 🔴 v25.0 — **「2주택 이상」 한 칸에 3주택 요율을 먹이던 오류를 고쳤습니다**(v24.18부터 미해결).
+       지방세법 제13조의2의 실제 표는 **보유 수가 아니라 「취득 후 주택 수」**로 갈립니다.
+
+         취득 후    조정대상지역        비조정대상지역
+         ─────────────────────────────────────────
+         1주택      1~3%(표준)          1~3%(표준)
+         2주택      **8%**              **1~3%(표준)**   ← 여기가 틀렸습니다
+         3주택      12%                 8%
+         4주택 이상  12%                 12%
+
+       전에는 `{reg:0.12, other:0.08}` 하나로 「2주택 이상」을 전부 덮었습니다. 그래서
+         · 조정지역에서 **1주택자가 한 채 더** 살 때 8%가 아니라 **12%**
+         · 비조정지역에서 같은 경우 표준세율(1~3%)이 아니라 **8%**
+       가 나왔습니다. 15억 기준으로 각각 **6,000만원 · 7,500만원**을 더 걷는 계산이었습니다.
+       ⚠ 「보수적이라 괜찮다」가 아닙니다. 이 도구의 답은 「얼마짜리 집을 살 수 있나」이고,
+         취득세를 부풀리면 **살 수 있는 집을 못 산다고 말합니다**(원칙 28의 반대 방향).
+       ⚠ 화면도 같이 고쳤습니다 — 「1주택 이상」을 고르면 **몇 채인지 한 번 더** 묻습니다.
+         입력을 안 늘리고 계산만 고치는 길은 없습니다. 세율이 그 값으로 갈리기 때문입니다.
+       ⚠ `other2`(비조정 3주택)는 **8%**입니다. 4주택 이상은 12%인데, 이 도구는 거기까지
+         안 나눕니다 — 그 사실을 화면이 말합니다(아래 `houseEcho`). */
+    heavyMulti:  {
+      own1: {reg: 0.08, other: null},        // 취득 후 2주택 (null = 표준세율)
+      own2: {reg: 0.12, other: 0.08}         // 취득 후 3주택 이상
+    },
     generalLow:  0.01,                        // 6억 이하
     generalHigh: 0.03,                        // 9억 초과
     slopeFrom:   600000000,                   // 6억~9억 선형 구간 시작
@@ -2222,14 +2295,20 @@ function computeLoan(ctx){
   }
 }
 
-function acquisitionTaxRate(price, houseStatus, regulated){
+function acquisitionTaxRate(price, houseStatus, regulated, ownCount){
   const eok = price / 100000000;
-  /* 중과는 조정대상지역(=규제지역) 기준.
-     ⚠ 알려진 단순화: "2주택 이상"을 한 칸으로 받기 때문에, 비조정지역에서
-     정확히 2주택이 되는 경우(실제로는 일반세율 1~3%)에도 8%로 계산해요.
-     보수적인 방향이라 남겨두되, 화면에 한계를 표시해요. */
+  /* 중과는 조정대상지역(=규제지역) 기준이고, **취득 후 주택 수**로 갈립니다.
+     ⚠ `ownCount`는 **지금 갖고 있는 수**입니다. 취득 후 수는 그보다 하나 많습니다.
+       1을 안 넘기면 1로 봅니다 — 「1주택 이상」의 가장 흔한 경우이고,
+       예전 3-인자 호출과도 같은 뜻이 되도록 기본값을 여기 둡니다.
+     ⚠ 비조정 + 취득 후 2주택은 **표준세율**입니다(중과가 아닙니다). `null`이 그 뜻이고,
+       숫자 0으로 두면 「0%」와 구별이 안 됩니다. */
   const A = POLICY.acqTax;
-  if(houseStatus === 'multi') return regulated ? A.heavyMulti.reg : A.heavyMulti.other;
+  if(houseStatus === 'multi'){
+    const band = (ownCount >= 2) ? A.heavyMulti.own2 : A.heavyMulti.own1;
+    const r = regulated ? band.reg : band.other;
+    return (r === null || r === undefined) ? generalRate(eok) : r;
+  }
   return generalRate(eok);
 
   function generalRate(eok){
@@ -2241,13 +2320,16 @@ function acquisitionTaxRate(price, houseStatus, regulated){
 }
 
 function calcCosts(ctx){
-  const baseRate = acquisitionTaxRate(ctx.price, ctx.houseStatus, ctx.regulated);
+  const baseRate = acquisitionTaxRate(ctx.price, ctx.houseStatus, ctx.regulated, ctx.ownCount);
   let tax = ctx.price * baseRate;
 
   /* 지방교육세: 표준세율(1~3%) 구간은 취득세액의 10%.
      중과세율(8%·12%) 구간은 0.4% 정액이라 별도 처리. */
   const A = POLICY.acqTax;
-  const heavy = (baseRate >= A.heavyMulti.other);
+  /* 🔴 v25.0 — 중과 판정을 **8% 이상인가**로 씁니다. 전에는 `A.heavyMulti.other`를 자로 썼는데,
+     그 값이 이제 취득 후 주택 수에 따라 `null`(표준세율)이 될 수 있어 자가 사라집니다.
+     ⚠ 8%는 **중과 구간의 가장 낮은 요율**입니다 — 표준세율 상한(3%)과 사이가 넓어 안전합니다. */
+  const heavy = (baseRate >= A.heavyMulti.own2.other);
   const eduTax = heavy ? ctx.price * A.eduHeavyFlat : tax * A.eduStandardOfTax;
 
   /* 농어촌특별세: 전용 85㎡ 초과분에만 부과.
@@ -2494,7 +2576,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v24.32 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.0 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -2541,7 +2623,7 @@ const PYEONG_MAX = 100;
 let SIM_RATE = null;                       /* null이면 D.rate를 씁니다 */
 const simRate = () => SIM_RATE == null ? D.rate : SIM_RATE;
 
-const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none',
+const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none', ownCount:1,
             group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false, itOpen:false,
             legal:{on:true,v:65}, move:{on:false,v:175}, appl:{on:false,v:500} };
 
@@ -2687,14 +2769,59 @@ function renderQuestion(){
         <button data-house="none"  class="${S.houseStatus==='none'?'is-on':''}">무주택</button>
         <button data-house="multi" class="${S.houseStatus==='multi'?'is-on':''}">1주택 이상</button>
       </div>
-      <p class="q-sub" id="houseEcho"></p>`;
+      ${ownDrawer()}
+      <p class="q-sub" id="houseEcho">${houseEchoText()}</p>`;
   }
   box.innerHTML=h; bind();
 }
+/* 🔴 v25.0 — **「1주택 이상」을 고르면 몇 채인지 한 번 더 묻습니다.**
+   취득세가 그 값으로 갈립니다(조정 8% ↔ 12% · 비조정 표준 ↔ 8%). 안 물으면 계산이 못 맞습니다.
+   ⚠ **세그먼트를 4칸으로 늘리지 않았습니다.** 360px에서 3칸도 꽉 차고, 넷이 되면
+     「생애 최초」와 「1주택」이 같은 무게로 보여 **첫 질문이 흐려집니다**(지침 6-3).
+   ⚠ 문법은 v24.29의 **지역 서랍과 같습니다** — 「누른 것 바로 다음 자리에서 한 번 더 묻기」.
+     새 문법을 만들지 않습니다(원칙 58 · 123).
+   ⚠ 기본값은 **1주택**입니다. 「1주택 이상」을 누른 사람의 대다수이고,
+     3주택 요율을 기본으로 두면 v24.18~v24.32가 냈던 것과 **같은 과대 계산**이 됩니다. */
+function ownDrawer(){
+  if(S.houseStatus !== 'multi') return '';
+  const on = n => S.ownCount === n ? ' is-on' : '';
+  /* 🔴 클래스 이름을 `.drawer`로 쓰면 **G-23이 이걸 지역 서랍으로 오인합니다** —
+     그 게이트는 화면 전체에서 `.drawer`를 찾아 「격자 안에 있는가」를 봅니다(원칙 124의 결과).
+     같은 문법을 쓰되 **이름은 겹치지 않게** 둡니다. 제목·설명 줄은 그대로 나눠 씁니다. */
+  return `<div class="ownbox">`
+    + `<p class="drawer-t">지금 몇 채 갖고 계세요?</p>`
+    + `<p class="pane-note">취득세율이 여기서 갈려요.</p>`
+    + `<div class="seg" id="ownSeg">`
+    + `<button data-own="1" class="${on(1).trim()}">1주택</button>`
+    + `<button data-own="2" class="${on(2).trim()}">2주택 이상</button>`
+    + `</div></div>`;
+}
+/* 고른 것에 대한 한 줄 응답. **상태에서 옵니다** — 전에는 클릭 핸들러가 글자를 직접 넣어서,
+   화면을 다시 그리면 그 줄만 비었습니다(서랍이 생기면서 다시 그리게 됐습니다). */
+function houseEchoText(){
+  if(S.houseStatus === 'first') return '생애최초 기준이 적용돼 대출 한도가 늘어나요.';
+  if(S.houseStatus !== 'multi') return '';
+  /* 🔴 v25.0 — 「중과」를 무조건 말하지 않습니다. **비조정지역에서 2주택은 중과가 아닙니다.** */
+  return S.ownCount >= 2
+    ? '취득 후 3주택 이상이라 취득세가 가장 높은 구간이에요. 4주택 이상은 여기서 더 올라가요.'
+    : '집이 있는 상태에서 더 사면 대출 한도가 크게 줄어요. 취득세는 규제지역에서만 중과돼요.';
+}
 /* 🔴 v23.23 — 폼 3단 위계. 라벨(명사형) → 입력 → 헬퍼. 예외 없습니다. */
+/* 🔴 v25.0 — **보이는 라벨을 뗐습니다.** 「지금 모은 돈이 얼마인가요?」 바로 아래 「가진 돈」,
+   「연소득이 얼마인가요?」 바로 아래 「연소득」 — 머리글이 이미 그 말을 하고 있었습니다(원칙 43).
+   ⚠ v23.23의 「라벨 → 입력 → 헬퍼, 예외 없습니다」를 **한 자리에서만** 풉니다.
+     그 규칙은 **한 화면에 입력이 여럿일 때** 각 칸의 이름이 필요해서 생겼습니다.
+     여기는 **화면당 입력이 하나**이고, 그때는 **머리글이 곧 라벨**입니다.
+     부채 칸(`inDebt`)은 서랍 안에서 다른 것들과 섞이므로 **보이는 라벨을 그대로 둡니다.**
+   🔴 **이름 자체는 안 지웠습니다.** `label`은 여전히 들어오고 `aria-label`로 갑니다 —
+     화면에서 뗀 것이지 **접근성에서 뗀 것이 아닙니다.** 검사가 그 둘을 같이 잠급니다:
+     ① 입력마다 `aria-label`이 있다 ② 그 이름이 「답한 것」 요약 줄의 이름과 같다(G-8).
+   ⚠ 「지우기」는 그대로 그 줄에 남습니다(v24.3 — 칩 줄에 두면 화면마다 다른 줄로 떨어집니다).
+     라벨이 빠져 혼자 남으므로 그 줄만 오른쪽 정렬로 씁니다. `.flabel`의 양끝 정렬은
+     부채 칸이 계속 쓰므로 **규칙을 바꾸지 않고 수식자(`.only-clear`)만 얹습니다.** */
 function moneyCard(field, val, label, helper){
   const e = Math.floor((val||0)/10000), m = (val||0)%10000;
-  return `<p class="flabel">${label}<button class="clearbtn" data-add="0" hidden>지우기</button></p>
+  return `<p class="flabel only-clear"><button class="clearbtn" data-add="0" hidden>지우기</button></p>
     <div class="moneycard"><div class="mgrid">
     <div class="mfield"><input id="inEok" inputmode="decimal" autocomplete="off" placeholder="0"
       value="${e||''}" aria-label="${label} 억 단위"><span>억</span></div>
@@ -2771,7 +2898,12 @@ function answeredVal(id){
   if(id==='cash')   return S.cash ? formatWon(man(S.cash)) + (S.noLoan?' · 대출 없이':'') : '—';
   if(id==='income') return (S.income ? formatWon(man(S.income)) : '넣지 않음')
     + (S.debtMonthly ? ' · 갚는 대출 월 ' + comma(S.debtMonthly) + '만원' : '');
-  if(id==='region') return (regionLabel()||'—') + ' · ' + HOUSE[S.houseStatus];
+  if(id==='region'){
+    /* 🔴 v25.0 — 「1주택 이상」이면 **몇 채인지까지** 조건칩에 적습니다. 취득세가 그 값으로
+       갈리는데 칩이 안 말하면, 결과를 다시 볼 때 어느 쪽으로 계산됐는지 알 수 없습니다(원칙 91). */
+    const h = HOUSE[S.houseStatus] + (S.houseStatus==='multi' ? (S.ownCount>=2?' (2채 이상)':' (1채)') : '');
+    return (regionLabel()||'—') + ' · ' + h;
+  }
   return '';
 }
 function renderAnswered(){
@@ -2937,21 +3069,27 @@ function bind(){
     renderQuestion(); syncCta();
   });
   const seg=$('houseSeg');
+  /* 🔴 v25.0 — 고르면 **다시 그립니다.** 「1주택 이상」에서 서랍이 열리고 닫히기 때문입니다.
+     전에는 클래스만 토글하고 응답 줄에 글자를 직접 넣었는데, 그러면 서랍이 안 생깁니다. */
   if(seg) seg.querySelectorAll('[data-house]').forEach(b=>b.onclick=()=>{
     S.houseStatus=b.dataset.house;
-    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('is-on', x===b));
-    $('houseEcho').textContent = b.dataset.house==='multi'
-      /* 🔴 v24.18 — 전: 「다주택자는 취득세가 중과되며, 대출 한도가 크게 축소될 수 있어요.」
-         **사용자가 고른 것은 「1주택 이상」입니다. 1주택자는 다주택자가 아닙니다.**
-         화면이 사용자가 누른 것과 다른 말을 하고 있었습니다.
-         「~되며」·「축소될」도 이 파일에서 드문 문어체였습니다.
-         ⚠ 계산 쪽 문제는 **여기서 안 고쳤습니다** — `POLICY.acqTax.heavyMulti.reg`가
-           「2주택 이상」에 3주택 요율(12%)을 먹입니다. 법령 확인이 먼저입니다(인수인계 참조).
-           문구를 계산에 맞추면 틀린 계산을 문장으로 굳히게 됩니다. */
-      ? '집이 있는 상태에서 더 사면 취득세가 중과되고, 대출 한도도 크게 줄어요.'
-      : b.dataset.house==='first' ? '생애최초 기준이 적용돼 대출 한도가 늘어나요.' : '';
-    syncCta();
+    renderQuestion(); syncCta();
   });
+  const oseg=$('ownSeg');
+  if(oseg) oseg.querySelectorAll('[data-own]').forEach(b=>b.onclick=()=>{
+    S.ownCount = +b.dataset.own;
+    renderQuestion(); syncCta();
+  });
+  /* ⏹ v25.0 — 여기 있던 「고르면 글자를 직접 넣는」 코드를 지웠습니다. `houseEchoText()`가
+       **상태에서** 만듭니다 — 서랍이 생기면서 화면을 다시 그리게 됐고, 그러면 핸들러가
+       넣어 둔 글자만 사라집니다(원칙 91 — 같은 사실이 두 곳에서 만들어지면 한쪽이 늙습니다).
+     ⏹ v24.18이 여기 적어 둔 「계산 쪽은 여기서 안 고쳤습니다 — heavyMulti가 2주택 이상에
+       3주택 요율을 먹입니다. 법령 확인이 먼저입니다」는 **이번 판에서 해결됐습니다.**
+       법령을 확인하고(지방세법 제13조의2 · 취득 후 주택 수로 4단) 계산과 화면을 같이 고쳤습니다.
+     ⚠ 죽은 코드를 주석으로 남기지 않습니다. **블록 주석은 겹쳐지지 않습니다** —
+       안쪽 주석의 닫는 기호가 바깥 주석을 먼저 닫아 뒤가 코드로 살아납니다.
+       (그 기호를 이 주석 안에 적는 것조차 같은 사고를 냅니다 — 실제로 두 번 냈습니다.)
+       실제로 그렇게 했다가 스크립트 전체가 죽었습니다(첫 화면이 빈 채로 떴습니다). */
   bindPane();
 }
 function bindPane(){
@@ -3099,7 +3237,7 @@ const ETC_ROWS = [['legal','법무사 · 등기비'], ['move','이사 · 입주�
 const etcMan = () => ETC_ROWS.reduce((s,[k]) => s + (S[k].on ? S[k].v : 0), 0);
 function ctx(){
   const z = zoneFromSgg(S.sgg);
-  return { price:0, houseStatus:S.houseStatus, regulated:z==='reg', metro:z!=='other',
+  return { price:0, houseStatus:S.houseStatus, ownCount:S.ownCount, regulated:z==='reg', metro:z!=='other',
     income:man(S.income), incomeEntered:!!S.income, rate:D.rate, years:D.years,
     stressBp:computeStressBp(z!=='other', D.rateType, D.fixedYears, D.years),
     creditLoan:0, otherDebtMonthly:(S.debtMonthly||0)*10000,   /* 만원 → 원 (원칙 93) */   /* v23.3: 소득만으로 DSR을 봅니다 (면책에 명시) */
@@ -3769,7 +3907,7 @@ function dealGu(code){
   }
   return code === S.sgg ? '' : sggName(code);
 }
-function dealLine(x, priceMan){
+function dealLine(x, priceMan, hot){
   /* 🔴 v24.15 — **「전용」을 붙입니다.** 같은 결과 화면에 기준이 다른 두 면적이 있습니다:
        · 실거래 목록 — API의 excluUseAr = **전용면적**
        · 인테리어 평형 — 사용자가 고르는 **공급면적**(전용률 74%로 환산해서 씁니다)
@@ -3782,7 +3920,11 @@ function dealLine(x, priceMan){
   const gu = dealGu(x.lawd);
   const where = gu ? gu + ' ' + (x.dong||'') : (x.dong||'');
   const sub = [where ? esc(where) : '', area, x.buildYear ? esc(`${x.buildYear}년`) : '']
-    .filter(Boolean).join(' · ');
+    .filter(Boolean).join(' · ')
+    /* 🔴 v25.0 — 뱃지는 **부속 줄 끝**에 붙습니다. 단지 이름 옆(`.nm` 본문)은 한 줄 말줄임이라
+       거기 붙이면 이름이 밀려 잘립니다. 부속 줄은 v24.31에서 두 줄로 흐르게 풀어 뒀습니다.
+       ⚠ 이모지를 안 씁니다. 점 하나 + 굵기 + 연한 무채색 면으로만 냅니다(원칙 62 · 채널 유지). */
+    + (hot ? `<span class="hot">거래 활발</span>` : '');
   const gap = (priceMan && x.amountMan > priceMan)
     ? `<u>+${approxWon((x.amountMan - priceMan) * 10000)}</u>` : '';
   return `<div class="deal"><div class="nm">${esc(x.name)}<small>${sub}</small></div>`
@@ -3814,7 +3956,21 @@ function paintDeals(priceMan){
       : '지역이나 예산을 바꾸면 달라질 수 있어요.';
     return;
   }
-  list.innerHTML = rows.slice(0, DEAL.rows).map(x => dealLine(x, priceMan)).join('');
+  /* 🔴 v25.0 — **「거래 활발」 뱃지.** 백엔드 없이, 이미 받아 둔 3개월치 안에서 셉니다.
+     ⚠ **임계를 지어내지 않았습니다.** 「월 O건 이상이면 활발」 같은 상수는 지역 크기에 따라
+       뜻이 달라지고, 근거가 이 파일 어디에도 없습니다(원칙 115). 대신 **데이터 자신이 말하는 사실**
+       하나를 씁니다 — **같은 단지가 이 예산대에서 3개월 안에 두 번 이상 거래됐는가.**
+       2는 「반복」의 최소값이라 고를 여지가 없는 숫자입니다.
+     ⚠ 세는 범위는 **화면에 보이는 다섯 줄이 아니라 거른 전체**입니다. 다섯 줄만 세면
+       목록이 잘릴 때 같은 단지가 조용히 한 건으로 보여 뱃지가 사라집니다(원칙 99).
+     ⚠ 이름이 같아도 동이 다르면 다른 단지입니다 — 「현대」·「벽산」처럼 흔한 이름이 많습니다. */
+  const hotKey = x => (x.name||'') + '|' + (x.dong||'') + '|' + (x.lawd||'');
+  const seen = new Map();
+  (DEAL.over ? under.concat(over) : under).forEach(x => {
+    const k = hotKey(x); seen.set(k, (seen.get(k)||0) + 1);
+  });
+  const hotOf = x => (seen.get(hotKey(x))||0) >= 2;
+  list.innerHTML = rows.slice(0, DEAL.rows).map(x => dealLine(x, priceMan, hotOf(x))).join('');
   /* 인근 구까지 봤으면 그 사실만 한 마디. 어느 구인지는 각 줄이 말합니다. */
   /* 🔴 v24.21 — **몇 건 중 몇 곳을 보여 주는지 말합니다.**
      실물에서 헤더가 「147건」이라고 하고 목록은 다섯 줄이었습니다 — 3.4%입니다.
@@ -3902,10 +4058,27 @@ function renderOutlinks(price){
        **그 전제가 틀렸습니다** — 화살표가 안 읽힙니다. 아이콘에 뜻을 맡기지 않습니다.
      ⚠ 「열기」이지 「보기」가 아닙니다. 목적지에서 무엇을 보게 되는지는 우리가 약속할 수 없습니다.
      ⚠ 「N억대 추천 단지 보기」(v24.19에서 지운 것)로 다시 가지 마세요 — 예산은 안 넘어갑니다. */
+  /* 🔴 v25.0 — **레이블은 안 바꿉니다.** 지역이 URL에 실렸다고 해서 레이블이 더 약속할 이유가
+     없습니다. 「열기」는 여는 것만 약속하고, 그 약속은 지역이 실리든 안 실리든 지켜집니다.
+     ⚠ 지시서는 「이 가격대 매물보기」를 되살리라고 했지만 **가격대는 여전히 안 실립니다.**
+       지역만 실렸는데 가격을 약속하면 v24.22가 막아 둔 자리로 그대로 돌아갑니다. */
   $('outNaverT').textContent=`네이버 부동산 열기`;
   $('outHogangT').textContent=`국토교통부 실거래가 열기`;
   /* 🔴 앵커는 href만 채웁니다. onclick으로 열지 않습니다(인앱 브라우저에서 막힙니다). */
-  $('outNaver').href  = `https://fin.land.naver.com/`;
+  /* 🔴 v25.0 — **고른 지역을 실어 보냅니다.** 전에는 `fin.land.naver.com` 루트로만 갔고,
+     그래서 레이블도 목적지 이름밖에 못 적었습니다(v24.22 · v24.31에서 두 번 확인한 자리).
+     ⚠ **가격대는 여전히 안 실립니다.** 검색어에 넣을 규격을 확인하지 못했고, 지어내면
+       링크가 조용히 엉뚱한 데로 갑니다(지침 5층). 그래서 레이블도 **지역까지만** 약속합니다.
+     ⚠ 지역명은 **구 이름만** 보냅니다. 「서울 성동구」처럼 시·도를 붙이면 검색어가 길어지고,
+       묶인 시(「수원시 팔달구」)에서는 오히려 안 맞습니다.
+     ⚠ **경로가 틀려도 사용자는 네이버 부동산 안에 있습니다** — 실패해도 지금(루트)보다
+       나쁘지 않습니다. 그 점이 이걸 넣을 수 있게 한 유일한 근거입니다.
+     🔴 **실기기에서 한 번 눌러 확인해 주세요.** 검사는 「지역이 실렸는가」만 볼 수 있고,
+       네이버가 그 경로를 계속 쓰는지는 우리 파일 안에서 알 수 없습니다(인수인계에 적어 뒀습니다). */
+  const _nq = (sggName(S.sgg) || '').split(' ').pop() || regionLabel() || '';
+  $('outNaver').href  = _nq
+    ? `https://m.land.naver.com/search/result/${encodeURIComponent(_nq)}`
+    : `https://fin.land.naver.com/`;
   $('outSave').onclick   = e => { e.preventDefault(); saveImage(); };
 
   $('outCopy').onclick   = e => { e.preventDefault(); copySummary(); };
