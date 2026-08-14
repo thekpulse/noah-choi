@@ -195,8 +195,39 @@ tt('9억 초과 1주택 취득세율 3%대',
    acquisitionTaxRate(만(120000), 'none', false) >= 0.03);
 tt('다주택·규제 취득세가 무주택보다 높다',
    acquisitionTaxRate(만(80000), 'multi', true) > acquisitionTaxRate(만(80000), 'none', true));
-tt('다주택·비규제도 무주택보다 높다',
-   acquisitionTaxRate(만(80000), 'multi', false) > acquisitionTaxRate(만(80000), 'none', false));
+/* 🔴 v25.0 — **이 검사는 틀린 믿음을 잠그고 있었습니다.**
+   지방세법상 **비조정지역에서 취득 후 2주택은 중과가 아니라 표준세율(1~3%)**입니다.
+   「다주택이면 무조건 더 높다」는 조정지역에서만 참입니다.
+   → 잠글 것을 **법이 정한 네 칸**으로 바꿉니다(원칙 128 — 대상을 옮기고, 느슨해지지 않게).
+     이 검사가 막던 나쁜 상태(「다주택인데 세율이 안 오른다」)는 아래 셋이 그대로 막습니다. */
+tt('비조정 · 취득 후 2주택은 표준세율이다 (중과 아님)',
+   acquisitionTaxRate(만(80000), 'multi', false, 1) === acquisitionTaxRate(만(80000), 'none', false));
+tt('조정 · 취득 후 2주택은 8%다',
+   Math.abs(acquisitionTaxRate(만(80000), 'multi', true, 1) - 0.08) < 1e-9);
+tt('조정 · 취득 후 3주택 이상은 12%다',
+   Math.abs(acquisitionTaxRate(만(80000), 'multi', true, 2) - 0.12) < 1e-9);
+tt('비조정 · 취득 후 3주택 이상은 8%다',
+   Math.abs(acquisitionTaxRate(만(80000), 'multi', false, 2) - 0.08) < 1e-9);
+/* 🔴 **주택 수를 안 넘기면 1주택 보유로 봅니다.** 예전 3-인자 호출과 뜻이 같아야 하고,
+   기본값이 3주택 요율로 돌아가면 v24.18~v24.32의 과대 계산이 그대로 되살아납니다. */
+tt('주택 수를 안 넘기면 1주택 보유로 본다',
+   acquisitionTaxRate(만(80000), 'multi', true) === acquisitionTaxRate(만(80000), 'multi', true, 1));
+/* 🔴 화면이 그 수를 실제로 묻는가 — 계산만 고치고 안 물으면 기본값만 쓰이게 됩니다(원칙 122). */
+/* 🔴 사보타주가 잡았습니다 — 「`${ownDrawer()}`를 지운다」에서 **초록으로 통과**했습니다.
+   정의와 핸들러만 봤고 **불려지는지**를 안 봤습니다. 원칙 122 그대로입니다(「썼는가」 ≠ 「닿았는가」).
+   → 질문 마크업이 **실제로 그 함수를 부르는지**까지 봅니다. */
+tt('화면이 보유 주택 수를 묻는다',
+   /function ownDrawer\(\)/.test(UI) && /data-own="1"/.test(UI) && /data-own="2"/.test(UI)
+   && /S\.ownCount = \+b\.dataset\.own/.test(UI)
+   && /\$\{ownDrawer\(\)\}/.test(UI)
+   && /id="ownSeg"/.test(UI));
+/* ⚠ `acquisitionTaxRate` 호출은 **엔진 쪽**이라 `UI`(ENGINE END 뒤)에 없습니다.
+   화면이 담는 것과 엔진이 받는 것을 **각각 그 자리에서** 봅니다(이걸 놓쳐 한 번 헛돌았습니다). */
+tt('보유 수가 계산으로 흘러간다',
+   /ownCount:S\.ownCount/.test(UI)
+   && /acquisitionTaxRate\(ctx\.price, ctx\.houseStatus, ctx\.regulated, ctx\.ownCount\)/.test(fs.readFileSync(FILE,'utf8')));
+tt('조건칩이 몇 채인지까지 말한다',
+   /S\.ownCount>=2\?' \(2채 이상\)':' \(1채\)'/.test(UI));
 tt('취득세는 대출 없어도 계산된다 (원칙 70)',
    calcCosts(ctx({ price: 만(80000), noLoan: true })).tax > 0);
 
@@ -886,9 +917,14 @@ HYGIENE.forEach(([name, over]) => {
      const mc = src.slice(src.indexOf('function moneyCard'), src.indexOf('function regionPane'));
      /* ⚠ indexOf는 없으면 -1입니다. **-1 < n 은 언제나 참**이라, 순서만 보면
         라벨을 통째로 지운 사보타주가 조용히 통과합니다. 존재부터 셉니다(원칙 99). */
-     const iL = mc.indexOf('class="flabel"'), iF = mc.indexOf('class="mfield"'),
-           iH = mc.indexOf('class="helper"');
-     const okMc = iL >= 0 && iF >= 0 && iH >= 0 && iL < iF && iF < iH;
+     /* 🔴 v25.0 — 돈 칸은 **보이는 라벨을 뗐습니다**(머리글이 라벨을 겸합니다).
+        잠글 것을 「보이는 글자가 있는가」에서 **「이름이 있는가」**로 옮깁니다 —
+        원래 이 검사가 막던 나쁜 상태는 「이름 없는 입력」이고, 그건 `aria-label`이 막습니다.
+        ⚠ 오히려 더 셉니다: 전에는 보이는 라벨만 봤고 `aria-label`은 안 봤습니다(원칙 128). */
+     const iF = mc.indexOf('class="mfield"'), iH = mc.indexOf('class="helper"');
+     const named = (mc.match(/aria-label="\$\{label\} [^"]+"/g)||[]).length;
+     const okMc = iF >= 0 && iH >= 0 && iF < iH && named === 2
+               && !/class="flabel[^"]*">\$\{label\}/.test(mc);
      /* 부채 칸도 같은 순서여야 합니다 */
      const i = src.indexOf('id="inDebt"');
      const before = src.slice(0, i), after = src.slice(i);
@@ -1246,7 +1282,10 @@ HYGIENE.forEach(([name, over]) => {
      칩 줄에 두면 칩 폭에 따라 어떤 화면은 같은 줄, 어떤 화면은 혼자 다음 줄로 떨어집니다. */
   tt('지우기가 라벨 줄에 있다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return /class="flabel">\$\{label\}<button class="clearbtn" data-add="0" hidden>지우기<\/button>/.test(src)
+     /* 🔴 v25.0 — 돈 칸의 라벨이 빠지면서 그 줄에는 「지우기」만 남습니다.
+        잠글 것은 여전히 **「지우기가 칩 줄이 아니라 그 입력칸의 줄에 있다」**입니다. */
+     return /class="flabel only-clear"><button class="clearbtn" data-add="0" hidden>지우기<\/button>/.test(src)
+         && /\n\.flabel\.only-clear\{[^}]*justify-content:flex-end/.test(src)
          && /매달 나가는 대출 원리금<button class="clearbtn" data-debt="0" hidden>지우기<\/button>/.test(src);
   })());
   tt('칩 줄에 지우기가 없다',
@@ -1339,7 +1378,13 @@ HYGIENE.forEach(([name, over]) => {
        예산대를 약속하는 문구가 되살아나면 실패해야 합니다(원칙 39). */
   tt('네이버 칸이 지키지 못할 예산대를 약속하지 않는다', (()=>{
      const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
-     return /outNaver'\)\.href\s*=\s*`https:\/\/fin\.land\.naver\.com\//.test(src)
+     /* 🔴 v25.0 — 도착지가 **루트에서 지역 검색으로** 바뀌었습니다. 잠글 것은 그대로입니다 —
+        **약속과 도착지의 일치**. 이제 지역은 실리고 **예산은 안 실립니다**, 그리고 레이블도
+        지역·예산 어느 쪽도 약속하지 않습니다(아래 「목적지 이름만」 검사가 그쪽을 봅니다).
+        ⚠ 「지역이 실렸는가」까지가 이 파일이 확인할 수 있는 전부입니다. 네이버가 그 경로를
+          계속 쓰는지는 **실기로 눌러 봐야** 압니다(v24.16이 `new.land.naver.com`에서 겪은 일). */
+     return /outNaver'\)\.href\s*=\s*_nq[\s\S]{0,140}m\.land\.naver\.com\/search\/result\/\$\{encodeURIComponent\(_nq\)\}/.test(src)
+         && /https:\/\/fin\.land\.naver\.com\//.test(src)      /* 지역을 못 고른 경우의 되돌아갈 자리 */
          && !/new\.land\.naver\.com/.test(src)
          && !/sk=/.test(src)
          && !/억대 추천 단지 보기/.test(src)
@@ -1354,7 +1399,9 @@ HYGIENE.forEach(([name, over]) => {
      여기 없는 도메인이 들어오면 실패합니다 — 그때 **실기 확인 목록에 같이 올리라는 신호**입니다. */
   tt('밖으로 나가는 도메인이 확인된 것뿐이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
-     const OK = ['fin.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com'];
+     /* 🔴 v25.0 — `m.land.naver.com` 추가(지역 검색 경로). **실기 확인 목록에 올라간 도메인입니다** —
+        이 검사가 통과한다고 그 주소가 살아 있다는 뜻은 아닙니다(이 검사의 원래 경고 그대로). */
+     const OK = ['fin.land.naver.com','m.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com'];
      const hosts = [...new Set([...src.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m=>m[1].toLowerCase()))]
        .filter(h => !/^(www\.)?w3\.org$/.test(h) && !/googletagmanager|google-analytics|noah-choi\.vercel\.app/.test(h));
      return hosts.every(h => OK.includes(h));
@@ -1448,7 +1495,10 @@ HYGIENE.forEach(([name, over]) => {
        ⚠ 이 검사는 이전보다 **강합니다** — 전에는 한쪽에서만 조건을 바꿔도
          두 정규식이 각각 통과할 수 있었습니다. 지금은 한 함수라 갈릴 수가 없습니다. */
     const body = (src.match(/function paintReportDeals[\s\S]*?\n\}/) || [''])[0];
-    const line = (src.match(/function dealLine\(x, priceMan\)[\s\S]*?\n\}/) || [''])[0];
+    /* ⚠ v25.0 — `dealLine`에 인자가 하나 늘었습니다(`hot`). 시그니처를 **글자 그대로** 잡고
+       있어서 조용히 빈 문자열이 됐고, 그러면 아래 검사가 「못 찾음」인 채로 빨간불입니다.
+       함수 **이름**으로 잡습니다 — 인자는 늘 수 있고, 이 검사가 보는 것은 몸통입니다. */
+    const line = (src.match(/function dealLine\([^)]*\)[\s\S]*?\n\}/) || [''])[0];
     const gu   = (src.match(/function dealGu\(code\)[\s\S]*?\n\}/) || [''])[0];
     tt('진단서 실거래 줄이 인근 구 이름을 단다',
        /dealGu\(x\.lawd\)/.test(body) && /sggName\(code\)/.test(gu),
@@ -2300,7 +2350,15 @@ HYGIENE.forEach(([name, over]) => {
      /class="legal">※ \$\{POLICY_ASOF_KO\} 정책 기준의 추정치입니다/.test(UI));
   tt('면책이 여전히 두 문장이다',            /* 세 번째가 붙으면 G-18(5줄)이 먼저 물어야 합니다 */
      (( (UI.match(/<span class="legal">[\s\S]*?<\/span>/)||[''])[0] ).match(/※/g)||[]).length === 2);
-  tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.05/.test(css2));
+  tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.13/.test(css2));
+  /* 🔴 v25.0 — 사보타주가 잡았습니다 — `POLICY_ASOF`만 되돌려도 위 검사는 초록이었습니다.
+     **두 곳에 같은 날짜가 있으면 갈립니다**(원칙 91). 위는 마크업, 아래는 상수 —
+     둘이 **서로 같은지**를 봅니다. 어느 한쪽만 고치면 빨간불입니다. */
+  tt('BUILD 주석과 POLICY_ASOF가 같은 날이다', (()=>{
+     const a = (css2.match(/<!-- BUILD[^>]*?(\d{4}\.\d{2}\.\d{2})/)||[])[1];
+     const b = (css2.match(/const POLICY_ASOF = '(\d{4}\.\d{2}\.\d{2})'/)||[])[1];
+     return !!a && a === b;
+  })(), (css2.match(/const POLICY_ASOF = '([\d.]+)'/)||[])[1]);
 
   /* 입력 첫 화면 네이비 밴드 */
   tt('입력 01에 넓은 어두운 면이 없다',
@@ -3377,8 +3435,69 @@ HYGIENE.forEach(([name, over]) => {
      const m = UI.match(/\$\('outNaverT'\)\.textContent=`[^`]*`/);
      return !!m && !/가격대|예산|조건|매물/.test(m[0]);
   })());
-  tt('네이버 링크가 조건을 실어 보내지 않는다면 루트로만 간다',
-     /\$\('outNaver'\)\.href\s*=\s*`https:\/\/fin\.land\.naver\.com\/`/.test(UI));
+  /* 🔴 v25.0 — v24.31이 「조건을 안 실으면 루트로만 간다」로 잠갔던 자리입니다.
+     이번 판에서 **지역을 실었습니다.** 그래서 잠글 것을 뒤집지 않고 **한 칸 옮깁니다** —
+     「지역은 실리되 **예산·가격은 안 실린다**, 그리고 지역이 없으면 루트로 되돌아간다」.
+     ⚠ 가격을 싣는 순간 레이블도 같이 고쳐야 하고, 그건 이 검사가 아니라
+       「목적지 이름만 말한다」가 잡습니다. 둘이 짝입니다(지침 6-13). */
+  tt('네이버 링크가 지역만 싣고 가격은 안 싣는다', (()=>{
+     const m = UI.match(/\$\('outNaver'\)\.href\s*=[\s\S]{0,200}?;/);
+     if(!m) return false;
+     return /m\.land\.naver\.com\/search\/result\/\$\{encodeURIComponent\(_nq\)\}/.test(m[0])
+         && /fin\.land\.naver\.com/.test(m[0])
+         && !/price|priceMan|budget|만원|억/.test(m[0]);
+  })());
+
+  /* ═══ v25.0 — 정책 대조(2026.8.13) · 취득세 4단 · 거래 활발 뱃지 ═══════════════
+     ⚠ 이 묶음의 요점은 「값을 바꿨다」가 아니라 **「대조했고, 셋은 그대로였다」**입니다. */
+  /* ① 8.13 금융 종합대책 9쪽: LTV·DSR·주담대 한도는 「확고하게 유지」. 우리 값과 대조합니다.
+     ⚠ 숫자를 여기 적는 것이 맞습니다 — 이 검사는 **문서와 코드가 같은가**를 보는 자리라,
+       코드에서 값을 읽어 오면 자기 자신과 비교하게 됩니다(원칙 106의 반대 경우). */
+  tt('LTV가 8.13 대책과 같다 (규제 40% · 비규제 70%)',
+     POLICY.ltv.noneOrDispose.reg === 0.4 && POLICY.ltv.noneOrDispose.other === 0.7);
+  tt('DSR이 8.13 대책과 같다 (40%)', POLICY.ratio.dsr === 0.40);
+  tt('주담대 구간 상한이 8.13 대책과 같다 (6억 · 4억 · 2억)', (()=>{
+     const b = POLICY.bandCap;
+     return b.length === 3 && b[0].upTo === 1500000000 && b[0].cap === 600000000
+         && b[1].upTo === 2500000000 && b[1].cap === 400000000
+         && b[2].cap === 200000000;
+  })());
+  /* ② 아직 시행 전인 것은 **계산이 아니라 안내**로 말합니다. 시행일과 「무엇을 고쳐야 하는가」가
+     같이 적혀 있어야 합니다 — 내규로 되는 것과 국회를 거쳐야 하는 것은 확실성이 다릅니다. */
+  tt('시행 전 정책을 안내로만 말한다', (()=>{
+     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span>/);
+     if(!m) return false;
+     const box = m[1];
+     return /2026년 8월 31일/.test(box) && /2027년 1월/.test(box)
+         && /법률 개정이 필요/.test(box)            /* 청년미래보금자리론 */
+         && /시행세칙|내규|가이드라인|행정지도/.test(box);
+  })());
+  /* ③ 거래 활발 뱃지 — **임의 임계를 안 씁니다.** 「같은 단지가 두 번 이상」이 유일한 기준입니다. */
+  tt('거래 활발이 임의 임계를 쓰지 않는다',
+     /const hotOf = x => \(seen\.get\(hotKey\(x\)\)\|\|0\) >= 2;/.test(UI)
+     && !/거래 활발[\s\S]{0,120}(월\s*\d+건|>= *[3-9]|>= *\d\d)/.test(UI));
+  /* 다섯 줄이 아니라 **거른 전체**를 셉니다 — 목록이 잘리면 뱃지가 조용히 사라집니다(원칙 99). */
+  tt('거래 활발을 목록이 아니라 전체에서 센다',
+     /\(DEAL\.over \? under\.concat\(over\) : under\)\.forEach/.test(UI));
+  tt('거래 활발이 이름만이 아니라 동 · 지역까지 본다',
+     /hotKey = x => \(x\.name\|\|''\) \+ '\|' \+ \(x\.dong\|\|''\) \+ '\|' \+ \(x\.lawd\|\|''\)/.test(UI));
+  /* 🔴 이모지 금지 — 건조한 톤. 점 하나 + 굵기 + 무채색 면으로만 냅니다. */
+  tt('거래 활발 뱃지에 이모지가 없다', (()=>{
+     const m = SRC.match(/\.deal \.nm small \.hot\{[^}]*\}[\s\S]{0,160}/);
+     return !!m && !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(m[0]);
+  })());
+  tt('거래 활발 뱃지가 새 색을 만들지 않는다',
+     /\.deal \.nm small \.hot\{[^}]*background:var\(--fill\)/.test(SRC)
+     && /\.deal \.nm small \.hot\{[^}]*color:var\(--ink-3\)/.test(SRC));
+  /* ④ 부속 줄이 두 줄로 흐르므로 행간을 명시했습니다(지시서 5). */
+  tt('부속 줄 행간이 1.4~1.5다', (()=>{
+     const m = SRC.match(/\.deal \.nm small\{[\s\S]*?line-height:([\d.]+)/);
+     return !!m && +m[1] >= 1.4 && +m[1] <= 1.5;
+  })());
+  tt('숫자가 tabular-nums로 고정돼 있다',
+     /body\{[^}]*font-variant-numeric:tabular-nums/.test(SRC)
+     && /input\{[^}]*font-variant-numeric:inherit/.test(SRC)
+     && /button\{[^}]*font-variant-numeric:inherit/.test(SRC));
 
   tt('저작권이 결과 화면에는 남아 있다',
      /class="copyright" id="copyright"/.test(SRC)
