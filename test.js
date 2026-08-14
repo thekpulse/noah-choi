@@ -838,8 +838,13 @@ HYGIENE.forEach(([name, over]) => {
      const m = src.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
      const cards = m ? (m[0].match(/class="mini(?: [^"]*)?"/g)||[]) : [];
      /* ⚠ `1fr\}`로 앵커하면 `gap:10px}`가 뒤에 붙어 있어 영영 안 맞습니다. 구분자까지 봅니다. */
+     /* 🔴 v24.32 — 다시 **넷**입니다. v24.31이 네이버를 그린 솔리드로 빼냈다가
+        실기에서 「하나만 유독 튄다」로 되돌렸습니다(지침 6-14 — 화면 결정은 화면이 이깁니다).
+        ⚠ `.gocta`가 **되살아나지 않았는지**도 같이 봅니다. 죽은 문법이 남으면
+          「초록 큰 버튼 규격이 둘」이 됩니다(원칙 84). */
      return /\n\.minigrid\{[^}]*grid-template-columns:1fr[;}]/.test(css2)
-         && /class="minigrid"/.test(src) && cards.length === 4;
+         && /class="minigrid"/.test(src) && cards.length === 4
+         && !/gocta/.test(css2.replace(/\/\*[\s\S]*?\*\//g,''));
   })(), (()=>{ const m=css2.match(/\n\.minigrid\{[^}]*\}/); return m?m[0].trim():'없음'; })());
   /* 반칸용 세로 배치가 남아 있으면 한 줄 안에서 제목과 화살표가 또 갈립니다. */
   tt('칸 안이 세로 배치로 돌아가지 않았다',
@@ -1270,10 +1275,14 @@ HYGIENE.forEach(([name, over]) => {
      🔴 v24.19 — 2종 → **3종**. 인테리어 카드를 접었습니다(노아초이님 요청).
        ⚠ 숫자만 올린 것이 아닙니다 — **셋이 같은 문법을 쓰는지**를 아래에서 함께 봅니다.
          접기가 늘 때마다 새 클래스를 만들면 결과 화면에 접기 문법이 둘이 됩니다. */
+  /* 🔴 v24.31 — 세던 자리를 `class="disc"`(닫는 따옴표까지)에서 **`class="disc` + 낱말 경계**로
+     넓혔습니다. 부대비용 접기가 영수증 줄로 앉으면서 `class="disc discline"`이 됐고,
+     **접기가 늘어난 것이 아니라 같은 접기가 클래스를 하나 더 얻은 것**인데 검사가 사라진 것으로
+     읽었습니다 — 잠글 것은 「어떻게 적혔나」가 아니라 **「접기가 셋인가」**입니다(원칙 120). */
   tt('결과 화면 아코디언은 3종 (부대비용 · 한도 · 인테리어)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
-     return (res.match(/class="disc"/g)||[]).length === 3;
+     return (res.match(/class="disc[ "]/g)||[]).length === 3;
   })());
   /* 인테리어는 **닫힌 채로 시작합니다.** 기본값이 열림이면 접은 의미가 없습니다. */
   tt('인테리어 접기가 셋과 같은 문법이다', (()=>{
@@ -1359,8 +1368,10 @@ HYGIENE.forEach(([name, over]) => {
   })());
   tt('밖으로 나가는 넷이 전부 앵커다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
+     /* 🔴 v24.31 — 네이버만 `.gocta`(계층 1)로 올라갔습니다. 잠글 것은 **클래스가 아니라
+        「앵커인가 · 새 탭인가 · rel이 붙었는가」**입니다 — 셋 다 그대로여야 합니다. */
      return ['outNaver','outHogang','outInterior','outMove'].every(id =>
-       new RegExp('<a class="mini[^"]*" id="'+id+'" target="_blank" rel="noopener noreferrer"').test(src));
+       new RegExp('<a class="(?:mini|gocta)[^"]*" id="'+id+'" target="_blank" rel="noopener noreferrer"').test(src));
   })());
   tt('창을 스크립트로 열지 않는다',
      !/window\.open\(/.test(UI) && !/function go\(url\)/.test(UI));
@@ -1635,13 +1646,37 @@ HYGIENE.forEach(([name, over]) => {
   tt('독에 캡슐 껍데기가 없다', !/\.dockrow\{[^}]*border-radius:999px/.test(css2));
   /* 🔴 v23.23 — 검정 솔리드 폐기. 프라이머리 액션은 화면이 달라도 **같은 버튼**이어야 합니다.
      지침 6-5의 「재계산 CTA는 예외로 검정 면」 조항을 폐기하고 락을 뒤집습니다. */
-  tt('재계산 CTA가 「다음」과 같은 버튼이다',
-     /\.restart-cta\{[^}]*background:var\(--green\);color:var\(--espresso\)/.test(css2)
-     && !/\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2));
+  /* 🔴 v24.31 — **그린이 가리키는 대상이 바뀌었습니다.** v23.23의 규칙(「프라이머리는 화면이
+     달라도 같은 버튼」)은 그대로이고, 결과 화면의 그 하나가 **재계산 → 아웃링크**로 옮겨졌습니다.
+     재계산은 입력을 전부 지우는 **파괴적 행동**이라 프라이머리 자리에 두지 않습니다.
+     ⚠ 그래서 이 검사는 「재계산이 초록인가」가 아니라 **「결과 화면의 초록 솔리드가 정확히
+       하나이고, 그것이 아웃링크인가」**를 셉니다. 둘이 되는 순간 빨간불입니다. */
+  /* 🔴 v24.32 — **결과 화면에는 그린 솔리드 버튼이 하나도 없습니다.** 의도한 상태입니다.
+     결과 화면은 **결론을 읽는 화면**이고, 여기서 강요되는 다음 행동이 없습니다.
+     이 앱의 유일한 계층 1은 입력 01·02·03의 「다음」(`.cta`)입니다.
+     ⚠ v24.31이 잠갔던 「정확히 하나」보다 **느슨해진 것이 아닙니다.** 그 검사가 막던 상태는
+       「초록이 둘」이었고, 여기서는 결과 화면 쪽 후보를 **전부** 세어 0을 요구하므로 더 셉니다.
+     ⚠ 재계산이 초록으로 되돌아가면 여기서 즉시 빨간불입니다(원칙 130 — 파괴적 행동). */
+  tt('결과 화면에 그린 솔리드 버튼이 없다', (()=>{
+     const greens = ['\\.gocta','\\.restart-cta','\\.reedit-cta','\\.trust','\\.mini','\\.restartrow > button']
+       .filter(x => new RegExp(x+'\\{[^}]*background:var\\(--green\\)').test(css2));
+     return greens.length === 0
+         && /\.restart-cta\{[^}]*background:var\(--card\)/.test(css2)
+         && !/\.restart-cta\{[^}]*background:var\(--espresso\)/.test(css2);
+  })());
   tt('프라이머리 버튼이 화면마다 같다', (()=>{
      const g = sel => (css2.match(new RegExp(sel+'\\{[^}]*background:var\\((--[a-z-]+)\\)'))||[])[1];
-     return g('\\.cta') === g('\\.restart-cta');
-  })(), (css2.match(/\.restart-cta\{[^}]*background:var\((--[a-z-]+)\)/)||[])[1]);
+     /* 🔴 v24.32 — 결과 화면에 프라이머리가 없어졌으므로 **비교할 짝이 없습니다.**
+        v23.23이 잡으려던 것은 「프라이머리가 화면마다 다른 색이면 그 색은 액션을 뜻하지 않는다」이고,
+        지금 그 사실을 지키는 방법은 **초록 솔리드 규격이 이 파일에 딱 하나뿐인 것**입니다.
+        ⚠ 두 번째 규격이 생기는 순간(어떤 이름이든) 빨간불입니다 — 그게 이 검사의 본래 일입니다. */
+     /* ⚠ 「초록 면」 전부가 아니라 **계층 1 규격**만 셉니다 — 진행 막대 · 스위치 · 공유 카드도
+        초록 면입니다. 잣대는 `--h-cta`를 같이 쓰는가입니다(그게 「큰 버튼」의 정의입니다). */
+     const solids = css2.replace(/\/\*[\s\S]*?\*\//g,'')
+       .match(/\n\.[a-z-]+(?:[^{\n]*)?\{[^}]*\}/g)
+       ?.filter(r => /background:var\(--green\)/.test(r) && /height:var\(--h-cta\)/.test(r)) || [];
+     return g('\\.cta') === '--green' && solids.length === 1;
+  })(), (css2.match(/\.cta\{[^}]*background:var\((--[a-z-]+)\)/)||[])[1]);
 
   /* 🔴 v23.20 — 하드 보더 문법을 폐기하고 v23.18의 그림자 문법으로 되돌렸습니다.
      ⚠ 원칙 101 — 분리의 근거를 셉니다. 지금은 「배경색 차이 + 은은한 그림자」 둘입니다.
@@ -1697,19 +1732,31 @@ HYGIENE.forEach(([name, over]) => {
      && /\.restartrow \.restart-cta\{flex:65 1 0\}/.test(css2));
   tt('두 버튼 높이가 같다', /\.restartrow > button\{height:var\(--h-cta\)/.test(css2));
   /* 🔴 v23.26 — 같은 줄의 두 버튼은 글자 크기·굵기가 같아야 합니다. 위계는 「면」이 만듭니다. */
-  tt('두 버튼 글자가 같다', (()=>{
+  tt('두 버튼 글자 크기는 같고 굵기로 갈린다', (()=>{
      const g = sel => {
        const m = css2.match(new RegExp(sel+'\\{[^}]*font-size:var\\((--t\\d)\\)[^}]*font-weight:(\\d+)'));
        return m ? m[1]+'/'+m[2] : null;
      };
+     /* 🔴 v24.31 — 둘 다 흰 면이 됐으므로 **위계를 낼 채널이 필요합니다.**
+        크기는 여전히 같게 두고(같은 줄이니까), 굵기는 **달라야** 합니다 —
+        v23.26이 「위계는 면이 만든다」로 잡았는데 그 면이 이제 같기 때문입니다. */
      const a=g('\\.reedit-cta'), b=g('\\.restart-cta');
-     return a && b && a===b;
+     if(!a||!b) return false;
+     return a.split('/')[0] === b.split('/')[0] && a.split('/')[1] !== b.split('/')[1];
   })(), (css2.match(/\.reedit-cta\{[^}]*font-size:var\((--t\d)\)/)||[])[1]
       + ' vs ' + (css2.match(/\.restart-cta\{[^}]*font-size:var\((--t\d)\)/)||[])[1]);
   /* 왼쪽은 옅은 세컨더리, 오른쪽은 솔리드 프라이머리 — 둘이 같은 무게면 위계가 죽습니다. */
-  tt('좌 세컨더리(흰 면) · 우 프라이머리(그린)로 갈린다',
-     /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
-     && /\.restart-cta\{[^}]*background:var\(--green\)/.test(css2));
+  /* 🔴 v24.31 — 둘 다 흰 면입니다. 그렇다면 **서로 구별되는지**를 대신 잠급니다 —
+     ① 폭 35 : 65(아래 별도 검사) ② 글자 잉크 한 단 ③ 그림자 한 단.
+     ⚠ 셋 중 하나라도 같아지면 「같은 버튼 둘」이 되고, 그때 사람은 파괴적 행동을 잘못 누릅니다. */
+  tt('재계산 행 두 버튼이 흰 면 위에서 구별된다', (()=>{
+     const ink = sel => (css2.match(new RegExp(sel+'\\{[^}]*color:var\\((--[a-z0-9-]+)\\)'))||[])[1];
+     const sh  = sel => (css2.match(new RegExp(sel+'\\{[^}]*box-shadow:var\\((--[a-z0-9-]+)\\)'))||[])[1];
+     return /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
+         && /\.restart-cta\{[^}]*background:var\(--card\)/.test(css2)
+         && ink('\\.reedit-cta') !== ink('\\.restart-cta')
+         && sh('\\.reedit-cta')  !== sh('\\.restart-cta');
+  })());
   /* ⚠ 세컨더리 면을 --fill로 내리면 앱 배경(--bg)과 1.02:1이라 통째로 사라집니다(원칙 97). */
   tt('세컨더리 면이 앱 배경과 다른 값',
      !/\.reedit-cta\{[^}]*background:var\(--fill\)/.test(css2));
@@ -1776,11 +1823,13 @@ HYGIENE.forEach(([name, over]) => {
      v24.22는 레이블이 목적지·매체를 말하게 고치고 카드 높이를 118 → 88px로 같이 줄였습니다.
      → 이제 잠글 사실은 **「설명 줄이 없다」 + 「높이를 같이 줄였다」**입니다.
      ⚠ 설명을 다시 넣고 싶어지면 **레이블이 약하다는 신호**입니다. 레이블부터 고치세요. */
-  tt('다음 걸음 네 칸에 설명 줄이 없다', (()=>{
+  tt('다음 걸음 넷에 설명 줄이 없다', (()=>{
      const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
      const m = bare.match(/<div class="minigrid">[\s\S]*?<\/div>\s*<\/div>/);
      if(!m) return false;
      const cards = m[0].match(/class="mini(?: [^"]*)?"/g)||[];
+     /* 🔴 v24.31 — 격자 안은 셋. 넷째는 `.gocta`로 올라갔고 **거기에도 설명 줄이 없어야** 합니다. */
+     /* 🔴 v24.32 — 다시 넷입니다(네이버가 `.mini`로 돌아왔습니다). */
      return cards.length === 4
          && !/<\/b><span/.test(m[0])             /* 마크업에 설명 줄이 없다 */
          && !/outNaverS|outInteriorS/.test(bare)  /* JS가 다시 채우지도 않는다 */
@@ -1984,7 +2033,9 @@ HYGIENE.forEach(([name, over]) => {
      /--h-cta:54px/.test(css2) && /--h-opt:46px/.test(css2) && /--h-chip:35px/.test(css2));
   tt('메인 CTA 3종이 같은 높이 토큰을 쓴다', ['\\.cta','\\.restart-cta','\\.reedit-cta']
      .every(x => new RegExp(x+'\\{[^}]*height:var\\(--h-cta\\)').test(css2)));
-  tt('메인 CTA가 16px SemiBold다', ['\\.cta','\\.restart-cta'].every(x=>{
+  /* 🔴 v24.32 — 계층 1은 **`.cta` 하나뿐**입니다(입력 화면의 「다음」).
+     재계산은 세컨더리라 굵기 700이고, 결과 화면에는 계층 1이 없습니다. */
+  tt('메인 CTA가 16px SemiBold다', ['\\.cta'].every(x=>{
      const m = css2.match(new RegExp(x+'\\{[^}]*font-size:var\\(--t5\\)[^}]*font-weight:(\\d+)'));
      return m && +m[1] === 600;
   }));
@@ -3248,6 +3299,87 @@ HYGIENE.forEach(([name, over]) => {
      /\.app:not\(\.no-dock\) \.copyright\{display:none\}/.test(SRC));
   /* 🔴 **한쪽만 잠그면 안 됩니다.** 위 규칙만 보면 「꼬리말을 아예 지웠다」와 구별이 안 됩니다.
      결과 화면에는 **있어야** 한다는 짝을 같이 잠급니다(지침 6-13의 「관계를 잠근다」). */
+  /* ═══ v24.31 — 프로덕트 오너 지시 반영분 ═══════════════════════════
+     ⚠ 이 묶음은 **채택한 것과 미채택한 것을 같은 자리에** 둡니다(지침 6-13).
+       미채택을 안 잠그면 같은 지시서가 다시 왔을 때 조용히 들어옵니다. */
+  /* ① 저작권 명의. 「영끌계산기」는 **도구 이름**이고 저작권은 **사람**에게 있습니다 —
+     한 문자열이 둘을 겸하면 이름을 바꿀 때 저작권 표시가 따라 바뀝니다(원칙 91). */
+  tt('저작권 명의가 noahchoi 하나다',
+     /\$\('copyright'\)\.textContent = `© \$\{new Date\(\)\.getFullYear\(\)\} noahchoi`/.test(SRC));
+  tt('저작권 문구에 서비스 이름이 섞이지 않는다', (()=>{
+     const m = SRC.match(/\$\('copyright'\)\.textContent = `[^`]*`/);
+     return !!m && !/영끌계산기|All rights reserved/.test(m[0]);
+  })());
+  /* ② 블록 1 — 자금 구조 막대가 히어로 안으로. `.bento`에 남아 있으면 카드 경계가
+     「이 금액이 어디서 오는가」를 둘로 끊습니다. */
+  tt('자금 구조 막대가 히어로 안에 있다', (()=>{
+     /* ⚠ `</header>`는 파일 **앞쪽**에도 있습니다. 결과 섹션 시작점부터 찾습니다 —
+        안 그러면 시작 > 끝이 되어 잘라낸 문자열이 빈 채로 조용히 빨간불입니다. */
+     const st = SRC.indexOf('<section class="result"');
+     const res = SRC.slice(st, SRC.indexOf('</header>', st));
+     return /<div class="fundwrap">[\s\S]*?id="fundStack"[\s\S]*?id="fundLegend"/.test(res);
+  })());
+  /* 🔴 `.tile-k`(--ink-4)는 **흰 카드 위에서** 4.62:1로 검증된 값입니다. 히어로는 앱 배경이라
+     같은 토큰이 4.19:1로 떨어집니다 — `.barlabel`과 같은 자리(원칙 97). */
+  tt('히어로 안 라벨이 배경 위 대비를 지킨다',
+     /\.fund-k\{[^}]*color:var\(--ink-3\)/.test(SRC)
+     && !/\.fund-k\{[^}]*color:var\(--ink-4\)/.test(SRC));
+  /* ③ 블록 2 — 판정 뱃지. **색과 글자를 같은 `band`가 정해야** 합니다.
+     따로 판정하면 「색은 주의인데 글자는 적정」이 납니다(원칙 91). */
+  tt('부담 판정이 색과 글자를 한 값으로 낸다',
+     /vd\.className='verdict '\+band/.test(UI)
+     && /band==='ok' \? '적정' : band==='mid' \? '주의' : '부담 큼'/.test(UI));
+  tt('값이 「—」일 때 판정 뱃지도 없다',
+     /vd\.setAttribute\('hidden',''\)/.test(UI));
+  tt('판정 뱃지가 새 색을 만들지 않는다',
+     /\.verdict\.ok\{color:var\(--ok\)\} \.verdict\.mid\{color:var\(--warn\)\} \.verdict\.bad\{color:var\(--bad\)\}/.test(SRC));
+  /* ④ 블록 3 — 부대비용 소계 접기. **영수증 자체는 안 접습니다.** */
+  tt('부대비용이 영수증 소계 한 줄로 접힌다',
+     /<button class="disc discline" id="costToggle"/.test(SRC)
+     && /<span class="k">집값 외 부대비용<\/span><span class="v" id="etcTotal">/.test(SRC));
+  /* 🔴 여기가 이 판의 선입니다 — 대출과 준비할 현금은 **서랍 밖**입니다.
+     서랍 안으로 들어가면 첫 화면의 약속(「실제로 드는 돈이 나와요」)이 접힌 채로 시작합니다. */
+  tt('대출 · 준비할 현금이 접히는 서랍 밖이다', (()=>{
+     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="receiptBot"');
+     const box = SRC.slice(a, b);
+     return a > 0 && b > a
+         && /\$\('receiptBot'\)\.innerHTML=h/.test(UI)
+         && !/id="receiptBot"/.test(box)
+         && /row\('주택담보대출'/.test(UI) && /row\('준비할 현금'/.test(UI);
+  })());
+  /* 소계는 화면에 적힌 것들의 합입니다. 켠 항목의 **금액을 서랍 안에 두 번 적지 않습니다** —
+     스위치 줄이 이미 말하고 있어서, 두 벌이면 껐을 때 어느 쪽이 진짜인지 알 수 없습니다. */
+  tt('부대비용 소계가 켠 항목까지 센다',
+     /ETC_ROWS\.forEach\(\(\[k\]\) => \{ if\(S\[k\]\.on && S\[k\]\.v > 0\) etcSum \+= man10k\(S\[k\]\.v \* 10000\); \}\);/.test(UI));
+  /* 🔴 소계는 **화면에 적힌 값끼리** 더합니다. 원값 합을 다시 반올림하면 항목 합과 1만원 어긋나고,
+     사람은 이 표를 눈으로 더해 봅니다(실기에서 5,911 vs 5,912로 실제로 어긋났습니다 · 원칙 91). */
+  tt('부대비용 소계가 화면에 적힌 단위로 더해진다',
+     /const man10k = v => Math\.round\(v\/10000\)\*10000;/.test(UI)
+     && /etcSum = man10k\(c\.tax\) \+ man10k\(c\.brokerFee\)/.test(UI));
+  /* ⑤ 실거래 부속 줄 — 잘림. 사용자 캡쳐에서 「2017ㄴ」으로 확인, 390px 실측 37px 넘침. */
+  tt('실거래 부속 줄이 두 줄로 흐른다',
+     /\.deal \.nm small\{[^}]*white-space:normal/.test(SRC)
+     && !/\.deal \.nm small\{[^}]*white-space:nowrap/.test(SRC));
+  /* 단지 이름은 **여전히 한 줄**입니다 — 두 줄로 흐르면 금액과 기준선이 어긋납니다. */
+  tt('단지 이름은 여전히 한 줄 말줄임이다',
+     /\.deal \.nm\{[^}]*text-overflow:ellipsis;white-space:nowrap/.test(SRC));
+  /* 🔴 지시서는 줄마다 「(공급 약 OO평형)」을 요구했습니다 — 390px에서 **97px 넘칩니다.**
+     지적(「무엇의 평인지 안 밝힌다」)은 맞으므로 **목록 아래에서 한 번** 말합니다. */
+  tt('평이 무엇의 평인지 화면이 말한다',
+     /평은 공급면적 기준 추정이에요/.test(UI));
+  tt('면적 표기가 줄마다 길어지지 않았다',
+     !/공급 약/.test(SRC.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,''))
+     || /foot\.textContent/.test(UI));
+  /* ⑥ 🔴 **미채택 잠금** — 아웃링크 레이블은 조건을 약속하지 않습니다.
+     목적지가 `fin.land.naver.com` 루트라 지역도 가격대도 안 넘어갑니다.
+     「이 가격대」·「내 예산」 같은 말이 들어오는 순간 **지키지 못할 약속**이 됩니다(v24.22와 같은 근거). */
+  tt('아웃링크 레이블이 조건을 약속하지 않는다', (()=>{
+     const m = UI.match(/\$\('outNaverT'\)\.textContent=`[^`]*`/);
+     return !!m && !/가격대|예산|조건|매물/.test(m[0]);
+  })());
+  tt('네이버 링크가 조건을 실어 보내지 않는다면 루트로만 간다',
+     /\$\('outNaver'\)\.href\s*=\s*`https:\/\/fin\.land\.naver\.com\/`/.test(UI));
+
   tt('저작권이 결과 화면에는 남아 있다',
      /class="copyright" id="copyright"/.test(SRC)
      /* ⚠ 홑선택자 규칙만 봅니다. `.app:not(.no-dock) .copyright{display:none}`도
