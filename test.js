@@ -1428,8 +1428,13 @@ HYGIENE.forEach(([name, over]) => {
         지역·예산 어느 쪽도 약속하지 않습니다(아래 「목적지 이름만」 검사가 그쪽을 봅니다).
         ⚠ 「지역이 실렸는가」까지가 이 파일이 확인할 수 있는 전부입니다. 네이버가 그 경로를
           계속 쓰는지는 **실기로 눌러 봐야** 압니다(v24.16이 `new.land.naver.com`에서 겪은 일). */
-     return /outNaver'\)\.href\s*=\s*_nq[\s\S]{0,140}m\.land\.naver\.com\/search\/result\/\$\{encodeURIComponent\(_nq\)\}/.test(src)
-         && /https:\/\/fin\.land\.naver\.com\//.test(src)      /* 지역을 못 고른 경우의 되돌아갈 자리 */
+     /* 🔴 v25.5 — **루트로 되돌렸습니다**(오너 지시). 잠글 것은 v23.27부터 그대로
+        **약속과 도착지의 일치**이고, 이제 도착지가 아무것도 약속하지 않는 루트라
+        레이블(「네이버 부동산 열기」)과 정확히 같은 말을 합니다.
+        ⚠ v25.0의 지역 검색 경로가 되살아나면 빨간불입니다 — 되돌린 것은 결론이고,
+          그때의 근거(「경로가 틀려도 네이버 안에 있다」)는 여전히 참입니다(지침 6-19). */
+     return /\$\('outNaver'\)\.href = `https:\/\/fin\.land\.naver\.com\/`;/.test(src)
+         && !/m\.land\.naver\.com/.test(src)
          && !/new\.land\.naver\.com/.test(src)
          && !/sk=/.test(src)
          && !/억대 추천 단지 보기/.test(src)
@@ -3530,13 +3535,19 @@ HYGIENE.forEach(([name, over]) => {
      「지역은 실리되 **예산·가격은 안 실린다**, 그리고 지역이 없으면 루트로 되돌아간다」.
      ⚠ 가격을 싣는 순간 레이블도 같이 고쳐야 하고, 그건 이 검사가 아니라
        「목적지 이름만 말한다」가 잡습니다. 둘이 짝입니다(지침 6-13). */
-  tt('네이버 링크가 지역만 싣고 가격은 안 싣는다', (()=>{
+  /* 🔴 v25.5 — **다시 「루트로만 간다」로 돌아왔습니다**(오너 지시).
+     ⏹ v24.31: 「조건을 안 실으면 루트로만」 → v25.0: 「지역은 싣되 가격은 안 싣는다」
+        → v25.5: **아무 조건도 안 싣는다.**
+     ⚠ 세 판을 오간 자리입니다. 되돌린 이유는 링크가 죽어서가 아니라(실기에서 살아 있었습니다)
+       **지역만 걸린 검색 결과가 「내 조건으로 찾아 준다」로 오해되기 때문**입니다.
+     ⚠ 지역·가격 어느 쪽도 실리면 안 됩니다 — 하나라도 실리는 순간 레이블이 지키지 못할
+       약속을 하게 되고, 그건 v24.22가 막아 둔 자리입니다. */
+  tt('네이버 링크가 아무 조건도 싣지 않는다', (()=>{
      const m = UI.match(/\$\('outNaver'\)\.href\s*=[\s\S]{0,200}?;/);
      if(!m) return false;
-     return /m\.land\.naver\.com\/search\/result\/\$\{encodeURIComponent\(_nq\)\}/.test(m[0])
-         && /fin\.land\.naver\.com/.test(m[0])
-         && !/price|priceMan|budget|만원|억/.test(m[0]);
-  })());
+     return /^\$\('outNaver'\)\.href = `https:\/\/fin\.land\.naver\.com\/`;$/.test(m[0].trim())
+         && !/encodeURIComponent|_nq|sgg|price|priceMan|budget|만원|억/.test(m[0]);
+  })(), (UI.match(/\$\('outNaver'\)\.href\s*=[\s\S]{0,200}?;/)||[''])[0].trim());
 
   /* ═══ v25.0 — 정책 대조(2026.8.13) · 취득세 4단 · 거래 활발 뱃지 ═══════════════
      ⚠ 이 묶음의 요점은 「값을 바꿨다」가 아니라 **「대조했고, 셋은 그대로였다」**입니다. */
@@ -3640,13 +3651,21 @@ HYGIENE.forEach(([name, over]) => {
      /\.deal \.nm small b\{color:var\(--ink-3\);font-weight:700\}/.test(SRC));
   tt('실거래 면적이 가운뎃점 리듬을 지킨다',
      /esc\(a\.m2\) \+ \(a\.py \? ` · <b>\$\{esc\(a\.py\)\}<\/b>` : ''\)/.test(SRC));
-  /* 🔴 「2018년」 → 「18년」도 미채택입니다. 같은 카드 안에 「신축 (10년)」 칩이 있어
-     「N년」이 **기간과 연도** 두 뜻이 됩니다 — 2023년 준공(3년 차)이 「23년 된 집」으로 읽힙니다
-     (원칙 91). 그리고 v24.26이 순서를 동 · 면적 · 평 · 연식으로 잡아 둔 이유가
-     **「모자라면 연식부터 잘리게」**라, 폭 문제는 이미 처리돼 있습니다. */
-  tt('연식이 네 자리 연도 그대로다',
-     /x\.buildYear \? esc\(`\$\{x\.buildYear\}년`\)/.test(SRC)
-     && /id="dealNew"[^>]*>신축 \(10년\)/.test(SRC));
+  /* 🔴 v25.5 — **「17년식」으로 갔습니다**(오너 지시, 두 번째 요청).
+     ⏹ v24.29가 「2018년 → 18년」을 미채택한 근거는 **「N년」이 연도와 기간 두 뜻이 된다**는
+       것이었습니다(같은 카드에 「신축 (10년)」 칩). **그 근거는 지금도 맞습니다.**
+     → 그래서 「17년」이 아니라 **「17년식」**입니다. 「식」이 붙으면 기간으로 못 읽힙니다.
+       근거를 되돌린 게 아니라 **근거를 지키는 다른 형태**를 찾은 것입니다(지침 6-19).
+     ⚠ 「식」이 빠지면 v24.29가 막아 둔 자리로 그대로 돌아갑니다. 그것을 잠급니다. */
+  tt('연식이 두 자리 + 「식」이다', (()=>{
+     if(!/id="dealNew"[^>]*>신축 \(10년\)/.test(SRC)) return false;
+     const f = (SRC.match(/const yearShort = [\s\S]*?\n/)||[''])[0];
+     return /String\(n\)\.slice\(-2\) \+ '년식'/.test(f)
+         && /x\.buildYear \? esc\(yearShort\(x\.buildYear\)\)/.test(SRC);
+  })());
+  /* 🔴 짝 — 「식」 없는 「N년」이 되살아나지 않았는가. */
+  tt('연식이 기간으로 읽히는 꼴로 안 돌아갔다',
+     !/x\.buildYear \? esc\(`\$\{x\.buildYear\}년`\)/.test(SRC));
 })();
 
 /* ═══ v25.1 — 런칭 마감 지시서 5건 ═══════════════════════════════
@@ -3862,8 +3881,11 @@ HYGIENE.forEach(([name, over]) => {
   })(), (()=>{
      const box = (SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
      return (box.match(/id="([^"]+)"/g)||[]).join(','); })());
-  tt('연식이 네 자리 연도 그대로다 (「17년식」 미채택)',
-     /x\.buildYear \? esc\(`\$\{x\.buildYear\}년`\)/.test(SRC) && !/년식/.test(SRC));
+  /* 🔴 v25.5 — 「17년식」이 **채택**됐습니다(오너, 두 번째 요청). 위 「연식이 두 자리 +
+     「식」이다」가 그 자리를 잠급니다. 여기서는 **함수 하나에서만 만들어지는가**를 봅니다 —
+     목록과 공유 카드가 같은 표기를 쓰려면 두 벌로 두면 안 됩니다(원칙 58). */
+  tt('연식 표기가 함수 한 곳에서만 만들어진다',
+     (SRC.match(/'년식'/g)||[]).length === 1);
 })();
 
 /* ═══ v25.2 — 카톡 공유 카드(진단서) 가독성 ══════════════════════
@@ -3983,6 +4005,38 @@ HYGIENE.forEach(([name, over]) => {
   tt('히어로가 어두운 면으로 돌아가지 않았다',
      !!rh && !/background:var\(--(espresso|espresso-2|ink)\b/.test(rh)
      && !/linear-gradient/.test(rh));
+})();
+
+/* ═══ v25.5 — 실기 지적 (네이버 · 연식 · 각주 ※) ══════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const SRC = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+
+  /* 🔴 이 화면의 ※ 규칙 — **각주에는 전부 ※를 붙입니다.**
+     붙은 것과 안 붙은 것이 섞이면 ※가 「중요함」이나 「법적 고지」 같은 다른 뜻으로 읽힙니다.
+     결과 화면의 각주는 넷입니다: 거래 활발 기준 · 실거래 출처 · 투명성 캡션 · 면책(둘). */
+  tt('결과 화면 각주가 전부 ※로 시작한다', (()=>{
+     const notes = [
+       (SRC.match(/note\.textContent = shownRows\.some\(hotOf\)\s*\?\s*`([^`]*)`/)||[])[1],
+       (SRC.match(/foot\.textContent = '([^']*)';/)||[])[1],
+       (SRC.match(/\$\('caveatNote'\)\.textContent =\s*'([^']*)';/)||[])[1],
+     ];
+     if(notes.some(x => x == null)) return false;
+     const legal = legalText(SRC) || '';
+     return notes.every(t => t.trim().startsWith('※'))
+         && (legal.match(/※/g)||[]).length === 2;
+  })(), (()=>{
+     const g = re => { const m = SRC.match(re); return m ? (m[1]||'').slice(0,10) : '못 찾음'; };
+     return [g(/note\.textContent = shownRows\.some\(hotOf\)\s*\?\s*`([^`]*)`/),
+             g(/foot\.textContent = '([^']*)';/),
+             g(/\$\('caveatNote'\)\.textContent =\s*'([^']*)';/)].join(' | '); })());
+
+  /* 🔴 각주 둘이 **한 자리**에 있는가 — v25.1은 칩을 사이에 두고 갈라 놨습니다. */
+  tt('실거래 각주 둘이 칩 아래 나란히 있다', (()=>{
+     const m = SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>\s*<p class="deal-note" id="dealNote"><\/p>\s*<p class="deal-note" id="dealFoot"><\/p>/);
+     return !!m;
+  })());
+  tt('각주 둘 사이 간격이 좁다', /\.deal-note \+ \.deal-note\{margin-top:6px\}/.test(RAW));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
