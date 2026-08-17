@@ -27,6 +27,34 @@ const FILE = process.argv[2] || path.join(__dirname, 'index.html');
 const ENGINE_MARK = '/* ══════════ ENGINE END ══════════';
 
 let UI = '';   /* 화면 코드 — 단위 경계 검사(19장)에 씁니다 */
+
+/* 🔴 v25.1 — **면책 블록을 꺼내는 함수 하나.** 다섯 검사가 각자
+   `/<span class="legal">[\s\S]*?<\/span>/`를 들고 있었습니다. v25.1에서 면책 두 문장을
+   문단 둘(`.lg-l`)로 가르자 그 비탐욕 정규식이 **첫 번째 안쪽 `</span>`에서 멈춰**
+   다섯이 한꺼번에 빨간불이 났습니다.
+   ⚠ **검사가 틀린 게 아니라 세는 방법이 얕았던 것**입니다 — 중첩을 가정하지 않은 식이
+     다섯 벌 복사돼 있었고, 구조가 바뀌자 다섯 곳을 다 고쳐야 했습니다(원칙 58).
+   → `<span>` 열고 닫기를 세어 **짝이 맞는 곳까지** 잘라 냅니다. 다음에 문단이 셋이 되어도
+     이 함수 하나만 맞으면 됩니다.
+   ⚠ 못 찾으면 `null`을 돌려줍니다 — 빈 문자열을 주면 「면책이 없다」와
+     「면책에 그 말이 없다」가 같은 답이 됩니다(원칙 124). */
+function legalBlock(src){
+  const at = src.indexOf('<span class="legal">');
+  if(at < 0) return null;
+  let depth = 0;
+  const tag = /<span\b[^>]*>|<\/span>/g;
+  tag.lastIndex = at;
+  let m;
+  while((m = tag.exec(src))){
+    depth += m[0] === '</span>' ? -1 : 1;
+    if(depth === 0) return src.slice(at, m.index + m[0].length);
+  }
+  return null;
+}
+/* 안쪽 문단 태그를 걷어낸 **글자만**. 문구를 보는 검사는 이쪽을 씁니다. */
+const legalText = src => { const b = legalBlock(src);
+  return b === null ? null : b.replace(/<\/?span[^>]*>/g,''); };
+
 function loadEngine(file){
   const html = fs.readFileSync(file, 'utf8');
   const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
@@ -1271,12 +1299,29 @@ HYGIENE.forEach(([name, over]) => {
      라벨만 남기고 알맹이를 지우는 사보타주는 위 「__selfcheck 항목」 검사가 못 잡습니다. */
   /* 🔴 v24.6 — G-18이 표(LINEMAX)로 넓어져 검사식도 다시 씁니다(지침 5층 3번).
      이전: `.helper`를 직접 긁고 `> 1`로 비교했습니다. 지금은 선택자마다 상한이 다릅니다. */
+  /* 🔴 v25.1 — **재는 방법이 바뀌어 검사식도 옮깁니다**(원칙 128 — 대상만 이동).
+     ⏹ 전: `블록 높이 ÷ 행간`. v25.1에서 면책 두 문장 사이에 12px을 주자
+       **글자를 한 자도 안 늘렸는데** 그 나눗셈이 늘어났습니다 — 여백이 줄로 세어집니다.
+     → 줄 상자(`Range.getClientRects`)를 직접 셉니다. 잠글 사실은 그대로 「렌더를 잰다」이고,
+       느슨해진 것이 아니라 **여백을 글자로 세지 않게 된 것**입니다.
+     ⚠ 「빈 글은 안 센다」까지 같이 잠급니다 — 0줄을 통과시키면 글이 사라진 것과
+       상한을 지킨 것이 같은 답이 됩니다(원칙 124). */
   tt('G-18이 렌더된 줄 수를 잰다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      return /const LINEMAX=\[\['\.helper',1\]/.test(src)
-         && /getBoundingClientRect\(\)\.height \/ lh\)/.test(src)
+         && /createTreeWalker\(el, NodeFilter\.SHOW_TEXT\)/.test(src)
+         && /r\.selectNodeContents\(n\)/.test(src)
+         && /Math\.round\(x\.top\)/.test(src)
+         && /if\(!el\.textContent\.trim\(\)\) return;/.test(src)
+         && /const n=lineCount\(el\);/.test(src)      /* 🔴 정의만이 아니라 **불려지는가**(원칙 122) */
          && /if\(n>max\)/.test(src);
   })());
+  /* 🔴 짝 — 옛 방식이 **되살아나지 않았는가.** 높이÷행간이 돌아오면 여백이 다시 줄로 세어집니다.
+     ⚠ 사보타주가 잡았습니다 — 처음엔 `getBoundingClientRect().height / lh` **한 가지 철자**만
+       봤습니다. `lh` 대신 `parseFloat(getComputedStyle(el).lineHeight)`를 그 자리에 바로 써 넣자
+       조용히 초록이었습니다. 잠글 것은 철자가 아니라 **높이를 줄 수로 나누는 일** 자체입니다. */
+  tt('G-18이 블록 높이를 줄 수로 쓰지 않는다',
+     !/getBoundingClientRect\(\)\.height\s*\//.test(fs.readFileSync(FILE,'utf8')));
 
   /* 🔴 v24.3 — 「지우기」는 빠른 추가 칩의 형제가 아니라 **그 입력칸에 딸린 동작**입니다.
      칩 줄에 두면 칩 폭에 따라 어떤 화면은 같은 줄, 어떤 화면은 혼자 다음 줄로 떨어집니다. */
@@ -1853,8 +1898,20 @@ HYGIENE.forEach(([name, over]) => {
      인수인계 체크리스트 23번의 「한 줄인지」도 같은 착각이었습니다 — 「두 줄 이하」로 고쳤습니다.
      ⚠ 면책은 **문장을 줄이면 안 되는 글**입니다(정책대출 미반영·DSR 근거가 걸려 있음).
        줄일 수 있는 건 줄 수뿐이고, 두 줄이 그 하한입니다. 상한 판정은 G-18이 합니다. */
-  tt('면책 블록이 하나다', (UI.match(/class="legal"/g)||[]).length === 1,
-     (UI.match(/class="legal"/g)||[]).length + '개');
+  /* 🔴 v25.1 — `class="legal"`을 그냥 세면 **안쪽 문단(`class="lg-l"`)까지 걸립니다** —
+     「legal」이 「lg-l」의 부분 문자열은 아니지만, 여는 태그 문자열이 아니라 클래스 이름만
+     보던 식이라 v25.1에서 2개로 셌습니다. **여는 태그 통째로** 셉니다. */
+  tt('면책 블록이 하나다', (UI.match(/<span class="legal">/g)||[]).length === 1,
+     (UI.match(/<span class="legal">/g)||[]).length + '개');
+  /* 🔴 v25.1 — 짝. 안쪽 문단이 **둘**이어야 합니다 —
+     하나면 「문단을 안 갈랐다」이고, 셋이면 면책이 한 문장 늘어난 것입니다(G-18이 먼저 물어야 합니다). */
+  tt('면책이 문단 둘로 갈려 있다', (()=>{
+     const b = legalBlock(UI);
+     return b !== null && (b.match(/<span class="lg-l">/g)||[]).length === 2;
+  })(), (()=>{ const b=legalBlock(UI);
+     return b===null ? '면책 없음' : (b.match(/<span class="lg-l">/g)||[]).length+'문단'; })());
+  tt('면책 문단 사이 여백이 마지막에는 안 붙는다',
+     /\.foot \.legal \.lg-l \+ \.lg-l\{margin-top:12px\}/.test(fs.readFileSync(FILE,'utf8')));
   /* 🔴 v24.6 — G-18이 면책까지 보고 있는지 소스에서 확인합니다(원칙 101).
      표에서 `.legal` 한 줄을 지우면 면책은 다시 아무도 안 보는 글이 됩니다. */
   /* 🔴 v24.6 — **되돌린 락입니다. 지우지 않고 방향을 뒤집어 다시 썼습니다**(지침 5층 3번).
@@ -1925,15 +1982,14 @@ HYGIENE.forEach(([name, over]) => {
      → 심사는 **「은행」이든 「금융기관」이든** 통과시키고, 대신 **기준일**을 사실 목록에 더합니다.
        느슨해진 것이 아니라 **재는 대상이 표현에서 사실로 옮긴 것**이고, 항목은 넷 → 다섯입니다. */
   tt('면책에 기준일 · 추정치 · 정책 · 심사 · 한도와 세금이 모두 들어 있다', (()=>{
-     const m = UI.match(/<span class="legal">([\s\S]*?)<\/span>/);
-     if(!m) return false;
-     const t = m[1];
+     const t = legalText(UI);
+     if(t === null) return false;
      return /POLICY_ASOF_KO|POLICY_ASOF/.test(t)      /* 언제 기준의 계산인가 */
          && /추정치/.test(t) && /정부 정책/.test(t)
          && /(은행|금융기관) 심사/.test(t)
          && /한도/.test(t) && /세금/.test(t);
-  })(), (()=>{ const m=UI.match(/<span class="legal">([\s\S]*?)<\/span>/);
-     return m ? m[1].replace(/<br>/g,' ⏎ ').slice(0,90)+'…' : '없음'; })());
+  })(), (()=>{ const t=legalText(UI);
+     return t === null ? '없음' : t.replace(/\s+/g,' ').slice(0,90)+'…'; })());
   /* 바로 위 조건 칩이 이미 지역을 말합니다. 2×2 칸에서 지역명이 두 줄을 만들었습니다. */
   tt('다음 걸음 문구에 지역명을 반복하지 않는다',
      !/\$\('outNaverT'\)\.textContent=`\$\{region\}/.test(UI)
@@ -2346,10 +2402,12 @@ HYGIENE.forEach(([name, over]) => {
      /<b>정책 확인일<\/b><span id="asOfNote"><\/span>/.test(fs.readFileSync(FILE,'utf8'))
      && /\$\('asOfNote'\)\.textContent = `\$\{POLICY_ASOF\}/.test(UI));
   /* 🆕 면책 첫 문장이 **언제 기준의 계산인지** 말한다. 없으면 반년 뒤의 오차와 오늘의 오차가 구별되지 않습니다. */
+  /* 🔴 v25.1 — 문단이 갈리면서 `class="legal">※` 붙어 있기가 깨졌습니다.
+     잠글 사실은 **「첫 문장이 기준일로 시작한다」**이지 두 문자열이 붙어 있는가가 아닙니다. */
   tt('면책이 정책 기준일을 밝힌다',
-     /class="legal">※ \$\{POLICY_ASOF_KO\} 정책 기준의 추정치입니다/.test(UI));
+     /^※ \$\{POLICY_ASOF_KO\} 정책 기준의 추정치입니다/.test((legalText(UI)||'').trim()));
   tt('면책이 여전히 두 문장이다',            /* 세 번째가 붙으면 G-18(5줄)이 먼저 물어야 합니다 */
-     (( (UI.match(/<span class="legal">[\s\S]*?<\/span>/)||[''])[0] ).match(/※/g)||[]).length === 2);
+     ((legalText(UI)||'').match(/※/g)||[]).length === 2);
   tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.13/.test(css2));
   /* 🔴 v25.0 — 사보타주가 잡았습니다 — `POLICY_ASOF`만 되돌려도 위 검사는 초록이었습니다.
      **두 곳에 같은 날짜가 있으면 갈립니다**(원칙 91). 위는 마크업, 아래는 상수 —
@@ -2389,7 +2447,12 @@ HYGIENE.forEach(([name, over]) => {
              .replace(/<!--[\s\S]*?-->/g,'')
              .replace(/<style>[\s\S]*?<\/style>/g,'')
              .replace(/\/\/[^\n'"`]*$/gm,'')
-             .replace(/<span class="legal">[\s\S]*?<\/span>/g,'');
+             ;
+  /* 🔴 v25.1 — 면책이 문단 둘로 갈리면서 비탐욕 정규식이 **절반만** 잘라 냈고,
+     남은 뒷문장(금소법)이 「~습니다」로 잡혔습니다. 짝을 세어 통째로 걷어냅니다.
+     ⚠ 못 찾으면 **아무것도 안 지웁니다** — 그러면 면책이 그대로 남아 이 검사가 빨개집니다.
+       면책이 사라졌을 때 조용히 초록이 되는 것보다 그쪽이 맞습니다(원칙 124). */
+  { const b = legalBlock(s); if(b !== null) s = s.replace(b, ''); }
   /* __selfcheck는 **개발자 콘솔 전용**입니다 — 사용자가 볼 수 없어 말투 규칙 밖입니다.
      ⚠ 함수 하나가 아니라 그 뒤 검사 배열까지 전부 개발자용이라 통째로 잘라 냅니다. */
   const cut = s.search(/function __selfcheck|const R\s*=\s*\[/); if(cut > 0) s = s.slice(0, cut);
@@ -3068,8 +3131,8 @@ HYGIENE.forEach(([name, over]) => {
      && /실제 대출 가능 여부는 금융기관 심사에 따릅니다/.test(BARE));
   /* 🔴 위계가 가장 낮은 자리(.legal) 안이어야 합니다. 밖으로 나오면 본문처럼 읽힙니다. */
   tt('면책이 .legal 안에 있다', (()=>{
-     const m = BARE.match(/<span class="legal">[\s\S]*?<\/span>/);
-     return !!m && /금융상품 판매 대리·중개업자가 아닙니다/.test(m[0]);
+     const b = legalBlock(BARE);
+     return b !== null && /금융상품 판매 대리·중개업자가 아닙니다/.test(b);
   })());
 
   /* ── 금리 시뮬레이터 ──────────────────────────
@@ -3389,8 +3452,35 @@ HYGIENE.forEach(([name, over]) => {
      && /band==='ok' \? '적정' : band==='mid' \? '주의' : '부담 큼'/.test(UI));
   tt('값이 「—」일 때 판정 뱃지도 없다',
      /vd\.setAttribute\('hidden',''\)/.test(UI));
-  tt('판정 뱃지가 새 색을 만들지 않는다',
-     /\.verdict\.ok\{color:var\(--ok\)\} \.verdict\.mid\{color:var\(--warn\)\} \.verdict\.bad\{color:var\(--bad\)\}/.test(SRC));
+  /* 🔴 v25.3 — **대상만 옮겼습니다**(원칙 128). 뱃지가 글자색에서 **알약**으로 바뀌었습니다.
+     ⏹ 전: `--ok`(#333D4B 무채색) 글자. 바로 위 「18%」(`.tile-v.ok`도 --ok)와 **같은 색**이라
+       「적정」이 판정이 아니라 딸린 글자로 읽혔습니다 — v24.31이 이 뱃지를 만든 근거가
+       바로 그 문제였는데 뱃지 자신이 그것을 물려받고 있었습니다.
+     잠글 사실은 그대로 「새 색을 안 만든다」이고, **재는 자리만** 면으로 옮깁니다. */
+  tt('판정 뱃지가 새 색을 만들지 않는다', (()=>{
+     const r = (SRC.match(/\.verdict\.ok\{[^}]*\}\s*\n?\.verdict\.mid\{[^}]*\}\s*\n?\.verdict\.bad\{[^}]*\}/)||[''])[0];
+     return !!r && !/#[0-9A-Fa-f]{3,6}|rgb\(/.test(r)
+         && /\.verdict\.ok\{background:var\(--fill\);color:var\(--ink-3\)\}/.test(r)
+         && /\.verdict\.mid\{background:var\(--warn-tint\);color:var\(--warn\)\}/.test(r)
+         && /\.verdict\.bad\{background:var\(--warn-tint\);color:var\(--bad\)\}/.test(r);
+  })());
+  /* 🔴 짝 — **위 숫자와 색이 같아지면 안 됩니다.** 그게 이번에 오너가 본 것입니다.
+     `.tile-v.ok`는 `--ok`, 뱃지 「적정」은 `--ink-3` — 둘이 같은 토큰이 되면 빨간불입니다. */
+  tt('판정 뱃지가 바로 위 숫자와 다른 색이다', (()=>{
+     const num = (SRC.match(/\.tile-v\.ok\{color:var\((--[a-z0-9-]+)\)\}/)||[])[1];
+     const bad = (SRC.match(/\.verdict\.ok\{[^}]*color:var\((--[a-z0-9-]+)\)/)||[])[1];
+     return !!num && !!bad && num !== bad;
+  })(), (()=>{
+     const num=(SRC.match(/\.tile-v\.ok\{color:var\((--[a-z0-9-]+)\)\}/)||[])[1];
+     const b=(SRC.match(/\.verdict\.ok\{[^}]*color:var\((--[a-z0-9-]+)\)/)||[])[1];
+     return `숫자 ${num} / 뱃지 ${b}`; })());
+  /* 🔴 판정임을 **형태**로도 말하는가 — 면과 곡률이 붙어야 「값」이 아니라 「이름표」로 읽힙니다. */
+  tt('판정 뱃지가 알약 형태다',
+     /\.verdict\{[^}]*display:inline-block/.test(SRC)
+     && /\.verdict\{[^}]*border-radius:var\(--r-pill\)/.test(SRC));
+  /* 🔴 「적정」에 **그린을 쓰지 않습니다** — 그린은 채널 A(누르는 것)입니다. */
+  tt('판정에 브랜드 그린을 쓰지 않는다',
+     !/\.verdict\.(ok|mid|bad)\{[^}]*var\(--green\)/.test(SRC));
   /* ④ 블록 3 — 부대비용 소계 접기. **영수증 자체는 안 접습니다.** */
   tt('부대비용이 영수증 소계 한 줄로 접힌다',
      /<button class="disc discline" id="costToggle"/.test(SRC)
@@ -3464,8 +3554,11 @@ HYGIENE.forEach(([name, over]) => {
   })());
   /* ② 아직 시행 전인 것은 **계산이 아니라 안내**로 말합니다. 시행일과 「무엇을 고쳐야 하는가」가
      같이 적혀 있어야 합니다 — 내규로 되는 것과 국회를 거쳐야 하는 것은 확실성이 다릅니다. */
+  /* 🔴 v25.1 — 다섯 항목이 `.chg` 문단으로 갈리면서 비탐욕 식이 **첫 항목에서 멈췄습니다.**
+     안쪽 `</span>`이 생긴 것이지 안내가 사라진 게 아닙니다 — 여는 태그부터
+     `</span></div>`까지를 봅니다(원칙 128 — 세는 방법만 넓힙니다). */
   tt('시행 전 정책을 안내로만 말한다', (()=>{
-     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span>/);
+     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
      if(!m) return false;
      const box = m[1];
      return /2026년 8월 31일/.test(box) && /2027년 1월/.test(box)
@@ -3477,8 +3570,17 @@ HYGIENE.forEach(([name, over]) => {
      /const hotOf = x => \(seen\.get\(hotKey\(x\)\)\|\|0\) >= 2;/.test(UI)
      && !/거래 활발[\s\S]{0,120}(월\s*\d+건|>= *[3-9]|>= *\d\d)/.test(UI));
   /* 다섯 줄이 아니라 **거른 전체**를 셉니다 — 목록이 잘리면 뱃지가 조용히 사라집니다(원칙 99). */
-  tt('거래 활발을 목록이 아니라 전체에서 센다',
-     /\(DEAL\.over \? under\.concat\(over\) : under\)\.forEach/.test(UI));
+  /* 🔴 v25.1 — **한 겹 더 안쪽으로 옮겼습니다.** v25.0은 「다섯 줄이 아니라 거른 전체」까지
+     고쳤는데, 그 「거른 전체」는 `dedupe`로 **이미 접힌** 목록이었습니다 —
+     같은 면적이 세 번 팔려도 한 건이라 뱃지가 「반복 거래」를 못 뜻했습니다.
+     이제 접기 전(`underRaw`·`overRaw`)을 셉니다. 느슨해진 것이 아니라 **재는 대상이 맞아진 것**입니다. */
+  tt('거래 활발을 접기 전 전체에서 센다',
+     /\(DEAL\.over \? underRaw\.concat\(overRaw\) : underRaw\)\.forEach/.test(UI)
+     && /return \{ under: dedupe\(u\), over: dedupe\(o\), underRaw: u, overRaw: o \};/.test(UI));
+  /* 🔴 짝 — 목록 자체는 **여전히 접혀 있어야** 합니다. 풀면 같은 집이 여러 줄로 뜹니다. */
+  tt('목록은 여전히 접혀서 나온다',
+     /const \{under, over, underRaw, overRaw\} = splitDeals/.test(UI)
+     && /list\.innerHTML = shownRows\.map/.test(UI));
   tt('거래 활발이 이름만이 아니라 동 · 지역까지 본다',
      /hotKey = x => \(x\.name\|\|''\) \+ '\|' \+ \(x\.dong\|\|''\) \+ '\|' \+ \(x\.lawd\|\|''\)/.test(UI));
   /* 🔴 이모지 금지 — 건조한 톤. 점 하나 + 굵기 + 무채색 면으로만 냅니다. */
@@ -3518,9 +3620,19 @@ HYGIENE.forEach(([name, over]) => {
      드는 돈**이 나와요」라고 약속하고 이 제목이 그 약속을 받습니다 — 바꾸면 약속과 받는 말이
      어긋납니다(v24.28이 영수증 접기를 미채택한 것과 같은 근거).
      ⚠ 이 검사는 **둘이 같은 말인지**를 봅니다. 한쪽만 고치면 빨간불입니다. */
-  tt('첫 화면의 약속과 영수증 제목이 같은 말이다',
-     /class="subline">입력 세 번이면 집 살 때 실제로 드는 돈이 나와요\./.test(SRC)
-     && /<h2 class="card-title">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
+  /* 🔴 v25.1 — **약속하는 쪽이 사라졌습니다.** 프로덕트 오너가 첫 화면 카피를
+     「환상 없는 진짜 예산, 내 집 마련의 가장 현실적인 출발선」으로 교체했습니다.
+     ⚠ 이 검사가 막던 나쁜 상태는 「첫 화면 약속과 영수증 제목이 어긋남」이었는데,
+       약속이 없어졌으니 **어긋날 짝이 없습니다.** 남는 것은 영수증 제목 자체이고,
+       그건 v24.28이 「영수증을 접지 않는다」로 잠근 것과 짝이라 그대로 둡니다.
+     ⏹ **열어 둔 것:** 첫 화면이 무엇을 약속하는지는 이제 아무 검사도 안 봅니다.
+       카피를 다시 약속형으로 되돌리면 이 검사를 옛 형태로 살리세요(원칙 128). */
+  tt('영수증 제목이 「실제로 드는 돈」을 그대로 말한다',
+     /<h2 class="card-title">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
+  /* 🔴 v25.1 — 교체된 첫 화면 카피가 **그 자리에 있는가.** 문자열을 잠그는 것이
+     아니라 「부제가 비어 있지 않고, 옛 문장으로 조용히 되돌아가지 않았는가」를 봅니다. */
+  tt('첫 화면 부제가 교체된 카피다',
+     /class="subline">환상 없는 진짜 예산,<br>내 집 마련의 가장 현실적인 출발선<\/p>/.test(SRC));
   /* 🔴 지시서: 「(34평)에 Bold + 포인트 컬러」. 흰 카드 위 --green은 **2.17:1**이라 G-19에서
      즉시 빨간불입니다. 강조는 **굵기와 잉크 한 단**으로만 냅니다(지침 6-3 · 원칙 62).
      ⚠ 괄호 포맷도 미채택입니다 — 두 자가 늘면서 390px에서 「2018년」이 잘렸습니다(실측). */
@@ -3535,6 +3647,342 @@ HYGIENE.forEach(([name, over]) => {
   tt('연식이 네 자리 연도 그대로다',
      /x\.buildYear \? esc\(`\$\{x\.buildYear\}년`\)/.test(SRC)
      && /id="dealNew"[^>]*>신축 \(10년\)/.test(SRC));
+})();
+
+/* ═══ v25.1 — 런칭 마감 지시서 5건 ═══════════════════════════════
+   ⚠ 이 장은 **채택한 넷**과 **못 쓴 문구들**을 같이 잠급니다.
+     미채택을 안 잠그면 다음 판에 같은 문구가 조용히 들어옵니다(지침 6-13).
+   ⏹ 지시 5(세대수 API 연동)는 **착수 못 했습니다** — 인수인계 v25.1의 5번을 보세요.
+     여기에 「했다」로 읽힐 검사를 하나도 두지 않습니다. 없는 것은 없는 채로 둡니다.
+   ═══════════════════════════════════════════════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const SRC = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+
+  /* ── ① 기준일 뱃지 ───────────────────────────── */
+  /* 🔴 날짜를 손으로 적으면 POLICY_ASOF와 갈립니다 — v25.0 사보타주에서 실제로 난 사고입니다. */
+  tt('기준일 뱃지가 상수에서 파생된다', (()=>{
+     const m = SRC.match(/const POLICY_ASOF_BADGE = POLICY_ASOF\.replace\(([\s\S]*?)\);/);
+     return !!m && /정책 기준/.test(m[1])
+         && /\$\('asOfBadge'\)\.textContent = POLICY_ASOF_BADGE;/.test(SRC);
+  })());
+  tt('기준일 뱃지에 날짜 리터럴이 없다', (()=>{
+     const m = SRC.match(/<p class="asof" id="asOfBadge">([\s\S]*?)<\/p>/);
+     return !!m && !/\d/.test(m[1]);
+  })());
+  /* 🔴 지시서 문구는 「26년 8월 **세법** 기준」이었습니다. 이 기준일이 덮는 것 중 가장 큰 것은
+     세법이 아니라 대출 규제입니다 — 「세법」이라 적으면 8.13 금융 대책은 안 봤다는 뜻이 됩니다. */
+  tt('기준일 뱃지가 「세법」이 아니라 「정책」이라고 말한다',
+     /정책 기준`/.test(SRC) && !/세법 기준/.test(SRC));
+  /* 세 자리(뱃지 · 면책 · 안내 시트)가 같은 낱말을 씁니다 — 다르면 어느 쪽이 맞는지 알 수 없습니다. */
+  tt('기준일을 말하는 세 자리가 같은 낱말을 쓴다',
+     (SRC.match(/정책 기준|정책 확인일/g)||[]).length >= 3);
+  tt('기준일 뱃지가 첫 화면 헤더 안이다', (()=>{
+     const m = SRC.match(/<header class="brand" id="brand">([\s\S]*?)<\/header>/);
+     return !!m && /id="asOfBadge"/.test(m[1])
+         && m[1].indexOf('asOfBadge') < m[1].indexOf('class="headline"');
+  })());
+  /* 🔴 렌더가 잡았습니다 — 처음엔 면을 `--fill`로 썼는데, `--fill`은 v23.23부터
+     `--bg`와 **같은 값**이라 앱 배경 위에서는 알약이 통째로 안 보였습니다(원칙 97 · 84).
+     → `--card` 면 + `--line` 헤어라인. 리터럴 색은 여전히 하나도 안 씁니다. */
+  tt('기준일 뱃지가 새 색을 만들지 않는다',
+     /\.asof\{[^}]*background:var\(--card\)/.test(RAW)
+     && /\.asof\{[^}]*border:1px solid var\(--line\)/.test(RAW)
+     && !/\.asof\{[^}]*#[0-9A-Fa-f]{3,6}/.test(RAW));
+  /* 🔴 면이 배경과 같은 값이면 알약이 안 보입니다 — 그 사고를 이름으로 잠급니다. */
+  tt('기준일 뱃지 면이 앱 배경과 다른 토큰이다',
+     !/\.asof\{[^}]*background:var\(--(bg|fill)\)/.test(RAW));
+  /* 🔴 뱃지는 누르는 것이 아닙니다 — `.condchip`의 그림자를 물려받지 않습니다. */
+  tt('기준일 뱃지에 그림자가 없다', !/\.asof\{[^}]*box-shadow/.test(RAW));
+  /* 🔴 교체된 카피가 두 줄이 되는데, keep-all이 없으면 낱말 가운데서 끊깁니다(실측). */
+  /* 🔴 실측이 잡았습니다 — keep-all만으로는 **띄어쓰기 자리**를 못 막습니다.
+     「… 진짜 예산, 내 집 / 마련의 …」로 끊겼습니다. 끊길 자리는 마크업이 정합니다. */
+  tt('첫 화면 부제가 낱말 가운데서 안 끊긴다',
+     /\.subline\{[^}]*word-break:keep-all/.test(RAW)
+     && !/\.subline\{[^}]*overflow-wrap:anywhere/.test(RAW)
+     && /class="subline">[^<]*,<br>/.test(SRC));
+  tt('기준일 뱃지에 이모지가 없다', (()=>{
+     const m = RAW.match(/\.asof\{[^}]*\}/);
+     return !!m && !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(m[0])
+         && !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(
+              (SRC.match(/POLICY_ASOF_BADGE = [\s\S]*?;/)||[''])[0]);
+  })());
+  /* 🔴 뱃지는 누르는 것이 아닙니다 — `button`이 되면 채널 A(누를 수 있는 것)와 섞입니다. */
+  /* 🔴 실기 렌더가 잡았습니다 — 처음엔 이 클래스를 `.eyebrow`로 썼습니다.
+     그건 **퍼널의 「01 / 03」 단계 표시가 이미 쓰는 이름**이고, 뒤에 오는 정의가 글자 속성만
+     덮어 `background`·`padding`이 새어 단계 표시가 회색 알약이 됐습니다(원칙 132의 ⚠).
+     → 이름이 겹치지 않는가를 **양쪽 다** 잠급니다. */
+  /* 🔴 실거래 각주가 `.helper`(1줄 상한)를 달고 있었는데, 이 카드는 API가 응답해야 떠서
+     G-18이 **한 번도 잰 적이 없었습니다**(실측 360px 2줄). 대상을 제 자리로 옮기고 상한을 답니다. */
+  tt('실거래 각주가 입력 헬퍼 상한을 쓰지 않는다',
+     /<p class="deal-note" id="dealFoot"><\/p>/.test(SRC)
+     && !/class="helper" id="dealFoot"/.test(SRC));
+  tt('실거래 각주에도 줄 수 상한이 있다',
+     /const LINEMAX=\[\['\.helper',1\],\['#result \.legal',5\],\['\.deal-note',3\]\];/.test(RAW));
+  tt('실거래 각주 둘이 같은 규격이다',
+     /<p class="deal-note" id="dealNote"><\/p>/.test(SRC)
+     && /<p class="deal-note" id="dealFoot"><\/p>/.test(SRC));
+
+  tt('기준일 뱃지가 단계 표시(.eyebrow)와 이름이 겹치지 않는다',
+     /<p class="asof" id="asOfBadge">/.test(SRC)
+     && !/\.eyebrow\{[^}]*background/.test(RAW)
+     && !/\.eyebrow\{[^}]*border-radius/.test(RAW));
+  tt('단계 표시가 여전히 제 규격이다',
+     /\.eyebrow\{font-size:var\(--t7\);font-weight:800;color:var\(--espresso\);letter-spacing:\.1em/.test(RAW));
+  tt('기준일 뱃지가 누를 수 있는 것으로 보이지 않는다',
+     /<p class="asof" id="asOfBadge">/.test(SRC)
+     && !/\.asof\{[^}]*cursor:pointer/.test(RAW));
+
+  /* ── ② 투명성 캡션 ───────────────────────────── */
+  tt('투명성 캡션이 채권과 우대금리를 이름으로 부른다', (()=>{
+     const m = SRC.match(/\$\('caveatNote'\)\.textContent =([\s\S]*?);/);
+     return !!m && /채권 할인율/.test(m[1]) && /우대금리/.test(m[1]);
+  })());
+  /* 🔴 `.legal`은 5줄 상한(G-18)이 걸린 **법적 고지** 블록입니다. 계산 범위 설명을 거기 넣으면
+     상한을 올리게 되고, 그때 물어야 할 것은 「상한을 올릴까」가 아닙니다(v24.28 · 지침 G-18). */
+  tt('투명성 캡션이 면책 블록 밖이다', (()=>{
+     const b = legalBlock(SRC);
+     return b !== null && !/채권 할인율|우대금리/.test(b);
+  })());
+  tt('투명성 캡션이 면책 바로 위에 있다', (()=>{
+     const m = SRC.match(/<p class="caveat" id="caveatNote"><\/p>\s*<p class="foot" id="footNote"><\/p>/);
+     return !!m;
+  })());
+  /* 🔴 지시서 원문은 「…포함하지 않았습니다. 실제 계약 시 최종 확인하시기 바랍니다.」였습니다.
+     ① `.legal` 밖은 전부 ~어요체입니다 ② 「확인하시기 바랍니다」는 **지시문**입니다(지침 말투). */
+  tt('투명성 캡션이 지시하지 않는다', (()=>{
+     const m = SRC.match(/\$\('caveatNote'\)\.textContent =([\s\S]*?);/);
+     return !!m && !/바랍니다|하세요|하십시오|확인하시/.test(m[1]) && !/니다/.test(m[1]);
+  })());
+  /* 🔴 짝 — 캡션이 「안 넣었다」고만 하고 **왜**를 안 말하면 그냥 발뺌입니다. */
+  tt('투명성 캡션이 못 넣은 이유를 같이 말한다', (()=>{
+     const m = SRC.match(/\$\('caveatNote'\)\.textContent =([\s\S]*?);/);
+     return !!m && /매일 바뀌는/.test(m[1]) && /조건마다 다른/.test(m[1]);
+  })());
+  /* 채권을 못 넣은 이유는 v24.17부터 부대비용 패널에도 있습니다 — 둘 다 살아 있어야 합니다. */
+  tt('채권 문장이 부대비용 패널에도 그대로 있다', /국민주택채권 매입비/.test(SRC));
+
+  /* ── ③ 「곧 바뀌는 것」 구조 ──────────────────── */
+  tt('곧 바뀌는 것이 다섯 문단으로 갈려 있다', (()=>{
+     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
+     return !!m && (m[1].match(/<span class="chg">/g)||[]).length === 5;
+  })(), (()=>{
+     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
+     return m ? (m[1].match(/<span class="chg">/g)||[]).length+'문단' : '못 찾음'; })());
+  /* 🔴 줄머리 가운뎃점은 뗐습니다 — 같은 기호를 부속 줄에서 **한 줄 안의 구분자**로 쓰고 있어
+     한 기호가 두 뜻을 겸했습니다(원칙 91). 항목 구분은 기호가 아니라 여백이 냅니다. */
+  tt('곧 바뀌는 것에 줄머리 가운뎃점이 없다', (()=>{
+     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
+     return !!m && !/^\s*·/m.test(m[1]) && !/<br>/.test(m[1]);
+  })());
+  tt('곧 바뀌는 것 항목 사이가 24px이다',
+     /\.sheet-row span \.chg \+ \.chg\{margin-top:24px\}/.test(RAW));
+  /* 🔴 마지막 항목에는 아래 여백을 안 답니다 — 달면 다음 행과의 간격만 조용히 늘어납니다(원칙 126). */
+  tt('마지막 항목에 매달린 여백이 없다',
+     !/\.sheet-row span \.chg\{[^}]*margin-bottom/.test(RAW));
+  /* 🔴 항목 제목이 `.sheet-row b`(블록 · 14px)를 그대로 물려받고 있었습니다 —
+     그래서 줄머리 `·`만 앞 줄에 홀로 남아 「의미 없는 점」으로 보였습니다. 그것이 원인이었습니다. */
+  tt('항목 제목이 설명과 같은 줄에서 시작한다',
+     /\.sheet-row span \.chg b\{display:inline/.test(RAW));
+
+  /* ── ④ 푸터 간격 ─────────────────────────────── */
+  /* 🔴 지시서는 「불필요한 `margin-top:auto`를 제거하라」였습니다. **그 선언은 없었습니다** —
+     v24.30에서 `.app` flex 안을 미채택하면서 같이 안 들어갔습니다. 간격을 만들던 것은 padding입니다. */
+  tt('저작권에 margin-top:auto가 없다', !/\.copyright\{[^}]*margin-top:auto/.test(RAW));
+  /* 🔴 실측이 정했습니다 — 24로 줄여도 화면 간격은 **52px**이었습니다.
+     저작권 바로 위에 `.result`의 반응형 아래 여백(40~44px)이 이미 서 있기 때문입니다.
+     0으로 두면 28px이 됩니다. 잠글 것은 「위 여백을 스스로 더하지 않는다」입니다. */
+  tt('저작권이 위 여백을 스스로 더하지 않는다', /\.copyright\{margin:0;padding:0 0 24px/.test(RAW));
+  /* 아래 24px은 안전영역과 짝입니다 — 같이 지우면 홈 인디케이터에 글자가 닿습니다. */
+  tt('저작권 아래에 안전영역이 남아 있다',
+     /\.app\.no-dock \.copyright\{padding-bottom:calc\(24px \+ env\(safe-area-inset-bottom\)\)\}/.test(RAW));
+  /* 🔴 실측이 원인을 하나 더 찾았습니다 — `.result`의 아래 여백이 안전영역을 **두 번째로**
+     들고 있었습니다. v24.29에서 저작권이 `.result` 밖으로 나가면서 그 여백의 뜻이 바뀌었는데
+     값은 그대로였습니다. 결과 화면에서만 평범한 간격으로 되돌립니다(실측 54 → 38px). */
+  tt('결과 화면 아래 여백이 안전영역을 두 번 세지 않는다',
+     /\.app\.no-dock \.result\{padding-bottom:24px\}/.test(RAW));
+  /* 🔴 짝 — 결과 화면에서 **실제로 이기는 규칙**에는 안전영역이 없어야 합니다.
+     ⚠ `.result{...}` 기본 규칙과 미디어 쿼리 쪽은 **그대로 둡니다** — 반응형 여백 블록이고,
+       거기서 지우면 저작권이 안 뜨는 맥락에서 화면 끝에 글자가 닿습니다(원칙 118).
+       이기는 것은 명시도가 높은 `.app.no-dock .result`입니다(실측으로 확인). */
+  tt('결과 화면에서 이기는 규칙에는 안전영역이 없다',
+     /\.app\.no-dock \.result\{padding-bottom:24px\}/.test(RAW)
+     && !/\.app\.no-dock \.result\{[^}]*env\(safe-area/.test(RAW)
+     && /\.app\.no-dock \.copyright\{[^}]*env\(safe-area/.test(RAW));
+
+  /* ── ⑤ 「거래 활발」 뱃지 ─────────────────────── */
+  tt('거래 활발 뱃지가 단독 줄이다',
+     /<span class="hotrow"><span class="hot">거래 활발<\/span><\/span>/.test(SRC)
+     && /\.deal \.nm small \.hotrow\{display:block/.test(RAW));
+  /* 🔴 짝 — 줄 끝에 다시 매달리지 않았는가. `margin-left`가 돌아오면 자리가 다시 흔들립니다. */
+  tt('거래 활발 뱃지가 줄 끝에 매달리지 않는다',
+     !/\.deal \.nm small \.hot\{[^}]*margin-left/.test(RAW));
+  /* 🔴 개월 수를 문자열에 손으로 안 적습니다 — `DEAL.months`를 고치면 문구가 따라옵니다(원칙 84). */
+  tt('거래 활발 기준 문구가 코드의 값에서 온다',
+     /note\.textContent = shownRows\.some\(hotOf\)/.test(SRC)
+     && /최근 \$\{DEAL\.months\}개월 안에 두 번 이상/.test(SRC));
+  /* 🔴 뱃지가 하나도 없으면 기준도 안 뜹니다 — 안 보이는 것을 설명하지 않습니다(원칙 43). */
+  tt('뱃지가 없으면 기준 문구도 없다',
+     /shownRows\.some\(hotOf\)\s*\?[\s\S]{0,140}: '';/.test(SRC)
+     && /note\.textContent = '';/.test(SRC));
+  /* 🔴 문구의 「두 번」과 판정의 `>= 2`가 **같은 사실**이어야 합니다(원칙 91). */
+  tt('기준 문구의 횟수와 판정의 횟수가 같다',
+     /const hotOf = x => \(seen\.get\(hotKey\(x\)\)\|\|0\) >= 2;/.test(SRC)
+     && /두 번 이상 거래됐어요/.test(SRC));
+
+  /* 🔴🔴 미채택 잠금 — 지시서 문구 「최근 6개월 내 동일 평형 거래 3건 이상 기준」.
+     세 값이 다 코드와 다릅니다. 받아 오는 것은 3개월치(`DEAL.months`)라 6개월은 볼 수가 없고,
+     기준은 같은 단지 2건이며, **평형은 아예 안 봅니다**(같은 단지의 다른 평형도 한 건으로 셉니다).
+     그대로 적으면 화면이 거짓말을 합니다 — 하필 이 도구가 다른 계산기와 갈리는 지점이
+     「화면에 적힌 것이 실제로 잰 것과 같다」입니다. 다시 오면 여기서 잡힙니다(지침 6-13). */
+  tt('거래 활발 기준이 6개월이라고 말하지 않는다', !/6개월/.test(SRC));
+  tt('거래 활발 기준이 동일 평형이라고 말하지 않는다',
+     !/동일 평형|같은 평형|평형 거래/.test(SRC));
+  tt('거래 활발 기준이 3건 이상이라고 말하지 않는다',
+     !/3건 이상|세 번 이상/.test(SRC));
+  /* 짝 — 실제로 세는 키에 평형(면적)이 안 들어 있는가. 문구만 고치고 키를 바꾸면
+     둘이 다시 어긋납니다. */
+  tt('거래 활발이 평형을 세는 키에 안 넣는다',
+     /hotKey = x => \(x\.name\|\|''\) \+ '\|' \+ \(x\.dong\|\|''\) \+ '\|' \+ \(x\.lawd\|\|''\)/.test(SRC));
+
+  /* ── ⑥ 지시 5(세대수)를 안 한 것이 화면에 안 새어 있는가 ── */
+  /* 🔴 세대수는 실거래가 API가 주지 않는 값입니다(단지코드가 있어야 부르는 다른 API입니다).
+     「500세대 이상」 칩이나 「N세대」 표기가 화면에 있으면 **어디선가 지어낸 것**입니다. */
+  /* 🔴 사보타주가 잡았습니다 — 처음엔 `/세대\b/`로 썼는데 **한글 뒤에는 `\b`가 안 섭니다**
+     (한글은 `\w`가 아니라 낱말 경계가 안 생깁니다). 「500세대 이상」 칩을 넣어도 초록이었습니다.
+     → 실거래 칩을 **이름으로 세고**, 「N세대」 표기를 문자열로 봅니다.
+     ⚠ 「무주택 세대주」는 정책대출 조건 문구라 예외입니다 — 그건 API가 주는 값이 아니라
+       사용자가 고른 조건입니다. 세는 것은 **단지의 세대수**뿐입니다. */
+  tt('없는 값(세대수)을 화면이 말하지 않는다', (()=>{
+     const box = (SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
+     const chips = (box.match(/id="([^"]+)"/g)||[]).join(',');
+     return chips === 'id="dealChips",id="dealNew",id="deal59",id="deal84",id="dealOver"'
+         && !/세대/.test(box)
+         && !/\$\{[^}]*\}세대|세대수|세대 ·|· \$\{[^}]*\}세대/.test(SRC);
+  })(), (()=>{
+     const box = (SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
+     return (box.match(/id="([^"]+)"/g)||[]).join(','); })());
+  tt('연식이 네 자리 연도 그대로다 (「17년식」 미채택)',
+     /x\.buildYear \? esc\(`\$\{x\.buildYear\}년`\)/.test(SRC) && !/년식/.test(SRC));
+})();
+
+/* ═══ v25.2 — 카톡 공유 카드(진단서) 가독성 ══════════════════════
+   ⚠ 오너가 실기 카톡 이미지를 보고 「글자가 작고 그린에 묻힌다」로 지적한 자리입니다.
+     대비는 원래도 AA였습니다(5.07:1) — **묻힌 원인은 크기와 채도**입니다.
+   ═══════════════════════════════════════════════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const CSS = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+  const rule = sel => (CSS.match(new RegExp('\\'+'.'+'report-'+sel+'\\{[^}]*\\}'))||[''])[0];
+
+  /* ① 그린 면 위 글자가 **한 색**이다 — 색으로 층을 내면 한 단은 반드시 5.07:1로 내려갑니다. */
+  tt('그린 면 위 글자가 전부 --ink 한 색이다', (()=>{
+     const sels = ['brand','cond','label','amount'];
+     const rules = sels.map(rule).concat([(CSS.match(/\.report-amount \.u\{[^}]*\}/)||[''])[0]]);
+     if(rules.some(r=>!r)) return false;
+     const used = rules.map(r => (r.match(/color:var\((--[a-z0-9-]+)\)/)||[])[1]).filter(Boolean);
+     return used.length === 5 && used.every(t => t === '--ink');
+  })(), (()=>{
+     const rules = ['brand','cond','label','amount'].map(rule)
+       .concat([(CSS.match(/\.report-amount \.u\{[^}]*\}/)||[''])[0]]);
+     return rules.map(r=>(r.match(/color:var\((--[a-z0-9-]+)\)/)||[])[1]).join(' / '); })());
+
+  /* ② 크기가 **--t7(13px)보다 크다.** 13px이 묻힌 값이라 그 자리로 되돌아가면 빨간불입니다.
+     ⚠ 숫자를 여기 안 적습니다 — 토큰 이름으로 봅니다(원칙 115 · 지침 타이포 스케일). */
+  tt('그린 면 캡션이 13px 자리로 돌아가지 않았다',
+     !/\.report-(brand|cond|label)\{[^}]*font-size:var\(--t7\)/.test(CSS));
+  tt('조건 줄이 브랜드 · 라벨보다 한 단 크다',
+     /\.report-cond\{[^}]*font-size:var\(--t5\)/.test(CSS)
+     && /\.report-brand\{[^}]*font-size:var\(--t6\)/.test(CSS)
+     && /\.report-label\{[^}]*font-size:var\(--t6\)/.test(CSS));
+  /* ③ 짝 — 색이 한 색이 됐으니 **위계는 굵기가** 나야 합니다. 셋 다 같은 굵기면 층이 없습니다. */
+  tt('그린 면 위계가 굵기로 난다',
+     /\.report-brand\{[^}]*font-weight:var\(--w-key\)/.test(CSS)
+     && /\.report-cond\{[^}]*font-weight:var\(--w-key\)/.test(CSS)
+     && /\.report-label\{[^}]*font-weight:var\(--w-sub\)/.test(CSS));
+  /* ④ 흰 글자는 여전히 못 씁니다(그린 위 2.17:1). 위쪽 「그린 면 위 글자가 전부 4.5:1 이상」이
+     실제 대비를 계산하지만, **리터럴 흰색**은 토큰이 아니라 그 계산에 안 걸립니다. */
+  tt('그린 면에 흰 글자를 리터럴로 쓰지 않는다',
+     !/\.report-(top|brand|cond|label|amount)[^{]*\{[^}]*color:\s*(#fff|#FFF|white|rgb\(255)/.test(CSS));
+
+  /* ⑤ 범례 한 줄 — v24.21이 괄호 금액을 뺀 뒤로 두 줄일 이유가 없어졌습니다(원칙 136). */
+  tt('자금 구성 범례가 한 줄이다',
+     /\.report-mix \.lg\{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:14px\}/.test(CSS));
+  /* 🔴 짝 — **잘리지 않고 흐릅니다.** nowrap이면 이름이 길어질 때 조용히 잘립니다
+     (「전부 현금」 한 줄만 나오는 경우도 있습니다). */
+  tt('범례가 좁으면 잘리는 대신 흐른다',
+     /\.report-mix \.lg\{[^}]*flex-wrap:wrap/.test(CSS)
+     && !/\.report-mix \.lg\{[^}]*(white-space:nowrap|overflow:hidden)/.test(CSS));
+  /* 🔴 범례에 **괄호 금액이 돌아오지 않았는가.** 돌아오면 한 줄이 폭을 넘고,
+     그보다 먼저 **재산이 역산됩니다**(v24.21이 뺀 이유). 두 사실이 한 검사에 걸립니다. */
+  tt('범례에 괄호 금액이 없다', (()=>{
+     const f = (UI.match(/const mixRow = [\s\S]*?;\n/)||[''])[0];
+     return f.length > 40 && !/class="a"/.test(f) && !/formatWon|richWon|approxWon/.test(f);
+  })());
+})();
+
+/* ═══ v25.3 — 결과 화면 실기 지적 셋 ═════════════════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const SRC = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+
+  /* 🔴 「무엇이 한도를 정했나」 다섯 중 **LTV만 중립**입니다. 오너가 「지금 그대로」로 정했습니다.
+     ⚠ 잠글 것은 「LTV가 중립이다」 하나가 아니라 **다섯의 배치 전체**입니다 —
+       하나만 옮기면 어느 한도가 나쁜 것인지가 화면마다 달라집니다. 다섯을 같이 셉니다. */
+  tt('한도 알약의 색 배치가 다섯 다 그대로다', (()=>{
+     const f = (SRC.match(/function bindingShort\([\s\S]*?\n\}/)||[''])[0];
+     if(!f) return false;
+     return /LTV:\['주택담보대출 비율\(LTV\) 최대 한도에 도달했어요',''\]/.test(f)
+         && /DSR:\['[^']*','bad'\]/.test(f) && /DTI:\['[^']*','bad'\]/.test(f)
+         && /'구간한도':\['[^']*','bad'\]/.test(f)
+         && /'상품한도':\['[^']*','bad'\]/.test(f)
+         && /'은행자체한도':\['[^']*','bad'\]/.test(f)
+         && /주택담보대출이 나오지 않아요','bad'/.test(f);   /* 0원은 성격이 다릅니다 */
+  })(), (()=>{
+     const f = (SRC.match(/function bindingShort\([\s\S]*?\n\}/)||[''])[0];
+     return (f.match(/'?[A-Z가-힣]+'?:\['[^']*','?[a-z]*'?\]/g)||[]).length + '개 잡힘';
+  })());
+
+  /* 🔴 카드 제목 넷이 **같은 문법**인가 — 전부 명사구입니다. 조건절·권유로 끝나면 톤이 갈립니다. */
+  tt('결과 카드 제목이 넷 다 명사구다', (()=>{
+     const t = [...SRC.matchAll(/<h2 class="card-title">([^<]*)<\/h2>/g)].map(m=>m[1].trim());
+     if(t.length !== 4) return false;
+     return t.every(x => !/(다면|하세요|해보세요|할까요|보시|하시|주세요)$/.test(x));
+  })(), [...(fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'')
+       .matchAll(/<h2 class="card-title">([^<]*)<\/h2>/g))].map(m=>m[1]).join(' / '));
+  tt('인테리어 카드가 예산이 아니라 비용을 말한다',
+     /<h2 class="card-title">입주 전에 드는 인테리어 비용<\/h2>/.test(SRC));
+})();
+
+/* ═══ v25.4 — 결과 히어로를 흰 카드로 ═══════════════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const CSS = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+  const rh = (CSS.match(/\.rhead\{[^}]*\}/)||[''])[0];
+  const card = (CSS.match(/\.card\{[^}]*\}/)||[''])[0];
+
+  /* 🔴 **아래 카드와 같은 규격인가.** 통일성이 이 변경의 유일한 목적이라,
+     둘이 갈리면 「비슷한 카드 둘」이 되어 오히려 전보다 나빠집니다. */
+  tt('히어로가 아래 카드와 같은 규격이다', (()=>{
+     if(!rh || !card) return false;
+     const tok = r => ['background','border-radius','box-shadow','padding']
+       .map(k => (r.match(new RegExp(k+':(var\\([^)]*\\)|[^;}]+)'))||[])[1]).join('|');
+     return tok(rh) === tok(card);
+  })(), (()=>{
+     const tok = r => ['background','border-radius','box-shadow','padding']
+       .map(k => (r.match(new RegExp(k+':(var\\([^)]*\\)|[^;}]+)'))||[])[1]).join(' · ');
+     return '히어로 '+tok(rh)+'  /  카드 '+tok(card); })());
+  /* 🔴 손으로 고른 숫자가 들어오면 「카드 규격이 둘」이 됩니다(원칙 84 · 115). */
+  tt('히어로가 새 값을 만들지 않는다',
+     !!rh && !/#[0-9A-Fa-f]{3,6}|rgba?\(/.test(rh)
+     && !/padding:\s*\d/.test(rh) && !/border-radius:\s*\d/.test(rh));
+  /* 🔴 진행 막대(초록 선)와 띄웁니다 — 붙으면 카드가 막대에 매달린 것처럼 보입니다.
+     값은 카드 사이 간격과 **같은 토큰**입니다. */
+  tt('히어로가 진행 막대와 띄어져 있다', /\.rhead\{margin-top:var\(--gap\)/.test(CSS));
+  /* 🔴 v23이 지운 것은 **어두운 면**입니다. 그게 돌아오면 안 됩니다 — 이번 변경의 경계선입니다. */
+  tt('히어로가 어두운 면으로 돌아가지 않았다',
+     !!rh && !/background:var\(--(espresso|espresso-2|ink)\b/.test(rh)
+     && !/linear-gradient/.test(rh));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
