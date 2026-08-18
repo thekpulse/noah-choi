@@ -59,8 +59,39 @@
 <meta property="og:url" content="https://noah-choi.vercel.app">
 <meta name="description" content="가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 준비할 현금을 함께 봐요.">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-<link rel="stylesheet" as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- 🔴 v25.8 — **글꼴 스타일시트를 비차단으로 바꿨습니다.**
+     ⏹ 전: 평범한 `rel="stylesheet"`. 이러면 **뒤따르는 스크립트가 이 요청이 끝날 때까지
+       실행되지 않습니다**(브라우저 규칙 — 스크립트는 앞선 스타일시트를 기다립니다).
+       망이 끊기면 빨리 실패하지만, **매달리면** 본문 스크립트가 한 줄도 안 돌고
+       화면이 「진행 막대 없음 · 질문칸 빔 · 「이전」 노출 · 「다음」이 초록 활성」으로 굳습니다 —
+       **JS가 손대기 전의 마크업 그대로**입니다. 실기 캡쳐가 정확히 그 꼴이었습니다(2026.08.18).
+     → `media="print"`로 받아 두고 다 받은 뒤 `all`로 바꿉니다. 널리 쓰는 방식이고
+       **글꼴은 여전히 적용됩니다** — 늦게 적용될 뿐입니다.
+     ⚠ 잃는 것: 글꼴이 늦게 오면 대체 글꼴로 먼저 그려집니다(FOUT). **그게 맞는 교환입니다** —
+       이 도구의 본체는 계산기입니다. 글꼴 하나 때문에 계산기가 안 뜨면 안 됩니다.
+     ⚠ `as="style"`을 뗐습니다 — `rel="stylesheet"`에서는 아무 뜻이 없는 잉여 속성이었습니다.
+     ⚠ `onload`가 딱 한 번만 돌게 스스로를 지웁니다. 안 지우면 `media` 대입이 다시
+       `load`를 부르는 브라우저에서 무한히 돕니다.
+     ⚠ 되돌리려면 이 두 줄입니다. 되돌리기 전에 **매달린 망으로 재 보십시오**(hang 실측). -->
+<link rel="stylesheet" crossorigin media="print" onload="this.onload=null;this.media='all'"
+      href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
+<!-- 🔴 v25.8 — **`defer`를 붙였습니다.** 전에는 `<head>`의 **차단형 외부 스크립트**였습니다.
+     ⏹ 차단형이면 이 요청이 끝날 때까지 **파서가 멈춥니다.** 끊긴 망(카톡 인앱 · 사내 프록시 ·
+       샌드박스 미리보기)에서 이 요청이 **빨리 실패하지 않고 매달리면**, 아래 본문 스크립트가
+       한 줄도 안 돌고 화면이 「진행 막대 없음 · 질문칸 빔 · 「이전」 노출 · 「다음」이 초록 활성」
+       상태로 굳습니다 — **JS가 손대기 전의 마크업 그대로**입니다. 실기 캡쳐가 정확히 그 꼴이었습니다.
+     ⚠ 이 도구의 본체는 **계산기**입니다. 이미지 저장 하나 때문에 계산기가 안 뜨면 안 됩니다.
+     ⚠ **안전합니다** — `html2canvas`는 `saveImage()` 안에서 **버튼을 눌렀을 때만** 불리고,
+       이미 `try/catch`로 감싸져 있습니다. 파스 시점에 참조하는 곳이 한 곳도 없습니다(전수 확인).
+       `defer`는 본문 인라인 스크립트보다 **뒤에** 실행되는데, 버튼 클릭은 그보다 한참 뒤입니다.
+     🔴 ⚠ **`defer`만으로는 절반만 낫습니다.** 처음에 이 각주에 「스타일시트는 못 받아도
+       대체 글꼴로 뜨니 화면을 안 죽인다」고 적었는데 **재 보니 거짓이었습니다**(원칙 39).
+       **스크립트는 앞선 스타일시트가 끝날 때까지 실행되지 않습니다** — 브라우저 규칙입니다.
+       그래서 아래 `<link>`도 같이 비차단으로 바꿨습니다. 실측(매달린 지 2.5초):
+         원본        CSS 매달림 → DOM조차 없음   · JS 매달림 → DOM조차 없음
+         defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
+         defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <!-- BUILD v25.5 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
@@ -977,9 +1008,21 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      ② 위아래 **음수 마진**으로 레이아웃 점유는 예전 그대로 — 마진은 히트 영역을 줄이지 않습니다
      ③ 포커스 링은 상자가 아니라 **트랙에** 그립니다(아래 주석)
    ⚠ 값을 손으로 적지 않습니다 — (트랙−상자)/2가 곧 되돌릴 양입니다. --tap을 46으로 올려도 따라옵니다. */
+/* 🔴 v25.8 — **좌우 마진 0.** 인수인계 0장 2️⃣의 `.ratesim` 2px 넘침이 여기였습니다.
+   ⏹ 일곱 판 동안 `scrollWidth 298 / clientWidth 296`으로 남아 있던 **유일한 넘침**입니다.
+     폭에 상관없이 늘 정확히 2px이라(360·375·390·414·430 전부) 비율이 아니라 **고정값**이었고,
+     범인은 우리 CSS가 아니라 **브라우저 기본값**이었습니다 — `input[type=range]`의 UA 스타일에
+     `margin:2px`이 있습니다. 위 세 줄이 `margin-top`·`margin-bottom`만 덮고 **좌우는 안 덮어서**,
+     `width:100%`(296px) + `margin-left:2px`이 겹쳐 오른쪽으로 2px 비어져 나갔습니다.
+   ⚠ 그래서 선언만 읽으면 안 보입니다 — 이 파일에는 `2px`이 한 글자도 안 적혀 있습니다.
+     **렌더된 자식의 좌우 끝을 재야** 나옵니다(원칙 138의 계열 · 지침 6-14).
+   ⚠ 세로 마진은 손으로 안 적는 규칙 그대로입니다((--thumb − --tap)/2). 좌우만 0으로 못 박습니다.
+   ⚠ 트랙이 좌우로 4px 길어집니다. 두 슬라이더(평형 · 금리) 다 해당하고, 카드 안쪽 폭에
+     정확히 맞는 것이 원래 의도였습니다. */
 input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:var(--tap);
   border-radius:var(--r-pill);outline:none;cursor:pointer;background:transparent;
-  margin-top:calc((var(--thumb) - var(--tap))/2);margin-bottom:calc((var(--thumb) - var(--tap))/2)}
+  margin-top:calc((var(--thumb) - var(--tap))/2);margin-bottom:calc((var(--thumb) - var(--tap))/2);
+  margin-left:0;margin-right:0}
 /* 🔴 v24.27 — 위 `outline:none`은 **기본 트랙을 덮기 위한 것**인데, 그 김에 포커스 표시까지
    같이 사라졌습니다. 슬라이더는 키보드(←→)로 조작하는 컨트롤이라 포커스가 안 보이면
    평형·금리를 키보드로 못 씁니다. 트랙은 계속 덮고, **포커스만 되돌려 줍니다.**
@@ -1122,7 +1165,20 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    그리고 옆에 붙으면 금액 칸이 넓어져 **왼쪽 부제가 잘립니다.** */
 .deal .amt u{display:block;margin-top:3px;text-decoration:none;
   font-size:var(--t7);font-weight:700;color:var(--warn);letter-spacing:-.01em}
-.deal-msg{margin:6px 0 0;font-size:var(--t6);line-height:1.6;color:var(--ink-3)}
+/* 🔴 v25.8 — **빈 화면에 면을 줍니다**(지시서 Phase 4-3 · 수정 채택).
+   ⏹ 전에는 면도 테두리도 없는 문단이었습니다. 다섯 줄(582px)이 있던 자리에 글자 한 줄만
+     남으면 카드가 **접힌 것처럼** 보입니다 — 「거래가 없다」가 아니라 「고장 났다」로 읽힙니다.
+   ⚠ **문구는 한 자도 안 바꿨습니다.** 지시서 문구(「예산을 조금 높여보세요」)를 안 씁니다 —
+     ① 코드는 「칩 때문에 0건」과 「예산 때문에 0건」을 **갈라서** 말하는데(paintDeals의 `narrowed`),
+        한 문구로 합치면 84㎡ 칩만 켜서 0건인 사람에게 **틀린 안내**가 됩니다(원칙 134)
+     ② 「~보세요」는 지시문입니다(지침 말투 — 지시하지 않습니다).
+     바꾼 것은 **면뿐**입니다.
+   ⚠ 「불러오는 중이에요…」도 같은 클래스입니다. **일부러 같이 씌웁니다** —
+     로딩과 빈 화면이 다른 모양이면 응답이 오는 순간 자리가 한 번 튑니다(원칙 34).
+   ⚠ `--fill`은 **흰 카드 위에서만** 보이는 면입니다. 이 문단이 카드 밖으로 나가면
+     앱 배경(--bg)과 같은 값이라 통째로 사라집니다(원칙 97 · 기준일 뱃지가 밟았던 자리). */
+.deal-msg{margin:6px 0 0;font-size:var(--t6);line-height:1.6;color:var(--ink-3);
+  background:var(--fill);border-radius:var(--r-m);padding:18px 16px}
 .deal-msg b{color:var(--ink);font-weight:800}
 
 /* 🔴 v23.24 — 「스트레스 DSR · 취득세 · …」 한 줄을 ⓘ 하나로 접었습니다(점진적 정보 공개).
@@ -1651,7 +1707,13 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              v24.25가 이 자리를 고른 근거(「부담률을 바꾸는 값이라 자리가 맞다」)는 그대로 살아 있고,
              이제 「매달 갚을 원리금이 같이 움직이는 것」도 **같은 카드 안에서 눈에 보입니다.** -->
         <div class="ratesim" id="rateSim" hidden>
-          <div class="ratesim-hd"><p class="tile-k">금리가 오르면</p><p class="ratesim-v" id="rateSimV"></p></div>
+          <!-- 🔴 v25.8 — 「금리가 오르면」 → **「금리가 바뀌면」**.
+               ⏹ 슬라이더는 `min="30" max="100"` — 기준(연 5.4%)보다 **아래로도 갑니다**(연 3.0%까지).
+                 그런데 머리글은 오르는 쪽만 말했고, 바로 아래 각주는 내렸을 때
+                 「연 5.4%일 때보다 매달 48만원 **덜** 나가요」라고 적습니다.
+                 **같은 96px 블록 안에서 이름과 값이 서로를 반박하고 있었습니다**(원칙 39 · 134).
+               ⚠ 낱말 하나입니다. 폭은 세 폭에서 재서 한 줄 그대로인 것을 확인했습니다. -->
+          <div class="ratesim-hd"><p class="tile-k">금리가 바뀌면</p><p class="ratesim-v" id="rateSimV"></p></div>
           <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
           <p class="tile-s" id="rateSimNote"></p>
         </div>
@@ -3986,9 +4048,24 @@ function paintRateSim(loan, rate){
   const base = monthlyPaymentCalc(loan, D.rate, D.years);
   const now  = monthlyPaymentCalc(loan, rate,   D.years);
   const diff = Math.round(now - base);
-  /* 🔴 기준일 때는 「무엇 기준인가」만, 움직였을 때는 「기준 대비 얼마」를 말합니다. */
+  /* 🔴 기준일 때는 「무엇 기준인가」만, 움직였을 때는 「기준 대비 얼마」를 말합니다.
+     🔴 v25.8 — **「한도는 연 5.4% 기준이에요」를 지웠습니다. 사실이 아니었습니다.**
+       ⏹ 한도(DSR)는 `repaymentCapLimit`에서 **`baseRate + ctx.stressBp`**로 잡습니다.
+         실측(서울 · 변동 · 30년): 5.4 + 3.0 = **연 8.4%**입니다. 5.4%가 아닙니다.
+         같은 소득으로 5.4%에 잡았다면 상환능력 한도가 13억 1,262만원 → 17억 8,085만원 —
+         **4억 6,823만원 차이**입니다. 화면이 그 방법을 잘못 적고 있었습니다(원칙 134).
+       ⚠ **한도 숫자 자체는 맞습니다.** 8.4%로 제대로 잡혀 있었고, 틀린 것은 **설명**입니다.
+       ⚠ 「연 8.4%」로 고쳐 적지 않습니다 — 스트레스 가산은 지역 · 금리유형 · 기간에 따라
+         달라지는 값이라(`computeStressBp`) 한 숫자로 적으면 다른 조건에서 또 거짓이 됩니다.
+         **스트레스 금리가 무엇인지는 안내 시트의 「스트레스 DSR」 행이 이미 말합니다**(원칙 58).
+       → 이 각주가 실제로 해야 할 말은 하나뿐입니다 — **이 슬라이더는 위 금액을 안 바꾼다.**
+         그것만 남겼습니다. 덤으로 기본 상태에서 「연 5.4%」가 머리글(`rateSimV`)과 여기
+         **두 번** 적히던 중복도 없어집니다(원칙 43).
+     🔴 v25.8 — **두 상태가 다 한 줄이어야 합니다**(원칙 34 — 상태가 바뀌어도 상자가 안 움직인다).
+       슬라이더를 끄는 도중에 각주가 1줄 ↔ 2줄로 뛰면 카드 높이가 손가락 밑에서 출렁입니다.
+       세 폭(360 · 390 · 430)에서 두 상태를 다 재고 골랐습니다. **문구를 고치면 다시 재십시오.** */
   $('rateSimNote').textContent = (Math.abs(diff) < 5000)
-    ? `한도는 연 ${D.rate}% 기준이에요. 금리를 움직여도 위 금액은 그대로예요.`
+    ? '금리를 움직여도 위 금액은 그대로예요.'
     : `연 ${D.rate}%일 때보다 매달 ${formatWon(Math.abs(diff))} ${diff > 0 ? '더' : '덜'} 나가요.`;
 }
 
@@ -4136,8 +4213,19 @@ function renderLimits(c, price){
      ⚠ 문구는 **한 자도 안 바꿨습니다.** 이 판이 바꾼 것은 **자리**뿐입니다. */
   const notes = $('limitNotes');
   const hasLimit = !S.noLoan && c.mortgageLoan > 0;
+  /* 🔴 v25.8 — **「연 5.4%」를 지웠습니다. 이 카드에서는 사실이 아니었습니다.**
+     ⏹ 이 각주는 **한도 카드**의 각주이고, 바로 위 막대는 DSR 한도입니다.
+       그런데 DSR 한도는 `baseRate + stressBp`(실측 **연 8.4%**)로 잡습니다 —
+       「연 5.4% 기준」이라고 적으면 **막대가 무엇으로 계산됐는지를 잘못 말합니다**(원칙 134).
+       `rateSimNote`가 같은 거짓을 말하던 자리와 **한 쌍**입니다. 둘 다 이 판에서 지웠습니다 —
+       한쪽만 고치면 남은 쪽이 「살아 있는 두 번째 정의」가 됩니다(원칙 84).
+     ⚠ **더한 것이 없습니다. 뺐을 뿐입니다.** 스트레스 가산은 지역 · 금리유형 · 기간에 따라
+       달라져서 한 숫자로 못 적고, 그 설명은 **안내 시트의 「스트레스 DSR」 행**에 이미 있습니다(원칙 58).
+     ⚠ 「연 5.4%」가 참인 자리는 **원리금 타일**입니다(상환액은 실제 금리로 계산). 거기는 그대로 둡니다 —
+       같은 숫자라도 **무엇의 기준인가**가 다릅니다.
+     ⚠ 되돌리려면 이 한 줄입니다. 되돌리기 전에 `repaymentCapLimit`의 `stressRate`를 먼저 보십시오. */
   notes.innerHTML = hasLimit
-    ? `※ 시중은행 주담대 · 연 ${D.rate}% · ${D.years}년 원리금균등 기준이에요. 디딤돌·보금자리론을 받으면 한도가 더 늘어나요.`
+    ? `※ 시중은행 주담대 · ${D.years}년 원리금균등 기준이에요. 디딤돌·보금자리론을 받으면 한도가 더 늘어나요.`
       + `<br>※ 넣어 주신 소득과 기존 대출만 반영한 값이에요. 실제 금액은 은행 심사에서 정해져요.`
     : '';
   notes.hidden = !hasLimit;
