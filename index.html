@@ -180,6 +180,12 @@
      --h-* 셋은 화면에 그려지는 크기이고, 이 값은 그 위에 겹치는 투명 면입니다.
      ⚠ 44를 손으로 적으면 자리마다 43·45가 생깁니다 — 늘릴 곳이 생기면 여기만 고칩니다(원칙 84). */
   --tap:44px;
+  /* 🔴 v25.9 — **영수증의 꺾쇠 열 폭.** 값이 아니라 **열**입니다.
+     영수증 네 줄 중 「집값 외 부대비용」만 접히는 줄(`.disc.discline`)이라 오른쪽 끝에 ▾가 서고,
+     그만큼 금액이 왼쪽으로 밀려 **혼자 18px 어긋나 있었습니다**(실측 360px: 다른 셋 328 · 이 줄 310).
+     ⚠ ▾ 글리프 폭에 기대지 않습니다 — 글꼴이 늦게 붙는 이 앱에서는(v25.8 FOUT) 폭이 두 번 바뀝니다.
+       꺾쇠에 **고정 폭**을 주고, 영수증 줄들이 **같은 값만큼** 오른쪽을 비웁니다(원칙 84 — 값은 한 곳). */
+  --caret-col:18px;
   /* 🔴 v24.29 — **슬라이더 트랙 두께.** 값은 안 바꿨습니다(6px 그대로).
      `input[type=range]` 규칙 네 곳(track · moz-track · moz-progress · thumb 상쇄)이
      6이라는 **리터럴을 각자 들고** 있었고, 이번 판에서 상자 높이를 --tap으로 올리면서
@@ -595,7 +601,15 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .debtcard .mfield{width:100%}
 /* 🔴 v25.6 — 위 여백 24 → 16px(`--gap`). 이 체크박스가 도크에 가리던 것이
    오너 지적의 시작점이었습니다 — 자기 여백도 그 셈에 들어갑니다. */
-.subtoggle{margin-top:var(--gap);display:flex;align-items:center;gap:11px;font-size:var(--t6);font-weight:600;color:var(--ink-3)}
+.subtoggle{position:relative;margin-top:var(--gap);display:flex;align-items:center;gap:11px;font-size:var(--t6);font-weight:600;color:var(--ink-3)}
+/* 🔴 v25.9 — **손가락 면만 44px로 넓힙니다**(원칙 123 · `.trust`·`.disc.discline`과 같은 문법).
+   ⏹ 줄 전체는 v24대부터 이미 `<label>`이라 글자를 눌러도 켜집니다 — 고칠 것은 마크업이 아니라
+     **닿는 높이**였습니다. 실측 360px에서 이 줄의 상자는 **22px**(체크박스 높이 그대로)입니다.
+   ⚠ 보이는 크기는 한 픽셀도 안 바꿉니다. 덩치를 키우면 이 줄이 「고르는 것」으로 읽히고,
+     v25.6이 첫 화면에서 −68px을 벌어 놓은 자리를 도로 까먹습니다(원칙 112 · 지침 6-3).
+   ⚠ 흐름에서 뺀 투명 면이라 **아무것도 안 밀립니다**(원칙 138). */
+.subtoggle::after{content:'';position:absolute;left:0;right:0;top:50%;
+  transform:translateY(-50%);height:var(--tap)}
 /* 브라우저 기본 체크박스를 날리고 직접 그립니다.
    accent-color만 주면 OS마다 모양이 달라 통일되지 않습니다. */
 .subtoggle input{-webkit-appearance:none;appearance:none;position:relative;flex:none;
@@ -859,6 +873,14 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .legend b{font-size:var(--t6);font-weight:800;color:var(--ink)}
 
 .line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;font-size:var(--t6)}
+/* 🔴 v25.9 — **금액 오른쪽 끝을 한 열에 세웁니다**(오너 지적 · 실측으로 확인).
+   영수증은 네 줄인데 그중 하나(`집값 외 부대비용`)만 접히는 줄이라 ▾가 오른쪽 끝을 먹고,
+   그 줄의 금액만 18px 안으로 들어와 있었습니다. 자릿수가 안 맞으니 세로로 훑을 수가 없습니다.
+   ⚠ **금액을 오른쪽 끝으로 당기는 길은 못 씁니다** — 그러면 ▾ 밑에 숫자가 깔립니다.
+     반대로 **모든 줄이 꺾쇠 열만큼 비웁니다.** 비는 폭은 `--caret-col` 한 곳에서 옵니다.
+   ⚠ `text-align`이 아니라 **자리**의 문제였습니다. 세 줄은 이미 `space-between`으로
+     오른쪽 끝에 붙어 있었고(실측 328px), 어긋난 것은 넷째 줄 하나였습니다. */
+#receipt .line,#receiptBot .line,#costItems .line{padding-right:var(--caret-col)}
 .line .v{white-space:nowrap}
 .line .k{color:var(--ink-3);font-weight:400} .line .v{font-weight:700;color:var(--ink-2)}
 .line.minus .v{color:var(--ink)}
@@ -928,7 +950,12 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .disc.discline{position:relative;margin-top:0;padding:11px 0;border-top:0;font-size:var(--t6);font-weight:400}
 .disc.discline::after{content:'';position:absolute;left:0;right:0;top:50%;
   transform:translateY(-50%);height:var(--tap)}
-.disc.discline .k{flex:1;text-align:left;color:var(--ink-3);font-weight:400}
+/* 🔴 v25.9 — `gap`을 0으로 내리고 **간격을 `.k`의 오른쪽 여백으로** 옮겼습니다.
+   전에는 `.disc`의 `gap:10px`이 「이름↔금액」과 「금액↔꺾쇠」 **둘 다**를 만들고 있어서,
+   금액이 오른쪽 끝에서 얼마나 떨어질지가 **꺾쇠 글리프 폭에 딸려** 갔습니다.
+   이제 금액이 비우는 폭은 `--caret-col` 하나뿐이고, 위 `.line`이 같은 값을 비웁니다. */
+.disc.discline{gap:0}
+.disc.discline .k{flex:1;text-align:left;color:var(--ink-3);font-weight:400;padding-right:10px}
 .disc.discline .v{font-weight:700;color:var(--ink-2);white-space:nowrap}
 /* 🔴 v25.6 — 소계 옆 비율 알약. **새 색·새 규격을 만들지 않았습니다** —
    면 `--fill` · 글자 `--ink-3` · 곡률 `--r-pill`은 「거래 활발」 뱃지·「적정」 판정과 **같은 조합**이고,
@@ -941,7 +968,8 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   border-radius:var(--r-pill);background:var(--fill);color:var(--ink-3);
   font-size:var(--t7);font-weight:700;letter-spacing:-.01em;white-space:nowrap}
 .disc.discline .k .ratio:empty{display:none}
-.disc.discline .caret{margin-left:2px}
+/* ⚠ 폭을 글리프에 맡기지 않습니다 — 글꼴이 늦게 붙으면 열이 두 번 움직입니다(v25.8 FOUT). */
+.disc.discline .caret{flex:none;width:var(--caret-col);margin-left:0;text-align:right}
 .costbox{display:none;margin-top:12px;margin-bottom:8px} .costbox.open{display:block}
 /* 서랍 안의 항목 줄은 한 단 들여씁니다 — 「이 소계에 속한 것들」이 자리로 보입니다.
    ⚠ **왼쪽 세로선을 긋지 않습니다.** 그건 폐기된 인용문 문법이고 검사가 막고 있습니다.
@@ -1227,7 +1255,11 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 /* 🔴 v23.21 — 거대한 버튼 둘을 위아래로 쌓던 것을 **가로 2분할**로 바꿨습니다.
    세로 112px + 여백을 먹으면서 시선이 두 번 내려갔습니다.
    왼쪽 35%(세컨더리 · 옅은 면) / 오른쪽 65%(프라이머리 · 솔리드). 엄지 구역 안에 둘 다 들어옵니다. */
-.restartrow{display:flex;gap:10px;margin-top:var(--gap)}
+/* 🔴 v25.9 — 위 여백 16 → 26px. **「다음 걸음」 카드에서 떼어 놓기 위한 것**입니다.
+   그 카드 안에 흰 면 `.mini`가 넷 있어서, 16px 아래에 흰 면 버튼 둘이 더 서면
+   **여섯 칸짜리 한 격자**로 읽혔습니다(실측: 카드 아래 끝 ↔ 버튼 윗변 16px).
+   ⚠ 26px은 새 값이 아닙니다 — 바로 아래 `.trust`가 쓰는 값과 같습니다(원칙 84). */
+.restartrow{display:flex;gap:10px;margin-top:26px}
 .restartrow > button{height:var(--h-cta);margin-top:0}
 .restartrow .reedit-cta{flex:35 1 0}
 .restartrow .restart-cta{flex:65 1 0}
@@ -1249,8 +1281,20 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    ⚠ 그래도 왼쪽 「이전 단계」와 **같아 보이면 안 됩니다.** 둘 다 흰 면이므로 위계는
      ① 폭(35 : 65) ② 글자 잉크 한 단(--ink-2 ↔ --ink) ③ 그림자(--sh ↔ --sh-lift)로 냅니다.
      색을 하나 더 만들지 않습니다(원칙 84 · G-6 색 예산). */
+/* 🔴 v25.9 — **테두리를 `--line` → `--ink-4`로 올렸습니다**(오너 지적: 「배경에 묻힌다」).
+   ⏹ 재 보니 버튼은 **사라지지도 잘리지도 않았습니다** — 54px 그대로, 문서 2,941px 중 2,537px
+     자리에 멀쩡히 있습니다. 안 보이는 이유는 **면이 배경과 같아서**입니다:
+     흰 면(#FFF) ↔ 앱 배경(#F2F4F6) **1.04:1**, 경계는 헤어라인(#E5E8EB) 하나 = **1.15:1**.
+     즉 「없다」가 아니라 「경계가 없다」였습니다.
+   → 면은 그대로 두고 **선만** 올립니다. #6B7684는 앱 배경 위 **3.9:1** — 윤곽이 확실히 섭니다.
+   ⚠ **면을 채우지 않았습니다.** 「처음부터 다시 계산하기」는 입력을 전부 지우는 파괴적 행동이고,
+     파괴적 행동은 프라이머리 자리에 두지 않습니다(원칙 130 · v24.31/32가 그린을 뗀 근거).
+     G-26이 결과 화면 그린 솔리드 **0개**를 그대로 잠급니다.
+   ⚠ **새 색이 아닙니다** — `--ink-4`는 이미 있는 토큰입니다(G-6 색 예산 그대로).
+   ⚠ 왼쪽 「이전 단계」는 `--line` 그대로 둡니다. 위계 채널이 셋(폭 · 잉크 · 그림자)에서
+     **넷(+선)**이 됩니다 — 둘을 같이 올리면 갈라지지 않습니다. */
 .restart-cta{width:100%;height:var(--h-cta);margin-top:10px;border-radius:var(--r-m);
-  background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh-lift);
+  background:var(--card);color:var(--ink);border:1px solid var(--ink-4);box-shadow:var(--sh-lift);
   font-size:var(--t5);font-weight:700;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
 .restart-cta:hover{background:var(--line)}
