@@ -1918,6 +1918,25 @@ HYGIENE.forEach(([name, over]) => {
   /* ⚠ 세컨더리 면을 --fill로 내리면 앱 배경(--bg)과 1.02:1이라 통째로 사라집니다(원칙 97). */
   tt('세컨더리 면이 앱 배경과 다른 값',
      !/\.reedit-cta\{[^}]*background:var\(--fill\)/.test(css2));
+  /* 🔴 v25.9 — **재계산 버튼의 윤곽이 헤어라인보다 진하다.**
+     오너 지적은 「CTA가 안 보인다」였고, 실측에서 버튼은 멀쩡히 있었습니다(54px · 클리핑 0).
+     안 보이던 것은 **경계**입니다 — 흰 면 ↔ 앱 배경 1.04:1에 헤어라인(--line) 1.15:1.
+     ⚠ 이 검사는 「--ink-4여야 한다」가 아니라 **「--line이면 안 된다」**를 잽니다.
+       더 진한 값으로 옮기는 것은 막지 않습니다(원칙 48 — 표현이 아니라 목적을 잠급니다). */
+  tt('재계산 버튼의 선이 헤어라인이 아니다', (()=>{
+     const bd = (css2.match(/\.restart-cta\{[^}]*border:1px solid var\((--[a-z0-9-]+)\)/)||[])[1];
+     return !!bd && bd !== '--line' && bd !== '--fill';
+  })(), (css2.match(/\.restart-cta\{[^}]*border:1px solid var\((--[a-z0-9-]+)\)/)||[])[1]);
+  /* ⚠ 둘을 같이 올리면 갈라지지 않습니다 — 선도 **한 단 차이**로 둡니다. */
+  tt('두 버튼의 선이 서로 다르다', (()=>{
+     const g = s => (css2.match(new RegExp(s+'\\{[^}]*border:1px solid var\\((--[a-z0-9-]+)\\)'))||[])[1];
+     return g('\\.reedit-cta') && g('\\.restart-cta') && g('\\.reedit-cta') !== g('\\.restart-cta');
+  })());
+  /* ⚠ **면은 그대로 흰 면입니다.** 파괴적 행동을 프라이머리 자리로 올리지 않습니다(원칙 130).
+     G-26이 결과 화면 그린 솔리드 0개를 재지만, 그것은 그린만 봅니다 — 여기서 면을 잠급니다. */
+  tt('재계산 버튼이 솔리드가 아니다',
+     /\.restart-cta\{[^}]*background:var\(--card\)/.test(css2)
+     && !/\.restart-cta\{[^}]*background:var\(--(green|espresso|ink)\)/.test(css2));
 
   /* 3. 시각적 노이즈 — 왼쪽 굵은 세로선(레거시 인용문 문법) 전면 폐기 */
   tt('안내 박스에 왼쪽 세로선이 없다', !/border-left/.test(css2));
@@ -2119,6 +2138,15 @@ HYGIENE.forEach(([name, over]) => {
   tt('체크박스가 직접 그려졌다 (appearance:none)',
      /\.subtoggle input\{[^}]*appearance:none/.test(css2)
      && /\.subtoggle input:checked::after/.test(css2));
+  /* 🔴 v25.9 — **체크박스 줄의 손가락 면.** 줄 전체는 이미 `<label>`이지만 상자는 22px입니다
+     (실측 360px). 보이는 크기는 그대로 두고 투명 면만 --tap으로 넓힙니다(원칙 123).
+     ⚠ 44를 손으로 적으면 자리마다 43·45가 생깁니다 — **토큰인지까지** 잽니다(원칙 84). */
+  tt('체크박스 줄의 손가락 면이 --tap이다',
+     /\.subtoggle\{[^}]*position:relative/.test(css2)
+     && /\.subtoggle::after\{[^}]*height:var\(--tap\)/.test(css2));
+  /* ⚠ 흐름에서 뺀 투명 면이라 **아무것도 안 밀려야** 합니다 — 자리를 먹으면 첫 화면이 길어집니다. */
+  tt('체크박스 손가락 면이 자리를 안 먹는다',
+     /\.subtoggle::after\{[^}]*position:absolute/.test(css2));
   tt('accent-color 의존 없음', !/accent-color\s*:/.test(css2));
   /* ⚠ [\s\S]*? 는 규칙 밖까지 넘어갑니다. 규칙 안([^}]*)으로 가둡니다. */
   tt('스위치 손잡이가 전용 그림자',
@@ -2289,6 +2317,21 @@ HYGIENE.forEach(([name, over]) => {
      const tags = [...html.matchAll(/<input[^>]*inputmode="(numeric|decimal)"[^>]*>/g)];
      if(tags.length < 8) return false;
      return tags.every(m => /pattern="\[0-9\]\*"/.test(m[0]) === (m[1] === 'numeric'));
+  })());
+  /* 🔴 v25.9 — **억 칸은 `decimal`입니다.** 위 검사만으로는 안 막힙니다 —
+     `inEok`을 numeric으로 바꾸면서 pattern까지 같이 붙이면 위 짝 검사는 **초록으로 통과**합니다.
+     그 조합이 정확히 지시서가 두 번 요구한 꼴이고(v25.8 · v25.9), 그대로 하면 회귀입니다:
+     이 칸은 「1.5억」을 받고 `attachEokMan`이 소수점을 파싱합니다.
+     ⚠ id로 직접 잠급니다. 「어떤 칸이 소수인가」는 짝 규칙이 아니라 **그 칸의 사정**입니다. */
+  tt('억 칸이 소수를 받는다 (inEok = decimal)', (()=>{
+     const html = fs.readFileSync(FILE,'utf8');
+     const tag = (html.match(/<input id="inEok"[^>]*>/)||[])[0] || '';
+     return /inputmode="decimal"/.test(tag) && !/pattern=/.test(tag);
+  })(), (fs.readFileSync(FILE,'utf8').match(/<input id="inEok"[^>]*inputmode="[a-z]+"/)||[])[0]);
+  /* ⚠ 그리고 **소수를 실제로 파싱하는지**까지 봅니다. 속성만 잠그면 파서가 정수로 바뀌어도 초록입니다. */
+  tt('억 칸의 「1.5」가 1억 5,000만원으로 읽힌다', (()=>{
+     const html = fs.readFileSync(FILE,'utf8');
+     return /attachEokMan/.test(html) && /parseFloat/.test(html);
   })());
   /* 🔴 지침 — 폼 컨트롤은 16px 이상. 미만이면 iOS가 포커스 시 화면을 확대합니다. */
   /* 🔴 v24.7 — 화면에서 가장 큰 입력인 `.mfield input`은 clamp()라 아래 정규식에 안 걸려
@@ -3592,6 +3635,21 @@ HYGIENE.forEach(([name, over]) => {
   tt('부대비용이 영수증 소계 한 줄로 접힌다',
      /<button class="disc discline" id="costToggle"/.test(SRC)
      && /<span class="k">집값 외 부대비용[\s\S]*?<\/span><span class="v" id="etcTotal">/.test(SRC));
+  /* 🔴 v25.9 — **영수증 금액이 한 열에 선다**(오너 지적).
+     접히는 줄만 오른쪽 끝에 ▾가 서서 그 줄의 금액이 혼자 안으로 들어와 있었습니다
+     (실측 360px: 다른 넷 328 · 이 줄 310). 비우는 폭은 **한 곳(`--caret-col`)**에서 옵니다.
+     ⚠ 「18px인가」를 안 잽니다 — 값이 아니라 **두 자리가 같은 토큰을 보는가**를 잽니다(원칙 84).
+     ⚠ 꺾쇠에 고정 폭이 없으면 열이 **글리프 폭에 딸려** 갑니다. 이 앱은 글꼴이 늦게 붙습니다(v25.8). */
+  tt('영수증 금액이 꺾쇠 열만큼 비운다', (()=>{
+     const gutter = (SRC.match(/#receipt \.line,#receiptBot \.line,#costItems \.line\{padding-right:var\((--[a-z0-9-]+)\)\}/)||[])[1];
+     const caret  = (SRC.match(/\.disc\.discline \.caret\{[^}]*width:var\((--[a-z0-9-]+)\)/)||[])[1];
+     return !!gutter && gutter === caret;
+  })());
+  /* ⚠ `gap`이 「이름↔금액」과 「금액↔꺾쇠」를 겸하면 열 폭이 두 값의 합이 됩니다. 0으로 내리고
+     간격은 이름 쪽 여백이 냅니다 — 그래야 비우는 폭이 `--caret-col` 하나로 끝납니다. */
+  tt('소계 줄의 꺾쇠 간격이 열 폭에 안 섞인다',
+     /\.disc\.discline\{gap:0\}/.test(SRC)
+     && /\.disc\.discline \.caret\{[^}]*margin-left:0/.test(SRC));
   /* 🔴 여기가 이 판의 선입니다 — 대출과 준비할 현금은 **서랍 밖**입니다.
      서랍 안으로 들어가면 첫 화면의 약속(「실제로 드는 돈이 나와요」)이 접힌 채로 시작합니다. */
   tt('대출 · 준비할 현금이 접히는 서랍 밖이다', (()=>{
