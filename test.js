@@ -4448,6 +4448,153 @@ HYGIENE.forEach(([name, over]) => {
   })());
 })();
 
+
+/* ═══ v25.8 — 넘침 · 금리 기준 · 빈 화면 ═══════════════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const SRC = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+
+  /* ── ① 슬라이더가 좌우 마진을 0으로 못 박는가 ─────────────────────
+     🔴 인수반계 0장 2️⃣의 `.ratesim` 2px 넘침이 여기였습니다. 브라우저 UA 기본값
+        `input[type=range]{margin:2px}`을 우리 규칙이 **세로만** 덮고 있었습니다.
+     ⚠ 이 파일에는 `2px`이 한 글자도 안 적혀 있습니다 — 그래서 「2px을 찾는 검사」는
+        아무것도 못 잡습니다. 잠글 것은 **좌우 마진이 0으로 못 박혀 있는가**입니다.
+     ⚠ 선택자를 문자열로 자르지 않습니다(6-24). `input[type=range]{`로 시작하는 **그 블록만**
+        떼어 봅니다 — `.ratesim input[type=range]{`에도 걸리면 엉뚱한 곳을 재게 됩니다. */
+  tt('슬라이더가 좌우 마진을 0으로 못 박는다', (()=>{
+     /* ⚠ 주석을 걷어낸 자리에 **줄바꿈이 남습니다.** `}`가 바로 붙어 있다고 보면
+        찾지 못하고, 「찾지 못함」은 통과가 아니라 빨간불이어야 합니다(인수인계). */
+     const at = SRC.search(/(?:^|[};])\s*input\[type=range\]\{/);
+     if(at < 0) return false;
+     const s = SRC.indexOf('input[type=range]{', at) + 'input[type=range]'.length;
+     const e = SRC.indexOf('}', s);
+     const blk = SRC.slice(s, e);
+     return /margin-left\s*:\s*0/.test(blk) && /margin-right\s*:\s*0/.test(blk);
+  })(), '🔴 좌우 마진이 안 잠겨 있습니다 — UA 기본 margin:2px이 되살아납니다');
+
+  /* ── ② 한도를 「연 D.rate% 기준」이라고 적지 않는가 ────────────────
+     🔴 v25.8에서 잡은 사실 오류입니다. 한도(DSR)는 `baseRate + stressBp`로 잡는데
+        (실측 서울·변동·30년 = 연 8.4%), 화면 두 곳이 「연 5.4% 기준」이라고 적었습니다.
+        같은 소득으로 5.4%에 잡았다면 상환능력 한도가 **4억 6,823만원** 더 컸습니다.
+     ⚠ 문장을 통째로 잠그지 않습니다(원칙 48). 잠그는 것은 **「한도」와 「D.rate」가 한 문장
+        안에서 「기준」으로 묶이지 않는가** 하나입니다. 문구를 고쳐도 이 검사는 살아 있습니다.
+     ⚠ `${D.rate}`는 템플릿이라 소스에서 그 꼴로 찾습니다. 숫자 `5.4`를 찾으면
+        `D` 객체 정의(`rate:5.4`)에 걸립니다 — 재려는 것이 아닙니다. */
+  tt('한도를 「연 D.rate% 기준」이라고 적지 않는다', (()=>{
+     const bad = [];
+     /* 화면에 나가는 문자열 리터럴만 봅니다 — 백틱 문자열 안에서 찾습니다 */
+     for(const m of SRC.matchAll(/`([^`]*\$\{D\.rate\}[^`]*)`/g)){
+       const line = m[1];
+       if(/한도/.test(line) && /기준/.test(line)) bad.push(line.slice(0,60));
+     }
+     /* `연 ${D.rate}%`가 한도 카드 각주(#limitNotes)에 남아 있는지도 봅니다 */
+     const at = SRC.indexOf("notes.innerHTML");
+     const seg = at >= 0 ? SRC.slice(at, at + 400) : '';
+     if(/\$\{D\.rate\}/.test(seg)) bad.push('#limitNotes: ' + seg.slice(0,60));
+     return bad.length === 0 ? true : bad;
+  })() === true, '🔴 한도를 실제보다 낮은 금리 기준으로 적고 있습니다');
+
+  /* ── ③ 한도가 정말 스트레스 금리로 잡히는가 ───────────────────────
+     🔴 ②는 「안 적는가」만 봅니다. 그 문장이 왜 거짓이었는지의 **근거 쪽**도 잽니다 —
+        규칙을 검사에 베끼지 말고 **본체 함수를 그대로 돌려서** 봅니다(원칙 106).
+     ⚠ 스트레스 가산이 0이 되는 조건(고정형 등)에서는 둘이 같습니다. 가산이 붙는
+        표준 컨텍스트에서 **한도가 더 작아야** 합니다(가산은 한도를 깎는 방향입니다). */
+  const cS = ctx({ income: 만(10000), incomeEntered: true });
+  /* ⚠ `repaymentCapLimit`은 NEED에 있지만 맨 위에서 구조분해를 안 했습니다 — `E.`로 부릅니다.
+     구조분해를 새로 더하지 않습니다. 이름이 두 곳에 살면 한쪽만 지울 때 조용히 갈립니다. */
+  const withStress = E.repaymentCapLimit(cS, false).limit;
+  const withoutStress = E.repaymentCapLimit(Object.assign({}, cS, { stressBp: 0 }), false).limit;
+  tt('스트레스 가산이 한도를 실제로 깎는다', cS.stressBp > 0 && withStress < withoutStress,
+     `가산 ${cS.stressBp} · 한도 ${Math.round(withStress)} vs ${Math.round(withoutStress)}`);
+
+  /* ── ④ 금리 슬라이더 머리글이 양방향을 말하는가 ────────────────────
+     🔴 슬라이더는 `min="30"`(연 3.0%)이라 **기준보다 아래로도** 갑니다. 머리글이
+        「오르면」이면 각주의 「…덜 나가요」와 같은 블록 안에서 서로를 반박합니다(원칙 39).
+     ⚠ 잠글 것은 낱말이 아니라 **범위와 이름의 관계**입니다 — min이 기준 아래인 한
+        머리글은 오르는 쪽만 말하면 안 됩니다. min을 올려 고치는 길도 열어 둡니다. */
+  tt('금리 슬라이더 이름이 범위와 맞는다', (()=>{
+     const m = SRC.match(/id="rateRange"[^>]*min="(\d+)"/);
+     const hd = SRC.match(/class="ratesim-hd"><p class="tile-k">([^<]*)</);
+     if(!m || !hd) return false;
+     const goesDown = (+m[1])/10 < 5.4;         /* D.rate 아래로 내려가는가 */
+     return !goesDown || !/오르면|올라가|상승/.test(hd[1]);
+  })(), '🔴 슬라이더가 아래로도 가는데 머리글이 오르는 쪽만 말합니다');
+
+  /* ── ⑤ 빈 화면이 면을 갖는가 ─────────────────────────────────────
+     🔴 다섯 줄(582px)이 있던 자리에 글자 한 줄만 남으면 카드가 접힌 것처럼 보입니다.
+     ⚠ 「회색이면 통과」로 쓰지 않습니다. 잠그는 것은 **면과 안쪽 여백이 같이 있는가**입니다 —
+        패딩 없이 면만 주면 글자가 면에 딱 붙습니다. 면은 있는데 패딩이 0인 상태를 막습니다. */
+  tt('실거래 빈 화면이 면과 안쪽 여백을 갖는다', (()=>{
+     const at = SRC.indexOf('.deal-msg{');
+     if(at < 0) return false;
+     const blk = SRC.slice(at, SRC.indexOf('}', at));
+     return /background\s*:\s*var\(--/.test(blk) && /padding\s*:\s*[1-9]/.test(blk);
+  })(), '🔴 빈 화면에 면 또는 안쪽 여백이 없습니다');
+
+  /* ── ⑥ 빈 화면이 「칩 때문」과 「예산 때문」을 가르는가 ──────────────
+     🔴 지시서는 둘을 한 문구로 합치라고 했는데, 합치면 84㎡ 칩만 켜서 0건인 사람에게
+        **틀린 안내**가 됩니다. 그 갈래가 살아 있는지를 잠급니다(원칙 128 — 대상을 옮김).
+     ⚠ 문구가 아니라 **갈래**를 셉니다. 두 갈래의 글자는 자유롭게 고칠 수 있습니다. */
+  tt('빈 화면이 좁힌 칩과 예산을 갈라 말한다', (()=>{
+     const at = SRC.indexOf('const narrowed');
+     if(at < 0) return false;
+     const seg = SRC.slice(at, at + 700);
+     const arms = (seg.match(/narrowed\s*\n?\s*\?/g) || []).length;
+     return /DEAL\.onlyNew/.test(seg) && /DEAL\.only59/.test(seg)
+         && /DEAL\.only84/.test(seg) && !/DEAL\.over\b/.test(seg.split('\n')[0])
+         && arms >= 2;
+  })(), '🔴 빈 화면이 한 문구로 합쳐졌습니다');
+
+  /* ── ⑦ 외부 리소스가 부팅을 막지 못하는가 ─────────────────────────
+     🔴 2026.08.18 실기 — 첫 화면이 「진행 막대 없음 · 질문칸 빔 · 「이전」 노출 ·
+        「다음」이 초록 활성」으로 굳었습니다. **JS가 손대기 전의 마크업 그대로**입니다.
+        원인은 우리 코드가 아니라 `<head>`의 외부 리소스 둘이었습니다:
+          · `<script src=html2canvas>` — 차단형이라 파서를 멈춥니다
+          · `<link rel=stylesheet pretendard>` — **스크립트는 앞선 스타일시트를 기다립니다**
+        망이 끊기면 빨리 실패하지만 **매달리면** 계산기가 통째로 안 뜹니다.
+     ⚠ 실측(매달린 지 2.5초) — 원본: 둘 다 **DOM조차 없음** / 수정본: 셋 다 ✅ 정상.
+     ⚠ 잠글 것은 「defer가 있는가」가 아니라 **「머리에 파서를 막는 외부 리소스가 없는가」**입니다.
+        CDN을 바꾸거나 리소스를 더해도 이 검사는 그대로 삽니다(원칙 48). */
+  tt('머리의 외부 리소스가 부팅을 막지 않는다', (()=>{
+     const head = RAW.slice(0, RAW.indexOf('</head>') >= 0 ? RAW.indexOf('</head>') : RAW.indexOf('<body'));
+     const bare = head.replace(/<!--[\s\S]*?-->/g,'');
+     const bad = [];
+     /* 외부 스크립트는 defer 또는 async여야 합니다 */
+     for(const m of bare.matchAll(/<script\b([^>]*\bsrc=[^>]*)>/g))
+       if(!/\bdefer\b|\basync\b/.test(m[1])) bad.push('script: ' + m[1].trim().slice(0,60));
+     /* 외부 스타일시트는 렌더·스크립트를 막지 않는 꼴이어야 합니다 */
+     for(const m of bare.matchAll(/<link\b([^>]*)>/g)){
+       const a = m[1];
+       if(!/rel\s*=\s*["']?stylesheet/.test(a)) continue;
+       if(!/https?:\/\//.test(a)) continue;                  /* 같은 출처는 매달릴 일이 없습니다 */
+       if(!/media\s*=\s*["']print["']/.test(a)) bad.push('link: ' + a.trim().slice(0,60));
+     }
+     return bad.length === 0 ? true : bad;
+  })() === true, '🔴 머리의 외부 리소스가 매달리면 계산기가 통째로 안 뜹니다');
+
+  /* ── ⑧ 비차단으로 받은 스타일시트가 **실제로 적용되는가** ──────────
+     ⚠ `media="print"`로 받아 두기만 하고 되돌리지 않으면 글꼴이 **영영 안 붙습니다.**
+       「안 막는다」와 「그래도 적용된다」는 다른 사실입니다 — 둘 다 잠급니다(원칙 124의 계열). */
+  tt('비차단 스타일시트가 다 받은 뒤 적용된다', (()=>{
+     const m = RAW.replace(/<!--[\s\S]*?-->/g,'').match(/<link\b[^>]*media\s*=\s*["']print["'][^>]*>/);
+     return !!m && /onload\s*=/.test(m[0]) && /media\s*=\s*['"]all['"]/.test(m[0]);
+  })(), '🔴 print로 받아만 두고 all로 되돌리지 않습니다 — 글꼴이 영영 안 붙습니다');
+
+  /* ── ⑨ 세대수 수집이 응답을 버리지 않는가 ────────────────────────
+     🔴 수집은 단지당 1회 · 일일 5,000건이라 서울만 해도 하루입니다. 다섯 필드만 남기고
+        버리면 주차대수를 넣기로 하는 날 **같은 수집을 처음부터** 다시 돌려야 합니다.
+     ⚠ 이 검사는 index.html이 아니라 **build-households.mjs**를 봅니다. 파일이 없으면
+        「찾지 못함」으로 조용히 통과하면 안 됩니다 — 없으면 빨간불입니다. */
+  tt('세대수 수집이 원본 응답을 통째로 보관한다', (()=>{
+     const f = path.join(path.dirname(FILE), 'build-households.mjs');
+     if(!fs.existsSync(f)) return false;
+     const src = fs.readFileSync(f,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     const at = src.indexOf('got[code] = {');
+     if(at < 0) return false;
+     return /raw:\s*it/.test(src.slice(at, src.indexOf('};', at)));
+  })(), '🔴 원본을 버리고 있습니다 — 필드를 늘리면 수집을 다시 해야 합니다');
+})();
+
 /* ── 결과 ─────────────────────────────────────────────────────── */
 const total = pass + fails.length;
 console.log('\n영끌계산기 회귀 테스트 — ' + path.basename(FILE));
