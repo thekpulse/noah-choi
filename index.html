@@ -314,7 +314,11 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 트랙 색을 조각이 들고 있습니다 — 부모에 두면 칸 사이로 같은 색이 비쳐 틈이 안 보입니다.
    ⚠ 채워지는 것은 `.on`뿐입니다. 아래 `.app.hero-on` 규칙도 `.on`을 봅니다 —
      한쪽만 고치면 **01에서 세 칸이 전부 초록**이 되어 「이미 다 했다」로 읽힙니다. */
-.progress{position:sticky;top:56px;z-index:20;height:2px;background:transparent;display:flex;gap:3px}
+/* 🔴 v25.11 — **2px → 3px**(오너 실기 지적 2 · 「시각적 안정감」).
+   ⚠ 4px은 안 씁니다 — 이 막대는 `top:56px`으로 상단 바에 붙어 sticky입니다.
+     두꺼워지는 만큼 **첫 화면이 그대로 깎입니다**(인앱 뷰포트 574px · v25.6이 −68px을 번 자리).
+     3px이 「선이 아니라 바」로 읽히는 최소값이고, 비용은 1px입니다. */
+.progress{position:sticky;top:56px;z-index:20;height:3px;background:transparent;display:flex;gap:3px}
 .progress i{display:block;flex:1;height:100%;background:var(--line);
   transition:background .34s cubic-bezier(.22,1,.36,1)}
 .progress i.on{background:var(--green)}
@@ -690,7 +694,13 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      막대에 매달린 것처럼 보입니다. 값은 `--gap`으로, 카드 사이 간격과 같습니다. */
 .rhead{margin-top:var(--gap);padding:var(--pad);
   background:var(--card);border-radius:var(--r-xl);box-shadow:var(--sh)}
-.rhead-label{font-size:var(--t5);font-weight:400;color:var(--ink-3);margin:0;line-height:1.3}
+/* 🔴 v25.11 — **--ink-3 → --ink-2**(오너 실기 지적 8). 금액을 감싸는 서술 두 조각
+   (「현재 조건으로 예상되는 매수 가능 금액은」 · 「수준이에요」)이 흰 카드 위에서 묻혔습니다.
+   ⚠ --ink-3은 흰 카드 위 **7.0:1**로 기준 미달은 아닙니다 — 문제는 **금액과의 거리**입니다.
+     금액이 --ink(15.9:1)라 두 단 차이가 나서 서술이 「꺼진 것」처럼 읽혔습니다.
+   ⚠ --ink-2로 **한 단만** 올립니다. --ink까지 올리면 금액과 같은 잉크가 되어
+     무엇이 답인지 흐려집니다(원칙 100 — 조용하게 만드는 것은 색이 아니라 크기와 굵기). */
+.rhead-label{font-size:var(--t5);font-weight:400;color:var(--ink-2);margin:0;line-height:1.3}
 /* 핵심 수치 밑에 라임 하이라이트 — 숫자가 먼저 읽힐니다 */
 /* 🔴 마커는 금액 span에만 걸어야 합니다.
    문단 전체에 걸면 오른쪽 「수준이에요」까지 덮어버립니다(v23.10 수정). */
@@ -706,8 +716,11 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   letter-spacing:-.04em;margin:8px 0 0}
 .rhead-amount > span{white-space:nowrap}
 .u{font-style:normal;font-size:.72em;font-weight:400;color:var(--ink-3);letter-spacing:-.01em;margin-left:.05em}
-.rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:400;color:var(--ink-3);
-  color:var(--ink-3);letter-spacing:-.02em;margin-left:7px;vertical-align:baseline}
+/* 🔴 v25.11 — 이 규칙에 **`color`가 두 번** 선언돼 있었습니다(`--ink-3`가 뒤에서 이겼습니다).
+   히어로 잉크를 --ink-2로 올리자 **꼬리만 안 따라와서** 드러났습니다 —
+   선언을 읽는 것만으로는 안 보이고 **렌더를 재야** 보이는 자리입니다(원칙 84 · 지침 6-6). */
+.rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:400;
+  color:var(--ink-2);letter-spacing:-.02em;margin-left:7px;vertical-align:baseline}
 /* 🔴 v23.21 — 굵은 세로선(3px)을 지웠습니다. 위계는 「선」이 아니라 「면」으로 만듭니다.
    평상시는 중립 틴트, 한도에 걸렸을 때만 오렌지 틴트 + 오렌지 글자로 갈립니다. */
 .rhead-why{display:block;margin:16px 0 0;padding:12px 14px;border-radius:var(--r-m);
@@ -1193,8 +1206,15 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .deal .nm small .hot::before{content:'•';margin-right:5px}
 /* 🔴 v25.1 — 뱃지의 기준을 목록 아래에서 **한 번** 말합니다(지시서 4).
    ⚠ 뱃지가 하나도 없으면 이 줄도 없습니다 — 안 보이는 것을 설명하지 않습니다(원칙 43). */
+/* 🔴 v25.11 — **자간 -.01em → -.02em**(오너 지시 1 「본문 규격을 전 페이지 동일하게」).
+   실측에서 **화면 전체 본문이 -.02em(-0.32px)인데 이 각주만 -.01em(-0.13px)**이었습니다.
+   지시서가 말한 「-0.3px」이 곧 이 값입니다(13px × .02 = 0.26px · 17px × .02 = 0.34px).
+   ⚠ px이 아니라 **em으로 적습니다** — px 자간은 글자 크기가 바뀌면 비율이 깨집니다(원칙 117).
+   ⚠ 🔴 `--ls-body`를 쓰지 않았습니다. **그 토큰은 0인데 body는 `-.02em` 리터럴을 씁니다** —
+     스케일 주석과 실제가 갈라져 있습니다(원칙 84). 여기서 토큰을 쓰면 자간이 0이 됩니다.
+     둘을 합치는 일은 화면 전체가 걸리므로 **다음 판의 별도 항목**으로 넘깁니다(인수인계). */
 .deal-note{margin:12px 0 0;font-size:var(--t7);line-height:var(--lh-body);color:var(--ink-4);
-  letter-spacing:-.01em;word-break:keep-all}
+  letter-spacing:-.02em;word-break:keep-all}
 .deal-note:empty{display:none}
 /* 🔴 v25.5 — 각주 둘이 나란히 설 때는 사이를 좁힙니다. 같은 성격의 글이라 한 덩어리로 읽혀야 합니다. */
 .deal-note + .deal-note{margin-top:6px}
@@ -1305,7 +1325,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    ⚠ 왼쪽 「이전 단계」는 `--line` 그대로 둡니다. 위계 채널이 셋(폭 · 잉크 · 그림자)에서
      **넷(+선)**이 됩니다 — 둘을 같이 올리면 갈라지지 않습니다. */
 .restart-cta{width:100%;height:var(--h-cta);margin-top:10px;border-radius:var(--r-m);
-  background:var(--card);color:var(--ink);border:1px solid var(--ink-4);box-shadow:var(--sh-lift);
+  background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh-lift);
   font-size:var(--t5);font-weight:700;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
 .restart-cta:hover{background:var(--line)}
@@ -1694,7 +1714,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
       <p class="rhead-label" id="heroLabel"></p>
       <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p>
       <p class="rhead-why" id="heroPill"><span></span></p>
-      <div class="condbar" id="condBar"></div>
       <!-- 🔴 v24.31 — **비율 막대를 히어로 안으로 들였습니다(블록 1 — 자금 구조).**
            ⏹ 전에는 `.bento`의 첫 타일(흰 카드)이었습니다. 그런데 이 막대가 말하는 것은
              **바로 위 금액이 어디서 오는가**입니다 — 같은 한 문장을 카드 경계가 끊고 있었습니다.
@@ -1709,6 +1728,15 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
         <div class="stack" id="fundStack"></div>
         <div class="legend" id="fundLegend"></div>
       </div>
+      <!-- 🔴 v25.11 — **조건 요약을 자금 출처 막대 아래로 한 번 더 내렸습니다**(오너 지시 4).
+           ⏹ v25.7 금액 위 → v25.10 금액·판정 아래 → **v25.11 자금 출처 아래.**
+             자리가 세 판 연속 움직였습니다. 그래서 이번에는 **무엇을 재서 정했는지 적습니다**(원칙 148).
+           재는 것 : 히어로 카드 안에서 「답」과 「입력」이 섞이지 않는가.
+             금액 · 판정 · 자금 출처 막대는 **셋 다 답**이고, 조건칩은 **입력으로 돌아가는 문**입니다.
+             칩이 중간에 있으면 답 한 덩어리를 둘로 끊습니다(원칙 43의 계열).
+           ⚠ **금액 자리는 안 움직입니다**(top 123px). 칩만 카드 안에서 뒤로 갑니다.
+           ⚠ 잠금은 「판정 뒤」를 재고 있어 이 이동으로 깨지지 않습니다 — 그대로 참입니다. -->
+      <div class="condbar" id="condBar"></div>
     </header>
 
     <div class="bento">
@@ -4719,7 +4747,11 @@ function paintDeals(priceMan){
        그 값을 고치면 문구가 따라옵니다(원칙 84 · 91). 「두 번」의 2는 `hotOf`의 상수와 짝이라
        검사가 둘이 같은지를 봅니다. */
   note.textContent = shownRows.some(hotOf)
-    ? `※ 거래 활발: 같은 단지가 최근 ${DEAL.months}개월 안에 두 번 이상 거래됐어요.` : '';
+    /* 🔴 v25.11 — **글자 수를 깎아 한 줄로**(오너 지시 6 · 원칙 140 — CSS로 무마하지 않습니다).
+       실기 캡쳐(390px)에서 두 줄이었고 끝줄이 「3개월 안에 두 번 이상 거래됐어요.」였습니다.
+       ⚠ 뜻은 한 자도 안 버렸습니다 — 「같은 단지가」는 바로 앞 뱃지가 붙은 그 단지를 가리키므로
+         중복이고(원칙 43), 「거래됐어요」는 「거래」로 줄여도 실거래 목록 안에서 뜻이 같습니다. */
+    ? `※ 거래 활발: 최근 ${DEAL.months}개월 안 같은 단지 2건 이상.` : '';
   /* 인근 구까지 봤으면 그 사실만 한 마디. 어느 구인지는 각 줄이 말합니다. */
   /* 🔴 v24.21 — **몇 건 중 몇 곳을 보여 주는지 말합니다.**
      실물에서 헤더가 「147건」이라고 하고 목록은 다섯 줄이었습니다 — 3.4%입니다.
@@ -4738,7 +4770,10 @@ function paintDeals(priceMan){
      → 줄마다 두 자를 늘리는 대신 **목록 아래에서 한 번** 말합니다. 폭 비용 0, 다섯 줄 전부에 적용.
      ⚠ 「추정」을 뺄 수 없습니다. 공급면적은 국토부 API가 주지 않는 값입니다(지침 5층 — 없는 데이터). */
   /* 🔴 v25.5 — ※를 붙였습니다. 이 화면의 각주는 전부 ※로 시작합니다(위 마크업 주석). */
-  foot.textContent = '※ 국토교통부 실거래가예요. 평은 공급면적 기준 추정이에요. 해제된 거래는 뺐어요.';
+  /* 🔴 v25.11 — 같은 이유로 한 줄까지 깎았습니다. 「~예요」 두 번을 하나로 묶었습니다.
+     ⚠ **셋 다 남깁니다** — 출처(국토교통부) · 평이 추정이라는 것 · 해제 거래를 뺐다는 것.
+       셋 중 하나라도 빼면 화면이 안 지킬 약속을 하게 됩니다(원칙 39). */
+  foot.textContent = '※ 국토교통부 실거래가 · 평은 공급면적 기준 추정 · 해제 거래 제외.';
 }
 
 function renderDeals(price){
