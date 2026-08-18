@@ -3554,11 +3554,16 @@ HYGIENE.forEach(([name, over]) => {
        아닙니다. 리터럴로 되돌아가면 여전히 빨간불입니다. */
   tt('저작권 크기가 활자 스케일 안이다',
      /\.copyright\{[^}]*font-size:var\(--t8\)/.test(SRC) && /--t8:12px/.test(SRC));
-  /* 🔴 v25.6 — 각주 넷이 **한 규격**인가. 하나라도 다른 단을 쓰면 같은 덩어리에 크기가 섞입니다.
-     ⚠ 리터럴이 하나라도 남으면 빨간불입니다 — v24.29부터 `.foot`이 12px을 손으로 들고 있었습니다. */
-  tt('결과 화면 각주 넷이 한 활자 단을 쓴다', (()=>{
+  /* 🔴 v25.6 — 각주가 **한 규격**인가. 하나라도 다른 단을 쓰면 같은 덩어리에 크기가 섞입니다.
+     ⚠ 리터럴이 하나라도 남으면 빨간불입니다 — v24.29부터 `.foot`이 12px을 손으로 들고 있었습니다.
+     🔴 v25.12 — `.caveat`가 **없어졌습니다**(캡션을 갈라 각자 서랍으로 보냈습니다).
+       ⚠ **검사를 지운 것이 아니라 대상에서 뺐습니다**(원칙 128) — 잠글 사실은
+         「맨 아래 각주들이 한 단을 쓴다」이고, 그 각주가 셋에서 둘이 된 것입니다.
+       ⚠ 뒤 조건(`리터럴 금지`)에는 `caveat`를 **남겨 둡니다.** 되살릴 때 12px 리터럴로
+         돌아오면 그때 빨간불이 나야 합니다. */
+  tt('결과 화면 각주가 한 활자 단을 쓴다', (()=>{
      const one = sel => new RegExp('\\'+'.'+sel+'\\{[^}]*font-size:var\\(--t8\\)').test(SRC);
-     return one('caveat') && one('foot') && one('copyright')
+     return one('foot') && one('copyright')
          && !/\.(caveat|foot|copyright)\{[^}]*font-size:\d+px/.test(SRC);
   })());
   /* 🔴 지시서는 저작권을 `--ink-4`로 내리라고 했습니다. **못 씁니다** — 앱 배경 위 4.19:1입니다.
@@ -3891,34 +3896,51 @@ HYGIENE.forEach(([name, over]) => {
      /\.eyebrow\{font-size:var\(--t7\);font-weight:800;color:var\(--espresso\);letter-spacing:\.1em/.test(RAW)
      && !/\.eyebrow\{[^}]*background/.test(RAW));
 
-  /* ── ② 투명성 캡션 ───────────────────────────── */
-  tt('투명성 캡션이 채권과 우대금리를 이름으로 부른다', (()=>{
-     const m = SRC.match(/\$\('caveatNote'\)\.textContent =([\s\S]*?);/);
-     return !!m && /채권 할인율/.test(m[1]) && /우대금리/.test(m[1]);
+  /* ── ② 「못 넣은 것」을 이름으로 부른다 ─────────────
+     🔴 v25.12 — v25.1의 **투명성 캡션이 없어졌습니다.** 한 문장이 성격이 다른 둘
+       (등기 **채권 매입비** · 은행 **우대금리**)을 묶고 있어서, 갈라서 각자 제자리로 보냈습니다.
+     ⚠ **검사는 지우지 않고 대상을 옮깁니다**(원칙 128). 지키려던 사실은
+       「맨 아래에 문단이 있다」가 아니라 **「못 넣은 둘을 이름으로 부르고, 왜 못 넣는지 말한다」**
+       입니다. 이제 두 자리에서 각각 잠급니다 — 한쪽이 조용히 사라지면 빨간불입니다. */
+  tt('채권 매입비를 부대비용 서랍이 이름으로 부른다', (()=>{
+     const m = SRC.match(/\$\('costLead'\)\.innerHTML =([\s\S]*?);/);
+     return !!m && /국민주택채권 매입비/.test(m[1]);
+  })());
+  tt('우대금리를 한도 서랍이 이름으로 부른다', (()=>{
+     const m = SRC.match(/notes\.innerHTML = hasLimit([\s\S]*?): '';/);
+     return !!m && /우대금리/.test(m[1]);
   })());
   /* 🔴 `.legal`은 5줄 상한(G-18)이 걸린 **법적 고지** 블록입니다. 계산 범위 설명을 거기 넣으면
      상한을 올리게 되고, 그때 물어야 할 것은 「상한을 올릴까」가 아닙니다(v24.28 · 지침 G-18). */
-  tt('투명성 캡션이 면책 블록 밖이다', (()=>{
+  tt('못 넣은 것 설명이 면책 블록 밖이다', (()=>{
      const b = legalBlock(SRC);
-     return b !== null && !/채권 할인율|우대금리/.test(b);
+     return b !== null && !/채권|우대금리/.test(b);
   })());
-  tt('투명성 캡션이 면책 바로 위에 있다', (()=>{
-     const m = SRC.match(/<p class="caveat" id="caveatNote"><\/p>\s*<p class="foot" id="footNote"><\/p>/);
-     return !!m;
+  /* 🔴 v25.12 — **맨 아래 캡션 문단이 되살아나지 않았다.** 되살리면 채권 이야기가
+     부대비용 서랍과 **두 곳**이 되고, 두 벌은 반드시 어긋납니다(원칙 58 · 84).
+     ⚠ 되살릴 이유가 생기면 **부대비용 서랍 쪽을 먼저** 보십시오. */
+  tt('맨 아래 각주가 면책 하나다', (()=>{
+     const m = SRC.match(/<p class="foot" id="footNote"><\/p>\s*<\/section>/);
+     return !!m && !/id="caveatNote"/.test(SRC) && !/\.caveat\{/.test(SRC);
   })());
   /* 🔴 지시서 원문은 「…포함하지 않았습니다. 실제 계약 시 최종 확인하시기 바랍니다.」였습니다.
      ① `.legal` 밖은 전부 ~어요체입니다 ② 「확인하시기 바랍니다」는 **지시문**입니다(지침 말투). */
-  tt('투명성 캡션이 지시하지 않는다', (()=>{
-     const m = SRC.match(/\$\('caveatNote'\)\.textContent =([\s\S]*?);/);
-     return !!m && !/바랍니다|하세요|하십시오|확인하시/.test(m[1]) && !/니다/.test(m[1]);
+  tt('못 넣은 것 설명이 지시하지 않는다', (()=>{
+     const m = SRC.match(/notes\.innerHTML = hasLimit([\s\S]*?): '';/);
+     const c = SRC.match(/\$\('costLead'\)\.innerHTML =([\s\S]*?);/);
+     if(!m || !c) return false;
+     const t = m[1] + c[1];
+     return !/바랍니다|하세요|하십시오|확인하시/.test(t) && !/니다/.test(t);
   })());
-  /* 🔴 짝 — 캡션이 「안 넣었다」고만 하고 **왜**를 안 말하면 그냥 발뺌입니다. */
-  tt('투명성 캡션이 못 넣은 이유를 같이 말한다', (()=>{
-     const m = SRC.match(/\$\('caveatNote'\)\.textContent =([\s\S]*?);/);
-     return !!m && /매일 바뀌는/.test(m[1]) && /조건마다 다른/.test(m[1]);
+  /* 🔴 짝 — 「안 넣었다」고만 하고 **왜**를 안 말하면 그냥 발뺌입니다.
+     채권은 「공시가격 · 할인율에 따라 달라져서」, 우대금리는 「조건마다 다른」이 그 자리입니다. */
+  tt('못 넣은 이유를 두 자리에서 같이 말한다', (()=>{
+     const m = SRC.match(/notes\.innerHTML = hasLimit([\s\S]*?): '';/);
+     const c = SRC.match(/\$\('costLead'\)\.innerHTML =([\s\S]*?);/);
+     return !!m && !!c && /조건마다 다른/.test(m[1]) && /할인율에 따라 달라져서/.test(c[1]);
   })());
-  /* 채권을 못 넣은 이유는 v24.17부터 부대비용 패널에도 있습니다 — 둘 다 살아 있어야 합니다. */
-  tt('채권 문장이 부대비용 패널에도 그대로 있다', /국민주택채권 매입비/.test(SRC));
+  /* 채권을 못 넣은 이유는 v24.17부터 부대비용 패널에 있습니다 — v25.12부터 **여기 하나**입니다. */
+  tt('채권 문장이 부대비용 패널에 그대로 있다', /국민주택채권 매입비/.test(SRC));
 
   /* ── ③ 「곧 바뀌는 것」 구조 ──────────────────── */
   tt('곧 바뀌는 것이 다섯 문단으로 갈려 있다', (()=>{
@@ -4161,22 +4183,32 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 🔴 이 화면의 ※ 규칙 — **각주에는 전부 ※를 붙입니다.**
      붙은 것과 안 붙은 것이 섞이면 ※가 「중요함」이나 「법적 고지」 같은 다른 뜻으로 읽힙니다.
-     결과 화면의 각주는 넷입니다: 거래 활발 기준 · 실거래 출처 · 투명성 캡션 · 면책(둘). */
+     🔴 v25.12 — 투명성 캡션이 갈려 나가면서 각주는 **셋**입니다:
+       거래 활발 기준 · 실거래 출처 · 면책(둘). 그리고 **서랍 안 ※(한도 각주)도 같은 규칙**입니다 —
+       자리가 서랍이라고 표기가 달라지면 ※가 「밖에서만 쓰는 기호」가 됩니다.
+     ⚠ 대상만 옮겼습니다(원칙 128). 잠글 사실은 「※가 섞이지 않는다」입니다. */
   tt('결과 화면 각주가 전부 ※로 시작한다', (()=>{
      const notes = [
        (SRC.match(/note\.textContent = shownRows\.some\(hotOf\)\s*\?\s*`([^`]*)`/)||[])[1],
        (SRC.match(/foot\.textContent = '([^']*)';/)||[])[1],
-       (SRC.match(/\$\('caveatNote'\)\.textContent =\s*'([^']*)';/)||[])[1],
      ];
      if(notes.some(x => x == null)) return false;
      const legal = legalText(SRC) || '';
+     /* 한도 서랍의 ※ 셋 — `<br>`로 이어 붙인 각 줄이 전부 ※로 시작해야 합니다. */
+     /* ⚠ 소스 조각이라 앞에 `? \`` · `+ \`<br>` 같은 문법이 섞입니다. 그 부스러기를 지우지 않고
+        **「※ 앞에 글자가 거의 없다」**로 봅니다 — 자르는 규칙을 만들면 그 규칙이 또 뚫립니다(6-24). */
+     const lim = (SRC.match(/notes\.innerHTML = hasLimit([\s\S]*?): '';/)||[])[1] || '';
+     const limLines = lim.split('<br>').filter(s => /\S/.test(s));
      return notes.every(t => t.trim().startsWith('※'))
-         && (legal.match(/※/g)||[]).length === 2;
+         && (legal.match(/※/g)||[]).length === 2
+         && limLines.length === 3
+         && (lim.match(/※/g)||[]).length === 3
+         && limLines.every(t => /^[^※]{0,14}※/.test(t));
   })(), (()=>{
      const g = re => { const m = SRC.match(re); return m ? (m[1]||'').slice(0,10) : '못 찾음'; };
      return [g(/note\.textContent = shownRows\.some\(hotOf\)\s*\?\s*`([^`]*)`/),
              g(/foot\.textContent = '([^']*)';/),
-             g(/\$\('caveatNote'\)\.textContent =\s*'([^']*)';/)].join(' | '); })());
+             g(/notes\.innerHTML = hasLimit([\s\S]*?): '';/)].join(' | '); })());
 
   /* 🔴 각주 둘이 **한 자리**에 있는가 — v25.1은 칩을 사이에 두고 갈라 놨습니다. */
   tt('실거래 각주 둘이 칩 아래 나란히 있다', (()=>{
@@ -4688,6 +4720,77 @@ HYGIENE.forEach(([name, over]) => {
      if(at < 0) return false;
      return /raw:\s*it/.test(src.slice(at, src.indexOf('};', at)));
   })(), '🔴 원본을 버리고 있습니다 — 필드를 늘리면 수집을 다시 해야 합니다');
+})();
+
+/* ═══ v25.12 — 모바일 여백 다이어트 · 월 현금흐름 타일 한 치수 ═══════ */
+(() => {
+  const RAW = fs.readFileSync(FILE,'utf8');
+  const CSS = (RAW.match(/<style>([\s\S]*?)<\/style>/)||['',''])[1];
+  const SRC = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+
+  /* ── ① 좁은 화면 세로 여백 ────────────────────────────────────
+     오너 지시 「모바일이 뚱뚱하다」. 재서 정했습니다 — 360px 결과 2,873px 중 구조적 여백이
+     320px(11%)이고, 토큰 둘을 내려 **−151px**입니다. */
+  tt('좁은 화면에서 안쪽 여백과 카드 간격이 줄어든다', (()=>{
+     const m = CSS.match(/@media \(max-width:400px\)\{\s*:root\{([^}]*)\}/);
+     if(!m) return false;
+     return /--gap:12px/.test(m[1]) && /--pad:16px/.test(m[1]);
+  })(), '🔴 400px 분기에 세로 여백 토큰이 없습니다');
+  /* 🔴 **기본값은 그대로 둡니다.** 넓은 화면에서까지 줄이면 이 판이 답한 지적(모바일)이
+     아니라 다른 화면을 바꾸는 것입니다. 되돌릴 자리도 여기 하나로 남습니다. */
+  tt('기본 여백 토큰은 20 · 16 그대로다',
+     /:root\{[\s\S]*?--gap:16px;\s*--pad:20px;/.test(CSS));
+  /* 🔴 v24.28이 좌우 여백에서 밟은 자리 — **미디어 쿼리는 명시도를 안 올려 줍니다.**
+     이 블록이 `.card-title` 기본 규칙보다 **앞**에 놓이면 조용히 죽습니다(원칙 118 · G-20).
+     ⚠ 잠글 것은 「그 값이 14px이다」가 아니라 **「자기 기본 규칙보다 뒤에 있다」**입니다. */
+  tt('세로 여백 블록이 자기 기본 규칙보다 뒤에 있다', (()=>{
+     const later = CSS.search(/@media \(max-width:400px\)\{\s*\.card-title/);
+     const base  = CSS.search(/\.card-title\{font-size/);
+     return later > 0 && base > 0 && later > base;
+  })(), '🔴 여백 블록이 기본 규칙보다 앞입니다 — 한 번도 닿지 않습니다');
+  /* 🔴 좌우 여백 세 단(12 / 16 / 20)은 **이 판이 건드리지 않았습니다.** 같이 줄이면
+     내용 폭이 도로 좁아집니다 — v23.21이 카드 안쪽을 깎아 번 폭을 반납하는 일입니다. */
+  tt('좌우 여백 세 단이 그대로다',
+     /@media \(max-width:374px\)\{\s*\.funnel\{padding:22px 12px 32px\}/.test(CSS)
+     && /@media \(min-width:414px\)\{\s*\.funnel\{padding-left:20px/.test(CSS));
+
+  /* ── ② 월 현금흐름 타일 — 한 치수 ────────────────────────────
+     오너 지시 「매달 원리금을 더 심플하고 간결하게 · 55사이즈면 44사이즈로」. */
+  tt('월 현금흐름 값이 활자 사다리에서 한 단 내려왔다',
+     /\.tile-v\{font-size:var\(--t4\)/.test(CSS));
+  /* 🔴 짝 — `.tile-v`가 17px로 내려오면 `.ratesim-v`(17px)와 **같은 크기**가 됩니다.
+     그래서 시뮬 값은 크기(16px) **와 굵기(700)** 둘로 갈랐습니다. 한 채널만 잠그면
+     다음 사람이 크기만 되돌려 놓고 「사다리가 있다」고 읽습니다(원칙 62 · 6-27). */
+  tt('금리 시뮬 값이 크기와 굵기 둘로 한 단 아래다', (()=>{
+     const r = (CSS.match(/\.ratesim-v\{[^}]*\}/)||[''])[0];
+     return /font-size:var\(--t5\)/.test(r) && /font-weight:var\(--w-key\)/.test(r)
+         && /\.tile-v\{[^}]*font-weight:900/.test(CSS);
+  })());
+  /* 🔴 ⚠ **덩치를 줄이면서 손가락 면을 같이 줄이지 않았는가**(원칙 112 · 123).
+     이 판이 조인 것은 선과 글 사이뿐입니다. 슬라이더 상자는 `--tap` 그대로여야 합니다. */
+  tt('타일을 줄이면서 슬라이더 손가락 면은 안 줄였다', (()=>{
+     const at = SRC.search(/(?:^|[};])\s*input\[type=range\]\{/);
+     if(at < 0) return false;
+     const s = SRC.indexOf('input[type=range]{', at) + 'input[type=range]'.length;
+     const blk = SRC.slice(s, SRC.indexOf('}', s));
+     return /height:var\(--tap\)/.test(blk);
+  })(), '🔴 슬라이더 높이가 --tap이 아닙니다 — 보이는 크기가 아니라 손가락 면입니다');
+  /* 부담 게이지는 「얼마나 찼는가」를 말하는 유일한 그림입니다. 굵기를 줄이면 선이 됩니다. */
+  tt('부담 게이지 굵기는 그대로다', /\.gauge\{height:8px/.test(CSS));
+
+  /* ── ③ 조건칩 라벨 대비 — 지시서에 없던 것 ─────────────────────
+     🔴 v25.10이 칩 **면**을 `--card` → `--fill`로 바꾸면서 라벨만 `--ink-4`로 남았습니다.
+        `--ink-4`는 흰 면 위 4.62:1 · `--fill` 위 **4.19:1**입니다(원칙 97).
+        배포본에서 `__selfcheck()` **G-19가 빨간불**이었고 정적 검사 809개는 전부 초록이었습니다.
+     ⚠ 잠글 것은 「`--ink-3`이다」가 아니라 **「`--fill` 면 위에 `--ink-4`를 안 쓴다」**입니다 —
+        값을 잠그면 다음에 면을 또 바꿀 때 같은 자리가 다시 뚫립니다(원칙 128 · 6-27). */
+  tt('조건칩 라벨이 그 면 위에서 대비 미달 잉크를 안 쓴다', (()=>{
+     const chip = (CSS.match(/\.cond\{[^}]*\}/)||[''])[0];
+     const lab  = (CSS.match(/\.cond u\{[^}]*\}/)||[''])[0];
+     if(!chip || !lab) return false;
+     const onFill = /background:var\(--fill\)/.test(chip);
+     return !(onFill && /color:var\(--ink-4\)/.test(lab));
+  })(), '🔴 --fill 면 위 --ink-4는 4.19:1입니다 — G-19가 렌더에서 잡습니다');
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
