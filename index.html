@@ -724,26 +724,37 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      이름과 값이 어긋나 있던 자리라, 값을 이름에 맞추는 쪽이 맞습니다(원칙 91 · 지침 6-3).
    ⚠ 면(`--warn-tint`)은 그대로 둡니다. 면까지 바꾸면 톤이 달라져 색만 바꾸는 판이 아니게 됩니다. */
 .rhead-why.bad{background:var(--warn-tint);color:var(--bad)}
-/* 🔴 v25.7 — **조건 요약 한 줄.** 알약(면 · 테두리 · 그림자 · 35px)을 벗겼습니다.
-   ⏹ 전: `.condchip` 다섯 개가 `flex-wrap`으로 흘러 360px에서 **세 줄 · 약 130px**.
-   ⚠ **글자 크기(--t7)와 자간은 옛 알약 그대로**입니다. 줄인 것은 껍데기와 여백입니다(원칙 117).
-   ⚠ `flex-wrap`은 켜 둡니다 — 조건이 늘거나 지역 이름이 길면 **겹치는 대신 아래로 흐릅니다.**
-     한 줄에 못 넣는다고 잘라 내면 사용자가 넣은 조건이 화면에서 사라집니다.
-   ⚠ 아래 여백만 두고 위 여백은 0입니다 — 카드 안쪽 여백(--pad)이 이미 위를 책임집니다. */
-.condbar{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin:0 0 14px}
+/* 🔴 v25.10 — **껍데기를 되살렸습니다**(오너 지시 · 재송부). 면 + 헤어라인 + 알약 곡률.
+   ⏹ v25.7이 벗긴 것은 넷이었습니다 — 면 · 테두리 · 그림자 · **35px 높이**.
+     넷을 다 되돌리면 360px에서 다시 **세 줄 · 약 130px**입니다(v25.7 실측).
+   → **셋만 되돌립니다. 높이(--h-chip 35px)와 그림자는 안 되돌립니다.**
+     오너가 말한 것은 「테두리」와 「자리」이지 덩치가 아닙니다. 덩치를 키우면
+     「읽는 표시」가 「고르는 것」이 됩니다(지침 6-3 · 원칙 112) — 그건 v24.27이 지킨 선입니다.
+   ⚠ **면은 `--fill`입니다. `--card`가 아닙니다.** `.rhead`는 v25.4부터 **흰 카드**라
+     `--card` 면을 쓰면 흰 위 흰(**1.00**)이 되고 테두리 하나만 남습니다 —
+     인수인계 6️⃣이 「G-15도 G-16도 못 잡는다」고 적어 둔 바로 그 자리입니다(원칙 97).
+     `--fill`은 흰 카드 위 1.09이고, **흰 카드 안 알약**의 기존 문법입니다
+     (「거래 활발」 뱃지 · 부대비용 비율 알약과 같은 조합 · 원칙 58).
+   ⚠ 그림자는 안 씁니다 — 카드 **안**의 알약에 그림자를 얹으면 카드가 두 겹으로 보입니다.
+   ⚠ 위 여백이 생겼습니다. 자리가 판정 알약 **아래**로 갔기 때문입니다(전에는 카드 안쪽 여백이
+     위를 책임졌습니다). 아래 여백은 `.fundwrap`이 이어받으므로 0입니다(원칙 136). */
+.condbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:16px 0 0}
 /* 🔴 v24.27의 손가락 면(--tap)을 **그대로 물려받습니다.** 보이는 크기는 줄었지만
    누르는 면은 안 줄입니다 — 그게 v24.27이 알약 높이를 35px로 지킨 근거였습니다(지침 6-3). */
-.cond{position:relative;padding:2px 0;background:none;border:0;
+.cond{position:relative;padding:5px 10px;background:var(--fill);
+  border:1px solid var(--line);border-radius:var(--r-pill);
   font-size:var(--t7);font-weight:700;color:var(--ink-3);letter-spacing:-.02em;
-  line-height:1.5;transition:color .12s}
+  line-height:1.5;transition:color .12s,background .12s}
 .cond::after{content:'';position:absolute;left:0;right:0;top:50%;
   transform:translateY(-50%);height:var(--tap)}
-.cond:hover{color:var(--ink)}
+.cond:hover{color:var(--ink);background:var(--line)}
 .cond.is-static{pointer-events:none}
 .cond.is-static::after{content:none}
 /* 라벨(지역 · 현금 …)은 한 단 흐리게, 값은 진하게. 알약일 때와 같은 문법입니다. */
 .cond u{text-decoration:none;font-weight:500;color:var(--ink-4);margin-right:3px}
-.condbar .sep{font-style:normal;color:var(--ink-4);font-size:var(--t7)}
+/* ⏹ v25.10 — 가운뎃점 구분자(`.sep`)는 **정의부터 지웠습니다.** 알약이 서로를 가르므로
+   구분자가 할 일이 없어졌고, 남기면 「살아 있는 두 번째 정의」입니다(원칙 84 · 지침 6-6).
+   ⚠ `renderCondBar`의 `join()`도 같이 고쳤습니다 — 한쪽만 지우면 빈 `<i>`가 남습니다. */
 /* 🔴 v25.7 — **Orphan(끝줄에 1~2낱말만 남는 것)은 문구로 막습니다**(오너 지시).
    ⏹ 🔴 **`text-wrap:pretty`를 재 보고 미채택했습니다.** 이 속성이 정확히 그 일을 하라고
      만들어진 값이라 먼저 붙여 봤는데, 실측에서 **오히려 늘었습니다** —
@@ -1668,20 +1679,22 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
   <section class="result" id="result" hidden>
     <!-- 헤더 — 카드가 아니라 배경 위에 얹습니다. 큰 검은 박스를 없앤 자리입니다. -->
     <header class="rhead">
-      <!-- 🔴 v25.7 — **조건 요약을 히어로 맨 위 한 줄로 올렸습니다**(오너 지시).
-           ⏹ 전: 금액 · 판정 알약 **아래**에 35px짜리 알약 다섯 개가 격자로 흘러
-             360px에서 **세 줄 · 약 130px**을 먹었습니다. 결과 화면에서 가장 먼저 읽혀야 할
-             금액이 그만큼 아래로 밀렸고, 스크롤해야 자금 구조 막대가 나왔습니다.
-           → 알약 껍데기(면 · 테두리 · 그림자 · 35px 높이)를 벗기고 **글자 한 줄**로 만듭니다.
-             자리는 금액 **위** — 「무슨 조건으로」 다음에 「얼마」가 오는 순서이고,
-             공유 카드가 이미 그 순서입니다(「서울 종로구 · 무주택」 → 금액 · 원칙 91).
-           ⚠ **누르는 기능은 안 없앴습니다.** 각 항목은 여전히 그 단계로 돌아가는 버튼이고,
-             손가락 면(--tap)도 그대로입니다. 벗긴 것은 덩치뿐입니다(지침 6-3 · 원칙 112).
-           ⚠ 알약으로 되돌리지 마십시오 — 되돌리는 순간 금액이 다시 130px 아래로 갑니다. -->
-      <div class="condbar" id="condBar"></div>
+      <!-- 🔴 v25.10 — **조건 요약을 금액 아래로 되돌리고 알약을 되살렸습니다**(오너 지시 · 재송부).
+           ⏹ v25.7이 이것을 **금액 위 · 글자 한 줄**로 바꾸면서 「알약으로 되돌리지 마십시오」라고
+             적고 **검사 둘로 잠갔습니다.** 그래서 오너가 오더를 다시 내려도 반영이 안 됐습니다 —
+             되돌리는 순간 회귀가 빨간불이 나게 되어 있었습니다.
+           🔴 **잠금 자체가 틀린 것은 아니었습니다.** v25.7이 잰 것(360px에서 세 줄 · 약 130px)은
+             사실이고, 지금도 사실입니다. 틀린 것은 **그 값이 유일한 판단 근거라고 본 것**입니다 —
+             오너는 실기에서 「조건이 금액보다 먼저 읽히면 결과가 조건에 딸린 것처럼 보인다」와
+             「눌러서 고칠 수 있다는 신호가 사라졌다」를 봤습니다. **세로는 잰 값이고 그 둘은 안 잰 값**입니다.
+           → 자리는 **판정 아래**(금액 · 판정을 먼저 읽고, 그 조건을 뒤에 확인·수정).
+             껍데기는 **면 + 헤어라인 + 알약 곡률**로 되살리되 **높이는 안 되돌립니다**(아래 CSS).
+           ⚠ **검사는 안 지웠습니다. 대상을 옮겼습니다**(원칙 128) — 이제
+             ① 자리가 「금액·판정 아래인가」 ② 「테두리를 가진 누를 수 있는 것인가」를 잠급니다. -->
       <p class="rhead-label" id="heroLabel"></p>
       <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p>
       <p class="rhead-why" id="heroPill"><span></span></p>
+      <div class="condbar" id="condBar"></div>
       <!-- 🔴 v24.31 — **비율 막대를 히어로 안으로 들였습니다(블록 1 — 자금 구조).**
            ⏹ 전에는 `.bento`의 첫 타일(흰 카드)이었습니다. 그런데 이 막대가 말하는 것은
              **바로 위 금액이 어디서 오는가**입니다 — 같은 한 문장을 카드 경계가 끊고 있었습니다.
@@ -3975,14 +3988,16 @@ function renderCondBar(price){
     items.push(['<u>갚는 대출</u> '+(S.debtMonthly?'월 '+comma(S.debtMonthly)+'만원':'없음'), 1]);
   }
   if(py) items.push(['<u>평형</u> '+py, -1]);
-  /* 🔴 v25.7 — 알약이 아니라 **가운뎃점으로 이은 한 줄**입니다.
-     ⚠ 구분자는 `<i>` 하나로 냅니다 — 글자 사이에 `·`를 직접 끼우면 말줄임·줄바꿈이
-       구분자와 낱말을 같이 취급해 「서울 종로구 ·」로 끊깁니다.
+  /* 🔴 v25.10 — **알약으로 되돌아왔으므로 가운뎃점 구분자를 지웠습니다.**
+     ⏹ v25.7이 「글자 한 줄」이던 시절에 넣은 것입니다 — 그때는 낱말들이 붙어 흘러서
+       가르는 것이 필요했습니다. 알약은 **테두리가 이미 가릅니다.**
+       남겨 두면 알약과 알약 사이에 점이 하나씩 떠서 「가르는 방법이 둘」이 됩니다(원칙 43).
+     ⚠ CSS의 `.condbar .sep`도 **같이** 지웠습니다. 한쪽만 지우면 죽은 규칙이 남습니다(원칙 84).
      ⚠ `<u>라벨</u>`은 그대로 둡니다. 「18억원」만 있으면 현금인지 소득인지 알 수 없습니다 —
        라벨을 빼서 줄을 줄이는 길은 **뜻을 버리는 길**입니다(원칙 39). */
   $('condBar').innerHTML = items.map(([t,i])=>
     i>=0  ? `<button class="cond" data-step="${i}">${t}</button>`
-    : `<span class="cond is-static">${t}</span>`).join('<i class="sep">·</i>');
+    : `<span class="cond is-static">${t}</span>`).join('');
   $('condBar').querySelectorAll('[data-step]').forEach(b=>b.onclick=e=>{
     e.preventDefault(); S.step=+b.dataset.step; S.lockedPrice=null;
     $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
