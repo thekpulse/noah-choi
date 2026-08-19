@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.16 · 정책 2026.08.13 -->
+<!-- BUILD v25.17 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -3124,10 +3124,20 @@ function calcCosts(ctx){
   const totalNeeded = ctx.price + totalTax + brokerFee + interiorCost + etcCost;
   const cashNeeded = totalNeeded - totalFunding;
 
+  /* 🔴 v25.17 — **기존 대출의 연간 원리금을 결과로 내보냅니다.**
+     엔진은 이 값을 이미 한도 계산에서 정확히 쓰고 있었는데(`repaymentCapLimit`의
+     `income*DSR_RATIO - existingAnnualDebt`), **화면은 못 받고 있었습니다.** 그래서
+     「소득 대비 부담」이 주담대 원리금만으로 분모 DSR 규격을 나누고 있었습니다(0장 1️⃣).
+     ⚠ **여기서 한 번만 만듭니다**(원칙 58). 화면이 `S.debtMonthly`로 다시 계산하면
+       두 번째 정의가 되어 정책(신용대출 10년 분할 · 스트레스 가산)이 바뀔 때 갈립니다.
+     ⚠ 단위는 **원/년**입니다 — `m*12`와 같은 단위라 분자에서 그대로 더합니다. */
+  const existingAnnual = existingAnnualDebt(ctx);
+
   return {
     tax: totalTax, brokerFee, brokerFull, interiorCost, etcCost, interiorBlocked,
     mortgageLoan, loanType: loanResult.type, fellBack: loanResult.fellBack, fellBackReason: loanResult.fellBackReason, cappedByBank: loanResult.cappedByBank,
     binding: loanResult.binding, limits: loanResult.limits, roomCut: loanResult.roomCut,
+    existingAnnual,
     totalFunding, totalNeeded, cashNeeded
   };
 }
@@ -3325,7 +3335,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.16 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.17 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4455,10 +4465,9 @@ function renderBento(c){
        보기 좋으라고 줄을 바꾸면 검사가 아무것도 못 잡고 조용히 통과합니다(원칙 99의 계열).
      ⚠ 금리는 여기 안 적습니다. 아래 슬라이더가 말하고, 두 곳에 적으면 움직였을 때
        한쪽이 거짓이 됩니다(원칙 91). 검사가 `연 `·`D.rate`를 셉니다.
-     🔴 ⏹ **「소득 대비 부담」이 기존 대출을 분자에서 빼고 있는 것은 이 판에서 안 고쳤습니다.**
-       실측(소득 3억 · 갚는 대출 월 50만): 화면 8% · 실제 DSR 9.8%. **결과를 유리하게 만드는
-       오차**라 원칙 28 자리이고, 오너가 **「분자에 기존 대출 포함」**으로 정했습니다(2026.08.18).
-       계산 표시가 바뀌는 판이라 문구 판과 섞지 않습니다(원칙 41). **다음 판의 첫 할 일입니다.** */
+     ⏹ **v25.17이 「소득 대비 부담」의 분자를 고쳤습니다**(아래 `ratio`). 이 부속 줄은 그대로입니다 —
+       왼쪽 칸(원리금)은 **주담대만** 세고 오른쪽 칸(부담)은 **전체 대출**을 셉니다. 두 칸이 다른
+       범위를 세는 것이 맞고, 왼쪽은 이 줄이 그 범위를 말합니다(원칙 39). */
   $('tileMonthlySub').textContent = m>0 ? `주담대 · ${D.years}년 원리금균등 가정` : '주담대가 없어요';
   const g=$('gauge');
   const vd=$('burdenVerdict');
@@ -4467,7 +4476,25 @@ function renderBento(c){
     if(vd){ vd.setAttribute('hidden',''); vd.className='verdict'; vd.textContent=''; }
     g.setAttribute('hidden',''); return; }
   g.removeAttribute('hidden');
-  const ratio=m*12/man(S.income), pct=Math.min(100,Math.round(ratio*100));
+  /* 🔴 v25.17 — **분자에 기존 대출을 넣었습니다**(오너 결정 2026.08.18 · 인수인계 0장 1️⃣).
+     ⏹ 전 : `ratio = m*12 / man(S.income)` — `m`은 **주담대 원리금 하나**였습니다.
+       그런데 바로 아래 게이지는 **「DSR 40%를 만석」**으로 그립니다(`ratio/DSR_RATIO`).
+       DSR의 정의는 **모든 대출의 연간 원리금**이고, 안내 시트도 「갚고 있는 대출이 먼저
+       빠지고」라고 적습니다. 즉 **분모는 DSR 규격, 분자는 주담대만**이었습니다.
+     실측(성동구 · 무주택 · 현금 18억 · 소득 3억 · 갚는 대출 월 50만원):
+       화면 8%  ↔  실제 (194+50)×12÷30,000 = 9.8% → 10%.
+     🔴 막대가 실제보다 **덜 찼습니다** — **결과를 유리하게 만드는 오차**입니다(원칙 28).
+     ⚠ **엔진은 처음부터 알고 있었습니다**(`repaymentCapLimit`이 한도에서 정확히 뺍니다).
+       틀린 것은 계산이 아니라 **표시**입니다 — v25.8의 「연 5.4%」와 같은 계열(원칙 143).
+     ⚠ **값을 여기서 다시 만들지 않습니다.** `c.existingAnnual`은 `calcCosts`가 한 번만
+       만든 값이고, 한도 계산이 쓰는 것과 **같은 함수**입니다(원칙 58).
+     ⚠ **임계(20 / 35%)는 안 건드렸습니다.** 분자가 커지므로 경고가 더 자주 뜨는데,
+       그 방향은 원칙 28에서 **안전한 쪽**입니다. 급하게 올리지 않습니다.
+     ⚠ 🔴 **이 판이 안 본 것**(원칙 151) — 위 `m<=0` 가드는 그대로입니다. 그래서
+       **주담대가 0인데 기존 대출만 있는 사람**(규제지역 · 유주택)은 지금도 「—」입니다.
+       그 화면은 왼쪽 칸이 「없어요」인데 오른쪽이 「2%」가 되는 자리라 **문구를 먼저
+       정해야** 합니다(원칙 124). 「—」는 거짓이 아니라 미표시라 유리한 오차가 아닙니다. */
+  const ratio=(m*12 + (c.existingAnnual||0))/man(S.income), pct=Math.min(100,Math.round(ratio*100));
   /* 🔴 v23.26 — 임계를 40 / 60 → **20 / 35**로 내렸습니다. 취향이 아니라 정합성 문제입니다.
      게이지 막대는 **DSR 상한 40%를 만석**으로 그립니다(아래 ratio/0.40).
      그런데 색 단계는 40%부터 시작했습니다 — **막대가 꽉 찬 뒤에야 색이 바뀌는 구조**였습니다.
