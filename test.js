@@ -1563,7 +1563,9 @@ HYGIENE.forEach(([name, over]) => {
        넓히되, `costbox`와 상태 짝은 그대로 잠급니다. */
   tt('인테리어 접기가 셋과 같은 문법이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return /class="disc(?: discline)?" id="itToggle"[^>]*aria-controls="itBox"/.test(src)
+     /* ⏹ v25.23 — `.discline` → `.disc-head`. 위계를 되돌린 판입니다(위 CSS 주석).
+        잠그는 것은 여전히 **「disc 한 문법인가 + 짝이 맞는가」**입니다. */
+     return /class="disc(?: (?:discline|disc-head))?" id="itToggle"[^>]*aria-controls="itBox"/.test(src)
          && /class="costbox" id="itBox"/.test(src)
          && /\['itToggle','itBox','itOpen'\]/.test(src);
   })());
@@ -2250,7 +2252,12 @@ HYGIENE.forEach(([name, over]) => {
      if(t === null) return false;
      return /POLICY_ASOF_KO|POLICY_ASOF/.test(t)      /* 언제 기준의 계산인가 */
          && /대출 규제/.test(t) && /세법/.test(t)      /* 무엇의 기준인가 */
-         && /정부 정책/.test(t)
+         /* 🔴 v25.23 — **「정부 정책」 → 「정책」**(원칙 128 · 48). 이 검사 자신의 주석이
+            「재는 대상을 표현에서 사실로 옮긴다」고 적어 뒀는데, 이 한 줄만 **표현**을 잡고
+            있었습니다. 사실은 「정책이 바뀌면 결과가 달라진다」이고 「정부」는 수식입니다.
+            ⏹ 그리고 「정부」를 뺀 이유가 있습니다 — 다섯 폭 전부에서 「정부」/「정책이」로
+              **줄이 갈렸습니다**(오너 지적). 근거와 실측은 index.html의 그 줄 주석에. */
+         && /정책이 바뀌면/.test(t)
          && /(은행|금융기관) 심사/.test(t)
          && /한도/.test(t) && /세금/.test(t);
   })(), (()=>{ const t=legalText(UI);
@@ -4407,10 +4414,30 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.21 — **접힌 줄이 값을 말합니다.** 접힌 채로 정보가 0이던 것이 C-3의 핵심이었습니다.
      ⚠ 값은 `c.interiorCost` 하나에서 옵니다 — 영수증 인테리어 줄과 같은 값(원칙 58 · 91).
      ⚠ 0이면 「—」입니다 — 「0원」은 「인테리어가 0원」으로 읽히는데 실제로는 안 정한 것(원칙 124). */
+  /* 🔴 v25.23 — **접힌 줄이 카드 제목 규격을 쓴다**(오너 지적 · 원칙 100 · 132).
+     ⚠ 값을 잠그지 않습니다 — `.card-title`과 **같은 값인가**를 봅니다. 제목 규격을 옮기면
+       이 줄이 따라와야 하고, 안 따라오면 두 벌이 됩니다(원칙 58 · 84). */
+  tt('인테리어 접기 줄이 카드 제목 규격이다 (v25.23)', (()=>{
+     const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     const head = (css.match(/\.disc\.disc-head\{[^}]*\}/)||[''])[0];
+     const title = (css.match(/\.card-title\{[^}]*\}/)||[''])[0];
+     /* 🔴 **마크업이 실제로 그 클래스를 쓰는가**도 같이 봅니다(원칙 122).
+        사보타주로 마크업만 `.discline`으로 되돌렸더니 **CSS가 남아 있어 초록**이었습니다 —
+        「정의됐는가」가 아니라 「불려지는가」입니다. */
+     const 씀 = /class="disc disc-head" id="itToggle"/.test(css);
+     if(!head || !title || !씀) return false;
+     const g = (b,k) => (b.match(new RegExp(k+':([^;}]+)'))||[])[1];
+     return ['font-size','font-weight','line-height','letter-spacing']
+       .every(k => g(head,k) && g(head,k).trim() === g(title,k).trim());
+  })(), (()=>{ const css=fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     return ((css.match(/\.disc\.disc-head\{[^}]*\}/)||['없음'])[0]).slice(0,90); })());
   tt('인테리어 접힌 줄이 값을 말한다 (v25.21)', (()=>{
      const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
      const line = (src.match(/its\.textContent[^;]*/)||[''])[0];
-     return /id="itSum"/.test(src) && /c\.interiorCost/.test(line) && /'—'/.test(line);
+     /* 🔴 v25.23 — **「—」를 뺐습니다**(오너 지적 — 「금액이 없는 것처럼 느껴진다」).
+        이 자리에서 「—」는 「없음」이 아니라 **「0원」으로 읽힙니다.** 진실은 「아직 안 정함」입니다.
+        → 잠글 것은 「'—'를 쓴다」가 아니라 **「값이 있을 때만 적는다」**입니다(원칙 124 · 128). */
+     return /id="itSum"/.test(src) && /c\.interiorCost/.test(line) && /: ''/.test(line);
   })());
 })();
 
@@ -5527,6 +5554,30 @@ HYGIENE.forEach(([name, over]) => {
      return max > 0 && max < 만(200000);      /* 상한이 있고, 20억보다는 작아야 뜻이 있습니다 */
   })(), String(Math.max(...Object.values(E.POLICY.policyLoan)
        .flatMap(v => Object.values(v.price || {})).filter(Number.isFinite), 0)));
+})();
+
+/* ═══ 🔴 v25.23 — 규제 문구 정제 (오너 지적) ═══════════════════════════════
+   ⏹ 「대출 상한이 **붙어요**」가 03 지역 안내와 결과 `bindingTip` **두 곳**에 있었습니다.
+     규제는 붙는 것이 아니라 **적용되는** 것입니다. 둘을 같이 고쳤습니다(원칙 58).
+   ⚠ 잠글 것은 문장이 아니라 **「구어체 '붙어요'를 안 쓴다」와 「두 화면이 같은 낱말인가」**입니다. */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  tt('규제 설명에 「붙어요」를 안 쓴다 (v25.23)',
+     !/상한(도|이)? (따로 )?붙어요/.test(BARE),
+     (BARE.match(/상한[^。.]{0,12}붙어요/)||['없음'])[0]);
+  tt('03 안내와 결과 설명이 같은 낱말을 쓴다 (v25.23)', (()=>{
+     const n = (BARE.match(/대출 상한이 적용돼요/g)||[]).length;
+     return n >= 2;                 /* 03 지역 안내 · bindingTip 구간한도 갈래 */
+  })(), String((BARE.match(/대출 상한이 적용돼요/g)||[]).length) + '곳');
+  /* 🔴 **확인 못 한 것을 화면에 적지 않습니다**(원칙 1).
+     이 코드가 아는 것은 `regulated` boolean 하나이고, 투기과열지구/조정대상지역을 가르는
+     표가 없습니다. 지역 안내에 그 이름이 들어오면 **근거 없이 적은 것**입니다. */
+  tt('지역 안내가 못 가르는 것을 말하지 않는다 (v25.23)', (()=>{
+     const f = (BARE.match(/const tag = [\s\S]*?\}<\/div>`/)||[''])[0]
+            || (BARE.match(/규제지역이에요[\s\S]{0,400}/)||[''])[0];
+     return !!f && !/투기과열|조정대상/.test(f);
+  })());
 })();
 
 const total = pass + fails.length;
