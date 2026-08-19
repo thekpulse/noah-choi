@@ -1071,6 +1071,43 @@ HYGIENE.forEach(([name, over]) => {
   })());
   tt('퍼센트 글자도 단계색을 따른다', /tileBurden'\)\.className='tile-v '\+band/.test(UI));
 
+  /* ═══ 🔴 v25.17 — 「소득 대비 부담」의 분자 ══════════════════════════════
+     v25.16까지 분자는 **주담대 원리금 하나**였는데 분모(게이지 만석)는 **DSR 규격**이었습니다.
+     DSR의 정의는 모든 대출의 연간 원리금이므로 막대가 실제보다 덜 찼습니다 —
+     **결과를 유리하게 만드는 오차**입니다(원칙 28). 실측(소득 3억 · 월 50만원): 8% ↔ 9.8%.
+
+     ⚠ **문자열이 아니라 사실을 잠급니다**(원칙 48 · 128). 분자를 어떻게 쓰든 상관없고,
+       잠그는 것은 **「분모가 DSR 규격이면 분자도 전체 대출을 센다」** 하나입니다.
+     ⚠ 그리고 **두 번째 정의를 금지합니다**(원칙 58) — 화면이 `S.debtMonthly`로 다시
+       계산하면 신용대출 10년 분할·스트레스 가산이 바뀔 때 한도와 부담률이 갈립니다. */
+  const ratioExpr = (UI.match(/const ratio=([^;]+),\s*pct=/) || [])[1] || '';
+  tt('부담률 분자를 찾았다', ratioExpr.length > 0, ratioExpr.trim() || '🔴 못 찾음');
+  tt('부담률 분자가 주담대 원리금을 센다', /\bm\s*\*\s*12\b/.test(ratioExpr), ratioExpr.trim());
+  tt('부담률 분자가 기존 대출도 센다 (분모가 DSR 규격이므로)',
+     /existingAnnual/.test(ratioExpr), ratioExpr.trim());
+  tt('부담률 분자가 기존 대출을 다시 계산하지 않는다 (원칙 58)',
+     ratioExpr.length > 0 && !/S\.debtMonthly|debtParts/.test(ratioExpr), ratioExpr.trim());
+
+  /* 엔진 쪽 — 화면이 쓰는 이름(`existingAnnual`)과 한도 계산이 쓰는 함수(`existingAnnualDebt`)가
+     **한 값**이어야 합니다. 갈리면 「막대는 찼는데 한도는 안 줄었다」가 납니다(원칙 91). */
+  tt('calcCosts가 기존 대출 연간 원리금을 내보낸다',
+     Number.isFinite(calcCosts(ctx({ price: 만(80000), otherDebtMonthly: 만(50) })).existingAnnual));
+  tt('기존 대출 연간 원리금 = 월 상환액 × 12', (() => {
+     const c = calcCosts(ctx({ price: 만(80000), otherDebtMonthly: 만(50) }));
+     return Math.round(c.existingAnnual) === Math.round(만(50) * 12);
+  })(), String(calcCosts(ctx({ price: 만(80000), otherDebtMonthly: 만(50) })).existingAnnual));
+  tt('갚는 대출이 없으면 0', calcCosts(ctx({ price: 만(80000) })).existingAnnual === 0);
+  /* 🔴 **값 검사** — 위 넷은 표기를 봅니다. 이건 분자가 실제로 커지는지를 봅니다.
+     ⚠ 같은 price로 비교합니다. 기존 대출은 한도도 줄이므로 주담대 원리금이 같이 내려가는데,
+       그래도 **합이 커져야** 합니다. 안 커지면 부담률이 오히려 낮아지는 것이고,
+       그건 고치기 전과 같은 방향의 오차입니다(원칙 28). */
+  tt('기존 대출을 넣으면 부담 분자가 커진다', (() => {
+     const p = 만(80000);
+     const num = c => monthlyPaymentCalc(c.mortgageLoan, 5.4, 30) * 12 + (c.existingAnnual || 0);
+     return num(calcCosts(ctx({ price: p, otherDebtMonthly: 만(50) })))
+          > num(calcCosts(ctx({ price: p })));
+  })());
+
   /* 🔴 v23.18에서 뒤집었습니다.
      이전 규칙: 「부담은 클수록 무거우니 레드 3단으로만 간다」 → --ok가 #C4837C(팥죽색)였고
      정상 상태가 병색으로 읽혔습니다. 부담 18%는 실제로 좋은 상태이므로 신호등 방향이 맞습니다.
