@@ -1556,9 +1556,14 @@ HYGIENE.forEach(([name, over]) => {
      return (res.match(/class="disc[ "]/g)||[]).length === 3;
   })());
   /* 인테리어는 **닫힌 채로 시작합니다.** 기본값이 열림이면 접은 의미가 없습니다. */
+  /* 🔴 v25.21 — **대상을 옮겼습니다**(원칙 128). 인테리어 접기 줄이 `.disc` →
+     **`.disc.discline`**이 됐습니다(감사 C-3). 지키려던 사실은 「접기 문법이 한 벌인가」이고,
+     `.discline`은 **같은 문법의 한 변형**입니다 — 영수증의 「집값 외 부대비용」 줄이 이미 씁니다.
+     ⚠ 그래서 잠글 것을 「`.disc`인가」가 아니라 **「`disc`로 시작하는 한 문법인가 + 짝이 맞는가」**로
+       넓히되, `costbox`와 상태 짝은 그대로 잠급니다. */
   tt('인테리어 접기가 셋과 같은 문법이다', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return /class="disc" id="itToggle"[^>]*aria-controls="itBox"/.test(src)
+     return /class="disc(?: discline)?" id="itToggle"[^>]*aria-controls="itBox"/.test(src)
          && /class="costbox" id="itBox"/.test(src)
          && /\['itToggle','itBox','itOpen'\]/.test(src);
   })());
@@ -2663,6 +2668,39 @@ HYGIENE.forEach(([name, over]) => {
      const w = sel => (css2.match(new RegExp(sel+'\\{[^}]*border:([\\d.]+)px solid'))||[])[1];
      return ['\\.chip','\\.zonecard','\\.seg button'].every(x => w(x) === '1.5');
   })());
+  /* ═══ 🔴 v25.21 — 컴포넌트 높이 세 단 (감사 B-9 · 원칙 84 · 127) ══════════════
+     ⏹ `.zonecard`가 `padding:20px 6px`으로 렌더 **58px**이었습니다 — 3계층(54/46/35) 밖의
+       **넷째**입니다. 이 카드가 하는 일은 「셋 중 하나 고르기」로 칩·세그먼트와 같은 일인데
+       높이가 달랐습니다(DESIGN 0장 — 같은 일에 같은 규격).
+     🔴 **이 검사가 없어서 사보타주가 안 잡혔습니다.** 고쳐 놓고 게이트를 안 만들면
+       다음 판에 조용히 되돌아갑니다(원칙 127 — 잡아야 할 것이 안 잡히면 통과가 아닙니다).
+     ⚠ **값(46px)을 잠그지 않습니다.** 잠글 것은 **「높이가 `--h-*` 토큰에서 오는가」**입니다 —
+       값을 잠그면 토큰을 바꿀 때 검사가 거짓말이 됩니다(원칙 149 · v24.27이 같은 함정).
+     ⚠ 🔴 **이 검사가 안 보는 것**(원칙 151): 소스가 토큰을 써도 `padding`이 붙으면 렌더 높이는
+       토큰을 넘습니다(원칙 159 — 소스로 잠근 규격은 렌더에서 샙니다). 렌더 높이는
+       `tools/three.mjs`가 재지만 **게이트가 아닙니다.** 입력 화면 게이트(0장 2️⃣)에 넣을 자리입니다. */
+  tt('선택 버튼 높이가 토큰에서 온다 (v25.21)', (()=>{
+     const sel = ['\\.chip\\{', '\\.zonecard\\{', '\\.seg button\\{'];
+     return sel.every(x => {
+       const m = css2.match(new RegExp(x + '[^}]*'));
+       if(!m) return false;
+       const h = m[0].match(/min-height:([^;}]+)/);
+       return !!h && /var\(--h-/.test(h[1]);
+     });
+  })(), ['\\.chip\\{','\\.zonecard\\{','\\.seg button\\{'].map(x=>{
+       const m=css2.match(new RegExp(x+'[^}]*')); const h=m&&m[0].match(/min-height:([^;}]+)/);
+       return x.replace(/\\\\|\\{/g,'')+'='+(h?h[1]:'없음'); }).join(' / '));
+  /* 🔴 그리고 **세로 여백을 패딩으로 되돌리는 길**을 막습니다. 패딩으로 두면 글꼴이 바뀔 때
+     손가락 표적이 같이 작아집니다(원칙 112 · 123 — `.minigrid .mini`가 같은 이유로 min-height). */
+  tt('선택 버튼이 세로 패딩으로 높이를 만들지 않는다 (v25.21)', (()=>{
+     const m = css2.match(/\.zonecard\{[^}]*/);
+     if(!m) return false;
+     const pad = m[0].match(/padding:([^;}]+)/);
+     if(!pad) return true;
+     const first = pad[1].trim().split(/\s+/)[0];
+     return /^0(px)?$/.test(first);
+  })(), (css2.match(/\.zonecard\{[^}]*padding:([^;}]+)/)||[])[1] || '패딩 없음');
+
   tt('활성 상태는 테두리 색만 바꾼다', ['chip','zonecard','seg button'].every(n=>{
      const k = n==='seg button' ? '\\.seg button\\.is-on' : '\\.'+n+'\\.is-on';
      const m = css2.match(new RegExp(k+'\\{([^}]*)\\}'));
@@ -4352,13 +4390,28 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 🔴 카드 제목 넷이 **같은 문법**인가 — 전부 명사구입니다. 조건절·권유로 끝나면 톤이 갈립니다. */
   tt('결과 카드 제목이 넷 다 명사구다', (()=>{
+     /* ⏹ v25.21 — 넷 → **셋**입니다. 인테리어 카드의 제목 줄이 접기 줄과 합쳐졌습니다
+        (감사 C-3 · 원칙 43). 잠그는 사실은 개수가 아니라 **「전부 명사구인가」**이지만,
+        개수를 안 세면 제목이 통째로 사라져도 통과합니다 — 그래서 셋을 셉니다. */
      const t = [...SRC.matchAll(/<h2 class="card-title">([^<]*)<\/h2>/g)].map(m=>m[1].trim());
-     if(t.length !== 4) return false;
+     if(t.length !== 3) return false;
      return t.every(x => !/(다면|하세요|해보세요|할까요|보시|하시|주세요)$/.test(x));
   })(), [...(fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'')
        .matchAll(/<h2 class="card-title">([^<]*)<\/h2>/g))].map(m=>m[1]).join(' / '));
-  tt('인테리어 카드가 예산이 아니라 비용을 말한다',
-     /<h2 class="card-title">입주 전에 드는 인테리어 비용<\/h2>/.test(SRC));
+  /* 🔴 v25.21 — **대상을 옮겼습니다**(원칙 128). 이 문구는 `<h2>`에서 접기 줄의 `.k`로
+     자리를 옮겼을 뿐 **그대로 살아 있습니다.** 지키려던 사실은 「'예산'이 아니라 '비용'」입니다. */
+  tt('인테리어 카드가 예산이 아니라 비용을 말한다', (()=>{
+     const line = (SRC.match(/id="itToggle"[\s\S]{0,200}?<\/button>/)||[''])[0];
+     return /입주 전에 드는 인테리어 비용/.test(line) && !/예산/.test(line);
+  })());
+  /* 🔴 v25.21 — **접힌 줄이 값을 말합니다.** 접힌 채로 정보가 0이던 것이 C-3의 핵심이었습니다.
+     ⚠ 값은 `c.interiorCost` 하나에서 옵니다 — 영수증 인테리어 줄과 같은 값(원칙 58 · 91).
+     ⚠ 0이면 「—」입니다 — 「0원」은 「인테리어가 0원」으로 읽히는데 실제로는 안 정한 것(원칙 124). */
+  tt('인테리어 접힌 줄이 값을 말한다 (v25.21)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     const line = (src.match(/its\.textContent[^;]*/)||[''])[0];
+     return /id="itSum"/.test(src) && /c\.interiorCost/.test(line) && /'—'/.test(line);
+  })());
 })();
 
 /* ═══ v25.4 — 결과 히어로를 흰 카드로 ═══════════════════════════ */
@@ -5252,10 +5305,27 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ v24.29가 「갈리는 시 서랍」에서 정확히 같은 것을 이미 고쳤습니다(1,146px → 바로 아래).
        이 안내만 남아 있었습니다 — **같은 원칙(111)이 두 자리에 있었는데 한 자리만 고쳐져** 있었습니다.
      ⚠ 잠글 것은 「몇 px」이 아니라 **「고른 칩과 같은 격자, 그 다음 자리」**입니다. */
-  tt('지역 안내가 고른 칩 다음 자리에 들어간다', (()=>{
+  /* 🔴 v25.22 — **대상을 옮겼습니다**(원칙 128). 「칩 **바로 다음 칸**」이던 것을
+     「그 칩이 있는 **줄 다음**」으로 바꿨습니다 — 안내가 `grid-column:1/-1`이라 줄 중간에
+     끼면 **같은 줄 동료가 아래로 밀립니다**(실측 390px: 종로구를 고르면 중구·용산구가
+     295 → 438px). 누른 것이 아닌 것이 움직이면 안 됩니다(원칙 34).
+     ⚠ 지키려던 사실은 그대로입니다 — **「고른 칩과 같은 격자, 그 바로 아래」**.
+       바뀐 것은 「다음 칸」이 아니라 「다음 줄」이라는 것뿐입니다.
+     ⚠ 그리고 **열 수를 손으로 안 적는가**를 같이 잠급니다 — `wide` 하나에서 와야 합니다.
+       리터럴 3을 박으면 `TAG_WIDE`가 정한 2열에서 줄 계산이 어긋납니다(원칙 58 · 84). */
+  tt('지역 안내가 고른 칩이 있는 줄 다음에 들어간다 (v25.22)', (()=>{
      const f = (RAW.match(/const tagGrid = \(list[\s\S]*?\n\};/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
-     return /after\s*&&\s*String\(key\)\s*===\s*String\(S\.sgg\)/.test(f);
-  })(), '🔴 tagGrid가 S.sgg 칩 다음에 안내를 넣어야 합니다');
+     /* ⚠ `[^)]*`로 자르지 않습니다 — 인자가 `([key]) =>`라 **괄호를 품고 있어** 거기서
+        끊깁니다(지침 6-26 · 실제로 이 검사가 처음에 그렇게 죽었습니다). */
+     const 줄찾기 = /findIndex\([\s\S]{0,80}?String\(S\.sgg\)/.test(f) && /rowEnd/.test(f);
+     const 줄끝에 = /i === rowEnd/.test(f.replace(/\s+/g,' '));
+     return 줄찾기 && 줄끝에;
+  })(), '🔴 tagGrid가 S.sgg 칩이 있는 줄 끝에 안내를 넣어야 합니다');
+  tt('격자 열 수를 손으로 안 적는다 (v25.22)', (()=>{
+     const f = (RAW.match(/const tagGrid = \(list[\s\S]*?\n\};/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     const m = f.match(/const cols = ([^;]+);/);
+     return !!m && /wide/.test(m[1]);
+  })(), (fs.readFileSync(FILE,'utf8').match(/const cols = ([^;]+);/)||[])[1] || '없음');
   tt('안내가 격자 한 줄을 통째로 먹는다', /\.taggrid > \.tip\{[^}]*grid-column:1\/-1/.test(CSSA));
   /* 어느 격자에도 못 들어간 경우(그룹을 바꿔 칩이 목록에 없을 때) 조용히 사라지면 안 됩니다 */
   tt('자리를 못 잡은 안내가 사라지지 않는다', (()=>{
@@ -5431,6 +5501,33 @@ HYGIENE.forEach(([name, over]) => {
      v25.20이 알약 자체를 뺐습니다. 원칙 141이 말하는 「자리를 두 번 옮기면 존재 문제」를
      v25.19가 아직 못 본 것입니다. **잠금은 오더보다 오래 삽니다**(원칙 148) — 그래서
      지우지 않고 **옮겼습니다.** */
+
+/* ═══ 🔴 v25.22 — 정책대출 각주는 자격이 될 수 있는 집값에서만 (오너 지적) ══════════
+   ⏹ 「디딤돌·보금자리론을 받으면 한도가 더 늘어나요」가 **한도가 있는 모든 화면**에 붙었습니다.
+     두 상품에는 집값 상한이 있고(디딤돌 5억 · 신생아특례 9억 · 보금자리론 6억), 실기 캡쳐의
+     집값은 **17.7억**이라 셋 다 대상 밖입니다. 엔진은 그걸 알고 은행 경로로 떨어뜨리는데
+     화면만 반대로 말했습니다(원칙 143). 오독 방향은 **유리한 쪽**입니다(원칙 28).
+   ⚠ 잠글 것은 「9억」이 아니라 **「상한을 POLICY에서 뽑는가」와 「조건부인가」**입니다 —
+     값을 잠그면 정책이 바뀔 때 검사가 거짓말이 됩니다(원칙 84 · 149). */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  const f = (BARE.match(/const policyPriceMax[\s\S]*?notes\.hidden/)||[''])[0];
+  tt('정책대출 각주가 조건부다 (v25.22)',
+     !!f && /policyPossible \?/.test(f), f ? '조건부 ✅' : '🔴 못 찾음');
+  tt('정책 집값 상한을 POLICY에서 뽑는다 (v25.22)',
+     !!f && /POLICY\.policyLoan/.test(f) && !/[0-9]00000000/.test(f));
+  /* 🔴 **값 검사** — 위 둘은 표기를 봅니다. 이건 실제로 갈리는지를 봅니다.
+     ⚠ 「상한 이하면 보이고, 넘으면 안 보인다」 둘 다 확인합니다 — 한쪽만 보면
+       늘 보이거나 늘 안 보이는 코드도 통과합니다(원칙 127의 계열). */
+  tt('정책 집값 상한이 실제로 갈린다 (v25.22)', (()=>{
+     const caps = Object.values(E.POLICY.policyLoan)
+       .flatMap(v => Object.values(v.price || {})).filter(Number.isFinite);
+     const max = Math.max(...caps, 0);
+     return max > 0 && max < 만(200000);      /* 상한이 있고, 20억보다는 작아야 뜻이 있습니다 */
+  })(), String(Math.max(...Object.values(E.POLICY.policyLoan)
+       .flatMap(v => Object.values(v.price || {})).filter(Number.isFinite), 0)));
+})();
 
 const total = pass + fails.length;
 console.log('\n영끌계산기 회귀 테스트 — ' + path.basename(FILE));
