@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.18 · 정책 2026.08.13 -->
+<!-- BUILD v25.20 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -791,22 +791,8 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 위 규칙의 `--t4`를 고치지 않고 **여기서 덮습니다** — 원래 선언과 그 근거(v25.11의
      `color` 중복 사고)를 지우지 않기 위해서입니다. 되돌릴 자리는 이 한 줄입니다. */
 .rhead-tail{font-size:var(--t6)}
-/* 🔴 v23.21 — 굵은 세로선(3px)을 지웠습니다. 위계는 「선」이 아니라 「면」으로 만듭니다.
-   평상시는 중립 틴트, 한도에 걸렸을 때만 오렌지 틴트 + 오렌지 글자로 갈립니다. */
-.rhead-why{display:block;margin:16px 0 0;padding:12px 14px;border-radius:var(--r-m);
-  background:var(--ink-tint);font-size:var(--t6);font-weight:600;
-  color:var(--ink-2);line-height:1.6}
-/* 🔴 v24.25 — **`__selfcheck()`의 G-19가 4.19:1로 잡았습니다.**
-   원인은 색이 아니라 **놓인 자리**입니다(원칙 97) —
-     `--warn`은 주석에 「흰 면 위 5.00:1」로 적혀 있고 실제로 흰 카드 위에서는 4.61:1입니다.
-     그런데 이 알약은 흰 카드가 아니라 **회색 배경(--bg) 위**에 얹힙니다 → 4.19:1.
-   ⚠ **규제·구간한도에 걸린 사람에게만 뜨는 알약**이라 G-19 신설(v24.7) 뒤 처음 측정됐습니다.
-     「검사가 있다」와 「그 조건이 화면에 뜬 적 있다」는 다릅니다.
-   → 원칙 100대로 **면이 아니라 글자를 뒤집습니다.** `--bad`는 같은 자리에서 **6.17:1**입니다.
-   🔴 그리고 이건 채널을 섞는 게 아닙니다 — **클래스 이름이 이미 `.bad`였는데 색만 `--warn`**이었습니다.
-     이름과 값이 어긋나 있던 자리라, 값을 이름에 맞추는 쪽이 맞습니다(원칙 91 · 지침 6-3).
-   ⚠ 면(`--warn-tint`)은 그대로 둡니다. 면까지 바꾸면 톤이 달라져 색만 바꾸는 판이 아니게 됩니다. */
-.rhead-why.bad{background:var(--warn-tint);color:var(--bad)}
+/* ⏹ v25.20 — `.rhead-why`(히어로 알약)를 **마크업·CSS·호출을 한 번에** 지웠습니다.
+   남기면 「살아 있는 두 번째 정의」가 됩니다(원칙 84 · 141 · 6-6). 근거는 마크업 주석에. */
 /* 🔴 v25.10 — **껍데기를 되살렸습니다**(오너 지시 · 재송부). 면 + 헤어라인 + 알약 곡률.
    ⏹ v25.7이 벗긴 것은 넷이었습니다 — 면 · 테두리 · 그림자 · **35px 높이**.
      넷을 다 되돌리면 360px에서 다시 **세 줄 · 약 130px**입니다(v25.7 실측).
@@ -1817,7 +1803,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    재는 것 : 360px에서 히어로 472 → 423px · 결과 전체 2,873 → 2,722px. */
 @media (max-width:400px){
   .card-title{margin-bottom:14px}
-  .rhead-why{margin-top:12px;padding:10px 14px}
   .fundwrap{margin-top:18px}
   .condbar{margin-top:12px}
 }
@@ -1918,7 +1903,19 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              ① 자리가 「금액·판정 아래인가」 ② 「테두리를 가진 누를 수 있는 것인가」를 잠급니다. -->
       <p class="rhead-label" id="heroLabel"></p>
       <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p>
-      <p class="rhead-why" id="heroPill"><span></span></p>
+      <!-- 🔴 v25.20 — **히어로 알약(`heroPill`)을 뺐습니다**(오너 지시).
+           ⏹ 이 알약은 「무엇이 내 한도를 정했나」를 말했습니다. 그런데 그 답은 **바로 아래
+             영수증의 「대출 한도 산출 기준」 서랍**이 이미 셋으로 말하고 있었습니다 —
+             한도 막대(굵게 표시된 줄) · `bindingTip`(왜 그런가) · `roomTip`(방공제).
+           🔴 **원칙 141 그대로입니다** — v25.13(이름을 막대와 맞춤) · v25.15(주어를 붙임) ·
+             v25.19(「한도」를 붙임)가 **세 판 연속 같은 22자를 다퉜습니다.** 자리를 옮기는
+             판단이 두 번 넘게 나오면 그건 자리 문제가 아니라 **존재 문제**입니다.
+           🔴 그리고 감사 A-2(한도 이름 **세 벌** · 원칙 58 위반)가 이걸로 **한 벌**이 됩니다 —
+             알약이 사라지면 이름은 `LNAME` 하나에서만 나옵니다.
+           ⏹ AUDIT 3-6이 적어 둔 것과 같은 판단입니다 — 「이 문장은 **답**이 아니라
+             **답이 어떻게 나왔는가**인데 답 바로 아래 있다」. 결과는 결론을 읽는 화면입니다.
+           ⚠ **답을 잃지 않습니다.** 접힌 서랍 줄이 그 이름을 들고 나옵니다(아래 `limitBind`) —
+             문법은 「집값 외 부대비용」 줄과 **같습니다**(새 부품 0). -->
       <!-- 🔴 v24.31 — **비율 막대를 히어로 안으로 들였습니다(블록 1 — 자금 구조).**
            ⏹ 전에는 `.bento`의 첫 타일(흰 카드)이었습니다. 그런데 이 막대가 말하는 것은
              **바로 위 금액이 어디서 오는가**입니다 — 같은 한 문장을 카드 경계가 끊고 있었습니다.
@@ -2066,7 +2063,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
       <div id="receiptBot"></div>
 
       <button class="disc" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
-        <span>대출 한도 산출 기준</span><span class="caret">▾</span></button>
+        <span class="k">대출 한도 산출 기준</span><span class="v" id="limitBind"></span><span class="caret">▾</span></button>
       <!-- 🔴 v25.7 — **※ 각주를 카드 맨 아래로 내렸습니다**(오너 지적).
            ⏹ 전: 막대 → 「무엇이 한도를 정했나」 설명 → **※ 둘** → 방공제 설명.
              한도 이야기를 읽는 도중에 ※(전제 조건 · 면책)가 끼어들고, 그 뒤에 다시
@@ -3335,7 +3332,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.18 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.20 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4179,61 +4176,12 @@ function ctx(){
     brokerCustom:(S.broker.on && S.broker.v != null) ? S.broker.v : null,
     etc:etcMan(), over85:S.pyeong*2.45>85, firstTimeTaxCut:false, seominCheck:false };
 }
-/* 🔴 v25.13 — 「정부 상한」 문장을 **한 곳에서** 만듭니다(원칙 84).
-   ⚠ 값은 `c.limits['구간한도']` 하나에서 옵니다 — 한도 막대가 적는 바로 그 값입니다.
-     유한한 수가 아니면 괄호를 뺍니다(「(0원)」은 「상한이 0」으로 읽힙니다). */
-function capLabel(c){
-  const v = (c.limits||{})['구간한도'];
-  /* 🔴 v25.15 — **주어를 답니다.** v25.13이 이름을 막대와 맞췄지만(「정부 상한」),
-     **무엇이 그 상한에 닿았는지**는 여전히 안 말했습니다 — 「내 DSR 한도인가 · 총부채 상한인가 ·
-     주담대 한도인가」가 갈리지 않습니다. 이 알약이 말하는 것은 언제나 **주담대 한도**입니다.
-     ⚠ 다른 넷(LTV · DSR · 상품 · 은행)은 이름 안에 이미 대상이 들어 있어 안 건드립니다
-       (「주담대 비율(LTV) 최대 한도에 도달했어요」). 주어가 없던 것은 이 한 줄뿐입니다.
-     ⚠ 🔴 **「주담대 한도가」(25자)는 360·375px에서 두 줄이었습니다.** v25.12가 이 알약을
-       한 줄로 만든 자리라(내용 폭 296 → 304px) 두 줄로 되돌릴 수 없습니다.
-       → **「주담대가」(22자)** — 다섯 폭 전부 한 줄이고 주어는 그대로 살아 있습니다.
-       **자수가 아니라 폭입니다**(원칙 144). 「한도가」를 뺀 것은 뜻이 아니라 **글자**입니다.
-     ⚠ 괄호 금액은 `POLICY.bandCap`에서 옵니다(지금 6억/4억/2억 — 전부 짧습니다).
-       **정책이 바뀌어 「1억 5,000만원」 같은 값이 되면 줄 수를 다시 재십시오.** */
-  return '주담대가 정부 상한' + (Number.isFinite(v) && v > 0 ? `(${formatWon(v)})` : '') + '에 도달했어요';
-}
-function bindingShort(c){
-  if(S.noLoan) return ['대출 없이, 가진 돈만으로 계산했어요',''];
-  if((c.limits||{}).LTV===0 || c.mortgageLoan<=0)
-    return ['이 조건에서는 주담대가 나오지 않아요','bad'];
-  const B={ DSR:['소득 대비 대출 규제(DSR) 최대 한도에 도달했어요','bad'],
-    DTI:['소득 대비 대출 규제(DSR) 최대 한도에 도달했어요','bad'],
-    /* 🔴 v25.3 — **LTV만 중립(빈 tone)입니다. 일부러입니다.**
-       오너가 실기에서 「이건 원래 레드였는데」로 물었고, 확인해 보니 **다섯 중 넷이 레드**이고
-       LTV만 중립이었습니다. 그 이유가 코드 어디에도 안 적혀 있어서 여기 적습니다.
-       · LTV 도달은 **가장 흔하고 정상적인 경우**입니다 — 무주택·비규제에서 70%를 다 쓰면
-         반드시 LTV가 한도를 정합니다. 「빌릴 수 있는 만큼 다 빌렸다」는 뜻이지 제약이 아닙니다.
-       · 나머지 넷(DSR · 구간한도 · 상품한도 · 은행자체한도)은 **소득이나 규제가 더 빌릴 수 있는 것을
-         막은 경우**라 성격이 다릅니다.
-       ⚠ 오너 확인(2026.08.17): **지금 그대로 둡니다.** 바꾸려면 다섯을 한 번에 맞추십시오 —
-         하나만 옮기면 「어느 한도가 나쁜 것인가」가 화면마다 달라집니다. 검사가 이 다섯을 셉니다. */
-    LTV:['주담대 비율(LTV) 최대 한도에 도달했어요',''],
-    /* 🔴 v25.13 — **이름을 한도 막대와 맞추고 금액을 답니다**(오너 지적 — 「무슨 말인지 모르겠다」).
-       ⏹ 전: 「**정부 규제의 집값 구간별 상한**에 도달했어요」
-         ① **같은 한도를 화면이 두 이름으로 부릅니다.** 바로 아래 한도 막대(`LNAME`)와
-            안내 시트는 이것을 **「정부 상한」**이라고 씁니다. 한 사람이 한 화면에서 같은 것을
-            두 이름으로 만납니다(원칙 58 · 91).
-         ② 명사가 넷 겹쳐 있어(정부 규제 + 의 + 집값 구간 + 별 + 상한) 어디서 끊는지 모릅니다.
-         ③ **숫자를 안 말합니다.** 그 상한이 얼마인지는 이미 `c.limits`에 있는데 안 적었습니다.
-       → 이름은 「정부 상한」 하나로, 괄호에 **막대가 적는 바로 그 값**을 답니다.
-       ⚠ **금액을 손으로 안 적습니다.** `c.limits['구간한도']`를 그대로 씁니다 — 막대(`renderLimits`)가
-         같은 값을 `formatWon`으로 적으므로 두 숫자가 갈릴 수 없습니다(원칙 84 · 91).
-       ⚠ 값이 없거나 무한이면 **괄호를 통째로 뺍니다.** 「정부 상한(0원)」은 「상한이 0」으로 읽힙니다.
-       ⚠ **다른 넷은 안 건드렸습니다.** LTV·DSR의 「비율(LTV) 최대 한도에 도달」은 v24대의
-         「전문형」 결정을 검사가 잠그고 있고, 오너 지적은 이 한 줄이었습니다. 한 판에 하나씩.
-         ⏹ 남은 것 : 알약(전문형)과 막대(짧은 별칭)의 **이름이 여전히 두 벌**입니다.
-           근본 해결은 「알약을 누르면 한도 서랍이 열린다」이고, 그건 결과 화면 판입니다. */
-    '구간한도':[capLabel(c),'bad'],
-    '상품한도':['상품별 대출 상한에 도달했어요','bad'],
-    '은행자체한도':['은행 자체 한도에 도달했어요','bad'],
-    manual:['은행 자체 한도에 도달했어요','bad'] };
-  return B[c.binding] || ['한도가 정해졌어요',''];
-}
+/* ⏹ v25.20 — **`capLabel()`과 `bindingShort()`를 지웠습니다.**
+   히어로 알약이 유일한 소비자였고, 알약을 빼면 둘 다 죽은 코드입니다. 죽은 코드는 다음
+   사람에게 「아직 쓰는 것」으로 보이고, 「살아 있는 두 번째 정의」가 됩니다(원칙 47 · 84).
+   ⚠ **지울 때 마크업 · CSS · 함수 · 검사를 한 번에** 지웠습니다(원칙 141).
+   ⚠ 한도 이름은 이제 `LNAME` **한 벌**입니다 — 감사 A-2가 여기서 닫힙니다(원칙 58).
+   ⚠ 「무엇이 한도를 정했나」의 **설명**은 `bindingTip()`이 그대로 냅니다(서랍 안). */
 function bindingTip(c, price){
   if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 금액이 올라가요.`;
   const L=c.limits||{};
@@ -4297,7 +4245,6 @@ function showResult(keepScroll){
   if(S.lockedPrice==null) S.lockedPrice = solveMaxPrice(man(S.cash), base);
   const price = S.priceOverride!=null ? man(S.priceOverride) : S.lockedPrice;
   const c = calcCosts({...base, price});
-  const [short,tone]=bindingShort(c);
   const isOverride = S.priceOverride!=null;
   const headline = isOverride ? Math.max(0,c.cashNeeded) : price;
 
@@ -4310,7 +4257,6 @@ function showResult(keepScroll){
        거치므로 자릿수가 튀지 않습니다. */
   rollUpWon($('heroAmount'), approx(headline), !keepScroll);
   $('heroTail').textContent = '수준이에요';
-  const pill=$('heroPill'); pill.className='rhead-why '+tone; pill.querySelector('span').textContent=short;
   renderCondBar(price);
 
   /* 🔴 v24.23 — 결과를 다시 계산할 때마다 시뮬레이터를 기준 금리로 되돌립니다.
@@ -4319,7 +4265,7 @@ function showResult(keepScroll){
   renderBento(c); renderReceipt(c, price); renderLimits(c, price); renderDiscs();
   renderCostBox(c); renderPkg(); renderOutlinks(price); renderDeals(price);
   bindRateSim();
-  LASTVIEW = {c, price, headline, isOverride, short};
+  LASTVIEW = {c, price, headline, isOverride};   /* ⏹ v25.20 — `short`는 알약과 함께 지웠습니다(renderReport가 안 씁니다 · 원칙 47) */
   renderReport(LASTVIEW);
 
   /* 🔴 v23.21 — 두 줄이 같은 말을 두 번 하고 있었습니다(원칙 43). 한 줄로 합칩니다.
@@ -4705,6 +4651,17 @@ function renderLimits(c, price){
       <span class="k">${LNAME[k]||k}</span><span class="bar"><i style="width:${max>0?Math.round(L[k]/max*100):0}%"></i></span>
       <span class="v">${formatWon(L[k])}</span></div>`).join('');
   }
+  /* 🔴 v25.20 — **접힌 서랍 줄이 답을 들고 나옵니다.**
+     히어로 알약을 뺐으므로, 「무엇이 한도를 정했나」를 **펴지 않고도** 알 수 있어야 합니다.
+     ⚠ 이름은 **`LNAME` 하나에서** 옵니다 — 바로 아래 굵게 표시되는 그 줄과 같은 문자열입니다.
+       두 벌로 두면 반드시 어긋납니다(원칙 58 · 감사 A-2가 여기서 닫힙니다).
+     ⚠ **금액을 안 적습니다.** 이 줄은 「무엇이」이고 「얼마」는 펴면 막대가 말합니다 —
+       접힌 줄에 금액을 적으면 바로 위 영수증 금액 열과 세로로 겹쳐 **다른 것을 비교하게** 됩니다.
+     ⚠ 한도가 없으면(대출 없음) **비웁니다.** 「없음」을 적으면 「한도가 0」으로 읽힙니다(원칙 124) —
+       그 사정은 펴면 첫 줄이 문장으로 말합니다.
+     ⚠ 문법은 「집값 외 부대비용」 접기 줄과 **같습니다**(`.k` + `.v` + `.caret`) — 새 부품 0. */
+  const lb = $('limitBind');
+  if(lb) lb.textContent = keys.length ? (LNAME[c.binding] || '') : '';
   $('limitTip').innerHTML = bindingTip(c, price)
     /* 🔴 v24.18 — **※ 세 줄을 두 줄로 합쳤습니다.**
        전: ①「본 DSR 한도는 …산출되었으므로, 실제 금액은 은행 상담으로 확인해 주세요.」(유일한 「~습니다」체 + 한자투)
