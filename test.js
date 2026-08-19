@@ -5124,15 +5124,42 @@ HYGIENE.forEach(([name, over]) => {
      const reedit = /reeditBtn'\)\.onclick[\s\S]{0,200}?S\.fromResult = true;/.test(bare);
      return /fromResult:false/.test(bare) && cond && reedit;
   })(), '🔴 조건칩과 「이전 단계」 둘 다 fromResult를 켜야 합니다');
-  tt('그때 CTA가 결과로 돌아간다고 말한다', (()=>{
+  /* 🔴 v25.15 — **대상을 옮겼습니다. v25.14의 처방이 회귀를 냈습니다**(오너 실기 지적).
+     ⏹ v25.14는 결과에서 온 사람의 **주 버튼을 「결과 다시 보기」로 덮었습니다.** 그러면
+       01만 고치고 **02·03도 이어서 보려던 사람의 길이 막힙니다** — 「결과로 바로」와
+       「다음 단계로」는 **둘 다 참인 의도**인데 버튼 하나에 겹쳐 놓은 것이 잘못이었습니다.
+     → 지키려던 사실은 「CTA 문구가 바뀐다」가 아니라 **「결과로 한 번에 돌아가는 길이 있다」**입니다.
+       이제 **주 버튼은 순차 이동을 유지**하고, 곁길은 **상단 바 보조 버튼**입니다(원칙 128).
+     ⚠ 그래서 이 절은 셋을 잠급니다 —
+       ① 주 버튼이 **fromResult로 갈라지지 않는다**(회귀 재발 방지)
+       ② 보조 버튼이 **있고 fromResult일 때만 보인다**
+       ③ 그 버튼이 **집값을 풀고** 결과로 간다. */
+  tt('주 버튼이 결과 복귀로 덮이지 않는다', (()=>{
      const f = (RAW.match(/function syncCta\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
-     return /S\.fromResult \?/.test(f) && /결과 다시 보기/.test(f);
+     const n = (RAW.match(/function next\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     /* ⚠ `next()`가 **끄는 것**(`S.fromResult=false`)은 정상입니다 — 퍼널을 끝까지 걸어
+        결과에 닿으면 그 길은 끝난 것입니다. 막을 것은 **갈라지는 것**(`if(S.fromResult)`)입니다.
+        「없다」로 잠그면 정당한 정리 코드까지 막습니다(원칙 48). */
+     return !/fromResult/.test(f) && !/if\s*\(\s*S\.fromResult/.test(n);
   })(), (RAW.match(/b\.textContent = [^;]*/)||['없음'])[0].replace(/\s+/g,' ').slice(0,90));
-  tt('그 버튼이 실제로 결과로 간다', (()=>{
-     const f = (RAW.match(/function next\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
-     /* ⚠ 집값을 다시 풀지 않으면 바뀐 조건과 잠긴 값이 갈립니다(원칙 91) */
-     return /if\(S\.fromResult\)\{[^}]*S\.lockedPrice=null;[^}]*showResult\(\);/.test(f);
-  })(), '🔴 fromResult 분기가 lockedPrice를 비우고 showResult로 가야 합니다');
+  tt('결과로 돌아가는 보조 문이 따로 있다', (()=>{
+     const bare = RAW.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
+     const mark = /id="toResultBtn"/.test(bare);
+     const show = /tr\.hidden = !S\.fromResult/.test(bare);
+     return mark && show;
+  })(), '🔴 상단 보조 버튼이 있고 fromResult일 때만 보여야 합니다');
+  tt('그 보조 문이 실제로 결과로 간다', (()=>{
+     const f = (RAW.match(/function backToResult\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     /* ⚠ 집값을 다시 풀지 않으면 바뀐 조건과 잠긴 값이 갈립니다(원칙 91)
+        ⚠ ready()가 거짓이면 아무 일도 안 합니다 — 빈 답을 결과라고 부르지 않습니다(원칙 124) */
+     return /if\(!ready\(\)\) return;/.test(f) && /S\.lockedPrice=null;/.test(f) && /showResult\(\);/.test(f);
+  })(), '🔴 backToResult가 ready 확인 · lockedPrice 해제 · showResult 셋을 다 해야 합니다');
+  /* ⚠ 이 보조 문은 **앱 안에서 끝나는 이동**입니다 — v25.14가 `↗`를 「밖으로 나간다」 한 뜻으로
+     좁혔으므로 여기에 화살표를 달면 그 뜻이 깨집니다(채널 C). */
+  tt('결과 복귀 버튼에 밖으로 나가는 표식을 안 쓴다', (()=>{
+     const b = (RAW.match(/<button[^>]*id="toResultBtn"[\s\S]*?<\/button>/)||[''])[0];
+     return !!b && !/↗|arw/.test(b);
+  })());
   /* ⚠ 이 값은 **그 세션의 길**이지 입력이 아닙니다 — 초안에 저장하면 탭을 닫았다 돌아온 사람의
      버튼까지 「결과 다시 보기」가 됩니다(그 사람에게는 돌아갈 결과가 없습니다). */
   tt('결과에서 온 길을 초안에 저장하지 않는다', (()=>{
@@ -5155,6 +5182,64 @@ HYGIENE.forEach(([name, over]) => {
      return four.every(it => /class="arw"/.test(it) === /target="_blank"/.test(it));
   })(), ['outNaver','outHogang','outSave','outCopy'].map(id=>{ const it=MINI(id);
      return id + (/target="_blank"/.test(it)?'(밖)':'(안)') + (/class="arw"/.test(it)?'↗':'—'); }).join(' · '));
+})();
+
+/* ═══ v25.15 — 실기 지적 반영 (마이크로카피 · 위계 · 동선) ══════════
+   외부 UX 검토 여덟 건 중 **넷은 전제가 사실과 달랐습니다**(아래 표는 README v25.15 절).
+   여기서 잠그는 것은 실제로 고친 셋입니다.
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  const CSSB = (RAW.match(/<style>([\s\S]*?)<\/style>/)||['',''])[1].replace(/\/\*[\s\S]*?\*\//g,'');
+
+  /* ── ① 구간한도 알약이 주어를 갖는다 ────────────────────────────
+     「정부 상한에 도달했어요」만으로는 **무엇이** 닿았는지 모릅니다 —
+     내 DSR 한도인지, 총부채 상한인지, 주담대 한도인지. 이 알약은 언제나 **주담대**입니다.
+     ⚠ 잠글 것은 「그 문장」이 아니라 **「주어가 있다」**입니다(원칙 48). */
+  tt('구간한도 알약이 무엇이 닿았는지 말한다', (()=>{
+     const f = (BARE.match(/function capLabel\([\s\S]*?\n\}/)||[''])[0];
+     return !!f && /주담대/.test(f) && /정부 상한/.test(f);
+  })(), (RAW.match(/return '주담대[^;]*/)||['없음'])[0].slice(0,70));
+
+  /* ── ② 히어로 서술이 금액보다 두 단 아래다 ──────────────────────
+     🔴 v25.11이 오너 지시로 이 잉크를 한 단 **올린** 자리입니다(「너무 안 보인다」).
+        그 결정을 되돌리지 않고 **크기**로 위계를 냈습니다 — 조용하게 만드는 것은
+        색이 아니라 크기와 굵기입니다(원칙 100).
+     ⚠ 잠글 것은 「14px이다」가 아니라 **「금액과의 크기 차가 충분하다」**와
+       **「v25.11이 올린 잉크가 안 내려갔다」** 둘입니다. */
+  tt('히어로 서술이 금액보다 확실히 작다', (()=>{
+     const lab = (CSSB.match(/\n\.rhead-label\{([^}]*)\}/)||[])[1] || '';
+     const tail = (CSSB.match(/\n\.rhead-tail\{([^}]*)\}/g)||[]).join(' ');
+     const t = x => (x.match(/font-size:var\((--t\d)\)/g)||[]).pop();
+     /* --t6(14) 이하여야 합니다. 히어로는 clamp(32,11vw,--d1)로 40px 안팎입니다 */
+     const ok = v => v === 'font-size:var(--t6)' || v === 'font-size:var(--t7)';
+     return ok(t(lab)) && ok(t(tail));
+  })(), (()=>{ const lab=(CSSB.match(/\n\.rhead-label\{([^}]*)\}/)||[])[1]||'';
+     return 'label ' + (lab.match(/font-size:[^;}]*/)||['?'])[0]
+          + ' / tail ' + ((CSSB.match(/\n\.rhead-tail\{[^}]*font-size:[^;}]*/g)||[]).pop()||'?').split('font-size:').pop(); })());
+  tt('히어로 서술 잉크를 v25.11 이전으로 되돌리지 않았다', (()=>{
+     const lab = (CSSB.match(/\n\.rhead-label\{([^}]*)\}/)||[])[1] || '';
+     return /color:var\(--ink-2\)/.test(lab);
+  })(), '🔴 오너가 「너무 안 보인다」고 올린 잉크입니다(v25.11) — 크기로만 조절합니다');
+
+  /* ── ③ 결과 복귀는 곁길이지 주 버튼이 아니다 ────────────────────
+     🔴 v25.14가 주 버튼을 덮어 **「01만 고치고 02로 이어 가려는 사람」의 길을 막았습니다.**
+        「결과로 바로」와 「다음 단계로」는 **둘 다 참인 의도**입니다 — 한 버튼에 겹치면 안 됩니다.
+     ⚠ 세 검사가 이 절 앞쪽(v25.14 블록)에 있습니다. 여기서는 **자리**만 한 번 더 잠급니다. */
+  tt('결과 복귀 버튼이 하단 도크에 있지 않다', (()=>{
+     const dock = (BARE.match(/<div class="dock"[\s\S]*?<\/div>\s*<\/div>/)||[''])[0];
+     return !/toResultBtn/.test(dock);
+  })(), '🔴 도크는 「이전 + 다음」 둘입니다 — 셋이 되면 엄지 폭이 나뉩니다');
+  tt('결과 복귀 버튼이 상단 바에 있다', (()=>{
+     const bar = (BARE.match(/<div class="appbar">[\s\S]*?<\/div>/)||[''])[0];
+     return /id="toResultBtn"/.test(bar);
+  })());
+  /* ⚠ 새 규격을 만들지 않았습니다 — `.trust`(35px 알약)를 그대로 씁니다(지침 6-22). */
+  tt('결과 복귀 버튼이 기존 부품을 재사용한다', (()=>{
+     const b = (BARE.match(/<button[^>]*id="toResultBtn"[^>]*>/)||[''])[0];
+     return /class="trust /.test(b) && /\.trust\.barresult\{/.test(CSSB);
+  })(), (BARE.match(/<button[^>]*id="toResultBtn"[^>]*>/)||['없음'])[0].slice(0,70));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
