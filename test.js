@@ -1204,7 +1204,22 @@ HYGIENE.forEach(([name, over]) => {
      5행 상한 때문에 화면에는 5줄인데 실제로는 6건일 수 있습니다.
      리드에는 **가진 건수**를 적습니다 — 「+10%까지」를 켰을 때 숫자가 움직여야
      칩이 무언가 했다는 걸 압니다. */
-  tt('건수를 밝힌다', /\$\{total\}건/.test(UI));
+  /* 🔴 v25.18 — **대상을 옮겼습니다**(원칙 128). 지키려던 사실은 「'건'이라는 글자」가 아니라
+     **「머리가 `shown`이 아니라 `total`(가진 것)을 적는다」**입니다. */
+  tt('머리가 가진 수를 밝힌다', /\$\{total\}(건|곳)/.test(UI));
+  /* 🔴 v25.18 — **단위를 접는 축에 묶습니다**(원칙 91 · 134).
+     목록을 `dealSameKey`(단지)로 접으면 `total`은 **곳**이고, 면적으로 접으면 **곳이 아닙니다**
+     (「현대 47평」과 「현대 35평」은 2곳이 아닙니다). 축을 되돌리면 이 검사가 걸립니다 —
+     단위만 따로 잠그면 축이 바뀔 때 머리가 조용히 거짓이 됩니다. */
+  tt('머리의 단위가 접는 축과 같다', (()=>{
+     const dd = (UI.match(/const dedupe = arr => \{[\s\S]*?\n  \};/)||[''])[0];
+     if(!dd) return false;
+     const byComplex = /dealSameKey\(x\)/.test(dd);
+     const byArea    = /areaM2/.test(dd);
+     const unit = (UI.match(/최근 3개월 · \$\{total\}(건|곳)/)||[])[1];
+     if(!unit) return false;
+     return byComplex && !byArea ? unit === '곳' : unit === '건';
+  })(), (UI.match(/최근 3개월 · \$\{total\}(건|곳)/)||[])[1] || '못 찾음');
 
   /* 🔴 API가 주지 않는 값으로 칩을 만들지 않습니다. buildYear 하나만 씁니다. */
   /* ⏹ v24.14 — 칩이 **둘**이 됐습니다. 다만 성격이 다릅니다.
@@ -5267,12 +5282,38 @@ HYGIENE.forEach(([name, over]) => {
         「없다」로 잠그면 정당한 정리 코드까지 막습니다(원칙 48). */
      return !/fromResult/.test(f) && !/if\s*\(\s*S\.fromResult/.test(n);
   })(), (RAW.match(/b\.textContent = [^;]*/)||['없음'])[0].replace(/\s+/g,' ').slice(0,90));
+  /* 🔴 v25.18 — **대상을 옮겼습니다**(원칙 128 · 지우지 않았습니다).
+     ⏹ 전 : `tr.hidden = !S.fromResult`라는 **문자열 한 줄**을 찾았습니다. 그 줄은
+       `render()` 안에만 있었고 `render()`는 입력 화면에서만 돕니다 — 그래서
+       **「결과 보기」로 결과에 돌아오면 버튼이 안 사라졌습니다.** 검사는 초록이었습니다.
+       **검사가 지키려던 사실은 「그 줄이 있다」가 아니라 「입력 화면에서만 보인다」였습니다.**
+     → 이제 셋을 봅니다: ① 버튼이 있다 ② 표시를 정하는 자리가 **한 곳**이다(원칙 58)
+       ③ 그 자리가 **결과 화면에서도 불린다**(원칙 122 — 정의됐는가가 아니라 불려지는가). */
   tt('결과로 돌아가는 보조 문이 따로 있다', (()=>{
      const bare = RAW.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
      const mark = /id="toResultBtn"/.test(bare);
-     const show = /tr\.hidden = !S\.fromResult/.test(bare);
-     return mark && show;
-  })(), '🔴 상단 보조 버튼이 있고 fromResult일 때만 보여야 합니다');
+     const one  = (bare.match(/tr\.hidden\s*=/g) || []).length === 1;   /* 두 벌 금지 */
+     const cond = /tr\.hidden\s*=[^;]*S\.fromResult/.test(bare);
+     return mark && one && cond;
+  })(), '🔴 상단 보조 버튼이 있고, 표시를 정하는 자리가 한 곳이며 fromResult를 봐야 합니다');
+  /* 🔴 v25.18 — **이 검사는 처음에 자기 자신을 배신했습니다**(원칙 152).
+     사보타주로 `syncToResultBtn(true);`를 **`//`로 주석 처리**했더니 **초록으로 통과**했습니다 —
+     전처리가 블록 주석(`/* *​/`)만 걷고 **줄 주석을 안 걷어서**, 죽은 호출을 살아 있는 것으로
+     셌습니다. 「정의됐는가가 아니라 불려지는가」(원칙 122)를 보려던 검사가 **주석을 보고 있었습니다.**
+     ⚠ 그렇다고 `//`를 통째로 걷으면 URL이 잘립니다(원칙 152 ①). **함수 본문 안에서만**,
+       그리고 **앞 글자가 `:`가 아닐 때만** 걷습니다. */
+  const stripLine = s => s.replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  tt('🔴 그 표시가 결과 화면에서도 갱신된다 (v25.18)', (()=>{
+     const bare = RAW.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
+     /* 표시를 정하는 함수 이름을 코드에서 뽑습니다 — 이름을 손으로 안 적습니다(원칙 84). */
+     const fn = (bare.match(/function\s+(\w+)\s*\([^)]*\)\s*\{[^}]*tr\.hidden\s*=/)||[])[1];
+     if(!fn) return false;
+     const sr = stripLine((bare.match(/function showResult\([\s\S]*?\n\}/)||[''])[0]);
+     const rd = stripLine((bare.match(/function render\(\)[\s\S]*?\n\}/)||[''])[0]);
+     /* 🔴 결과 화면과 입력 화면 **둘 다** 그 함수를 **살아 있는 코드로** 불러야 합니다.
+        하나만 부르면 다른 쪽 화면이 옛 상태를 그대로 들고 있습니다 — v25.15가 그랬습니다. */
+     return new RegExp(fn + '\\s*\\(').test(sr) && new RegExp(fn + '\\s*\\(').test(rd);
+  })(), '🔴 showResult와 render가 둘 다 (주석이 아니라 코드로) 불러야 합니다');
   tt('그 보조 문이 실제로 결과로 간다', (()=>{
      const f = (RAW.match(/function backToResult\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
      /* ⚠ 집값을 다시 풀지 않으면 바뀐 조건과 잠긴 값이 갈립니다(원칙 91)
