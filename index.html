@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.20 · 정책 2026.08.13 -->
+<!-- BUILD v25.22 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -557,7 +557,16 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      「지우기 칩이 돌아오지 않았는가」를 겸해 재고 있고, 없는 클래스를 빼는 선택자는 무해합니다. */
 
 .zonegrid{margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.zonecard{padding:20px 6px;border:1.5px solid var(--line);border-radius:var(--r-l);background:var(--card);
+/* 🔴 v25.21 — **높이를 `--h-opt`에 묶었습니다**(감사 B-9 · 원칙 84).
+   ⏹ 전 : `padding:20px 6px` → 렌더 **58px**. 컴포넌트 3계층(54 / 46 / 35) 밖의 **넷째**였습니다.
+     이 카드가 하는 일은 「셋 중 하나 고르기」 — 칩·세그먼트와 **같은 일**입니다(DESIGN 0장).
+     같은 일에 높이가 둘이면 규격이 둘이 됩니다.
+   → `min-height:var(--h-opt)`(46px). 숫자를 새로 만들지 않습니다 — 이 파일이 이미 쓰는 값입니다.
+   ⚠ 세로 여백을 **패딩이 아니라 min-height로** 둡니다. 패딩으로 두면 글꼴이 바뀔 때
+     손가락 표적이 같이 작아집니다(`.minigrid .mini`가 v24.22에서 같은 이유로 그렇게 했습니다).
+   ⚠ 46px은 iOS 최소 44pt 위입니다 — 여기가 바닥이고 더 줄이지 마십시오(원칙 112 · 123). */
+.zonecard{display:flex;align-items:center;justify-content:center;min-height:var(--h-opt);
+  padding:0 6px;border:1.5px solid var(--line);border-radius:var(--r-l);background:var(--card);
   box-shadow:var(--sh);text-align:center;transition:.14s}
 .zonecard.is-on{background:var(--card);border-color:var(--green);box-shadow:var(--sh-lift)}
 .zonecard b{display:block;font-size:var(--t6);font-weight:700}
@@ -2094,9 +2103,20 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              ③ 「예산」은 이 카드가 하는 일과 다릅니다 — 여기서 정하는 것은 예산이 아니라
                **평형과 시공 수준**이고, 나온 값은 영수증의 한 줄로 들어갑니다.
            → 명사구 · 사실 서술. 다른 셋과 같은 문법입니다. -->
-      <h2 class="card-title">입주 전에 드는 인테리어 비용</h2>
-      <button class="disc" id="itToggle" aria-expanded="false" aria-controls="itBox">
-        <span>평형 · 시공 수준</span><span class="caret">▾</span></button>
+      <!-- 🔴 v25.21 — **제목 줄과 접기 줄을 한 줄로 합쳤습니다**(감사 C-3 · 원칙 43).
+           ⏹ 전 : `<h2>입주 전에 드는 인테리어 비용</h2>` + `<button>평형 · 시공 수준 ▾</button>`
+             접힌 카드가 **117px인데 정보가 0**이었습니다 — 두 줄이 같은 카드의 같은 것을
+             가리키고, 「평형 · 시공 수준」은 펴면 슬라이더 머리(「평형 (공급면적)」)와 칩이
+             다시 말합니다. 같은 말을 화면에 두 번 두지 않습니다.
+           🔴 **진짜 문제는 「접었을 때 이 카드가 아무 답도 안 한다」였습니다.** 다른 카드는
+             접혀 있어도 값을 냅니다(영수증의 「집값 외 부대비용 [비율] [금액] ▾」).
+           → 문법을 **그 줄과 똑같이** 씁니다(`.disc.discline` + `.k` + `.v` + `.caret`) —
+             **새 부품 0**이고, 접힌 채로 지금 인테리어 비용을 말합니다.
+           ⚠ 카드 제목(`.card-title`)이 없어졌지만, 이 카드의 내용이 **이 한 줄뿐**입니다.
+             제목을 남기면 다시 「제목 + 같은 말」 두 줄이 됩니다.
+           ⚠ 금액은 `renderPkg()`가 넣습니다 — 손으로 안 적습니다(원칙 84). -->
+      <button class="disc discline" id="itToggle" aria-expanded="false" aria-controls="itBox">
+        <span class="k">입주 전에 드는 인테리어 비용</span><span class="v" id="itSum">—</span><span class="caret">▾</span></button>
       <div class="costbox" id="itBox">
       <div class="tweak">
         <div class="slider-head"><span class="k">평형 (공급면적)</span><span class="v" id="pyeongVal">모름</span></div>
@@ -3332,7 +3352,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.20 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.22 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3732,12 +3752,34 @@ const tagGrid = (list, inDrawer, after) => {
      `op.id`와 같은 키를 가진 칩은 **그 시가 실제로 있는 격자에만** 있기 때문입니다.
      서울·경기·그 밖 셋 중 어디서 눌렀는지 여기서 물어볼 필요가 없어집니다(원칙 111). */
   const drawer = (!inDrawer && op && op.split) ? splitDrawer(op, after) : '';
-  return `<div class="taggrid${wide?' wide':''}">${list.map(([key,nm])=>
+  /* 🔴 v25.22 — **안내를 「누른 칩 다음 칸」이 아니라 「그 칩이 있는 줄 다음」에 넣습니다**(오너 지적).
+
+     ⏹ v25.14는 원칙 111(새로 뜨는 것은 누른 것 바로 다음 자리)대로 **칩 바로 뒤**에 넣었습니다.
+       그런데 이건 격자입니다 — 안내가 `grid-column:1/-1`로 한 줄을 통째로 먹으므로,
+       **같은 줄에 있던 동료들이 아래로 밀립니다.** 실측(390px · 서울 · 종로구):
+
+         고르기 전   종로구 295 · 중구 295 · 용산구 295          ▸ 한 줄
+         고른 뒤     종로구 295 · [안내] · 중구 438 · 용산구 438  🔴 둘이 다음 줄로
+
+       🔴 **누른 칩이 아닌 것이 움직입니다.** 원칙 34(상태가 바뀌어도 상자가 움직이면 안 된다)의
+         격자판입니다 — 종로구를 눌렀는데 중구·용산구가 뛰면 「내가 뭘 잘못 눌렀나」로 읽힙니다.
+       ⏹ 그리고 **원칙 111도 못 지키고 있었습니다.** 「바로 다음 자리」는 시각적으로
+         **그 칩 바로 아래**인데, 실제로는 그 줄을 쪼개고 있었습니다.
+
+     → 안내를 **그 칩이 속한 줄의 마지막 칩 뒤**에 넣습니다. 줄이 안 쪼개지고, 안내는 여전히
+       누른 칩 **바로 아랫줄**입니다. 둘 다 지켜집니다.
+     ⚠ **열 수를 손으로 안 적습니다** — `wide` 하나에서 옵니다. 그 값이 CSS의
+       `repeat(2,1fr)` / `repeat(3,1fr)`를 고르는 바로 그 값입니다(원칙 58 · 84).
+       `TAG_WIDE`를 건드리지 않습니다 — 열 수는 **이름이 정합니다**(DESIGN).
+     ⚠ 마지막 줄이 덜 찼으면 줄 끝이 목록 끝입니다. */
+  const cols = wide ? 2 : 3;
+  const selIdx = after ? list.findIndex(([key]) => String(key) === String(S.sgg)) : -1;
+  const rowEnd = selIdx >= 0
+    ? Math.min((Math.floor(selIdx / cols) + 1) * cols - 1, list.length - 1) : -1;
+  return `<div class="taggrid${wide?' wide':''}">${list.map(([key,nm], i)=>
     `<button class="chip ${(S.sgg===key || (op && op.id===key))?'is-on':''}" data-pick="${key}"><span>${nm}</span></button>`
     + ((drawer && op.id===key) ? drawer : '')
-    /* 🔴 v25.14 — 고른 칩 **바로 다음 자리**에 지역 안내를 넣습니다(원칙 111).
-       ⚠ 격자를 한 줄 통째로 먹어야 하므로 CSS가 `grid-column:1/-1`을 줍니다 — 서랍과 같은 문법입니다. */
-    + ((after && String(key) === String(S.sgg)) ? after : '')).join('')}</div>`;
+    + ((i === rowEnd) ? after : '')).join('')}</div>`;
 };
 
 function answeredVal(id){
@@ -4705,8 +4747,34 @@ function renderLimits(c, price){
      ⚠ **금리 숫자를 안 적습니다.** 우대 폭은 은행·신용도·거래 실적마다 달라 한 값으로 못 적고,
        적는 순간 다른 조건에서 거짓이 됩니다(원칙 143 — v25.8이 「연 5.4%」를 지운 것과 같은 종류).
      ⚠ 「정해져요」는 지시가 아니라 **확정 시점**입니다(말투 규칙 — 지시하지 않습니다). */
+  /* 🔴 v25.22 — **정책대출 한 마디를 「자격이 될 수 있는 집값」에서만 보입니다**(오너 지적).
+
+     ⏹ 전 : 한도가 있는 **모든 화면**에 「디딤돌·보금자리론을 받으면 한도가 더 늘어나요」가
+       무조건 붙었습니다. 그런데 두 상품에는 **집값 상한**이 있습니다:
+
+         디딤돌      5억 (신혼·2자녀 6억)
+         신생아특례   9억
+         보금자리론   6억
+         ▸ 실기 캡쳐의 집값은 **17.7억** — 셋 다 **대상 밖**입니다.
+
+       `computeLoan`도 그걸 압니다 — `def.eligible(p)`가 거짓이라 `fellBack:'ineligible'`로
+       은행 경로에 떨어집니다. **엔진은 아는데 화면이 반대로 말하고 있었습니다**(원칙 143).
+     🔴 오독 방향은 「더 빌릴 수 있을지도」 — **결과를 유리하게 만드는 쪽**입니다(원칙 28).
+     ⏹ **오너가 물은 「4억 상한인데 더 못 받는 것 아니냐」는, 구조만 보면 각주가 맞습니다** —
+       구간한도(정부 상한)는 `bankLimits`에만 걸리고 **정책대출 경로에는 안 걸립니다**.
+       거짓인 것은 「더 늘어난다」가 아니라 **「이 사람이 그 상품을 받을 수 있다」**입니다.
+
+     → 집값이 **정책대출 집값 상한 중 가장 큰 값 이하**일 때만 이 한 마디를 답니다.
+     ⚠ **숫자를 손으로 안 적습니다** — `POLICY.policyLoan`의 모든 `price` 값에서 최대를 뽑습니다.
+       정책이 바뀌면 문장이 저절로 따라옵니다(원칙 84). 상한을 화면에 적지도 않습니다 —
+       상품마다 요건이 갈려(소득·무주택·전용면적) 한 숫자로 못 적습니다(원칙 143).
+     ⚠ **자격이 된다고 말하지 않습니다.** 소득·주택 수·면적은 여기서 안 봅니다 —
+       「받으면 늘어난다」는 **조건문 그대로** 두고, 애초에 불가능한 사람에게만 뺍니다(원칙 39). */
+  const policyPriceMax = Math.max(...Object.values(POLICY.policyLoan)
+    .flatMap(v => Object.values(v.price || {})).filter(Number.isFinite), 0);
+  const policyPossible = price > 0 && price <= policyPriceMax;
   notes.innerHTML = hasLimit
-    ? `※ 시중은행 주담대 · ${D.years}년 원리금균등 기준이에요. 디딤돌·보금자리론을 받으면 한도가 더 늘어나요.`
+    ? `※ 시중은행 주담대 · ${D.years}년 원리금균등 기준이에요.${policyPossible ? ' 디딤돌·보금자리론을 받으면 한도가 더 늘어나요.' : ''}`
       + `<br>※ 넣어 주신 소득과 기존 대출만 반영한 값이에요. 실제 금액은 은행 심사에서 정해져요.`
       + `<br>※ 조건마다 다른 은행 우대금리는 짐작으로 넣지 않았어요. 대출 약정할 때 정해져요.`
     : '';
@@ -4773,6 +4841,13 @@ function repriceOnly(){
   renderReceipt(c, price);
   const q = $('itQuote');
   if(q && !q.hidden) countTo(q, c.interiorCost);
+  /* 🔴 v25.21 — **접힌 줄이 값을 말합니다**(감사 C-3 · 위 마크업 주석).
+     ⚠ 값은 `c.interiorCost` 하나에서 옵니다 — 영수증의 인테리어 줄과 **같은 값**입니다.
+       두 벌로 두면 슬라이더를 움직였을 때 한쪽이 거짓이 됩니다(원칙 58 · 91).
+     ⚠ **0이면 「—」입니다.** 「0원」으로 적으면 「인테리어가 0원」으로 읽히는데, 실제로는
+       **아직 안 정한 것**입니다(원칙 124 — 「없음」과 「0」을 같은 답으로 만들지 않습니다). */
+  const its = $('itSum');
+  if(its) its.textContent = c.interiorCost > 0 ? formatWon(c.interiorCost) : '—';
   /* 🔴 v24.12 — 킥커도 같이 갱신합니다. 직접 입력에 금액이 들어가면
      「금액을 넣으면 영수증에 더해요」 → 「총 인테리어 예산 · 영수증에 더했어요」로 바뀌어야 합니다.
      ⚠ textContent만 씁니다. 입력칸을 다시 그리면 타이핑 중 커서가 날아갑니다. */
