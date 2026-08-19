@@ -651,15 +651,29 @@ HYGIENE.forEach(([name, over]) => {
   })());
 
   /* 대출 항목의 이름이 하나인가 (원칙 91 · G-8) */
-  tt('대출 이름이 「주택담보대출」로 통일',
+  /* 🔴 v25.14 — 화면 이름을 **「주담대」 한 벌**로 줄였습니다(오너 지시 — 화면 글자 줄이기).
+     ⚠ 잠글 것 둘 : ① 옛 이름이 화면에 **안 섞인다** ② **정식 명칭은 안내 시트에서 한 번** 말한다.
+       약어를 쓰려면 어딘가에서 한 번은 풀어 줘야 합니다(원칙 0의 정신 · 58 — 정의는 한 곳). */
+  tt('대출 이름이 「주담대」로 통일',
      !/은행에서 빌리는 돈/.test(UI), (UI.match(/은행에서 빌리는 돈/g)||[]).length + '곳 남음');
-  tt('영수증에 주택담보대출 줄이 있다', /row\('주택담보대출'/.test(UI));
+  tt('영수증에 주담대 줄이 있다', /row\('주담대'/.test(UI));
+  /* ⚠ `UI`는 **엔진 뒤 스크립트**입니다 — 안내 시트는 `<body>` 마크업이라 거기 없습니다.
+     화면에 나가는 글자는 **마크업 + 화면 스크립트 둘 다**이므로 파일을 통째로 보고 주석만 겁니다
+     (원칙 111 — 문자열을 보는 검사는 예외 없이 주석을 겁니다). */
+  const SCREEN = fs.readFileSync(FILE,'utf8')
+     .replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'').replace(/\/\/[^\n]*/g,'');
+  tt('화면 본문에 옛 긴 이름이 안 섞인다',
+     (SCREEN.match(/주택담보대출/g)||[]).length === 1,   /* 안내 시트의 정의 한 곳만 */
+     (SCREEN.match(/주택담보대출/g)||[]).length + '곳');
+  tt('안내 시트가 정식 명칭을 한 번 풀어 준다',
+     /<b>주택담보대출<\/b>[^<]*<b>주담대<\/b>/.test(SCREEN),
+     '🔴 시트에서 「주택담보대출 → 주담대」를 한 번 말해야 합니다');
   /* 🔴 v24.15 — 검사의 **목적은 이름 일치**이고, 표현(.report-line)만 바뀌었습니다(원칙 48).
      진단서에서 .report-line이 사라지고 자금 구성 줄(mixRow)로 합쳐졌습니다.
      구조를 묻지 말고 **renderReport 안에 그 이름이 있는가**만 봅니다 — 다음에 또 옮겨도 안 깨집니다. */
   tt('진단서에도 같은 이름', (()=>{
      const f = (UI.match(/function renderReport\([\s\S]*?\n\}/)||[''])[0];
-     return f.length > 100 && /주택담보대출/.test(f) && !/은행에서 빌리는 돈/.test(f);
+     return f.length > 100 && /주담대/.test(f) && !/은행에서 빌리는 돈/.test(f);
   })());
 
   /* 면책 — 미반영 항목은 채권 매입비만 남긴다 */
@@ -1253,17 +1267,32 @@ HYGIENE.forEach(([name, over]) => {
      return BAN.filter(w=>UI_BARE.includes(w)).join(', ')||'없음'; })());
   /* 🔴 v24.19 — 문장 전체를 잠그고 있었습니다(원칙 48). 360px에서 두 줄이라 줄여야 했는데
      이 락이 막고 있었습니다. 잠글 것은 **「왜 묻는지가 화면에 있는가」**입니다. */
-  tt('연소득을 묻는 이유가 화면에 있다', /규제\(DSR\)에 쓰여요/.test(UI));
+  /* 🔴 v25.13 — **또 문장을 잠그고 있었고, 이번엔 「실패」가 아니라 「조용한 통과」였습니다.**
+     v25.13이 헬퍼를 「주택담보대출 한도 계산(DSR)에 써요」로 바꿨는데, 이 줄은 초록이었습니다 —
+     바꾼 이유를 적어 둔 **코드 주석에 옛 문장이 남아 있어서** 거기에 걸린 것입니다.
+     이 파일이 스스로 「문자열을 보는 검사는 예외 없이 주석을 걸어라」라고 적어 둔 자리입니다(원칙 111).
+     → ① **주석을 걷어낸 뒤** ② **moneyCard 인자만** 보고 ③ 잠글 것은 문장이 아니라
+       **「이 칸이 무엇에 쓰이는지 말하는가」**입니다(원칙 48 · 128). */
+  tt('연소득을 묻는 이유가 화면에 있다', (()=>{
+     const m = UI_BARE.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
+     return !!m && /DSR/.test(m[1]) && /(쓰여요|써요|계산)/.test(m[1]);
+  })(), (()=>{ const m = UI_BARE.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
+     return m ? m[1] : '없음'; })());
   /* 🔴 v24.5 — 원칙 0(약어 단독 금지)은 화면 어디서나 유효합니다.
      결과 화면은 G-3이 봅니다. **입력 화면은 아무도 안 보고 있었습니다.** */
   tt('입력 화면의 DSR에 한글 설명이 붙어 있다', (()=>{
-     const src = fs.readFileSync(FILE,'utf8');
-     const m = src.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
+     const m = UI_BARE.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
      if(!m) return false;
      /* 🔴 v24.19 — 기준선은 __selfcheck의 G-3과 **같은 것**을 씁니다: 「규제(DSR)」.
-        앞에 무슨 말이 더 붙는지는 문장의 문제이지 원칙 0의 문제가 아닙니다. */
-     return !/DSR/.test(m[1]) || /규제\(DSR\)/.test(m[1]);
-  })());
+        앞에 무슨 말이 더 붙는지는 문장의 문제이지 원칙 0의 문제가 아닙니다.
+        🔴 v25.13 — **그래 놓고 「규제」라는 낱말을 잠그고 있었습니다.** 헬퍼가
+          「주택담보대출 한도 계산(DSR)」이 되자 빨간불이 났는데, 그 문장도 **약어 앞에 한글
+          설명이 붙어 있어 원칙 0을 지킵니다.** 원칙 0이 막는 것은 **약어 단독**이지
+          「그 앞말이 '규제'인 것」이 아닙니다 — 대상만 옮깁니다(원칙 128 · 48).
+        ⚠ 주석을 걷어낸 `UI_BARE`를 씁니다. 원본을 보면 지운 옛 문장이 통과시킵니다(원칙 111). */
+     return !/DSR/.test(m[1]) || /[가-힣]\s*\(DSR\)/.test(m[1]);
+  })(), (()=>{ const m = UI_BARE.match(/moneyCard\('income',[^)]*?'([^']+)'\)/);
+     return m ? m[1] : '없음'; })());
   /* 🔴 v24.5 — DSR의 핵심 규칙(연소득의 몇 %)이 상시로 보이는 자리에 있어야 합니다.
      이전에는 결과 화면에서 `binding`이 DSR·DTI일 때만 나왔습니다 — 다른 게 걸리면
      소득을 왜 물었는지 끝까지 설명되지 않았습니다. */
@@ -2956,16 +2985,25 @@ HYGIENE.forEach(([name, over]) => {
        ${pk[0]}
        const short = s => SIDO_SHORT[s] || s;
        return {
-         seoul: tagGrid(picksOf('서울특별시')),
-         metro: tagGrid(['경기도','인천광역시'].flatMap(s => picksOf(s, short(s)+' '))),
-         gn:    tagGrid(picksOf('경상남도')),
-         gw:    tagGrid(picksOf('강원특별자치도'))
+         seoul:  tagGrid(picksOf('서울특별시')),
+         gyeongi:tagGrid(picksOf('경기도')),
+         incheon:tagGrid(picksOf('인천광역시')),
+         sejong: tagGrid(picksOf('세종특별자치시')),
+         gn:     tagGrid(picksOf('경상남도')),
+         gw:     tagGrid(picksOf('강원특별자치도'))
        };`)(E.PICKS, JSON.parse(JSON.stringify(eval('('+ss[0].replace(/^const SIDO_SHORT\s*=\s*/,'').replace(/;$/,'')+')'))));
      const W = h => /class="taggrid wide"/.test(h);
-     return !W(r.seoul)   /* 서울 최장 「동대문구」 4자 — 3열 */
-         &&  W(r.metro)   /* 「경기 의정부시」 6자 — 2열 */
-         && !W(r.gn)      /* 🔴 v24.28 — 「창원시 마산합포구」 8자가 「창원시」 3자가 되어 3열로 올라갔습니다 */
-         && !W(r.gw);     /* 강원 최장 「춘천시」 3자 — 3열 */
+     /* 🔴 v25.14 — **2열 표본을 바꿨습니다.** 전에는 「경기 의정부시」(접두어 6자)를 2열 표본으로
+        썼는데, 경기·인천이 시·도 2단계가 되면서 접두어가 사라져 **그 목록이 이제 3열**입니다.
+        표본을 화면에 실제로 있는 것으로 바꿉니다 — **세종특별자치시(7자)**가 지금 유일한 2열입니다.
+        ⚠ 표본을 바꾼 것이지 규칙을 무른 것이 아닙니다. 「이름 길이가 열 수를 정한다」는 그대로이고,
+          3열 표본이 넷으로 오히려 늘었습니다. */
+     return !W(r.seoul)    /* 서울 최장 「동대문구」 4자 — 3열 */
+         && !W(r.gyeongi)  /* 🔴 v25.14 — 접두어가 사라져 최장 「의정부시」 4자 — 3열 */
+         && !W(r.incheon)  /* 최장 「제물포구」 4자 — 3열 */
+         &&  W(r.sejong)   /* 「세종특별자치시」 7자 — 2열 */
+         && !W(r.gn)       /* 「창원시 마산합포구」 8자가 「창원시」 3자로 묶여 3열 */
+         && !W(r.gw);      /* 강원 최장 「춘천시」 3자 — 3열 */
   })());
 
   /* ── 🆕 v24.28 행정구 → 시 묶음 ─────────────────
@@ -3054,13 +3092,25 @@ HYGIENE.forEach(([name, over]) => {
   /* 접두어를 지우면 「중구 · 동구 · 서구」가 서울 자치구와 구별이 안 됩니다.
      🔴 v24.28 — 접두어를 붙이는 자리가 `x[1]` 뒤에서 `picksOf`의 인자로 옮겼습니다.
         **글자를 좇지 말고 결과를 봅니다**(원칙 115) — 경기·인천 칩에 실제로 접두어가 붙는지. */
-  tt('시 · 도 접두어를 지우지 않았다', (()=>{
-     const pk = BARE.match(/const picksOf = [^\n]*\n/);
-     if(!pk || !/shortSido\(s\)\+' '/.test(BARE)) return false;
-     const names = new Function('PICKS', `${pk[0]}
-        return picksOf('경기도','경기 ').concat(picksOf('인천광역시','인천 ')).map(x=>x[1]);`)(E.PICKS);
-     return names.length > 40 && names.every(n => /^(경기|인천) /.test(n));
-  })());
+  /* 🔴 v25.14 — **대상을 옮겼습니다**(원칙 128 · 148). 이 잠금의 근거는
+     「접두어를 지우면 『중구·동구·서구』가 서울 자치구와 구별이 안 된다」였고, 그것은
+     **한 격자에 여러 시·도가 섞여 있을 때만** 참입니다. v25.14가 경기·인천을 시·도 2단계로
+     바꾸면서 **그 전제가 사라졌습니다** — 격자마다 시·도가 하나이고, 위 시·도 칩이 켜진 채로
+     어느 목록인지 말합니다. 지키려던 사실은 「접두어가 있다」가 아니라
+     **「한 격자 안에서 이름이 서로 구별된다」**입니다.
+     → 잠글 것을 **「한 격자에 시·도를 섞지 않는다」**로 옮깁니다. 다시 섞으면 빨간불입니다. */
+  tt('한 격자에 시 · 도를 섞지 않는다', (()=>{
+     const f = (BARE.match(/function regionPane\(\)[\s\S]*?\n\}/)||[''])[0];
+     if(!f) return false;
+     /* 두 시·도를 한 목록으로 이어 붙이는 꼴(flatMap · concat)이 없어야 합니다 */
+     return !/flatMap|\.concat\(/.test(f) && /METRO\.map\(/.test(f);
+  })(), (()=>{ const f=(BARE.match(/function regionPane\(\)[\s\S]*?\n\}/)||[''])[0];
+     return (f.match(/flatMap|\.concat\(/g)||['섞지 않음']).join(' '); })());
+  tt('경기 · 인천도 시 · 도를 먼저 고른다', (()=>{
+     const f = (BARE.match(/function regionPane\(\)[\s\S]*?\n\}/)||[''])[0];
+     const m = f.match(/S\.group==='metro'\)\{([\s\S]*?)\n  \}/);
+     return !!m && /sidoscroll/.test(m[1]) && /METRO\.indexOf\(S\.sido\)/.test(m[1]);
+  })(), '🔴 metro 갈래가 시·도 칩 → 시·군·구 두 단계여야 합니다');
   /* 2열은 좌우 여백을 줄여 글자에 3px을 줍니다 — 360px에서 최장 이름이 여기서 갈립니다. */
   tt('2열 칩이 여백을 줄여 글자 자리를 낸다', /\.taggrid\.wide \.chip\{padding:0 6px\}/.test(M));
 
@@ -3284,7 +3334,7 @@ HYGIENE.forEach(([name, over]) => {
   })());
 
   /* ── 금리 시뮬레이터 ──────────────────────────
-     🔴 **엔진과 격리되어야 합니다.** 한도는 스트레스 금리(6.9%)로 잡고 상환액만 실제
+     🔴 **엔진과 격리되어야 합니다.** 한도는 스트레스 금리(`computeStressBp`)로 잡고 상환액만 실제
         금리로 계산하는 구조라, 여기서 D.rate를 건드리면 그 관계가 깨집니다. */
   tt('시뮬레이터가 엔진 금리를 안 건드린다', (()=>{
      /* D.rate에 대입하는 곳이 하나도 없어야 합니다. */
@@ -3530,8 +3580,10 @@ HYGIENE.forEach(([name, over]) => {
   tt('서랍 제목이 --fill 면에서 대비를 지킨다',
      /\.drawer-t\{[^}]*color:var\(--ink-3\)/.test(SRC));
   /* 🔴 서랍 안에서 또 서랍을 열면 자기를 무한히 엽니다. 지금은 키가 코드라 안 맞지만 **잠급니다.** */
+  /* ⚠ v25.14 — 세 번째 인자(지역 안내)가 붙으면서 **호출 문자열이 길어졌습니다.**
+     잠글 것은 「인자가 둘이다」가 아니라 **「안쪽 호출이 inDrawer=true로 들어간다」**입니다(원칙 48). */
   tt('서랍 안에서 또 서랍을 열지 않는다',
-     /tagGrid\(op\.kids\.map\(k => \[k\.code, k\.name\]\), true\)/.test(SRC)
+     /tagGrid\(op\.kids\.map\(k => \[k\.code, k\.name\]\), true[,)]/.test(SRC)
      && /const drawer = \(!inDrawer/.test(SRC));
 
   /* ── ③ Copyright 꼬리말 ── */
@@ -3680,7 +3732,7 @@ HYGIENE.forEach(([name, over]) => {
      return a > 0 && b > a
          && /\$\('receiptBot'\)\.innerHTML=h/.test(UI)
          && !/id="receiptBot"/.test(box)
-         && /row\('주택담보대출'/.test(UI) && /row\('준비할 현금'/.test(UI);
+         && /row\('주담대'/.test(UI) && /row\('준비할 현금'/.test(UI);
   })());
   /* 소계는 화면에 적힌 것들의 합입니다. 켠 항목의 **금액을 서랍 안에 두 번 적지 않습니다** —
      스위치 줄이 이미 말하고 있어서, 두 벌이면 껐을 때 어느 쪽이 진짜인지 알 수 없습니다. */
@@ -3892,9 +3944,24 @@ HYGIENE.forEach(([name, over]) => {
      !/세법 기준의/.test(SRC) && /대출 규제 · 세법/.test(SRC));
   /* 🔴 `.eyebrow`(퍼널 단계 표시)는 v25.1에서 이름이 겹쳐 회색 알약이 됐던 자리입니다.
      뱃지가 사라져도 **그 규격은 그대로여야** 합니다 — 겹침이 풀렸다고 원래 것이 변하면 안 됩니다. */
-  tt('단계 표시가 여전히 제 규격이다',
-     /\.eyebrow\{font-size:var\(--t7\);font-weight:800;color:var\(--espresso\);letter-spacing:\.1em/.test(RAW)
-     && !/\.eyebrow\{[^}]*background/.test(RAW));
+  /* 🔴 v25.14 — **대상을 옮겼습니다**(원칙 128). 이 잠금의 근거는 v25.1의 **이름 겹침 사고**
+     (`.asof`가 `.eyebrow`를 덮어 단계 표시가 회색 알약이 됨)였습니다. 지켜야 할 사실은
+     **「이 부품의 정체가 그대로다」**이지 「굵기가 800이고 잉크가 --espresso다」가 아닙니다.
+     아이브로우의 정체는 **작은 크기(--t7)와 넓은 자간(.1em), 그리고 면이 없다는 것**입니다.
+     ⏹ v25.14가 굵기 800 → 700(화면 전체 폐기) · 잉크 `--espresso` → `--ink-4`로 내렸습니다 —
+       「01 / 03」은 이 화면에서 가장 안 중요한 정보인데 질문 제목과 같은 무게였습니다.
+     ⚠ 대신 **위계가 뒤집히지 않는가**를 새로 잠급니다 — 단계 표시가 질문 제목보다 진하면 안 됩니다. */
+  tt('단계 표시가 제 정체를 지킨다', (()=>{
+     const m = (RAW.match(/\n\.eyebrow\{([^}]*)\}/)||[])[1] || '';
+     return /font-size:var\(--t7\)/.test(m) && /letter-spacing:\.1em/.test(m) && !/background/.test(m);
+  })(), (RAW.match(/\n\.eyebrow\{[^}]*\}/)||['없음'])[0].slice(0,90));
+  tt('단계 표시가 질문 제목보다 조용하다', (()=>{
+     const eb = (RAW.match(/\n\.eyebrow\{([^}]*)\}/)||[])[1] || '';
+     const qt = (RAW.match(/\n\.q-title\{([^}]*)\}/)||[])[1] || '';
+     const w = t => +((t.match(/font-weight:(\d+)/)||[])[1] || 0);
+     /* 잉크는 「본문 최상단(--ink/--espresso)이 아닐 것」으로 봅니다 — 값이 아니라 관계입니다 */
+     return w(eb) < w(qt) && !/color:var\(--(ink|espresso)\)/.test(eb);
+  })(), '🔴 단계 표시가 질문 제목만큼 진합니다');
 
   /* ── ② 「못 넣은 것」을 이름으로 부른다 ─────────────
      🔴 v25.12 — v25.1의 **투명성 캡션이 없어졌습니다.** 한 문장이 성격이 다른 둘
@@ -4123,12 +4190,24 @@ HYGIENE.forEach(([name, over]) => {
   tt('한도 알약의 색 배치가 다섯 다 그대로다', (()=>{
      const f = (SRC.match(/function bindingShort\([\s\S]*?\n\}/)||[''])[0];
      if(!f) return false;
-     return /LTV:\['주택담보대출 비율\(LTV\) 최대 한도에 도달했어요',''\]/.test(f)
-         && /DSR:\['[^']*','bad'\]/.test(f) && /DTI:\['[^']*','bad'\]/.test(f)
-         && /'구간한도':\['[^']*','bad'\]/.test(f)
-         && /'상품한도':\['[^']*','bad'\]/.test(f)
-         && /'은행자체한도':\['[^']*','bad'\]/.test(f)
-         && /주택담보대출이 나오지 않아요','bad'/.test(f);   /* 0원은 성격이 다릅니다 */
+     /* 🔴 v25.13 — **대상만 옮겼습니다**(원칙 128). 이 검사의 이름과 주석이 말하는 것은
+        **「다섯의 색 배치」**인데, 실제로는 다섯 중 **하나(구간한도)의 문장까지** 잠그고
+        있었습니다 — `\['[^']*'` 가 「대괄호 바로 뒤에 작은따옴표 문자열」을 요구해서,
+        문구를 **값에서 만들어 넣는 순간**(v25.13이 상한 금액을 답니다) 빨간불이 났습니다.
+        그건 색 배치가 바뀐 것이 아니라 **문장을 만드는 방법**이 바뀐 것입니다(원칙 48).
+        → 톤(둘째 칸)만 봅니다. 문장이 리터럴이든 변수든 상관없습니다.
+        ⚠ 느슨해진 것이 아닙니다 — **여섯 키의 톤을 여전히 하나씩 셉니다.**
+          LTV가 'bad'가 되거나 DSR이 중립이 되면 그대로 빨간불입니다.
+        ⚠ `[^\]]*?`입니다. 금액에 쉼표가 들어가므로(「1억 2,000만원」) `[^,]`로 자르면
+          자기 발등을 찍습니다(원칙 144 — 재 보고 정합니다). */
+     const tone = k => {
+       const m = f.match(new RegExp("'?" + k + "'?:\\[[^\\]]*?,\\s*'([a-z]*)'\\]"));
+       return m ? m[1] : null;
+     };
+     return tone('LTV') === '' && tone('DSR') === 'bad' && tone('DTI') === 'bad'
+         && tone('구간한도') === 'bad' && tone('상품한도') === 'bad'
+         && tone('은행자체한도') === 'bad'
+         && /나오지 않아요','bad'/.test(f);   /* 0원은 성격이 다릅니다 · 이름은 v25.14에서 「주담대」로 */
   })(), (()=>{
      const f = (SRC.match(/function bindingShort\([\s\S]*?\n\}/)||[''])[0];
      return (f.match(/'?[A-Z가-힣]+'?:\['[^']*','?[a-z]*'?\]/g)||[]).length + '개 잡힘';
@@ -4791,6 +4870,291 @@ HYGIENE.forEach(([name, over]) => {
      const onFill = /background:var\(--fill\)/.test(chip);
      return !(onFill && /color:var\(--ink-4\)/.test(lab));
   })(), '🔴 --fill 면 위 --ink-4는 4.19:1입니다 — G-19가 렌더에서 잡습니다');
+})();
+
+/* ═══ v25.13 — 문구 판 (오너 지적 · 계산 0) ══════════════════════
+   이 절이 잠그는 것은 **문장이 아니라 사실**입니다(원칙 48 · 128).
+   문구를 더 다듬는 것은 막지 않고, **뜻을 되돌리는 것만** 막습니다.
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'').replace(/\/\/[^\n]*/g,'');
+  const CSS2 = (RAW.match(/<style>([\s\S]*?)<\/style>/)||['',''])[1]
+                 .replace(/\/\*[\s\S]*?\*\//g,'');
+
+  /* ── ① 「대출」이 두 뜻이 아니다 ────────────────────────────────
+     이 체크박스가 끄는 것은 **주택담보대출 하나**인데(02가 통째로 빠짐) 바로 다음 화면이
+     신용대출 월 상환액을 묻습니다. 어느 대출인지 말하지 않으면 같은 퍼널에서 두 뜻입니다.
+     ⚠ 잠글 것은 「그 문장」이 아니라 **「라벨이 어떤 대출인지 이름으로 부른다」**입니다. */
+  tt('대출 안 받기 체크박스가 어떤 대출인지 말한다', (()=>{
+     const m = BARE.match(/id="noLoanBox"[^>]*>([^<]+)</);
+     return !!m && /주담대/.test(m[1]);
+  })(), (()=>{ const m = BARE.match(/id="noLoanBox"[^>]*>([^<]+)</); return m?m[1]:'없음'; })());
+
+  /* ── ② 가진 돈 헬퍼 ────────────────────────────────────────────
+     「주택담보대출 **말고**」는 붙는 자리가 애매해 「주담대가 아닌 대출은 넣으라는 건가」로
+     읽혔습니다 — 실제로 그게 맞아서 더 나빴습니다(신용대출로 당긴 현금도 여기 넣습니다).
+     ⚠ 두 가지를 같이 봅니다: **주담대를 뺀다**는 말과 **끌어모은다**는 말.
+       뒤엣것을 지우면 「신용대출도 넣는다」를 말하는 유일한 낱말이 사라집니다(원칙 39). */
+  tt('가진 돈 헬퍼가 주담대 제외를 또렷이 말한다', (()=>{
+     const m = BARE.match(/moneyCard\('cash',[^)]*?'([^']+)'\)/);
+     if(!m) return false;
+     return /주담대/.test(m[1]) && /(빼고|제외)/.test(m[1]) && /끌어모을/.test(m[1]);
+  })(), (()=>{ const m = BARE.match(/moneyCard\('cash',[^)]*?'([^']+)'\)/); return m?m[1]:'없음'; })());
+
+  /* ── ③ 지역 안내 세 줄 ─────────────────────────────────────────
+     이 프로젝트의 말투 규칙은 「사실만 서술한다. 평가하거나 지시하지 않는다」입니다.
+     「가장 엄격한」·「가장 여유로운 편」은 평가이고 「편」은 추측이었습니다.
+     ⚠ 「가장 낮게 잡히고」는 **세 지역 사이의 사실**(LTV 40 < 70)이라 금지어에 안 넣습니다.
+       금지하는 것은 **좋고 나쁨을 말하는 낱말**입니다. */
+  tt('지역 안내가 평가어를 쓰지 않는다', (()=>{
+     const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+     if(!m) return false;
+     return !/(엄격|여유로운|편이에요)/.test(m[0]);
+  })(), (()=>{ const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+     return m ? (m[0].match(/(엄격|여유로운|편이에요)/g)||['없음']).join(',') : '못 찾음'; })());
+
+  /* 🔴 주의 면(`.tip.info` 오렌지 틴트)은 **규제지역 하나**입니다.
+     전에는 셋 다 `.tip info`라 「수도권 밖이에요」에도 경고색이 붙었습니다 —
+     규제가 가장 느슨한 곳에 주의를 다는 꼴이었습니다(원칙 28의 반대 방향).
+     ⚠ 잠글 것은 「클래스 문자열」이 아니라 **「면이 갈리는가」**입니다 — 조건식을 봅니다. */
+  tt('지역 안내의 주의 면이 규제지역에만 붙는다', (()=>{
+     const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+     if(!m) return false;
+     if(/class="tip info"/.test(m[0])) return false;      /* 셋 다 주의면 — 갈리지 않음 */
+     return /class="tip\$\{\s*z\s*===\s*'reg'/.test(m[0]);
+  })(), (()=>{ const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+     return m ? m[0].slice(0,60).replace(/\n/g,' ') : '못 찾음'; })());
+
+  /* ── ④ 원리금 타일이 무슨 대출을 세는지 ────────────────────────
+     🔴 이 값은 **주담대 원리금 하나**인데, 사용자는 02에서 신용대출 월 상환액을 넣습니다.
+        빈 값 문장이 「갚을 대출이 없어요」이면 조건칩의 「갚는 대출 월 N만원」과 정면으로
+        어긋납니다(원칙 39 · 91). 화면 두 곳이 서로를 반박하면 안 됩니다.
+     ⚠ 잠글 것은 문장이 아니라 **「그 문장이 주담대를 이름으로 부르는가」**입니다. */
+  tt('원리금 타일의 빈 값이 주담대를 이름으로 부른다', (()=>{
+     const m = BARE.match(/tileMonthlySub'\)\.textContent = m>0 \? `[^`]+` : '([^']+)'/);
+     return !!m && /주담대/.test(m[1]);
+  })(), (()=>{ const m = BARE.match(/tileMonthlySub'\)\.textContent = m>0 \? `[^`]+` : '([^']+)'/);
+     return m ? m[1] : '없음'; })());
+  tt('원리금 타일의 가정 줄이 무엇의 가정인지 말한다', (()=>{
+     const m = BARE.match(/tileMonthlySub'\)\.textContent = m>0 \? `([^`]+)`/);
+     return !!m && /주담대/.test(m[1]) && /가정/.test(m[1]);
+  })(), (()=>{ const m = BARE.match(/tileMonthlySub'\)\.textContent = m>0 \? `([^`]+)`/);
+     return m ? m[1] : '없음'; })());
+
+  /* ── ⑤ 구간한도 알약 ───────────────────────────────────────────
+     같은 한도를 화면이 두 이름으로 불렀습니다 — 알약 「정부 규제의 집값 구간별 상한」,
+     막대·시트 「정부 상한」. 오너가 「무슨 말인지 모르겠다」고 한 자리입니다(원칙 58 · 91).
+     ⚠ 잠글 것 둘 : ① 막대와 **같은 이름**을 쓴다 ② 금액을 **손으로 안 적는다.** */
+  /* 🔴 v25.13 — **사보타주가 이 줄을 잡았습니다(원칙 122).** 처음엔 `capLabel`이 **정의돼
+     있는지**만 봤습니다. 그래서 알약을 옛 문장으로 되돌려도 `capLabel`이 죽은 함수로 남아
+     검사가 **초록**이었습니다 — 「정의됐는가」가 아니라 **「불려지는가」**까지 봐야 합니다.
+     ⚠ 옛 문장을 금지어로 넣는 길은 안 갔습니다. 그건 다시 **문장을 잠그는 것**이고,
+       다음 사람이 문구를 더 다듬는 것까지 막습니다(원칙 48). 잠글 것은 **연결**입니다. */
+  tt('구간한도 알약이 한도 막대와 같은 이름을 쓴다', (()=>{
+     const f  = (BARE.match(/function capLabel\([\s\S]*?\n\}/)||[''])[0];
+     const bs = (BARE.match(/function bindingShort\([\s\S]*?\n\}/)||[''])[0];
+     const bar = /'구간한도':'정부 상한'/.test(BARE.replace(/\s/g,''))
+              || /구간한도':\s*'정부 상한'/.test(BARE);
+     const used = /'구간한도':\[capLabel\(c\),/.test(bs.replace(/\s+/g,''));
+     return !!f && /정부 상한/.test(f) && bar && used;
+  })(), '🔴 알약과 LNAME이 같은 이름을 쓰고, 알약이 그 함수를 실제로 불러야 합니다');
+  tt('구간한도 금액이 한도 값에서 온다', (()=>{
+     const f = (BARE.match(/function capLabel\([\s\S]*?\n\}/)||[''])[0];
+     if(!f) return false;
+     /* 값은 c.limits에서 오고, 유한하지 않으면 괄호를 통째로 뺍니다(「(0원)」 금지) */
+     return /c\.limits\|\|\{\}\)\['구간한도'\]/.test(f.replace(/\s/g,''))
+         && /formatWon/.test(f) && /Number\.isFinite/.test(f)
+         && !/[0-9]억|[0-9]만원/.test(f);
+  })(), '🔴 금액을 손으로 적거나 무한값에 괄호를 붙이면 안 됩니다');
+
+  /* ── ⑥ 스트레스 금리 주석 ──────────────────────────────────────
+     🔴 「한도는 스트레스 금리(6.9%)로 잡고…」가 **다섯 판** 옛 값으로 남아 있었습니다.
+        가산이 1.5 → 3.0으로 바뀐 뒤(8.13 대책) 참이 아니었습니다.
+     ⚠ 화면에 안 나오는 주석이지만 **다음 사람이 근거로 씁니다**(원칙 143).
+     ⚠ 잠글 것은 「6.9가 없다」가 아니라 **「스트레스 금리를 말하는 자리에 숫자를 안 적는다」**
+        입니다. 숫자를 다른 숫자로 바꾸는 길은 막습니다 — 가산은 조건마다 달라
+        한 값으로 못 적고, 적으면 다른 조건에서 또 거짓이 됩니다(원칙 84 · 143).
+     ⚠ **주석을 안 걷어냅니다.** 이 검사가 보는 대상이 주석 그 자체입니다. */
+  tt('스트레스 금리를 말하는 자리에 숫자 리터럴이 없다', (()=>{
+     const hits = [...RAW.matchAll(/스트레스 금리[^\n]{0,24}/g)].map(m => m[0]);
+     return hits.length > 0 && hits.every(h => !/\(\s*\d+(\.\d+)?\s*%/.test(h));
+  })(), (()=>{ const hits = [...RAW.matchAll(/스트레스 금리[^\n]{0,24}/g)]
+     .map(m=>m[0]).filter(h => /\(\s*\d+(\.\d+)?\s*%/.test(h));
+     return hits.length ? hits.join(' | ') : '숫자 없음'; })());
+})();
+
+/* ═══ v25.14 — 디자인 시스템 (활자 · 굵기 · 간격) ══════════════════
+   🔴 이 절은 **값이 아니라 규격**을 잠급니다. 문구를 다듬거나 한 자리를 옮기는 것은 막지 않고,
+      **「같은 일을 하는 것이 서로 다른 규격이 되는 것」**만 막습니다.
+   ⚠ 재는 대상은 **화면 CSS**입니다. 공유 카드(`.report*`)는 내보내는 그림이라 규칙이 따로 있고
+      (반응형 토큰 금지) 이 절에서 뺍니다.
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const CSSA = (RAW.match(/<style>([\s\S]*?)<\/style>/)||['',''])[1].replace(/\/\*[\s\S]*?\*\//g,'');
+  const rule = sel => (CSSA.match(new RegExp('\\n'+sel+'\\{([^}]*)\\}'))||[])[1] || '';
+  const num  = (r,p) => { const m = r.match(new RegExp(p+':(\\d+)')); return m ? +m[1] : null; };
+
+  /* ── ① 굵기 — 800 폐기 ─────────────────────────────────────────
+     v24.15가 「800은 없앴습니다. 700과 900 사이에 눈이 구분 못 하는 단을 하나 더 두는 것」이라고
+     적어 두고 **17곳에 남아 있었습니다.** 이 판이 전부 700으로 내렸습니다.
+     ⚠ 잠글 것은 「700이다」가 아니라 **「눈이 구분 못 하는 단이 없다」**입니다 —
+       그래서 값 하나가 아니라 **쓰이는 단의 목록**을 셉니다. */
+  tt('화면 굵기에 800이 없다', !/font-weight:800/.test(CSSA),
+     (CSSA.match(/[^{;]*font-weight:800/g)||[]).slice(0,3).join(' | ') || '없음');
+  tt('화면 굵기가 다섯 단 안이다', (()=>{
+     const screen = CSSA.replace(/[^{}]*\.report[^{}]*\{[^}]*\}/g,'');
+     const set = new Set((screen.match(/font-weight:(\d+)/g)||[]).map(x=>x.split(':')[1]));
+     const ok = ['400','500','600','700','900'];
+     return [...set].every(v => ok.includes(v));
+  })(), (()=>{ const screen = CSSA.replace(/[^{}]*\.report[^{}]*\{[^}]*\}/g,'');
+     return [...new Set((screen.match(/font-weight:(\d+)/g)||[]).map(x=>x.split(':')[1]))].sort().join(' · '); })());
+
+  /* ── ② 크기 — 화면에 스케일 밖 리터럴이 없다 ────────────────────
+     ⚠ 공유 카드의 54px은 **일부러 리터럴**입니다(반응형 토큰 금지 · 위 검사가 그것을 잠급니다).
+       그 하나만 예외로 두고 나머지는 전부 `--t*` / `--d1` / clamp여야 합니다(원칙 117). */
+  tt('화면에 스케일 밖 크기 리터럴이 없다', (()=>{
+     const screen = CSSA.replace(/[^{}]*\.report[^{}]*\{[^}]*\}/g,'');
+     const lit = (screen.match(/font-size:\s*(\d+)px/g)||[]);
+     return lit.length === 0;
+  })(), (()=>{ const screen = CSSA.replace(/[^{}]*\.report[^{}]*\{[^}]*\}/g,'');
+     return (screen.match(/[^{;]*font-size:\s*\d+px/g)||['없음']).slice(0,3).join(' | '); })());
+
+  /* ── ③ 설명 줄은 한 규격 ───────────────────────────────────────
+     🔴 오너 지적 「1·2페이지와 3페이지의 설명이 다르다」의 자리입니다.
+        `.q-sub`가 14px · `--ink-3`이라 `.helper`(13px · `--ink-4`)보다 한 단 컸습니다.
+     ⚠ **잉크는 잠그지 않습니다** — 놓인 면이 정합니다(원칙 97). 흰 카드 위 `--ink-4`,
+       `--fill` 면 위 `--ink-3`. 잠글 것은 **크기 · 굵기 · 행간** 셋입니다. */
+  tt('설명 줄이 한 규격이다 (13 / 400 / 1.6)', (()=>{
+     const want = ['\\.helper','\\.readout','\\.pane-note','\\.tile-s'];
+     return want.every(sel => {
+       const r = rule(sel);
+       if(!r) return false;
+       const sizeOk = /font-size:var\(--t7\)/.test(r);
+       const wOk    = !/font-weight/.test(r) || /font-weight:400/.test(r);
+       const lhOk   = !/line-height/.test(r) || /line-height:(var\(--lh-body\)|1\.6)/.test(r);
+       return sizeOk && wOk && lhOk;
+     });
+  })(), ['\\.helper','\\.readout','\\.pane-note','\\.tile-s'].map(x=>x.replace(/\\/g,'')+':'+rule(x).slice(0,42)).join('\n     '));
+  tt('죽은 설명 규격(.q-sub)이 되살아나지 않았다', !/\.q-sub\{/.test(CSSA));
+  tt('03의 설명이 01·02와 같은 부품이다',
+     /<p class="helper" id="houseEcho">/.test(RAW) && !/class="q-sub"/.test(RAW),
+     (RAW.match(/class="[^"]*" id="houseEcho"/)||['없음'])[0]);
+
+  /* ── ④ 소제목 세 단이 전부 스케일 안 ───────────────────────────
+       13(--t7) 구역 라벨 / 14(--t6) 입력칸 이름 / 16(--t5) 화면 안 둘째 질문
+     ⚠ 잠글 것은 「어느 선택자가 몇 px」이 아니라 **「셋이 서로 다른 단이고 전부 토큰」**입니다. */
+  tt('소제목 세 단이 전부 토큰이고 서로 다르다', (()=>{
+     const t = r => (r.match(/font-size:var\((--t\d)\)/)||[])[1];
+     const zone = t(rule('\\.pane-title'));
+     const field = t(rule('\\.flabel'));
+     const q2 = t(rule('\\.blockhead'));
+     return zone === '--t7' && field === '--t6' && q2 === '--t5';
+  })(), [ '.pane-title '+rule('\\.pane-title').slice(0,30), '.flabel '+rule('\\.flabel').slice(0,60),
+          '.blockhead '+rule('\\.blockhead').slice(0,50) ].join('\n     '));
+
+  /* ── ⑤ 「칩 다음 부속 동작」 간격이 01·02에서 같다 ────────────────
+     🔴 오너 지적 그 자리입니다 — 실측 01은 12px, 02는 30px, 03은 34px이었습니다.
+     ⚠ 01(`.subtoggle`)과 02(`.debtlink`)는 **같은 관계**(칩 줄에 딸린 부속 동작)라 같은 값입니다.
+       03(`.blockhead`)은 **다른 질문**이라 일부러 다릅니다 — 그리고 **더 커야** 합니다.
+       그 순서까지 같이 셉니다. 값이 아니라 **관계**를 잠급니다. */
+  tt('칩 다음 부속 동작의 간격이 01·02에서 같다', (()=>{
+     const a = (rule('\\.subtoggle').match(/margin-top:var\((--[a-z]+)\)/)||[])[1];
+     const b = (rule('\\.debtlink').match(/margin-top:var\((--[a-z]+)\)/)||[])[1];
+     return !!a && a === b;
+  })(), '.subtoggle ' + (rule('\\.subtoggle').match(/margin-top:[^;}]*/)||['?'])[0]
+      + '  /  .debtlink ' + (rule('\\.debtlink').match(/margin-top:[^;}]*/)||['?'])[0]);
+  tt('다른 질문은 부속 동작보다 멀리 있다', (()=>{
+     const q2 = num(rule('\\.blockhead'), 'margin');       /* margin:32px 0 0 */
+     const gapMax = 16;                                     /* --gap 기본값 */
+     return q2 !== null && q2 > gapMax;
+  })(), (rule('\\.blockhead').match(/margin:[^;}]*/)||['?'])[0]);
+
+  /* ── ⑥ 지역 화면 여백이 4의 배수다 ─────────────────────────────
+     26 · 28 · 34 같은 「어디에도 없는 값」이 이 화면에만 셋 있었습니다.
+     ⚠ 4의 배수는 취향이 아니라 **셈할 수 있는 사다리**입니다 — 4로 안 나뉘는 값이 하나 들어오면
+       그 옆의 값들이 전부 「대충 그쯤」이 됩니다. */
+  tt('03 지역 화면의 여백이 4의 배수다', (()=>{
+     return ['\\.zonegrid','\\.pane','\\.seg','\\.ownbox','\\.ownbox \\.seg'].every(sel=>{
+       const m = rule(sel).match(/margin-top:(\d+)px/);
+       return !m || (+m[1]) % 4 === 0;
+     });
+  })(), ['\\.zonegrid','\\.pane','\\.seg','\\.ownbox','\\.ownbox \\.seg']
+     .map(x=>x.replace(/\\/g,'')+' '+((rule(x).match(/margin-top:\d+px/)||['-'])[0])).join(' · '));
+  tt('음수 여백을 쓰지 않는다', !/margin[^:]*:\s*-\d/.test(CSSA.replace(/[^{}]*\.report[^{}]*\{[^}]*\}/g,'')),
+     (CSSA.match(/[^{;]*margin[^:]*:\s*-\d[^;}]*/g)||['없음']).slice(0,2).join(' | '));
+
+  /* ── ⑦ 죽은 규칙 ───────────────────────────────────────────────
+     죽은 CSS는 죽은 값이 아니라 **「살아 있는 두 번째 정의」**입니다(지침 6-6 · 원칙 84). */
+  tt('죽은 칩 규격이 되살아나지 않았다', !/\.chip\.is-clear\{/.test(CSSA));
+  tt('죽은 함수 loanTypeLabel이 되살아나지 않았다', !/function loanTypeLabel/.test(RAW));
+
+  /* ── ⑧ 기호 ────────────────────────────────────────────────────
+     ⚠ `⧉`(U+29C9)는 Pretendard에 없어 대체 글꼴로 떨어질 수 있습니다 — 그러면 두부(□)입니다.
+       「다음 걸음」의 네 기호는 **화살표 셋 + 없음**으로 맞췄습니다(↗ 밖으로 · ↓ 저장 · ↑ 보내기). */
+  /* 🔴 ⚠ **줄 주석(`//`)을 걷지 않습니다.** 처음엔 걷었다가 `href="https://rt.molit.go.kr/"`의
+     `//`가 먹혀 그 `<a>` 태그가 통째로 잘렸고, 검사가 「국토부 칸에 화살표가 없다」고 빨간불을
+     냈습니다 — **검사가 자기 전처리에 걸린 것**입니다. 이 절이 보는 것은 마크업이라
+     블록 주석과 HTML 주석만 걷으면 충분합니다(원칙 111의 반대편 함정). */
+  const SCREEN2 = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  /* ── ⑨ 지역 안내가 누른 칩 바로 다음 자리에 온다 ─────────────────
+     🔴 실측(390px): 성동구 칩 371 → 안내 825px으로 **454px 아래**였습니다. 고친 뒤 **18px**입니다.
+     ⚠ v24.29가 「갈리는 시 서랍」에서 정확히 같은 것을 이미 고쳤습니다(1,146px → 바로 아래).
+       이 안내만 남아 있었습니다 — **같은 원칙(111)이 두 자리에 있었는데 한 자리만 고쳐져** 있었습니다.
+     ⚠ 잠글 것은 「몇 px」이 아니라 **「고른 칩과 같은 격자, 그 다음 자리」**입니다. */
+  tt('지역 안내가 고른 칩 다음 자리에 들어간다', (()=>{
+     const f = (RAW.match(/const tagGrid = \(list[\s\S]*?\n\};/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     return /after\s*&&\s*String\(key\)\s*===\s*String\(S\.sgg\)/.test(f);
+  })(), '🔴 tagGrid가 S.sgg 칩 다음에 안내를 넣어야 합니다');
+  tt('안내가 격자 한 줄을 통째로 먹는다', /\.taggrid > \.tip\{[^}]*grid-column:1\/-1/.test(CSSA));
+  /* 어느 격자에도 못 들어간 경우(그룹을 바꿔 칩이 목록에 없을 때) 조용히 사라지면 안 됩니다 */
+  tt('자리를 못 잡은 안내가 사라지지 않는다', (()=>{
+     const f = (RAW.match(/function regionPane\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     return /if\(tag && inner\.indexOf\(tag\) < 0\) inner \+= tag;/.test(f);
+  })());
+
+  /* ── ⑩ 결과에서 조건을 고치면 한 번에 돌아온다 ────────────────────
+     🔴 오너 지적(두 판째) · 지시서 3(Fast-pass). 전에는 현금 칩을 고치면 **화면 셋**을 지나야
+        결과로 돌아왔습니다. 새 부품 없이 **상태 하나 + 문구 하나**로 답합니다.
+     ⚠ 잠글 것 셋 : ① 상태가 있다 ② 들어오는 두 길이 다 켠다 ③ CTA가 그때 다른 말을 한다. */
+  tt('결과에서 온 길을 상태로 기억한다', (()=>{
+     const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     const cond = /S\.step=\+b\.dataset\.step; S\.lockedPrice=null; S\.fromResult=true;/.test(bare);
+     const reedit = /reeditBtn'\)\.onclick[\s\S]{0,200}?S\.fromResult = true;/.test(bare);
+     return /fromResult:false/.test(bare) && cond && reedit;
+  })(), '🔴 조건칩과 「이전 단계」 둘 다 fromResult를 켜야 합니다');
+  tt('그때 CTA가 결과로 돌아간다고 말한다', (()=>{
+     const f = (RAW.match(/function syncCta\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     return /S\.fromResult \?/.test(f) && /결과 다시 보기/.test(f);
+  })(), (RAW.match(/b\.textContent = [^;]*/)||['없음'])[0].replace(/\s+/g,' ').slice(0,90));
+  tt('그 버튼이 실제로 결과로 간다', (()=>{
+     const f = (RAW.match(/function next\(\)[\s\S]*?\n\}/)||[''])[0].replace(/\/\*[\s\S]*?\*\//g,'');
+     /* ⚠ 집값을 다시 풀지 않으면 바뀐 조건과 잠긴 값이 갈립니다(원칙 91) */
+     return /if\(S\.fromResult\)\{[^}]*S\.lockedPrice=null;[^}]*showResult\(\);/.test(f);
+  })(), '🔴 fromResult 분기가 lockedPrice를 비우고 showResult로 가야 합니다');
+  /* ⚠ 이 값은 **그 세션의 길**이지 입력이 아닙니다 — 초안에 저장하면 탭을 닫았다 돌아온 사람의
+     버튼까지 「결과 다시 보기」가 됩니다(그 사람에게는 돌아갈 결과가 없습니다). */
+  tt('결과에서 온 길을 초안에 저장하지 않는다', (()=>{
+     const f = (RAW.match(/function saveDraft\(\)[\s\S]*?\n\}/)||[''])[0]
+             + (RAW.match(/function loadDraft\(\)[\s\S]*?\n\}/)||[''])[0];
+     return !/fromResult/.test(f.replace(/\/\*[\s\S]*?\*\//g,''));
+  })());
+
+  tt('글꼴이 없을 수 있는 기호를 화면에 안 쓴다', !/⧉|⇱|⧫|⌘/.test(SCREEN2),
+     ((SCREEN2.match(/[⧉⇱⧫⌘]/g)||['없음'])).join(' '));
+  /* 🔴 v25.14 — **화살표가 한 가지 뜻만 갖는다.** 「다음 걸음」 넷 중 화살표가 붙는 것은
+     **밖으로 나가는 둘**뿐입니다(채널 C · v23.20). 앱 안에서 끝나는 둘은 레이블이 동작을 말합니다.
+     ⚠ 잠글 것은 「↗가 몇 개」가 아니라 **「↗가 붙은 것은 전부 밖으로 나가는가」**입니다. */
+  /* ⚠ 마크업 덩어리를 정규식으로 자르지 않습니다 — 사이에 주석이 끼면 조용히 짧게 잘립니다
+     (실제로 한 번 그랬습니다 · 지침 6-24의 계열). **id로 네 칸을 직접** 집습니다. */
+  const MINI = id => (SCREEN2.match(new RegExp('<(a|button)[^>]*id="'+id+'"[\\s\\S]*?<\\/\\1>'))||[''])[0];
+  tt('화살표가 밖으로 나가는 것에만 붙는다', (()=>{
+     const four = ['outNaver','outHogang','outSave','outCopy'].map(MINI);
+     if(four.some(x => !x)) return false;
+     return four.every(it => /class="arw"/.test(it) === /target="_blank"/.test(it));
+  })(), ['outNaver','outHogang','outSave','outCopy'].map(id=>{ const it=MINI(id);
+     return id + (/target="_blank"/.test(it)?'(밖)':'(안)') + (/class="arw"/.test(it)?'↗':'—'); }).join(' · '));
 })();
 
 /* ── 결과 ─────────────────────────────────────────────────────── */
