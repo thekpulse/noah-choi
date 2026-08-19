@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.12 · 정책 2026.08.13 -->
+<!-- BUILD v25.14 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -411,10 +411,25 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   padding:var(--pad);margin-top:var(--gap);box-shadow:var(--sh)}
 .q{animation:rise .32s cubic-bezier(.22,1,.36,1)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.eyebrow{font-size:var(--t7);font-weight:800;color:var(--espresso);letter-spacing:.1em;margin:0 0 12px}
+/* 🔴 v25.14 — **위계를 내렸습니다.** 「01 / 03」은 이 화면에서 **가장 안 중요한 정보**인데
+   `--espresso`(본문 최상단 잉크) + 800이라 **질문 제목과 같은 무게**로 읽혔습니다.
+   그리고 바로 위 진행 막대가 **같은 사실을 이미 그림으로** 말합니다(원칙 43).
+   → `--ink-4`(흰 카드 위 4.62:1) + 700. **크기와 자간(.1em)은 안 건드립니다** —
+     그 둘이 이 부품의 정체(아이브로우)이고, v25.1에서 이름이 겹쳐 회색 알약이 됐던 자리입니다. */
+.eyebrow{font-size:var(--t7);font-weight:700;color:var(--ink-4);letter-spacing:.1em;margin:0 0 12px}
 .q-title{font-size:var(--t2);line-height:1.22;font-weight:900;letter-spacing:-.05em;margin:0}
-.q-sub{font-size:var(--t6);color:var(--ink-3);margin:14px 0 0}
-.q-sub.oneline{white-space:nowrap;font-size:clamp(11px,3.5vw,var(--t6));letter-spacing:-.03em}
+/* ⏹ v25.14 — **`.q-sub`와 `.q-sub.oneline`을 정의부터 지웠습니다.**
+   ⏹ `.q-sub`는 03의 「집이 있는 상태에서 더 사면…」 한 곳만 쓰고 있었는데,
+     **14px · `--ink-3`**이라 01·02의 설명(`.helper` 13px · `--ink-4`)보다 **한 단 컸습니다.**
+     같은 일(「이 칸/이 선택이 무엇을 뜻하는가」)에 규격이 둘이었던 자리입니다 —
+     오너가 「1·2페이지와 3페이지 설명이 다르다」고 본 것이 이것입니다.
+   → 마크업을 `.helper`로 바꿨습니다. **설명 줄은 화면 전체에서 한 규격입니다:**
+       **13px(--t7) · 400 · 행간 1.6**, 잉크는 **놓인 면**이 정합니다(원칙 97) —
+       흰 카드 위 `--ink-4`(4.62:1) · `--fill` 면 위 `--ink-3`(6.45:1).
+   ⏹ `.q-sub.oneline`은 **어떤 마크업도 안 쓰는 죽은 규칙**이었습니다(원칙 84 · 지침 6-6).
+     그리고 `clamp(11px, …)`으로 **스케일 밖 11px**까지 들고 있었습니다.
+   ⚠ 되살리려면 쓰는 마크업과 함께 되살리십시오. */
+#houseEcho{margin-top:12px}
 
 /* 질문 → 입력 카드 간격은 01·02·03이 같아야 합니다(24px).
    01은 히어로 카드 안이라 20px, 02·03은 28px이어서 스크롤할 때 리듬이 어긋났습니다. */
@@ -457,7 +472,14 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .flabel{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
   /* 🔴 v24.26 — 22 → 24px. 22는 4의 배수가 아니어서 옆 간격들(8·16·20·24)과 눈으로 안 맞았습니다.
      값 하나를 스케일 안으로 되돌리는 것이지 「더 띄우는」 판이 아닙니다(v24.15 · 26→24와 같은 규칙). */
-  margin:24px 0 8px;font-size:15px;font-weight:800;color:var(--ink);
+  /* 🔴 v25.14 — **15px 리터럴을 없앴습니다**(원칙 117 — 스케일 밖 값 금지).
+     이 파일에 15px은 여기와 `.blockhead` 둘뿐이었고, 둘 다 「소제목」인데 **급이 달랐습니다.**
+     → 소제목을 **세 단**으로 정리합니다(전부 스케일 안):
+         13(--t7) 구역 라벨   `.pane-title` · `.drawer-t` · `.tweak-label` · `.slider-head .k` · `.quote-k`
+         14(--t6) 입력칸 이름 **이 줄**
+         16(--t5) 화면 안 둘째 질문 `.blockhead`
+     ⚠ 굵기는 800 → 700입니다. 이 판이 800을 화면 전체에서 폐기했습니다(아래 :root 주석). */
+  margin:24px 0 8px;font-size:var(--t6);font-weight:700;color:var(--ink);
   letter-spacing:-.02em;line-height:1.4}
 .flabel:first-child{margin-top:0}
 /* 🔴 v25.0 — 라벨을 뗀 줄. 「지우기」만 남으므로 오른쪽으로 붙입니다.
@@ -479,9 +501,9 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    G-23이 `.drawer`를 화면 전체에서 찾기 때문에 이름을 겹치면 그 게이트가 오인합니다.
    ⚠ 세그먼트 바로 아래에 붙습니다(누른 것 다음 자리 · 원칙 111). 위 여백은 세그먼트와의
      관계가 보일 만큼만 — 더 띄우면 「다른 질문」으로 읽힙니다. */
-.ownbox{margin-top:14px;padding:14px;border-radius:var(--r-m);background:var(--fill)}
+.ownbox{margin-top:12px;padding:14px;border-radius:var(--r-m);background:var(--fill)}
 .ownbox .drawer-t{margin-top:0}
-.ownbox .seg{margin-top:10px;background:var(--card)}
+.ownbox .seg{margin-top:8px;background:var(--card)}
 /* 값이 없을 때는 숨깁니다 — 지울 게 없는데 「지우기」가 떠 있으면 소음입니다. */
 .clearbtn{flex:none;padding:2px 0;font-size:var(--t7);font-weight:600;color:var(--ink-4);
   letter-spacing:-.02em;line-height:1.4;transition:color .14s}
@@ -529,18 +551,25 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    선택 신호는 이미 셋입니다: 그린 테두리 · 뜨는 그림자 · 잉크로 진해지는 글자. */
 .chip.is-on{background:var(--card);color:var(--ink);border-color:var(--green);
   box-shadow:var(--sh-lift)}
-.chip.is-clear{color:var(--ink-4);font-weight:600;box-shadow:none;background:none;border-color:transparent}
+/* ⏹ v25.14 — `.chip.is-clear`를 **정의부터 지웠습니다.** 「지우기」가 v24.3에서 칩 줄을 떠나
+   라벨 줄로 간 뒤로 **이 클래스를 붙이는 마크업이 0곳**이었습니다(원칙 47 · 84).
+   ⚠ `__selfcheck`의 `.chip:not(.is-clear)` 탐침은 그대로 둡니다 — 그 줄은
+     「지우기 칩이 돌아오지 않았는가」를 겸해 재고 있고, 없는 클래스를 빼는 선택자는 무해합니다. */
 
-.zonegrid{margin-top:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.zonegrid{margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .zonecard{padding:20px 6px;border:1.5px solid var(--line);border-radius:var(--r-l);background:var(--card);
   box-shadow:var(--sh);text-align:center;transition:.14s}
 .zonecard.is-on{background:var(--card);border-color:var(--green);box-shadow:var(--sh-lift)}
 .zonecard b{display:block;font-size:var(--t6);font-weight:700}
 .zonecard.is-on b{color:var(--ink)}
-.pane{margin-top:26px}
+/* 🔴 v25.14 — 26 · 28 · 34 같은 「어디에도 없는 값」을 4의 배수 사다리로 되돌렸습니다. */
+.pane{margin-top:24px}
 .pane-title{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px;letter-spacing:.02em}
 /* 🔴 v24.28 — 「왜 여기만 한 번 더 묻나」에 답하는 줄. .pane-title 바로 아래에만 붙습니다. */
-.pane-note{font-size:var(--t7);font-weight:400;color:var(--ink-3);margin:-6px 0 12px;line-height:1.5}
+/* 🔴 v25.14 — **음수 여백을 없앴습니다.** 위 `.drawer-t`의 아래 여백을 4px으로 줄여 같은 그림을
+   냅니다 — 음수 마진은 「위 요소가 무엇인지」를 전제로 하는 값이라, 위가 바뀌면 조용히 어긋납니다.
+   ⚠ 행간도 1.5 → `--lh-body`(1.6). 설명 줄은 화면 전체가 1.6입니다(아래 「설명 한 규격」 주석). */
+.pane-note{font-size:var(--t7);font-weight:400;color:var(--ink-3);margin:0 0 12px;line-height:var(--lh-body)}
 /* 🔴 v24.29 — **갈리는 시의 하위 구 서랍.** `grid-column:1/-1`로 격자 한 줄을 통째로 먹으므로
    누른 칩 **바로 아랫줄**에 열리고, 뒤의 칩들은 그다음 줄로 밀립니다.
    ⏹ v24.28은 이 목록을 격자 **뒤**에 붙였고, 경기·인천(42칸)에서는 누른 칩과 1,146px 떨어져
@@ -552,7 +581,12 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      `--ink-4`로 4.62:1인데, 서랍 안은 면이 `--fill`로 바뀌어 **같은 토큰이 4.19:1**이 됩니다.
      토큰이 아니라 **놓인 자리**입니다(원칙 97 · G-19가 잡습니다). */
 .taggrid .drawer{grid-column:1/-1;background:var(--fill);border-radius:var(--r-m);padding:16px;margin:2px 0}
-.drawer-t{font-size:var(--t7);font-weight:700;color:var(--ink-3);margin:0 0 12px;letter-spacing:.02em}
+/* 🔴 v25.14 — **지역 안내가 격자 한 줄을 통째로 먹습니다.** 서랍(`.drawer`)과 **같은 문법**입니다 —
+   새 부품이 아니라 자리만 빌립니다. 이제 안내는 고른 칩 **바로 아랫줄**에 뜹니다(원칙 111).
+   ⚠ 위 여백은 8px입니다. `.tip`의 기본 16px을 그대로 쓰면 「다음 칩 줄」처럼 떨어져 보입니다 —
+     안내는 **누른 칩에 딸린 것**이라 더 붙어 있어야 합니다. */
+.taggrid > .tip{grid-column:1/-1;margin-top:8px}
+.drawer-t{font-size:var(--t7);font-weight:700;color:var(--ink-3);margin:0 0 4px;letter-spacing:.02em}
 .taggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 /* 🔴 v24.21 — **열 수는 가장 긴 이름이 정합니다.** 지역별로 하드코딩하지 않습니다.
    처음에는 「경기·인천만 2열」로 짰습니다. **틀렸습니다.** 목록을 전부 재 보니 같은 결함이
@@ -589,15 +623,25 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .sidoscroll::-webkit-scrollbar{display:none}
 .sidoscroll .chip{flex:none;padding:0 16px;font-size:var(--t6)}
 
-.seg{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
+.seg{margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
   padding:5px;border-radius:var(--r-m)}
 /* 세그먼트도 칩과 같은 선택 언어입니다 — 폭 고정 1.5px, 색만 바뀝니다. */
 .seg button{min-height:var(--h-opt);padding:0 4px;border:1.5px solid transparent;border-radius:var(--r-s);
   font-size:var(--t6);font-weight:700;color:var(--ink-3);transition:.14s}
 .seg button.is-on{background:var(--card);border-color:var(--green);color:var(--ink);
   box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.blockhead{margin:34px 0 0;font-size:15px;font-weight:700;color:var(--ink-2);letter-spacing:-.02em}
-.debtlink{margin-top:30px;padding:0;font-size:var(--t7);font-weight:600;color:var(--ink-3);
+/* 🔴 v25.14 — **화면 안의 둘째 질문**입니다(「지금 집이 있으세요?」). 소제목이 아닙니다.
+   ⏹ 전: 15px(스케일 밖) · `--ink-2` · 위 여백 34px(어디에도 없는 값).
+   → 16px(--t5) · `--ink`(질문이므로 본문 최상단 잉크) · 위 여백 **32px**.
+   ⚠ 위 여백만 이 파일에서 유일하게 32입니다. 「칩 다음에 오는 부속 동작」(--gap)과
+     **다른 뜻**이라 값이 달라야 합니다 — 부속 동작은 같은 덩어리, 이것은 **다른 질문**입니다. */
+.blockhead{margin:32px 0 0;font-size:var(--t5);font-weight:700;color:var(--ink);letter-spacing:-.02em}
+/* 🔴 v25.14 — **위 여백 30 → `--gap`**(오너 지적 「칩 버튼과 간격이 페이지마다 다르다」).
+   실측이었습니다 — 같은 자리(칩 줄 다음의 부속 동작)가 01은 12px, 02는 30px, 03은 34px이었습니다.
+   → 01(`.subtoggle`)이 이미 쓰는 `--gap`으로 맞춥니다. **새 값을 만들지 않았습니다.**
+   ⚠ `--gap`은 ≤400px에서 12, 그 위에서 16입니다 — 두 화면이 **어느 폭에서도** 같습니다.
+   ⚠ 03의 「지금 집이 있으세요?」는 **부속 동작이 아니라 다른 질문**이라 32px입니다(위 `.blockhead`). */
+.debtlink{margin-top:var(--gap);padding:0;font-size:var(--t7);font-weight:600;color:var(--ink-3);
   letter-spacing:-.02em;transition:color .12s}
 .debtlink:hover{color:var(--ink)}
 /* 🔴 v24.29 — 실측 **15px**. 글자 한 줄이 곧 상자였습니다(padding:0).
@@ -654,7 +698,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    .minigrid .mini와 같은 자리·같은 처방입니다 — 흰 면이 아니면 --ink-3입니다. */
 .arow .k{font-size:var(--t7);color:var(--ink-3);min-width:66px;flex:none}
 .arow .v{font-size:var(--t6);font-weight:700;color:var(--ink-2);flex:1}
-.arow .go{font-size:var(--t7);font-weight:800;color:var(--ink-3);flex:none}
+.arow .go{font-size:var(--t7);font-weight:700;color:var(--ink-3);flex:none}
 
 .dock{position:fixed;left:0;right:0;z-index:30;max-width:480px;margin:0 auto;
   padding:0 16px;bottom:calc(22px + env(safe-area-inset-bottom))}
@@ -889,7 +933,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .ratesim input[type=range]{margin-top:calc(6px + (var(--thumb) - var(--tap))/2)}
 
 .card{margin-top:var(--gap);background:var(--card);border-radius:var(--r-xl);padding:var(--pad);box-shadow:var(--sh)}
-.card-title{font-size:var(--t4);font-weight:800;line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}
+.card-title{font-size:var(--t4);font-weight:700;line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}
 /* 안내 박스는 수수하게, 접기 버튼은 누를 수 있게 — 둘을 갈라 놓습니다.
    🔴 v23.21 — 왼쪽 굵은 세로선(3px)을 전부 지웠습니다. 레거시 인용문 문법입니다.
    중립 안내는 선도 면도 없이 글자만, 주의 안내는 「면」으로만 갈립니다. */
@@ -902,10 +946,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .quote-edit{padding-bottom:6px;border-bottom:1.5px solid var(--line);transition:border-color .14s}
 .quote-edit:focus-within{border-bottom-color:var(--green)}
 .quote-edit input{flex:1;min-width:0;width:100%;border:0;background:none;padding:0;
-  font-family:inherit;font-size:clamp(28px,8.5vw,var(--t1));font-weight:800;
+  font-family:inherit;font-size:clamp(28px,8.5vw,var(--t1));font-weight:700;
   letter-spacing:-.04em;line-height:1.15;color:var(--ink);text-align:left}
 .quote-edit input:focus,.quote-edit input:focus-visible{outline:none}
-.quote-edit input::placeholder{color:var(--ink-4);font-weight:800}
+.quote-edit input::placeholder{color:var(--ink-4);font-weight:700}
 .quote-edit span{flex:none;font-size:var(--t4);font-weight:700;color:var(--ink-3)}
 /* 설명 문구는 칩을 바꿀 때 **부드럽게 교체**됩니다 — 글자가 툭 바뀌면 바뀐 걸 놓칩니다. */
 .tip{transition:opacity .18s ease}
@@ -921,7 +965,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .tip{margin-top:16px;padding:0;border-radius:0;background:transparent;
   border:0;font-size:var(--t7);line-height:1.6;color:var(--ink-3)}
 .tip:empty{display:none}
-.tip b{color:var(--ink-2);font-weight:800}
+.tip b{color:var(--ink-2);font-weight:700}
 /* 규제지역 안내는 「정보」가 아니라 「주의」입니다. 면과 글자로 위계를 만듭니다. */
 .tip.info{background:var(--warn-tint);border:0;
   border-radius:var(--r-m);padding:14px 16px;color:var(--warn);font-weight:600}
@@ -946,7 +990,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .legend div{display:flex;align-items:center;gap:8px;font-size:var(--t7);color:var(--ink-3)}
 .legend span{width:8px;height:8px;border-radius:3px;flex:none}
 .legend .f1{background:var(--ink)} .legend .f2{background:var(--green)}
-.legend b{font-size:var(--t6);font-weight:800;color:var(--ink)}
+.legend b{font-size:var(--t6);font-weight:700;color:var(--ink)}
 
 .line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;font-size:var(--t6)}
 /* 🔴 v25.9 — **금액 오른쪽 끝을 한 열에 세웁니다**(오너 지적 · 실측으로 확인).
@@ -964,12 +1008,12 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    위 줄의 padding-bottom 11까지 더하면 43px이었습니다 — 카드 안 최대 간격이 여기였습니다.
    가르는 일은 **선**이 합니다. 여백은 선을 거들 만큼만 있으면 됩니다. */
 .line.total{border-top:1px solid var(--line);margin-top:8px;padding-top:16px}
-.line.total .k{font-size:var(--t5);font-weight:800;color:var(--ink)}
-.line.total .v{font-size:var(--t3);font-weight:800;letter-spacing:-.04em}
+.line.total .k{font-size:var(--t5);font-weight:700;color:var(--ink)}
+.line.total .v{font-size:var(--t3);font-weight:700;letter-spacing:-.04em}
 .overnote{margin-top:14px;padding:12px 14px;border:0;border-radius:var(--r-m);
   background:var(--warn-tint);
   font-size:var(--t7);line-height:1.6;font-weight:600;color:var(--warn)}
-.overnote b{font-weight:800}
+.overnote b{font-weight:700}
 
 /* 🔴 v25.12 — 위 여백 14 → 10px. 막대 자신(8px)은 그대로입니다 — 「부담이 얼마나 찼는가」를
    말하는 유일한 그림이고, 굵기를 줄이면 그 그림이 선이 됩니다. */
@@ -1005,7 +1049,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .limitrow .bar i{display:block;height:100%;background:var(--line)}
 .limitrow .v{font-size:var(--t7);font-weight:700;color:var(--ink-3);min-width:76px;text-align:right;flex:none}
 .limitrow.bind .bar i{background:var(--espresso)}
-.limitrow.bind .k,.limitrow.bind .v{color:var(--ink);font-weight:800}
+.limitrow.bind .k,.limitrow.bind .v{color:var(--ink);font-weight:700}
 
 /* 회색 박스를 벗깁니다 — 아코디언은 버튼이 아니라 리스트 줄에 가깝습니다.
    투명 면 + 헤어라인 하나로 「열고 닫는 줄」임을 말합니다. */
@@ -1103,7 +1147,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 
 .slider-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
 .slider-head .k{font-size:var(--t7);font-weight:700;color:var(--ink-4)}
-.slider-head .v{font-size:var(--t3);font-weight:800}
+.slider-head .v{font-size:var(--t3);font-weight:700}
 /* 슬라이더 — 브라우저 기본 스타일을 전부 덮습니다.
    채워진 구간은 JS가 --fill-pct를 갱신해 그립니다. */
 /* 🔴 v24.29 — **상자 높이를 6px → --tap(44px)으로 올렸습니다.** 실측에서 이 컨트롤의
@@ -1157,7 +1201,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .tweak + .tweak{margin-top:24px}
 .tweak-label{font-size:var(--t7);font-weight:700;color:var(--ink-4);margin:0 0 12px}
 .quote-k{font-size:var(--t7);font-weight:700;color:var(--ink-3);margin:0}
-.quote{font-size:clamp(28px,8.5vw,var(--t1));font-weight:800;letter-spacing:-.04em;
+.quote{font-size:clamp(28px,8.5vw,var(--t1));font-weight:700;letter-spacing:-.04em;
   margin:8px 0 0;white-space:nowrap;color:var(--espresso)}
 
 /* 🔴 v23.27 — 밖으로 나가는 넷은 <button> + window.open이 아니라 **진짜 <a>**입니다.
@@ -1272,7 +1316,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .deal-note:empty{display:none}
 /* 🔴 v25.5 — 각주 둘이 나란히 설 때는 사이를 좁힙니다. 같은 성격의 글이라 한 덩어리로 읽혀야 합니다. */
 .deal-note + .deal-note{margin-top:6px}
-.deal .amt{flex:none;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em;text-align:right}
+.deal .amt{flex:none;font-size:var(--t6);font-weight:700;color:var(--ink);letter-spacing:-.02em;text-align:right}
 /* 🔴 v24.14 — 차액은 금액 **아래 줄**입니다. 옆에 붙이면 「15억 5,000만원+8,000만원」이
    한 덩어리로 읽혀 23억처럼 보입니다(실제로 그렇게 났습니다).
    그리고 옆에 붙으면 금액 칸이 넓어져 **왼쪽 부제가 잘립니다.** */
@@ -1292,7 +1336,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
      앱 배경(--bg)과 같은 값이라 통째로 사라집니다(원칙 97 · 기준일 뱃지가 밟았던 자리). */
 .deal-msg{margin:6px 0 0;font-size:var(--t6);line-height:1.6;color:var(--ink-3);
   background:var(--fill);border-radius:var(--r-m);padding:18px 16px}
-.deal-msg b{color:var(--ink);font-weight:800}
+.deal-msg b{color:var(--ink);font-weight:700}
 
 /* 🔴 v23.24 — 「스트레스 DSR · 취득세 · …」 한 줄을 ⓘ 하나로 접었습니다(점진적 정보 공개).
    신뢰 지표를 지운 게 아니라 **한 단계 뒤로** 옮겼습니다 — 눌러야 나오지만 언제나 있습니다. */
@@ -1300,7 +1344,11 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
   border-radius:var(--r-pill);background:none;border:1px solid var(--line);
   font-size:var(--t7);line-height:1;font-weight:600;color:var(--ink-3);transition:.14s}
 .trust:hover{color:var(--ink);background:var(--card)}
-.trust i{font-style:normal;font-size:14px;line-height:1}
+/* 🔴 v25.14 — 14px 리터럴 → `--t6`. **값은 같습니다**(14px). 화면 쪽 스케일 밖 리터럴을
+   0으로 만드는 마지막 한 자리였습니다(원칙 117). 남는 리터럴은 공유 카드의 54px 하나이고,
+   그건 **일부러 리터럴**입니다 — 내보내는 그림은 보는 기기와 무관해야 해서 반응형 토큰을
+   못 씁니다(검사가 `--d1`·`--t1`·`--t2` 사용을 막습니다). */
+.trust i{font-style:normal;font-size:var(--t6);line-height:1}
 /* 🔴 v24.29 — v24.27은 `.condchip`만 고쳤습니다. **같은 --h-chip(35px)을 쓰는 버튼이 하나 더**
    있었는데 그때 세지 않았습니다 — 실측에서 35px로 남아 있었습니다.
    ⚠ 보이는 크기는 그대로 둡니다(원칙 112 · 지침 6-3). 이 칩이 46px 옵션칩 덩치가 되면
@@ -1324,7 +1372,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .sheet-title{font-size:var(--t4);font-weight:900;letter-spacing:-.03em;line-height:1.3;margin:0 0 4px}
 .sheet-row{padding:16px 0;border-bottom:1px solid var(--line)}
 .sheet-row:last-of-type{border-bottom:0}
-.sheet-row b{display:block;font-size:var(--t6);font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.sheet-row b{display:block;font-size:var(--t6);font-weight:700;color:var(--ink);letter-spacing:-.02em}
 .sheet-row span{display:block;margin-top:4px;font-size:var(--t7);line-height:1.6;color:var(--ink-3)}
 /* 🔴 v25.1 — 「곧 바뀌는 것」의 항목 하나. **여백만** 만듭니다 — 색·크기·굵기는 위 규칙 그대로.
    ⚠ 마지막 항목에는 아래 여백을 안 답니다. 달면 `.sheet-row`의 16px 아래 여백에 24px이
@@ -1876,8 +1924,13 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              블록은 **8개로 돌아옵니다.** 「매달 갚을 원리금」이 같이 움직이는 것은
              `rateSimNote`가 말합니다.
            ⚠ 대출이 없으면 통째로 숨깁니다 — 갚을 것이 없는데 금리를 물을 이유가 없습니다.
-           ⚠ 이 값은 **엔진에 안 들어갑니다.** 한도는 스트레스 금리(6.9%)로 잡고 상환액만
+           ⚠ 이 값은 **엔진에 안 들어갑니다.** 한도는 **스트레스 금리**로 잡고 상환액만
              실제 금리로 계산하는 구조라, 여기서 엔진을 건드리면 그 관계가 깨집니다.
+           🔴 v25.13 — **여기 적혀 있던 「6.9%」를 지웠습니다(다섯 판 밀린 것).** 가산이 1.5 →
+             3.0으로 바뀐 뒤(8.13 대책) 옛 값이었습니다. **숫자를 다른 숫자로 바꾸지 않습니다** —
+             가산은 지역·금리유형·기간마다 달라서 한 값으로 못 적습니다. **가산은
+             `computeStressBp`가 정합니다**(원칙 84 · 143). 주석은 화면에 안 나오지만
+             **다음 사람이 근거로 씁니다.**
            🔴 v24.28 — 타일이 합쳐지면서 시뮬레이터는 **같은 타일 안에 그대로 있습니다.**
              v24.25가 이 자리를 고른 근거(「부담률을 바꾸는 값이라 자리가 맞다」)는 그대로 살아 있고,
              이제 「매달 갚을 원리금이 같이 움직이는 것」도 **같은 카드 안에서 눈에 보입니다.** -->
@@ -2109,10 +2162,20 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              레이블이 지키지 못할 약속을 하게 됩니다. 그래서 「바로가기」를 떼고
              **「네이버 부동산」이라는 목적지 이름만** 남겼습니다 — 여는 것 외에 아무것도 약속하지 않습니다.
            ⚠ 칸은 여전히 **넷**입니다. 홀수가 되면 격자를 쓰지 마세요(위 v24.13 주석). -->
-      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b></div><span class="arw">↓</span></button>
+      <!-- 🔴 v25.14 — **화살표를 뗐습니다(↓ · ⧉).**
+           ⏹ 이 파일의 기록: 「**만든 사람조차 ↓·⧉를 못 읽었습니다.** 아이콘에 뜻을 맡기지 않습니다.
+             네 레이블이 전부 동사로 끝나야 합니다 — 화살표는 거들 뿐입니다.」(v24.22)
+             그 결론은 맞았는데 **화살표는 그대로 남겨 뒀습니다.** 「거드는 것」이 못 읽히면
+             거드는 게 아니라 **소음**입니다. 그리고 `⧉`(U+29C9)는 Pretendard에 없어
+             실기에서 두부(□)로 떨어질 수 있는 글리프였습니다.
+           → **`↗`만 남깁니다.** 그러면 화살표가 비로소 한 가지 뜻이 됩니다 — **「밖으로 나간다」**.
+             v23.20이 정한 채널 C(제휴·외부는 색을 안 쓰고 **흰 면 + 얇은 윤곽 + ↗로만** 가른다)를
+             지키는 쪽입니다. 앱 안에서 끝나는 둘은 레이블이 이미 동작을 말합니다(「저장」·「보내기」).
+           ⚠ 기호를 새로 만들지 않았습니다. **둘을 지웠을 뿐입니다.** -->
+      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b></div></button>
       <!-- 🔴 v24.15 — 이름을 「복사하기」에서 바꿨습니다. 이제 폰에서는 **공유 시트가 바로 열립니다.**
            「복사하기」라고 적어 두면 사람이 앱을 나가서 붙여넣을 준비를 합니다 — 안 그래도 되는데. -->
-      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 보내기</b></div><span class="arw">⧉</span></button>
+      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 보내기</b></div></button>
       </div>
     </div>
 
@@ -2170,13 +2233,13 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
        ⚠ 검색을 노려 글자 수를 채우지 않습니다. **읽으라고 쓰는 글**만 둡니다 —
          숨기려고 만든 글은 정책 위반이자, 이 도구가 지켜 온 것과도 반대입니다.
        ⚠ 숫자(40% · 6억)는 POLICY 값입니다. 정책이 바뀌면 **여기도 같이** 고치세요. -->
-  <div class="sheet-row"><b>주택담보대출 비율(LTV)</b><span>집값의 몇 %까지 빌릴 수 있는지예요. 규제지역인지, 집이 몇 채인지, 생애최초인지에 따라 달라져요. 여기서 막히면 소득이 아무리 높아도 한도가 안 늘어요.</span></div>
+  <div class="sheet-row"><b>주담대 비율(LTV)</b><span><b>주택담보대출</b>을 줄여 <b>주담대</b>라고 적어요. 집값의 몇 %까지 빌릴 수 있는지예요. 규제지역인지, 집이 몇 채인지, 생애최초인지에 따라 달라져요. 여기서 막히면 소득이 아무리 높아도 한도가 안 늘어요.</span></div>
   <div class="sheet-row"><b>소득 대비 대출 규제(DSR)</b><span>연소득의 40%까지만 원리금 상환에 쓸 수 있어요. 갚고 있는 대출이 먼저 빠지고, 남은 몫으로 한도를 봐요.</span></div>
   <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 봐요. 실제보다 높게 잡아 한도가 보수적으로 나와요.</span></div>
   <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라져요. 대출을 안 받아도 늘 계산에 넣어요.</span></div>
   <div class="sheet-row"><b>중개보수</b><span>거래 금액 구간별 상한요율로 계산해요. 실제로는 협의로 더 낮아질 수 있어요.</span></div>
   <div class="sheet-row"><b>방공제(최우선변제금)</b><span>지역별 기준액을 승인 한도에서 빼요. 그만큼 실제로 나오는 돈이 줄어요.</span></div>
-  <div class="sheet-row"><b>정부 상한</b><span>수도권·규제지역에서는 주택담보대출 자체에 상한이 있어요. LTV로 계산한 값이 이보다 크면 상한까지만 나와요.</span></div>
+  <div class="sheet-row"><b>정부 상한</b><span>수도권·규제지역에서는 주담대 자체에 상한이 있어요. LTV로 계산한 값이 이보다 크면 상한까지만 나와요.</span></div>
   <div class="sheet-row"><b>원리금균등 상환</b><span>매달 같은 금액을 갚는 방식이에요. 처음엔 이자 비중이 크고 갈수록 원금 비중이 커져요. 매달 갚을 원리금은 이 방식으로 계산했어요.</span></div>
   <!-- 🔴 v24.28 — 날짜를 마크업에서 뻈습니다. `POLICY_ASOF` 한 곳에서 채웁니다(원칙 58 · 84). -->
   <div class="sheet-row"><b>정책 확인일</b><span id="asOfNote"></span></div>
@@ -2748,13 +2811,11 @@ function getEffectiveLTV(ctx){
   return getLTV(ctx.houseStatus, ctx.regulated, ctx.metro);
 }
 
-function loanTypeLabel(type){
-  if(type === 'didimdol') return '디딤돌대출';
-  if(type === 'didimdolBaby') return '신생아특례 디딤돌대출';
-  if(type === 'bogeumjari') return '보금자리론';
-  if(type === 'none') return '대출 없음(전액 현금)';
-  return '주택담보대출(시중은행)';
-}
+/* ⏹ v25.14 — `loanTypeLabel()`을 **정의부터 지웠습니다.** 파일 전체에서 **부르는 곳이 0곳**이었습니다
+   (정책대출 UI가 화면에서 도달 불가라 v24대에 쓰임이 끊겼습니다). 죽은 코드는 죽은 값이 아니라
+   **「살아 있는 두 번째 정의」**입니다(원칙 47 · 84 · 지침 6-6) — 다음 사람이 대출 이름을
+   고칠 때 여기도 고쳐야 하는 줄 알고, 안 고치면 두 이름이 됩니다.
+   ⚠ 되살리려면 **부르는 자리와 함께** 되살리십시오. */
 
 /* ===== 상환부담(DSR·DTI) 엔진 =====
    실제 대출한도를 결정하는 건 LTV가 아니라 상환능력인 경우가 대부분이라,
@@ -3197,7 +3258,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.12 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.14 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3235,7 +3296,7 @@ const INTERIOR = [
 const PYEONG_MAX = 100;
 
 /* 🔴 v24.23 — **보기 전용 금리.** 엔진의 `D.rate`와 **일부러 다른 변수**입니다.
-   ⚠ `D.rate`를 직접 움직이면 안 됩니다. 대출 한도는 **스트레스 금리(6.9%)**로 잡고
+   ⚠ `D.rate`를 직접 움직이면 안 됩니다. 대출 한도는 **스트레스 금리**(`computeStressBp`)로 잡고
      상환액만 실제 금리로 계산하는 구조라(v23.26 주석), 여기서 엔진을 건드리면
      「한도는 그대로인데 부담률만 요동치는」 어긋남이 생깁니다.
    → 이 값은 **월 상환액 타일과 부담 게이지에만** 닿습니다. 위 매수 가능 금액은 안 움직입니다.
@@ -3245,7 +3306,12 @@ let SIM_RATE = null;                       /* null이면 D.rate를 씁니다 */
 const simRate = () => SIM_RATE == null ? D.rate : SIM_RATE;
 
 const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none', ownCount:1,
-            group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false, costOpen:false, limitOpen:false, itOpen:false,
+            group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false,
+            /* 🔴 v25.14 — **결과에서 조건을 고치러 왔는가.** 켜져 있으면 하단 CTA가
+               「결과 다시 보기」가 되고 한 번에 결과로 돌아갑니다(위 `syncCta`·`next`).
+               ⚠ **초안에 저장하지 않습니다** — 탭을 닫았다 돌아온 사람은 「결과에서 온」 것이
+                 아닙니다. 이 값은 그 세션의 **길**이지 입력이 아닙니다. */
+            fromResult:false, costOpen:false, limitOpen:false, itOpen:false,
             /* 🔴 v25.6 — 중개보수. **`v:null`이 「상한요율 자동」입니다.**
                숫자를 넣어 두면 그 값이 두 번째 정의가 되어 정책이 바뀌어도 안 따라옵니다(원칙 84).
                ⚠ `on:true`가 기본입니다 — 끄는 쪽을 기본으로 두면 유리한 오차입니다(원칙 28). */
@@ -3316,12 +3382,27 @@ function renderQuestion(){
        첫 화면에 주석이 그대로 찍혀 나갔고 그대로 배포됐습니다.
        ⚠ 템플릿 리터럴 안에는 주석을 쓰지 마세요. 할 말은 리터럴 **밖**에 둡니다.
          test.js가 이제 이 실수를 잡습니다 — v24.19 항목. */
+    /* 🔴 v25.13 — 헬퍼의 「말고」를 **「만 빼고」**로 바꿨습니다(오너 지적).
+       ⏹ 전: 「주택담보대출 **말고** 끌어모을 수 있는 돈 전부예요.」
+         「말고」가 어디에 붙는지 읽는 사람이 못 고릅니다 — 「주택담보대출이 아닌 대출은
+         넣으라는 건가?」로 읽히는데, **실제로 그게 맞습니다**(신용대출로 당겨 온 현금도
+         여기 넣는 것이 이 계산의 전제입니다). 애매한 것은 뜻이 아니라 **문법**이었습니다.
+       ⚠ 「끌어모을 수 있는」은 **한 자도 안 건드렸습니다.** 그 말이 「신용대출 · 가족 지원도
+         넣는다」를 유일하게 말하고 있습니다 — 줄이면 뜻을 버리는 길입니다(원칙 39).
+       ⚠ 31자로 조기 경보 상한(36자) 안입니다. 그래도 **자수는 지표가 아닙니다** —
+         360px 렌더에서 한 줄인 것을 확인했습니다(원칙 144 · G-18).
+       🔴 v25.13 — 체크박스가 **무슨 대출인지** 말합니다(오너 지적).
+       ⏹ 전: 「대출은 받지 않을 거예요」. 이 체크박스가 실제로 끄는 것은 **주택담보대출 하나**인데
+         (`S.noLoan` → 02가 통째로 빠짐), 바로 다음 화면이 **신용대출 월 상환액을 묻습니다.**
+         같은 퍼널 안에서 「대출」이 두 뜻이었습니다(원칙 39).
+       ⚠ 16자로 늘었습니다. 360px에서 한 줄인 것을 확인했습니다 — 이 줄은 도크에 가리던 이력이
+         있는 자리라(v25.6) **줄 수가 늘면 첫 화면이 그대로 깎입니다.** */
     h = eye + `<h2 class="q-title">지금 모은 돈이 얼마인가요?</h2>
       ${moneyCard('cash', S.cash, '가진 돈',
-        '주택담보대출 말고 끌어모을 수 있는 돈 전부예요.')}
+        '주담대만 빼고, 끌어모을 수 있는 돈 전부예요.')}
       <div class="chips">
         ${[5000,10000,50000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
-      <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>대출은 받지 않을 거예요</label>`;
+      <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>주담대는 받지 않을 거예요</label>`;
   }
   if(st.id==='income'){
     /* 🔴 v24.19 — 전: 헬퍼가 「소득 대비 대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.」
@@ -3333,9 +3414,25 @@ function renderQuestion(){
          멀어지고, ③은 이 파일의 가운뎃점 149곳이 전부 띄어쓰기라 혼자 어긋납니다.
        ⏹ 「세전 · 부부 합산」을 칸 이름으로 올리는 안도 재 봤습니다 — **되돌렸습니다.**
          칸 이름은 요약 줄(`.arow .k`)의 이름과 같아야 하고, test.js가 그걸 잠그고 있습니다. */
+    /* 🔴 v25.13 — **「어디에 쓰이는가」가 아니라 「무엇을 계산하는가」로** 바꿨습니다(오너 지적).
+       ⏹ 전: 「대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.」
+         「규제에 쓰인다」는 이 칸이 결과를 **어떻게 움직이는지** 아무것도 안 말합니다.
+         이 도구에서 연소득이 실제로 하는 일은 하나입니다 — **주택담보대출 한도 계산**.
+       ⚠ **「한도를 정해요」로 쓰지 않았습니다.** 한도는 다섯 후보 중 **가장 작은 값**이고
+         소득이 이기는 것은 그중 하나(DSR)일 때뿐입니다. 「소득이 한도를 정한다」고 적으면
+         LTV가 한도를 정한 사람에게 거짓입니다(원칙 39 · v24.4가 검사로 잠근 자리).
+         → 「계산에 써요」는 **참인 채로** 무엇에 쓰이는지를 말합니다.
+       ⚠ **「(DSR)」은 남깁니다.** 결과 화면의 한도 막대와 안내 시트가 이 약어를 쓰므로,
+         여기서 지우면 사용자가 뒤에서 처음 보는 말이 됩니다(원칙 58 — 이름은 한 벌).
+       ⚠ 🔴 **처음 쓴 「…한도 계산(DSR)에…」(34자)는 360·375px에서 두 줄이었습니다.**
+         `.helper`는 1줄 규격(G-18)인데 **`selfcheck.mjs`가 결과 화면만 재서 못 잡았습니다** —
+         입력 화면은 어떤 장치도 렌더를 안 봅니다. 후보 여섯을 360px에서 재서 「계산」 두 글자를
+         뺐습니다(31자 · 다섯 폭 전부 한 줄). **자수는 지표가 아닙니다 — 폭입니다**(원칙 144).
+       ⚠ 「(DSR)」 앞에 한글이 붙어 있어야 합니다(원칙 0). 검사가 「'규제'라는 낱말」이 아니라
+         **「한글 + (DSR)」**을 보도록 v25.13에서 대상을 옮겼습니다(원칙 128). */
     h = eye + `<h2 class="q-title">연소득이 얼마인가요?</h2>
       ${moneyCard('income', S.income, '연소득',
-        '대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.')}
+        '주담대 한도(DSR)에 써요. 세전 · 부부 합산.')}
       <div class="chips">
         ${[1000,5000,10000].map(v=>`<button class="chip" data-add="${v}">+${v>=10000?(v/10000)+'억':comma(v)+'만'}</button>`).join('')}</div>
       <button class="debtlink" id="debtLink">${S.debtOpen ? '갚고 있는 대출 입력 닫기' : '갚고 있는 대출이 있어요 ›'}</button>
@@ -3395,7 +3492,7 @@ function renderQuestion(){
         <button data-house="multi" class="${S.houseStatus==='multi'?'is-on':''}">1주택 이상</button>
       </div>
       ${ownDrawer()}
-      <p class="q-sub" id="houseEcho">${houseEchoText()}</p>`;
+      <p class="helper" id="houseEcho">${houseEchoText()}</p>`;
   }
   box.innerHTML=h; bind();
 }
@@ -3465,30 +3562,75 @@ const openPick = () => {
 function regionPane(){
   if(!S.group) return '';
   const z = S.sgg ? zoneFromSgg(S.sgg) : null;
+  /* 🔴 v25.14 — **안내를 누른 칩 바로 아래로 옮겼습니다**(원칙 111).
+     ⏹ 전: 격자 전체 **뒤**에 붙었습니다. 실측(390px) — 성동구 칩 371px, 안내 825px으로
+       **454px 아래**였습니다. 고른 사람은 화면 밖에서 답을 받습니다.
+     🔴 v24.29가 **갈리는 시 서랍에서 정확히 같은 것을 이미 고쳤습니다**(1,146px → 바로 아래).
+       이 안내만 남아 있었습니다.
+     → `tagGrid`가 **키가 `S.sgg`인 칩 다음 자리**에 넣습니다. 갈리는 시는 그 칩이 서랍 **안**에
+       있으므로 안내도 서랍 안에 들어갑니다 — 자리를 따로 안 적어도 맞습니다.
+     ⚠ 어느 격자에도 안 들어간 경우(그룹을 바꿔 칩이 목록에 없을 때)를 위해 **끝에 한 번 더**
+       확인합니다. 안 그러면 안내가 조용히 사라집니다(원칙 147 — 「안 보인다」의 ①). */
+  const tag = z ? `<div class="tip${z==='reg' ? ' info' : ''}">${
+      z==='reg' ? '<b>규제지역이에요.</b> 대출 비율(LTV)이 가장 낮게 잡히고, 집값 구간별 상한도 붙어요.'
+    : z==='metro' ? '<b>수도권이에요.</b> 집값 구간에 따라 대출 상한이 따로 붙어요.'
+    : '<b>수도권 밖이에요.</b> 집값 구간별 대출 상한이 없어요.'}</div>` : '';
   let inner='';
-  if(S.group==='seoul') inner = `<p class="pane-title">자치구를 골라주세요</p>` + tagGrid(picksOf(SEOUL));
-  else if(S.group==='metro') inner = `<p class="pane-title">시 · 군 · 구를 골라주세요</p>` +
-    tagGrid(METRO.flatMap(s => picksOf(s, shortSido(s)+' ')));
+  if(S.group==='seoul') inner = `<p class="pane-title">자치구를 골라주세요</p>` + tagGrid(picksOf(SEOUL), false, tag);
+  /* 🔴 v25.14 — **경기·인천을 「그 외 지역」과 같은 2단계로 바꿨습니다**(오너 지시).
+     ⏹ 전: 경기 31 + 인천 11 = **42칩을 한 격자**에 폈습니다. 이름이 「경기 의정부시」처럼
+       **6자**라 `TAG_WIDE`(5자)가 걸려 **2열**이 되고, 21줄 × 격자 1,166px이었습니다
+       (390px 실측 · 화면 전체 1,892px). 그리고 접두어 「경기 」가 **31번**, 「인천 」이 11번
+       같은 자리에 반복됐습니다 — 접두어는 **정보가 아니라 소음**이었습니다.
+     → 시·도를 먼저 고릅니다. 그러면 접두어가 필요 없어지고 이름이 **4자 이하**로 떨어져
+       `TAG_WIDE`가 **저절로** 안 걸립니다 — 값을 고쳐서 3열을 만드는 것이 아니라
+       **원인을 없애서 규칙이 스스로 맞게** 둡니다(원칙 58).
+       실측: 경기 3열 11줄 **606px**(−560 · −48%) · 인천 3열 4줄 **214px**.
+     ⚠ 세로보다 큰 이득 둘 —
+       ① **열 수가 세 그룹 모두 3열**로 통일됩니다(전에는 3 / 2 / 3).
+       ② 상호작용 규칙이 하나가 됩니다 — **「시·도가 여럿인 그룹은 시·도를 먼저 고른다」**.
+          전에는 서울=1단계, 경기·인천=1단계(2열), 그 외=2단계로 **세 그룹이 세 규칙**이었습니다.
+     ⚠ **새 부품을 만들지 않았습니다.** 아래 `other` 갈래의 `sidoscroll`을 그대로 씁니다.
+     ⚠ `S.sido`가 이 그룹의 것인지 확인합니다 — 그룹을 바꾸면 직전 그룹의 시·도가 남아
+       엉뚱한 목록이 뜰 수 있습니다(그룹 클릭이 `S.sido`를 비우지만, 되살린 초안은 아닙니다). */
+  else if(S.group==='metro'){
+    inner = `<p class="pane-title">시 · 도를 골라주세요</p><div class="sidoscroll">` +
+      METRO.map(x=>`<button class="chip ${S.sido===x?'is-on':''}" data-sido="${x}">${shortSido(x)}</button>`).join('')+`</div>`;
+    if(METRO.indexOf(S.sido) >= 0)
+      inner += `<p class="pane-title">시 · 군 · 구를 골라주세요</p>` + tagGrid(picksOf(S.sido), false, tag);
+  }
   else{
     inner = `<p class="pane-title">시 · 도를 골라주세요</p><div class="sidoscroll">` +
       OTHER().map(s=>`<button class="chip ${S.sido===s?'is-on':''}" data-sido="${s}">${shortSido(s)}</button>`).join('')+`</div>`;
-    if(S.sido) inner += `<p class="pane-title">시 · 군 · 구를 골라주세요</p>` + tagGrid(picksOf(S.sido));
+    if(S.sido) inner += `<p class="pane-title">시 · 군 · 구를 골라주세요</p>` + tagGrid(picksOf(S.sido), false, tag);
   }
   /* ⏹ v24.29 — **하위 구 목록을 여기서 붙이지 않습니다.** v24.28은 이 자리(목록 전체의 뒤)에
      이어 붙였고, 그러면 경기·인천 42칸 목록에서는 누른 칩과 새 질문 사이가 **1,146px**이었습니다
      (390px 실측 — 화면 세 개 반). scrollIntoView로 눈을 데려가는 봉합이 필요했던 이유가 이것입니다.
      지금은 `tagGrid`가 **누른 칩 바로 다음 자리**에 서랍으로 넣습니다(아래 splitDrawer). */
-  const tag = z ? `<div class="tip info">${
-      z==='reg' ? '<b>규제지역이에요.</b> 대출 비율과 세금 기준이 가장 엄격한 곳이에요.'
-    : z==='metro' ? '<b>수도권이에요.</b> 집값 구간에 따라 대출 상한이 따로 붙어요.'
-    : '<b>수도권 밖이에요.</b> 대출 기준이 가장 여유로운 편이에요.'}</div>` : '';
-  return inner + tag;
+  /* 🔴 v25.13 — 세 줄에서 평가어를 뺐고, 주의색을 규제지역에만 남겼습니다(오너 지적).
+     이 프로젝트의 말투 규칙은 「사실만 서술한다. 평가하거나 지시하지 않는다」입니다 —
+     「가장 엄격한」·「가장 여유로운 편」은 평가이고 「편」은 추측이었습니다. 그리고 셋이
+     **서로 다른 것**을 말해서 지역을 바꿔 봐도 비교가 안 됐습니다. 지금은 셋이 **한 가지**를
+     말합니다 — 집값 구간별 상한이 붙는가. 문장은 위 `tag` 정의에 있습니다.
+     ⚠ 면도 갈랐습니다. 주의(`.tip.info` 오렌지 틴트)는 **규제지역 하나**입니다 —
+       전에는 「수도권 밖이에요」에도 경고색이 붙었습니다. */
+  /* 어느 격자에도 자리를 못 잡았으면 끝에 붙입니다(위 `tag` 주석의 ⚠) */
+  if(tag && inner.indexOf(tag) < 0) inner += tag;
+  return inner;
 }
 /* pick 목록을 tagGrid가 먹는 [키, 이름] 꼴로.
    ⚠ 키는 **바로 정해지면 지역 코드, 구를 더 물어야 하면 pick id**입니다.
      갈리는 시는 아직 코드가 없습니다 — 구를 골라야 정해지기 때문입니다.
      둘을 한 칩이 겸하므로 누르는 쪽(bindPane)이 숫자인지 보고 갈라 줍니다. */
-const picksOf = (sido, prefix) => (PICKS[sido]||[]).map(p => [p.code || p.id, (prefix||'') + p.name]);
+/* 🔴 v25.14 — **접두어 인자를 지웠습니다.** 쓰는 곳이 0곳이 됐습니다 —
+   경기·인천이 시·도를 먼저 고르는 2단계가 되면서 **한 격자에 시·도가 하나뿐**이라
+   「경기 」·「인천 」을 붙일 이유가 사라졌습니다.
+   ⏹ 접두어의 근거는 「접두어를 지우면 『중구·동구·서구』가 서울 자치구와 구별이 안 된다」였습니다.
+     그 근거는 **한 격자에 여러 시·도가 섞여 있을 때만** 참입니다 — 지금은 위 시·도 칩이
+     켜진 채로 남아 어느 시·도의 목록인지 화면이 말합니다(원칙 148 — 전제가 사라진 잠금).
+   ⚠ 다시 섞게 되면 접두어부터 되살리십시오. 검사가 **「한 격자에 시·도를 섞지 않는다」**를 잠급니다. */
+const picksOf = sido => (PICKS[sido]||[]).map(p => [p.code || p.id, p.name]);
 /* 🔴 v24.21 — 글자를 span으로 감쌉니다. 말줄임은 **flex 아이템에** 걸어야 돕니다(.taggrid CSS 주석).
    🔴 열 수는 **목록이 정합니다.** 다섯 자(공백 제외)를 넘는 이름이 하나라도 있으면 2열입니다.
       한 칸이라도 잘리면 그 칸은 못 고르는 칸이라, 그리드 전체가 긴 쪽에 맞춥니다.
@@ -3502,21 +3644,26 @@ const TAG_WIDE = 5;
      두 번인 것이, 이유가 없으면 고장으로 읽힙니다(원칙 112 — 뜻을 모양에 맡기지 않습니다).
    ⚠ 두 번째 인자 `true`는 **서랍 안에서 또 서랍을 열지 말라**는 뜻입니다. 지금은 키가 코드라
      `op.id`와 절대 안 맞아 무해하지만, 규칙이 바뀌면 자기를 무한히 여는 자리입니다. */
-const splitDrawer = op => `<div class="drawer">`
+/* ⚠ v25.14 — 안내(`after`)를 **안쪽 격자에도** 넘깁니다. 갈리는 시에서는 고른 구 칩이
+   이 서랍 안에 있으므로, 안내도 여기 들어와야 「누른 것 바로 다음」이 됩니다(원칙 111). */
+const splitDrawer = (op, after) => `<div class="drawer">`
   + `<p class="drawer-t">${op.name} 안에서 골라주세요</p>`
   + `<p class="pane-note">${op.name}는 구마다 대출 비율이 달라요.</p>`
-  + tagGrid(op.kids.map(k => [k.code, k.name]), true)
+  + tagGrid(op.kids.map(k => [k.code, k.name]), true, after)
   + `</div>`;
-const tagGrid = (list, inDrawer) => {
+const tagGrid = (list, inDrawer, after) => {
   const wide = list.some(([,nm]) => nm.replace(/\s/g,'').length >= TAG_WIDE);
   const op = openPick();
   /* 🔴 v24.29 — 서랍은 **누른 칩 다음 자리**에 들어갑니다. 어느 격자에 들어갈지는 안 적습니다 —
      `op.id`와 같은 키를 가진 칩은 **그 시가 실제로 있는 격자에만** 있기 때문입니다.
      서울·경기·그 밖 셋 중 어디서 눌렀는지 여기서 물어볼 필요가 없어집니다(원칙 111). */
-  const drawer = (!inDrawer && op && op.split) ? splitDrawer(op) : '';
+  const drawer = (!inDrawer && op && op.split) ? splitDrawer(op, after) : '';
   return `<div class="taggrid${wide?' wide':''}">${list.map(([key,nm])=>
     `<button class="chip ${(S.sgg===key || (op && op.id===key))?'is-on':''}" data-pick="${key}"><span>${nm}</span></button>`
-    + ((drawer && op.id===key) ? drawer : '')).join('')}</div>`;
+    + ((drawer && op.id===key) ? drawer : '')
+    /* 🔴 v25.14 — 고른 칩 **바로 다음 자리**에 지역 안내를 넣습니다(원칙 111).
+       ⚠ 격자를 한 줄 통째로 먹어야 하므로 CSS가 `grid-column:1/-1`을 줍니다 — 서랍과 같은 문법입니다. */
+    + ((after && String(key) === String(S.sgg)) ? after : '')).join('')}</div>`;
 };
 
 function answeredVal(id){
@@ -3696,7 +3843,9 @@ function bind(){
     if(S.noLoan) S.income=null;      /* 소득 단계를 건너뛰므로 값도 비웁니다 */
     renderAnswered(); syncCta(); };
   box.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{
-    S.group=b.dataset.group; S.sido = b.dataset.group==='seoul'?SEOUL:''; S.sgg='';
+    /* ⚠ v25.14 — `S.pick`도 같이 비웁니다. 안 비우면 직전 그룹에서 고른 「갈리는 시」의
+       서랍이 새 그룹 목록에서 열린 채로 보입니다(`openPick()`이 pick으로도 찾습니다). */
+    S.group=b.dataset.group; S.sido = b.dataset.group==='seoul'?SEOUL:''; S.sgg=''; S.pick='';
     renderQuestion(); syncCta();
   });
   const seg=$('houseSeg');
@@ -3824,14 +3973,29 @@ function loadDraft(){
 
 function syncCta(){
   const b=$('ctaBtn'); b.disabled=!ready();
-  b.textContent = posOf(S.step)===visible().length-1 ? '결과 확인하기' : '다음';
+  /* 🔴 v25.14 — **결과에서 조건을 고치러 온 사람은 한 번에 결과로 돌아갑니다**(오너 지적 · 지시서 3).
+     ⏹ 전: 조건칩을 누르면 그 단계로 갔는데 **결과로 오는 길이 「다음」뿐**이었습니다.
+       현금 칩(01)을 고치면 다음 → 다음 → 결과 확인하기로 **화면 셋**을 지나야 했습니다.
+     ⚠ **새 부품을 만들지 않았습니다.** 상태 하나(`S.fromResult`)와 이 버튼의 **문구 하나**입니다.
+     ⚠ 문구가 바뀌는 것이 곧 신호입니다 — 「다음」이면 퍼널을 계속 가는 것이고,
+       「결과 다시 보기」면 여기서 끝나고 돌아간다는 뜻입니다(원칙 39 — 이름이 하는 일과 같아야 합니다).
+     ⚠ 마지막 단계에서는 원래 문구(「결과 확인하기」)가 이깁니다 — 거기서는 어차피 결과로 갑니다. */
+  b.textContent = posOf(S.step)===visible().length-1 ? '결과 확인하기'
+    : (S.fromResult ? '결과 다시 보기' : '다음');
   b.classList.remove('ghost');
   saveDraft();          /* 입력이 바뀌는 모든 길이 여기를 지납니다 */
 }
 function next(){
   if(!ready()) return;
   const V=visible(), i=posOf(S.step);
-  if(i===V.length-1){ S.priceOverride=null; S.lockedPrice=null; showResult(); return; }
+  if(i===V.length-1){ S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; showResult(); return; }
+  /* 🔴 v25.14 — 결과에서 고치러 왔으면 **여기서 결과로 돌아갑니다.**
+     ⚠ 집값은 다시 풉니다(`lockedPrice=null`) — 조건이 바뀌었으니 잠근 값을 들고 가면
+       화면의 두 숫자가 갈립니다(원칙 91). 조건칩 핸들러가 이미 비우지만 **여기서도** 비웁니다:
+       「이전」으로 다른 단계를 거쳐 왔을 수도 있습니다(원칙 58 — 한 곳에서만 정하는 것이 아니라
+       **들어오는 길이 둘**이라 양쪽을 막습니다).
+     ⚠ `fromResult`를 끕니다. 안 끄면 다음에 처음부터 들어온 사람의 버튼까지 「결과 다시 보기」가 됩니다. */
+  if(S.fromResult){ S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; showResult(); return; }
   S.step=V[i+1]; render(); window.scrollTo(0,0);
 }
 /* 상단 버튼은 흐름 제어(처음으로), 퍼널 이동은 하단 「이전」으로 분리했습니다(v23.9) */
@@ -3903,10 +4067,17 @@ function ctx(){
     brokerCustom:(S.broker.on && S.broker.v != null) ? S.broker.v : null,
     etc:etcMan(), over85:S.pyeong*2.45>85, firstTimeTaxCut:false, seominCheck:false };
 }
+/* 🔴 v25.13 — 「정부 상한」 문장을 **한 곳에서** 만듭니다(원칙 84).
+   ⚠ 값은 `c.limits['구간한도']` 하나에서 옵니다 — 한도 막대가 적는 바로 그 값입니다.
+     유한한 수가 아니면 괄호를 뺍니다(「(0원)」은 「상한이 0」으로 읽힙니다). */
+function capLabel(c){
+  const v = (c.limits||{})['구간한도'];
+  return '정부 상한' + (Number.isFinite(v) && v > 0 ? `(${formatWon(v)})` : '') + '에 도달했어요';
+}
 function bindingShort(c){
   if(S.noLoan) return ['대출 없이, 가진 돈만으로 계산했어요',''];
   if((c.limits||{}).LTV===0 || c.mortgageLoan<=0)
-    return ['이 조건에서는 주택담보대출이 나오지 않아요','bad'];
+    return ['이 조건에서는 주담대가 나오지 않아요','bad'];
   const B={ DSR:['소득 대비 대출 규제(DSR) 최대 한도에 도달했어요','bad'],
     DTI:['소득 대비 대출 규제(DSR) 최대 한도에 도달했어요','bad'],
     /* 🔴 v25.3 — **LTV만 중립(빈 tone)입니다. 일부러입니다.**
@@ -3918,8 +4089,23 @@ function bindingShort(c){
          막은 경우**라 성격이 다릅니다.
        ⚠ 오너 확인(2026.08.17): **지금 그대로 둡니다.** 바꾸려면 다섯을 한 번에 맞추십시오 —
          하나만 옮기면 「어느 한도가 나쁜 것인가」가 화면마다 달라집니다. 검사가 이 다섯을 셉니다. */
-    LTV:['주택담보대출 비율(LTV) 최대 한도에 도달했어요',''],
-    '구간한도':['정부 규제의 집값 구간별 상한에 도달했어요','bad'],
+    LTV:['주담대 비율(LTV) 최대 한도에 도달했어요',''],
+    /* 🔴 v25.13 — **이름을 한도 막대와 맞추고 금액을 답니다**(오너 지적 — 「무슨 말인지 모르겠다」).
+       ⏹ 전: 「**정부 규제의 집값 구간별 상한**에 도달했어요」
+         ① **같은 한도를 화면이 두 이름으로 부릅니다.** 바로 아래 한도 막대(`LNAME`)와
+            안내 시트는 이것을 **「정부 상한」**이라고 씁니다. 한 사람이 한 화면에서 같은 것을
+            두 이름으로 만납니다(원칙 58 · 91).
+         ② 명사가 넷 겹쳐 있어(정부 규제 + 의 + 집값 구간 + 별 + 상한) 어디서 끊는지 모릅니다.
+         ③ **숫자를 안 말합니다.** 그 상한이 얼마인지는 이미 `c.limits`에 있는데 안 적었습니다.
+       → 이름은 「정부 상한」 하나로, 괄호에 **막대가 적는 바로 그 값**을 답니다.
+       ⚠ **금액을 손으로 안 적습니다.** `c.limits['구간한도']`를 그대로 씁니다 — 막대(`renderLimits`)가
+         같은 값을 `formatWon`으로 적으므로 두 숫자가 갈릴 수 없습니다(원칙 84 · 91).
+       ⚠ 값이 없거나 무한이면 **괄호를 통째로 뺍니다.** 「정부 상한(0원)」은 「상한이 0」으로 읽힙니다.
+       ⚠ **다른 넷은 안 건드렸습니다.** LTV·DSR의 「비율(LTV) 최대 한도에 도달」은 v24대의
+         「전문형」 결정을 검사가 잠그고 있고, 오너 지적은 이 한 줄이었습니다. 한 판에 하나씩.
+         ⏹ 남은 것 : 알약(전문형)과 막대(짧은 별칭)의 **이름이 여전히 두 벌**입니다.
+           근본 해결은 「알약을 누르면 한도 서랍이 열린다」이고, 그건 결과 화면 판입니다. */
+    '구간한도':[capLabel(c),'bad'],
     '상품한도':['상품별 대출 상한에 도달했어요','bad'],
     '은행자체한도':['은행 자체 한도에 도달했어요','bad'],
     manual:['은행 자체 한도에 도달했어요','bad'] };
@@ -3929,14 +4115,14 @@ function bindingTip(c, price){
   if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 금액이 올라가요.`;
   const L=c.limits||{};
   if(L.LTV===0 || c.mortgageLoan<=0)
-    return `<b>규제지역에서 집이 이미 있으면 주택담보대출이 막혀요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요. 「무주택」으로 바꾸거나 규제지역 밖을 보면 달라져요.`;
+    return `<b>규제지역에서 집이 이미 있으면 주담대가 막혀요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요. 「무주택」으로 바꾸거나 규제지역 밖을 보면 달라져요.`;
   if(c.binding==='DSR'||c.binding==='DTI')
     return `<b>소득이 한도를 정했어요.</b> 은행은 연소득의 40%까지만 원리금 상환에 쓸 수 있게 봐요. ${S.debtMonthly ? '월 '+comma(S.debtMonthly)+'만원 갚는 대출을 반영한 값이에요.' : '<b>갚고 있는 대출이 있다면 02단계에서 넣어 주세요.</b>'}`;
   if(c.binding==='구간한도')
     return `<b>정부 규제 기준이에요.</b> 수도권에서는 집값 구간에 따라 대출 상한이 따로 붙어요. 위 막대의 「정부 상한」이 그 값이에요.`;
   if(c.binding==='LTV'){
     const pct = price>0 ? Math.round(L.LTV/price*100) : 0;
-    return `<b>주택담보대출 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요.<br>생애최초이거나 규제지역 밖이라면 더 높아져요.`;
+    return `<b>주담대 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요.<br>생애최초이거나 규제지역 밖이라면 더 높아져요.`;
   }
   return `<b>여러 기준 중 가장 작은 값이 한도가 돼요.</b>`;
 }
@@ -4069,7 +4255,7 @@ function showResult(keepScroll){
   $('restartBtn').onclick = restart;
   $('reeditBtn').onclick = () => {
     S.step = STEPS.length - 1;          /* 03 지역 선택으로 */
-    S.lockedPrice = null;
+    S.lockedPrice = null; S.fromResult = true;
     $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
     $('app').classList.remove('no-dock'); render(); window.scrollTo(0,0);
   };
@@ -4106,7 +4292,7 @@ function renderCondBar(price){
     i>=0  ? `<button class="cond" data-step="${i}">${t}</button>`
     : `<span class="cond is-static">${t}</span>`).join('');
   $('condBar').querySelectorAll('[data-step]').forEach(b=>b.onclick=e=>{
-    e.preventDefault(); S.step=+b.dataset.step; S.lockedPrice=null;
+    e.preventDefault(); S.step=+b.dataset.step; S.lockedPrice=null; S.fromResult=true;
     $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
     $('app').classList.remove('no-dock'); render(); window.scrollTo(0,0);
   });
@@ -4154,7 +4340,7 @@ function renderBento(c){
   $('fundStack').innerHTML=`<i class="f1" style="width:${ownPct}%"></i>`
     + (100-ownPct > 0 ? `<i class="f2" style="width:${100-ownPct}%"></i>` : '');
   $('fundLegend').innerHTML = loan>0
-    ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b></div><div><span class="f2"></span>주택담보대출 <b>${100-ownPct}%</b></div>`
+    ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b></div><div><span class="f2"></span>주담대 <b>${100-ownPct}%</b></div>`
     : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>100%</b></div>`;
   const rate = simRate();
   const m=monthlyPaymentCalc(loan, rate, D.years);
@@ -4164,7 +4350,27 @@ function renderBento(c){
      타일 이름이 「매달 갚을 원리금」이므로 설명도 **갚는 쪽**을 말해야 눈이 이어집니다. */
   /* 🔴 v24.23 — 금리는 아래 슬라이더가 말하므로 여기서는 **기간만** 답니다.
      같은 값을 두 곳에 적으면 슬라이더를 움직였을 때 한쪽이 거짓이 됩니다(원칙 91). */
-  $('tileMonthlySub').textContent = m>0 ? `${D.years}년 원리금균등 가정` : '갚을 대출이 없어요';
+  /* 🔴 v25.13 — **이 타일이 무슨 대출을 세는지 부속 줄이 말합니다**(오너 지적).
+     ⏹ 전 : m>0 「30년 원리금균등 가정」 · m≤0 **「갚을 대출이 없어요」**
+       이 값이 실제로 세는 것은 **주택담보대출 원리금 하나**입니다(`monthlyPaymentCalc(loan,…)`).
+       그런데 사용자는 02에서 **신용대출 월 상환액을 직접 넣습니다.** 그러면 화면 두 곳이
+       서로를 반박합니다 — 조건칩은 「갚는 대출 월 50만원」, 타일은 「갚을 대출이 없어요」.
+       이름이 값보다 더 약속한 자리입니다(원칙 39 · 91).
+     → m≤0의 문장을 **「주택담보대출이 없어요」**로 좁힙니다. 이제 거짓이 아닙니다.
+       m>0에는 **범위 한 마디**를 앞에 답니다 — 「무엇을 30년 원리금균등으로 가정했나」에
+       답이 없던 자리입니다.
+     ⚠ **타일 이름(`매달 갚을 원리금`)은 안 건드렸습니다.** 검사 셋이 그 이름을 잠그고 있고,
+       「매달」을 빼면 **총액으로 읽힙니다**(원칙 39가 막는 반대 방향). 범위는 이 줄이 냅니다.
+     ⚠ 「가정」과 연수 자리표시자는 그대로입니다 — 검사가 그 둘을 봅니다(v24.23 · 원칙 48).
+     ⚠ 🔴 **한 줄로 둡니다.** 검사가 `textContent = m>0 ? ` 뒤의 리터럴을 **한 줄로** 긁습니다.
+       보기 좋으라고 줄을 바꾸면 검사가 아무것도 못 잡고 조용히 통과합니다(원칙 99의 계열).
+     ⚠ 금리는 여기 안 적습니다. 아래 슬라이더가 말하고, 두 곳에 적으면 움직였을 때
+       한쪽이 거짓이 됩니다(원칙 91). 검사가 `연 `·`D.rate`를 셉니다.
+     🔴 ⏹ **「소득 대비 부담」이 기존 대출을 분자에서 빼고 있는 것은 이 판에서 안 고쳤습니다.**
+       실측(소득 3억 · 갚는 대출 월 50만): 화면 8% · 실제 DSR 9.8%. **결과를 유리하게 만드는
+       오차**라 원칙 28 자리이고, 오너가 **「분자에 기존 대출 포함」**으로 정했습니다(2026.08.18).
+       계산 표시가 바뀌는 판이라 문구 판과 섞지 않습니다(원칙 41). **다음 판의 첫 할 일입니다.** */
+  $('tileMonthlySub').textContent = m>0 ? `주담대 · ${D.years}년 원리금균등 가정` : '주담대가 없어요';
   const g=$('gauge');
   const vd=$('burdenVerdict');
   if(!S.income || m<=0){ $('tileBurden').className='tile-v'; $('tileBurden').innerHTML='—';
@@ -4176,8 +4382,11 @@ function renderBento(c){
   /* 🔴 v23.26 — 임계를 40 / 60 → **20 / 35**로 내렸습니다. 취향이 아니라 정합성 문제입니다.
      게이지 막대는 **DSR 상한 40%를 만석**으로 그립니다(아래 ratio/0.40).
      그런데 색 단계는 40%부터 시작했습니다 — **막대가 꽉 찬 뒤에야 색이 바뀌는 구조**였습니다.
-     게다가 한도는 스트레스 금리(6.9%)로 잡고 상환액은 실제 금리(5.4%)로 계산하므로
-     DSR을 꽉 채워도 화면 부담률은 최대 34%입니다. 즉 **경고 두 색은 한 번도 뜨지 않았습니다.**
+     게다가 한도는 **스트레스 금리**(`computeStressBp`)로 잡고 상환액은 실제 금리로 계산하므로
+     DSR을 꽉 채워도 화면 부담률이 상한에 한참 못 미칩니다.
+     ⚠ v25.13에서 이 문단의 「6.9%」·「5.4%」·「34%」를 지웠습니다 — **셋 다 한 조건에서 한 번
+       잰 값**이고 가산이 3.0으로 바뀐 뒤로는 참이 아니었습니다(원칙 143 — 숫자를 다른 숫자로
+       바꾸지 않고 뺍니다). 임계(20/35%)를 정한 근거 자체는 그대로 유효합니다. 즉 **경고 두 색은 한 번도 뜨지 않았습니다.**
      (이전 판 주석에 그 사실이 적혀 있었는데도 임계는 그대로였습니다.)
      지금은 막대와 색이 같은 눈금을 씁니다 —
        막대 50% 미만(부담 20% 미만) = 조용함 / 50~87.5% = 주의 / 87.5% 이상 = 위험.
@@ -4272,7 +4481,7 @@ function renderReceipt(c, price){
     ? `집값의 ${(etcSum / price * 100).toFixed(1)}%` : '';
   $('receipt').innerHTML = h;
   h = '';
-  if(c.mortgageLoan>0) h += row('주택담보대출','-'+formatWon(c.mortgageLoan),'minus');
+  if(c.mortgageLoan>0) h += row('주담대','-'+formatWon(c.mortgageLoan),'minus');
   /* 🔴 v24.21 — 「내가 준비할 현금」 → 「준비할 현금」.
      같은 값이 네 자리에서 「내 돈」·「내가 준비할 현금」·「준비할 현금」 셋으로 불리고 있었고,
      그중 둘(공유 이미지·요약 문구)은 **한 번의 공유로 같이 나갑니다.**
@@ -5013,7 +5222,7 @@ function renderReport(v){
   $('rMix').innerHTML = c.mortgageLoan > 0
     ? `<div class="bar"><i class="f1" style="width:${ownPct}%"></i><i class="f2" style="width:${100-ownPct}%"></i></div>`
       + `<div class="lg">${mixRow('d1','준비할 현금', ownPct)}`
-      + `${mixRow('d2','주택담보대출', 100-ownPct)}</div>` + note
+      + `${mixRow('d2','주담대', 100-ownPct)}</div>` + note
     : `<div class="bar"><i class="f1" style="width:100%"></i></div>`
       + `<div class="lg">${mixRow('d1','전부 현금', 100)}</div>` + note;
 
@@ -5123,7 +5332,7 @@ function summaryText(){
   L.push(`${approxWon(headline)} 선`);
   L.push('');
   L.push(`· 준비할 현금 ${formatWon(Math.max(0, c.cashNeeded))}`);
-  if(c.mortgageLoan > 0) L.push(`· 주택담보대출 ${formatWon(c.mortgageLoan)}`);
+  if(c.mortgageLoan > 0) L.push(`· 주담대 ${formatWon(c.mortgageLoan)}`);
   /* 🔴 v24.21 — **「매달 갚을 원리금」 줄을 뺐습니다.**
      ⏹ v24.15가 이미지에서 뺀 이유가 그대로 여기에도 걸립니다: 금리·기간을 같이 달아야 해석이 되고,
        그 조건까지 붙이면 세 줄짜리 요약에 **가정이 사실보다 길어집니다.**
@@ -5237,7 +5446,7 @@ document.addEventListener('keydown', e => {
 function restart(){
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
-    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,costOpen:false,limitOpen:false,itOpen:false});
+    group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
   render(); window.scrollTo(0,0);
 }
 
