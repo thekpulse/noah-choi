@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.14 · 정책 2026.08.13 -->
+<!-- BUILD v25.15 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -758,7 +758,14 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      금액이 --ink(15.9:1)라 두 단 차이가 나서 서술이 「꺼진 것」처럼 읽혔습니다.
    ⚠ --ink-2로 **한 단만** 올립니다. --ink까지 올리면 금액과 같은 잉크가 되어
      무엇이 답인지 흐려집니다(원칙 100 — 조용하게 만드는 것은 색이 아니라 크기와 굵기). */
-.rhead-label{font-size:var(--t5);font-weight:400;color:var(--ink-2);margin:0;line-height:1.3}
+/* 🔴 v25.15 — **크기를 한 단 내렸습니다(16 → 14). 색은 한 값도 안 건드렸습니다.**
+   ⏹ v25.11이 오너 지시로 이 잉크를 `--ink-3` → `--ink-2`로 **올린** 자리입니다
+     (「너무 안 보인다」). 그 결정은 그대로 둡니다 — 되돌리면 같은 지적이 다시 옵니다(원칙 148).
+   → 위계는 **다른 채널**로 냅니다. 잉크를 도로 빼는 대신 **크기**를 내립니다 —
+     히어로 금액 40px 대비 2.5배 → **2.86배**. 「조용하게 만드는 것은 색이 아니라
+     크기와 굵기」(원칙 100)의 정확한 적용입니다.
+   ⚠ 굵기(400)와 잉크(`--ink-2`)는 그대로입니다. 한 판에 한 채널만 움직입니다. */
+.rhead-label{font-size:var(--t6);font-weight:400;color:var(--ink-2);margin:0;line-height:1.4}
 /* 핵심 수치 밑에 라임 하이라이트 — 숫자가 먼저 읽힐니다 */
 /* 🔴 마커는 금액 span에만 걸어야 합니다.
    문단 전체에 걸면 오른쪽 「수준이에요」까지 덮어버립니다(v23.10 수정). */
@@ -779,6 +786,11 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    선언을 읽는 것만으로는 안 보이고 **렌더를 재야** 보이는 자리입니다(원칙 84 · 지침 6-6). */
 .rhead-tail{display:inline-block;font-style:normal;font-size:var(--t4);font-weight:400;
   color:var(--ink-2);letter-spacing:-.02em;margin-left:7px;vertical-align:baseline}
+/* 🔴 v25.15 — 꼬리(「수준이에요」)도 **17 → 14**로 같이 내립니다. 이 둘은 금액을 앞뒤에서
+   감싸는 **한 쌍**이라 크기가 달라지면 금액이 한쪽으로 기웁니다(원칙 91의 시각판).
+   ⚠ 위 규칙의 `--t4`를 고치지 않고 **여기서 덮습니다** — 원래 선언과 그 근거(v25.11의
+     `color` 중복 사고)를 지우지 않기 위해서입니다. 되돌릴 자리는 이 한 줄입니다. */
+.rhead-tail{font-size:var(--t6)}
 /* 🔴 v23.21 — 굵은 세로선(3px)을 지웠습니다. 위계는 「선」이 아니라 「면」으로 만듭니다.
    평상시는 중립 틴트, 한도에 걸렸을 때만 오렌지 틴트 + 오렌지 글자로 갈립니다. */
 .rhead-why{display:block;margin:16px 0 0;padding:12px 14px;border-radius:var(--r-m);
@@ -1356,6 +1368,10 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .trust{position:relative}
 .trust::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:var(--tap)}
 .trustwrap{text-align:center}
+/* 🔴 v25.15 — 상단 바에 앉는 `.trust`. **면·글자·곡률은 그대로**이고 여백만 바꿉니다.
+   ⚠ `margin-left:auto`가 오른쪽으로 밀고, 그 뒤 `.barlabel`은 퍼널에서 비어 있어 자리를 안 먹습니다.
+   ⚠ 손가락 면(`::after` 44px)은 `.trust`가 이미 갖고 있습니다 — 56px 바 안에 그대로 들어갑니다. */
+.trust.barresult{margin:0 4px 0 auto}
 /* ── 바텀시트 ─────────────────────────────────
    ⚠ 스크롤 잠금은 body에 position:fixed를 쓰지 않습니다 — 스크롤 위치가 튑니다(원칙 92).
       overflow:hidden 하나로 충분합니다. */
@@ -1782,6 +1798,16 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
            둘 다 `POLICY_ASOF` 한 곳에서 옵니다(원칙 84).
          ⚠ 되살리려면 `.asof` 규칙과 `POLICY_ASOF_BADGE`를 같이 되살려야 합니다 —
            v25.7에서 **둘 다 정의부터 지웠습니다**(죽은 CSS·죽은 값을 안 남깁니다 · 원칙 84). -->
+    <!-- 🔴 v25.15 — **결과로 바로 돌아가는 보조 문**입니다(오너 실기 지적).
+         결과에서 조건칩·「이전 단계」로 들어왔을 때만 보입니다.
+         ⚠ **새 규격을 만들지 않았습니다** — `.trust`(35px 알약 · 13px · `--line` 헤어라인)를
+           그대로 씁니다. 결과 화면의 「계산 기준 보기」와 같은 부품이고, 둘 다
+           **조용한 보조 동작**이라 뜻이 맞습니다(원칙 58 · 지침 6-22).
+         ⚠ **화살표(↗)를 안 씁니다.** v25.14에서 `↗`를 **「밖으로 나간다」 한 뜻**으로 좁혔고,
+           이건 앱 안에서 끝나는 이동입니다(채널 C · 검사가 잠급니다).
+         ⚠ 상단 바는 이미 56px을 쓰므로 **세로 비용이 0**입니다. 하단 도크에 셋째 버튼을
+           넣으면 엄지가 닿는 폭이 나뉩니다(v23.20이 캡슐을 벗긴 근거). -->
+    <button class="trust barresult" id="toResultBtn" hidden>결과 보기</button>
     <span class="barlabel" id="barLabel"></span>
   </div>
   <!-- 🔴 v25.6 — **진행 막대를 단계 수만큼 쪼갰습니다.**
@@ -3258,7 +3284,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.14 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.15 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3973,15 +3999,17 @@ function loadDraft(){
 
 function syncCta(){
   const b=$('ctaBtn'); b.disabled=!ready();
-  /* 🔴 v25.14 — **결과에서 조건을 고치러 온 사람은 한 번에 결과로 돌아갑니다**(오너 지적 · 지시서 3).
-     ⏹ 전: 조건칩을 누르면 그 단계로 갔는데 **결과로 오는 길이 「다음」뿐**이었습니다.
-       현금 칩(01)을 고치면 다음 → 다음 → 결과 확인하기로 **화면 셋**을 지나야 했습니다.
-     ⚠ **새 부품을 만들지 않았습니다.** 상태 하나(`S.fromResult`)와 이 버튼의 **문구 하나**입니다.
-     ⚠ 문구가 바뀌는 것이 곧 신호입니다 — 「다음」이면 퍼널을 계속 가는 것이고,
-       「결과 다시 보기」면 여기서 끝나고 돌아간다는 뜻입니다(원칙 39 — 이름이 하는 일과 같아야 합니다).
-     ⚠ 마지막 단계에서는 원래 문구(「결과 확인하기」)가 이깁니다 — 거기서는 어차피 결과로 갑니다. */
-  b.textContent = posOf(S.step)===visible().length-1 ? '결과 확인하기'
-    : (S.fromResult ? '결과 다시 보기' : '다음');
+  /* 🔴 v25.15 — **주 버튼을 원래대로 되돌렸습니다. v25.14가 낸 회귀입니다.**
+     ⏹ v25.14: 결과에서 조건칩으로 들어오면 이 버튼이 **「결과 다시 보기」로 덮였습니다.**
+       01을 고치고 **02·03도 이어서 보려던 사람의 길이 막혔습니다** — 오너가 실기에서 바로 겪었습니다.
+     🔴 원인은 처방이 아니라 **자리**입니다. 「결과로 바로」와 「다음 단계로」는 **둘 다 참인 의도**인데
+       버튼 하나에 둘을 겹쳤습니다. 하나를 켜면 다른 하나가 꺼지는 구조였습니다.
+     → **주 버튼은 언제나 순차 이동**입니다(「다음」 / 마지막은 「결과 확인하기」).
+       결과로 바로 가는 길은 **상단 바의 보조 버튼**으로 따로 냅니다(`#toResultBtn`).
+     ⚠ 보조를 하단 도크에 넣지 않았습니다 — 거기는 이미 「이전 + 다음」 둘이고, 셋이 되면
+       엄지가 닿는 폭이 나뉩니다(v23.20이 캡슐을 벗긴 근거와 같은 자리).
+     ⚠ 상단 바는 **56px을 이미 쓰고 있어** 세로 비용이 **0**입니다. */
+  b.textContent = posOf(S.step)===visible().length-1 ? '결과 확인하기' : '다음';
   b.classList.remove('ghost');
   saveDraft();          /* 입력이 바뀌는 모든 길이 여기를 지납니다 */
 }
@@ -3989,16 +4017,21 @@ function next(){
   if(!ready()) return;
   const V=visible(), i=posOf(S.step);
   if(i===V.length-1){ S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; showResult(); return; }
-  /* 🔴 v25.14 — 결과에서 고치러 왔으면 **여기서 결과로 돌아갑니다.**
-     ⚠ 집값은 다시 풉니다(`lockedPrice=null`) — 조건이 바뀌었으니 잠근 값을 들고 가면
-       화면의 두 숫자가 갈립니다(원칙 91). 조건칩 핸들러가 이미 비우지만 **여기서도** 비웁니다:
-       「이전」으로 다른 단계를 거쳐 왔을 수도 있습니다(원칙 58 — 한 곳에서만 정하는 것이 아니라
-       **들어오는 길이 둘**이라 양쪽을 막습니다).
-     ⚠ `fromResult`를 끕니다. 안 끄면 다음에 처음부터 들어온 사람의 버튼까지 「결과 다시 보기」가 됩니다. */
-  if(S.fromResult){ S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; showResult(); return; }
+  /* ⏹ v25.15 — v25.14가 여기 두었던 「fromResult면 결과로 점프」를 **뺐습니다.**
+     그것이 주 버튼을 덮어써서 「01만 고치고 02로 이어 가려는 사람」을 막았습니다.
+     결과로 바로 가는 길은 상단 보조 버튼(`backToResult()`)입니다. **주 버튼은 순차 이동만** 합니다. */
   S.step=V[i+1]; render(); window.scrollTo(0,0);
 }
 /* 상단 버튼은 흐름 제어(처음으로), 퍼널 이동은 하단 「이전」으로 분리했습니다(v23.9) */
+/* 🔴 v25.15 — 결과로 바로 돌아갑니다(상단 보조 버튼).
+   ⚠ 집값을 다시 풉니다 — 조건이 바뀌었는데 잠근 값을 들고 가면 화면의 두 숫자가 갈립니다(원칙 91).
+   ⚠ `ready()`가 거짓이면 **아무 일도 안 합니다.** 필수 입력을 비운 채로 결과에 가면
+     엔진이 0으로 풀고, 그건 「계산했다」가 아니라 「빈 답」입니다(원칙 124). */
+function backToResult(){
+  if(!ready()) return;
+  S.fromResult=false; S.priceOverride=null; S.lockedPrice=null;
+  showResult(); window.scrollTo(0,0);
+}
 function goHome(){ restart(); }
 function back(){
   if(!$('result').hidden){ $('result').hidden=true; $('funnel').hidden=false;
@@ -4027,6 +4060,10 @@ function render(){
   $('brand').hidden = S.step!==0;
   $('app').classList.toggle('hero-on', S.step===0);
   $('prevBtn').hidden = posOf(S.step)===0;
+  /* 🔴 v25.15 — 결과에서 고치러 온 사람에게만 「결과 보기」가 보입니다.
+     ⚠ 주 버튼은 **안 건드립니다** — 순차 이동이 기본이고, 이건 **곁길**입니다. */
+  const tr = $('toResultBtn');
+  if(tr){ tr.hidden = !S.fromResult; tr.onclick = backToResult; }
   $('barLabel').textContent='';
   paintProgress(posOf(S.step) + 1, visible().length);
   $('ctaBtn').onclick = next;
@@ -4072,7 +4109,18 @@ function ctx(){
      유한한 수가 아니면 괄호를 뺍니다(「(0원)」은 「상한이 0」으로 읽힙니다). */
 function capLabel(c){
   const v = (c.limits||{})['구간한도'];
-  return '정부 상한' + (Number.isFinite(v) && v > 0 ? `(${formatWon(v)})` : '') + '에 도달했어요';
+  /* 🔴 v25.15 — **주어를 답니다.** v25.13이 이름을 막대와 맞췄지만(「정부 상한」),
+     **무엇이 그 상한에 닿았는지**는 여전히 안 말했습니다 — 「내 DSR 한도인가 · 총부채 상한인가 ·
+     주담대 한도인가」가 갈리지 않습니다. 이 알약이 말하는 것은 언제나 **주담대 한도**입니다.
+     ⚠ 다른 넷(LTV · DSR · 상품 · 은행)은 이름 안에 이미 대상이 들어 있어 안 건드립니다
+       (「주담대 비율(LTV) 최대 한도에 도달했어요」). 주어가 없던 것은 이 한 줄뿐입니다.
+     ⚠ 🔴 **「주담대 한도가」(25자)는 360·375px에서 두 줄이었습니다.** v25.12가 이 알약을
+       한 줄로 만든 자리라(내용 폭 296 → 304px) 두 줄로 되돌릴 수 없습니다.
+       → **「주담대가」(22자)** — 다섯 폭 전부 한 줄이고 주어는 그대로 살아 있습니다.
+       **자수가 아니라 폭입니다**(원칙 144). 「한도가」를 뺀 것은 뜻이 아니라 **글자**입니다.
+     ⚠ 괄호 금액은 `POLICY.bandCap`에서 옵니다(지금 6억/4억/2억 — 전부 짧습니다).
+       **정책이 바뀌어 「1억 5,000만원」 같은 값이 되면 줄 수를 다시 재십시오.** */
+  return '주담대가 정부 상한' + (Number.isFinite(v) && v > 0 ? `(${formatWon(v)})` : '') + '에 도달했어요';
 }
 function bindingShort(c){
   if(S.noLoan) return ['대출 없이, 가진 돈만으로 계산했어요',''];
