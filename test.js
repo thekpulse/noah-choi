@@ -5580,6 +5580,38 @@ HYGIENE.forEach(([name, over]) => {
   })());
 })();
 
+/* ═══ 🔴 v25.24 — 국토부 원자료 대조 잠금 (오너가 자료를 주셨습니다) ═══════════
+   출처 : 국토교통부 보도참고자료 「투기과열지구 및 조정대상지역 추가 지정」(2026.06.30)
+          참고1 「규제지역 지정효과」 · 확인일 2026.08.19
+   ⚠ 🔴 **여기는 값을 잠급니다.** 다른 검사들과 반대인데, 이건 **정책 수치**라
+     「가짓수」나 「전부 같은가」로는 못 잽니다 — 틀린 값도 한 가지이기 때문입니다.
+     원칙 1이 「공식 자료로 검증한 것만」이라고 말하는 자리이고, 그 검증을 여기에 붙박습니다.
+   ⚠ 값이 바뀌면 **원자료부터** 다시 찾으십시오. 검사를 고치는 것이 아니라 출처를 갱신하는 일입니다. */
+(() => {
+  const L = E.POLICY.ltv;
+  tt('규제 무주택 LTV 40% (국토부 2026.06.30)', L.noneOrDispose.reg === 0.4, String(L.noneOrDispose.reg));
+  tt('규제 유주택 LTV 0% — 1주택 포함',        L.multi.reg === 0,            String(L.multi.reg));
+  tt('비규제 무주택 LTV 70%',                  L.noneOrDispose.other === 0.7, String(L.noneOrDispose.other));
+  tt('비규제 유주택 LTV 60%',                  L.multi.other === 0.6,         String(L.multi.other));
+  tt('규제 생애최초 LTV 70%',                  L.firstTime.metro === 0.7,     String(L.firstTime.metro));
+  /* 🔴 「규제지역 주담대 최대한도 6억원」 — `bandCap`의 **가장 큰 칸이 6억을 안 넘어야** 합니다.
+     6억을 넘는 칸이 생기면 원자료의 상한을 뚫습니다. 구간 수·경계는 안 잠급니다(다른 대책 소관). */
+  tt('구간한도 최댓값이 6억을 안 넘는다 (국토부 최대한도 6억)',
+     Math.max(...E.POLICY.bandCap.map(b => b.cap)) <= 600000000,
+     String(Math.max(...E.POLICY.bandCap.map(b => b.cap))));
+
+  /* 🔴 계산에 못 넣은 규제를 **화면이 말하는가**. 못 넣는 것을 말도 안 하면
+     금액이 아니라 **가부(可否)**가 걸린 유리한 오차가 됩니다(원칙 28). */
+  const RAW = fs.readFileSync(FILE,'utf8');
+  tt('신용대출 1억 초과 제한을 화면이 말한다 (v25.24)',
+     /신용대출 1억원 초과/.test(RAW) && /규제지역 주택을 살 수 없어요/.test(RAW));
+  tt('그 줄이 「계산에 안 들어갔다」고 밝힌다',
+     /이 계산에는 안 들어간 규제예요/.test(RAW));
+  /* ⚠ 그 규제를 **판정하는 척하지 않습니다** — 이 앱은 신용대출 잔액을 안 받습니다. */
+  tt('신용대출 잔액을 안 받는다는 전제가 그대로다',
+     /creditLoan:\s*0/.test(RAW.replace(/\/\*[\s\S]*?\*\//g,'')));
+})();
+
 const total = pass + fails.length;
 console.log('\n영끌계산기 회귀 테스트 — ' + path.basename(FILE));
 console.log('─'.repeat(56));
