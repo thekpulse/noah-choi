@@ -18,6 +18,29 @@ const path = require('path');
 
 const FILE = process.argv[2] || path.join(__dirname, 'index.html');
 
+/* 🔴 v25.35 — **파일 읽기를 한 번으로 모으고, 데이터 블록을 걷습니다.**
+
+   세대수 표(`APT_UNITS` · 115KB)를 심자 `node test.js`가 **20초 → 52초**가 됐습니다.
+   원인은 검사가 늘어서가 아니라, 절마다 `fs.readFileSync(FILE)`로 **682KB를 다시 읽고**
+   주석을 다시 걷기 때문입니다. 파일이 23% 커지자 그 값이 두 배 넘게 뛰었습니다.
+
+   ⏹ 그리고 그 표는 검사를 **오염시키기까지 했습니다** — 「금호베스트빌」·「고척벽산베스트블루밍」
+     같은 **실제 단지 이름**이 「추천·최적·베스트」 금지어에 걸려 빨간불을 냈습니다(원칙 152).
+
+   → 읽기를 **한 번**으로 모으고, 그 한 번에서 데이터 블록을 **빈 객체로** 바꿉니다.
+   ⚠ 🔴 **무엇을 걷었는지 여기 적습니다** — `const APT_UNITS={…};` 한 줄입니다.
+     지우지 않고 **빈 객체로 남깁니다.** 지우면 「표를 심는 자리가 있는가」를 못 봅니다.
+   ⚠ **표 자체를 봐야 하는 검사는 `readFull()`을 씁니다**(v25.35 절 하나뿐입니다).
+   ⚠ 사보타주는 사본을 `FILE`로 넘기므로 이 자리도 그대로 따라갑니다. */
+const _origRead = fs.readFileSync.bind(fs);
+/* 🔴 `readFull`은 **덮어쓰기 전의 읽기**를 붙잡아 둡니다.
+   아래에서 `fs.readFileSync`를 갈아 끼우므로, 그냥 `fs.readFileSync`로 쓰면
+   이 함수도 같이 걷힌 것을 받습니다 — 실제로 그렇게 한 번 죽었습니다. */
+const readFull = () => _origRead(FILE, 'utf8');
+const _RAW_NODATA = readFull().replace(/const APT_UNITS=\{[\s\S]*?\};/, 'const APT_UNITS={};');
+fs.readFileSync = (f, enc) =>
+  (String(f) === String(FILE) && enc === 'utf8') ? _RAW_NODATA : _origRead(f, enc);
+
 /* ── 엔진 적재 ────────────────────────────────────────────────── */
 /* 🔴 v24.24 — 엔진/화면 경계 표식. **한 곳에서만 정의합니다**(원칙 58).
    index.html의 같은 문자열과 짝입니다. 한쪽만 고치면 검사가 전부 헛돕니다 —
@@ -68,6 +91,14 @@ function loadEngine(file){
      「onclick of null」 같은 엉뚱한 에러로 죽고, 진짜 원인(표식 소실)이 안 보입니다. */
   if(cut <= 0) throw new Error('엔진 경계 표식을 못 찾았습니다 — index.html의 ENGINE END 줄을 확인하세요');
   if (cut > 0) { UI = src.slice(cut); src = src.slice(0, cut); }
+  /* 🔴 v25.35 — **데이터 블록을 UI에서 한 번만 걷어냅니다.**
+     세대수 표(`APT_UNITS` · 115KB)를 심자 `node test.js`가 **20초 → 52초**가 됐습니다.
+     검사 수백 개가 정규식으로 UI 전체를 훑는데, 그중 **표를 봐야 하는 검사는 하나도 없습니다**
+     (v25.35 절은 파일을 따로 읽습니다). 그리고 그 표가 검사를 **오염시키기까지 했습니다** —
+     「금호베스트빌」 같은 실제 단지 이름이 「추천·최적·베스트」 금지어에 걸렸습니다(원칙 152).
+   ⚠ **무엇을 걷었는지 여기 적습니다.** `const APT_UNITS={…};` 한 줄뿐이고,
+     자리는 빈 객체로 남겨 둡니다 — 지우면 「표가 있는가」를 UI로 못 봅니다. */
+  UI = UI.replace(/const APT_UNITS=\{[\s\S]*?\};/, 'const APT_UNITS={};');
   const NEED = ['formatWon','POLICY','POLICY_DEFS','STRESS','computeStressBp','getLTV',
                 'repaymentCapLimit','acquisitionTaxRate','calcCosts','solveMaxPrice',
                 'monthlyPaymentCalc','zoneFromSgg','roomDeductFromSgg','LAWD','isGunArea',
@@ -1195,7 +1226,14 @@ HYGIENE.forEach(([name, over]) => {
   /* 「추천」이 아닙니다 — 우리가 하는 일은 거래가 있었던 곳을 보여주는 것입니다. */
   /* 🔴 v24.7 — 마커가 안 잡히면 slice(-1, j)가 **빈 문자열**이라 무조건 통과했습니다.
      `const DEAL = {`의 공백 한 칸에 검사 전체가 걸려 있었습니다. 구간 가드를 넣습니다. */
+  /* 🔴 v25.35 — **이 검사가 단지 이름에 걸렸습니다**(원칙 152).
+     세대수 표(`APT_UNITS`)를 심자 「금호**베스트**빌」·「고척벽산**베스트**블루밍」 같은
+     **실제 아파트 이름 7개**가 금지어에 잡혀 빨간불이 났습니다. 화면 문구는 멀쩡합니다.
+     이 검사가 잠그려던 사실은 **「우리가 쓴 문구에 추천·최적이 없다」**이지
+     「이 구간에 그 글자가 없다」가 아닙니다.
+     → **데이터 블록을 범위에서 뺍니다.** 검사가 원본을 가공하면 무엇을 걷었는지 적습니다(원칙 152). */
   tt('실거래 문구에 「추천」·「최적」이 없다', (()=>{
+     /* ⚠ 데이터 블록은 위(UI를 만드는 자리)에서 이미 걷었습니다 — 여기서 또 걷지 않습니다. */
      const a = UI.indexOf('const DEAL = {'), b = UI.indexOf('function renderOutlinks');
      if(!(a >= 0 && b > a)) return false;          /* 구간을 못 자르면 🔴 — 빈 문자열 통과 금지 */
      return !/추천|최적|딱 맞|베스트/.test(UI.slice(a, b));
@@ -1317,14 +1355,22 @@ HYGIENE.forEach(([name, over]) => {
      return /\(x\.name\|\|''\) \+ '\|' \+ \(x\.dong\|\|''\) \+ '\|' \+ \(x\.lawd\|\|''\)/.test(k)
          && /const hotKey = x => \(x\.name\|\|''\) \+ '\|' \+ \(x\.dong\|\|''\) \+ '\|' \+ \(x\.lawd\|\|''\);/.test(UI);
   })());
-  /* 🆕 v25.16 — 🔴 **없는 데이터를 안 만듭니다.**
-     ① 층 — `/api/apt-price`가 정규화해 넘기는지 이 묶음에서 확인 못 했습니다. 안 적습니다.
-     ② 세대수 — 표는 있지만 실기 매칭률이 5건 중 1건입니다(0장 4️⃣). 안 붙입니다.
-     ③ 날짜 — 셋(y·m·d)이 다 있을 때만 적습니다. 없으면 자리를 비웁니다(원칙 124). */
+  /* 🆕 v25.16 → 🔴 **v25.35에서 대상을 옮겼습니다**(원칙 128 · 148 · 158).
+     ⏹ v25.16은 「세대수를 안 붙인다」를 **잠갔습니다.** 근거는 「실기 매칭률 5건 중 1건」이었는데,
+       그건 **표본 5**였습니다. v25.35가 `tools/match.mjs`로 214개를 전수 대조하니 다섯 층으로
+       **66.8%**였습니다. **적힌 근거도 늙습니다** — 근거가 「지금 얼마인가」에 기대면 다시 재야 합니다.
+     → 잠글 사실은 「세대수를 안 붙인다」가 아니라 **「확실하지 않으면 안 적는다」**입니다.
+     ① 층 — 🔴 `/api/apt-price`가 `floor`를 **실제로 줍니다**(v25.33에서 확인). 다만 그 줄은
+        360px에서 여유가 없어 **폭을 재고 나서** 더할 자리입니다 → **아직 안 적습니다.**
+     ② 세대수 — `unitsOf`가 null이면 안 적고, **카드가 과반일 때만** 켭니다.
+     ③ 날짜 — 셋(y·m·d)이 다 있을 때만. 없으면 자리를 비웁니다(원칙 124). */
   tt('펴진 상자가 없는 데이터를 안 만든다', (()=>{
      const box = (UI.match(/function dealBox\(x, i\)\{[\s\S]*?\n\}/) || [''])[0];
      if(!box) return false;
-     return !/floor|층/.test(box) && !/APT_UNITS|세대/.test(box)
+     return !/floor/.test(box)                       /* 층은 아직 안 적습니다 */
+         && /unitsOf\(x\.lawd, x\.name, x\.dong\)/.test(box)   /* 세대수는 조회한 값만 */
+         && /units \? comma\(units\) \+ '세대' : ''/.test(box)   /* 없으면 비웁니다(원칙 124) */
+         && /DEAL\.units \?/.test(box)                            /* 카드 게이트를 거칩니다 */
          && /\(n\.y && n\.m && n\.d\)/.test(UI);
   })());
   /* 🆕 v25.16 — 상한이 있고, **잘랐으면 잘랐다고 말합니다**(원칙 39 · 문법은 v24.21과 같음). */
@@ -5856,7 +5902,7 @@ HYGIENE.forEach(([name, over]) => {
   const 앞선다 = (chunk) => {
     /* ⚠ 「전부 현금」 갈래는 비율이 리터럴 100%입니다 — 앞 글자를 `>`로 못 박으면
        마크업을 조금만 바꿔도 이 검사가 조용히 아무것도 안 잽니다(6-24의 계열). */
-    const a = chunk.indexOf('eokShort('), b = chunk.search(/\$\{[^}]*ownPct[^}]*\}%|[\s>]100%/);
+    const a = chunk.indexOf('eokShort('), b = chunk.search(/\$\{[^}]*ownPct[^}]*\}%|[\s>(]100%/);
     return a >= 0 && b >= 0 && a < b;
   };
   const 갈래 = legend.split('</div>').filter(x => /eokShort\(/.test(x));
@@ -5866,8 +5912,17 @@ HYGIENE.forEach(([name, over]) => {
   /* ② ⏹ **괄호는 미채택 — 근거는 실측입니다**(원칙 148 · 158).
      360px에서 쓸 수 있는 폭 304px · 괄호를 넣으면 315~321px. 다섯 폭 중 둘에서 넘칩니다.
      되살리고 싶으면 **먼저 360px에서 재십시오.** 폭이 늘어난 판(라벨을 줄인다든지)이면 그때 다시. */
-  tt('⏹ 범례 비율에 괄호를 안 쓴다 (v25.31 · 근거: 360px에서 321px > 304px)',
-     !/\(\$\{[^}]*ownPct/.test(legend) && !/\(100%\)/.test(legend), legend.slice(0, 140));
+  /* 🔴 v25.34 — **검사를 지우지 않고 대상을 옮겼습니다**(원칙 128).
+     v25.31은 「괄호를 안 쓴다」를 잠갔는데, 오너가 같은 지시를 두 번 냈고 **다시 재니
+     기준선이 바뀌어 있었습니다**(두 조각 → 한 덩어리). 잠금이 오더보다 오래 살면 안 됩니다(원칙 148).
+     ⏹ 실측 재확인(360px · 인테리어를 켠 소수점 금액 「15.8억」):
+       공백 303px ≤ 304 한 줄  /  괄호 317px > 304 **두 줄(항목 단위)**  /  390px↑ 한 줄.
+     → 잠글 사실은 **「비율이 괄호 안에 있다」**이고, 폭은 `flex-wrap`이 책임집니다(원칙 149). */
+  tt('🔴 범례 비율이 괄호 안에 있다 (v25.34 · 오너 지시 두 번째)',
+     /\(\$\{ownPct\}%\)/.test(legend) && /\(100%\)/.test(legend), legend.slice(0, 160));
+  /* ⚠ **붙여 씁니다** — 띄우면 323px으로 6px을 더 먹습니다(실측). */
+  tt('⏹ 금액과 괄호 사이를 안 띄운다 (v25.34 · 근거: 317 → 323px)',
+     !/\}\s+\(\$\{ownPct/.test(legend), legend.slice(0, 160));
 
   /* ③ v25.32 — 평형 값 자리에 「모름」이 없다. 사용자의 상태를 단정하지 않습니다. */
   const pyeongWrites = [...bare.matchAll(/\$\('pyeongVal'\)\.textContent\s*=\s*([^;]+);/g)].map(m => m[1].trim());
@@ -5927,6 +5982,69 @@ HYGIENE.forEach(([name, over]) => {
      여전히 「면」이라는 사실 자체는 안 고쳤고(마우스에서는 그대로), 손가락에서만 안 붙습니다. */
   tt('파괴적 버튼의 hover 규칙이 가드 안에 살아 있다 (v25.33)',
      /\.restart-cta:hover\{/.test(inside), inside.slice(0, 80));
+})();
+
+/* ═══ v25.35 — 단지 세대수 ════════════════════════════════════════
+   🔴 이 절이 잠그는 것은 **값이 아니라 「틀린 값이 안 붙는가」**입니다.
+     매칭률은 표와 실거래가 정하는 것이라 소스로 못 잠급니다 — `tools/match.mjs`가 잽니다. */
+(() => {
+  /* 🔴 이 절만 **원본**을 읽습니다 — 위에서 데이터 블록을 걷어 냈기 때문입니다. */
+  const RAW  = readFull();
+  const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const tbl  = (bare.match(/const APT_UNITS=(\{[\s\S]*?\});/) || [])[1];
+  const uo   = (bare.match(/function unitsOf\([\s\S]*?\n\}/) || [''])[0];
+  const gate = (bare.match(/function aptUnitsOn\([\s\S]*?\n\}/) || [''])[0];
+
+  /* ① 표가 실제로 있는가 · 「측정 대상 0」이 통과하지 않게 개수를 셉니다(원칙 142). */
+  let rows = null; try { rows = JSON.parse(tbl); } catch {}
+  const n = rows ? Object.values(rows).reduce((a, x) => a + x.length, 0) : 0;
+  tt('세대수 표가 심겨 있다 (v25.35)', n >= 2900, n + '개 · 구 ' + (rows ? Object.keys(rows).length : 0));
+  /* 모양도 잠급니다 — 「동｜이름 → 값」 한 키로는 L2~L5를 못 합니다. */
+  tt('표가 [동, 이름, 세대수] 배열이다 (v25.35)',
+     !!rows && Object.values(rows).every(a => Array.isArray(a) && a.every(r => r.length === 3 && typeof r[2] === 'number')),
+     rows && Object.values(rows)[0] ? JSON.stringify(Object.values(rows)[0][0]) : '🔴 표를 못 읽었습니다');
+
+  /* ② 🔴 **틀린 값이 안 붙는 장치** — 후보의 세대수가 갈리면 버립니다.
+     ⏹ 근거: 「노원롯데캐슬시그니처」가 표에 1단지(553)·2단지(610)로 갈려 있습니다.
+       이 한 줄이 없으면 둘 중 아무 값이나 붙습니다. **틀린 세대수는 없는 세대수보다 나쁩니다.** */
+  tt('🔴 후보 세대수가 갈리면 버린다 (v25.35 · 근거: 시그니처 1단지 553 ↔ 2단지 610)',
+     /every\(r => r\[2\] === v\)/.test(uo), uo.slice(0, 120) || '🔴 unitsOf를 못 찾음');
+
+  /* ③ 다섯 층이 다 있는가. 하나라도 빠지면 매칭률이 통째로 달라집니다(L2만 빠져도 −33%p). */
+  const tiers = [/inD\(r\) && r\[1\] === n/, /inD\(r\) && r\[1\] !== n && r\[1\]\.endsWith\(n\)/,
+                 /rows\.filter\(r => r\[1\] === n\)\)\) != null\) return v;/, /one\(rows\.filter\(r => r\[1\] !== n && r\[1\]\.endsWith\(n\)\)\)/,
+                 /inD\(r\) && r\[1\] !== n && r\[1\]\.startsWith\(n\)/];
+  tt('탐색 다섯 층이 다 있다 (v25.35 · L2 하나가 −33%p)',
+     tiers.every(re => re.test(uo)), tiers.map((re,i)=>'L'+(i+1)+(re.test(uo)?'✅':'🔴')).join(' '));
+
+  /* ④ 임대는 **표에서 아예 뺐습니다**(320개). clash의 절반이 임대 ↔ 분양이 한 키로 접힌 것이었습니다. */
+  const rentN = rows ? Object.values(rows).flat().filter(r => /임대/.test(r[1])).length : -1;
+  tt('임대가 표에서 빠져 있다 (v25.35 · clash의 절반)', rentN === 0, rentN + '개');
+
+  /* ⑤ 🔴 **카드 단위 과반 게이트**(오너 결정). 줄 단위로 켜면 다섯 줄 중 넷이 비어
+     「고장 났다」로 읽힙니다. 임계는 지어낸 숫자가 아니라 **「빈 칸이 채운 칸보다 많지 않다」**입니다. */
+  tt('🔴 세대수는 카드가 과반일 때만 켠다 (v25.35 · 오너 결정)',
+     /hit \* 2 > rows\.length/.test(gate), gate.slice(0, 160) || '🔴 aptUnitsOn을 못 찾음');
+  /* ⑥ **그 게이트가 불리는가** — 정의만 있고 안 불리면 아무것도 안 합니다(원칙 122). */
+  const stripLine = t => t.replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  const paint = stripLine((bare.match(/function paintDeals\([\s\S]*?\n\}/) || [''])[0]);
+  tt('그 게이트가 목록을 그릴 때 불린다 (v25.35 · 원칙 122)',
+     /DEAL\.units = aptUnitsOn\(shownRows\)/.test(paint), paint ? '' : '🔴 paintDeals를 못 찾음');
+
+  /* ⑦ 🔴 **조회 함수와 표를 만든 함수가 같은 규칙인가**(원칙 58).
+     표는 `build-households.mjs`의 `normName`으로 만들었습니다. 한쪽만 고치면 표와 조회가
+     조용히 갈리고, 그러면 매칭률이 아무 이유 없이 떨어집니다. */
+  const gen = fs.existsSync(path.join(__dirname, 'build-households.mjs'))
+    ? fs.readFileSync(path.join(__dirname, 'build-households.mjs'), 'utf8') : '';
+  /* ⚠ 줄 주석을 걷고 비교합니다 — 생성기 쪽에만 설명이 붙어 있습니다(원칙 152). */
+  /* ⚠ 줄 주석·블록 주석을 걷고 **공백을 전부 지운 뒤** 조각으로 잘라 비교합니다.
+     줄바꿈 위치가 달라도 같은 규칙이면 같아야 합니다(원칙 152 — 전처리를 적어 둡니다). */
+  const chain = t => (t.replace(/(^|[^:])\/\/[^\n]*/g, '$1').replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s/g, '').match(/\.replace\(.+?\)(?=\.|;)/g) || []).join('|');
+  const a = chain((bare.match(/const aptNorm = s =>[\s\S]*?;\n/) || [''])[0]);
+  const b = chain((gen.match(/export function normName\(s\)[\s\S]*?\n\}/) || [''])[0]);
+  tt('🔴 조회 정규화가 표를 만든 정규화와 같다 (v25.35 · 원칙 58)',
+     !!a && a === b, a === b ? '' : `화면 [${a}]  ↔  생성 [${b}]`);
 })();
 
 const total = pass + fails.length;
