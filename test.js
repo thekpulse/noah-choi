@@ -5890,6 +5890,45 @@ HYGIENE.forEach(([name, over]) => {
      (bare.match(/<span class="v" id="pyeongVal">[^<]*</) || [''])[0]);
 })();
 
+/* ═══ v25.33 — hover는 손가락 기기에 안 붙는다 ═══════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE, 'utf8');
+  /* 🔴 **주석을 먼저 걷습니다.** 이 판의 주석 자체가 `.restart-cta:hover{…}`를 인용합니다 —
+     안 걷으면 검사가 화면이 아니라 제 설명을 세게 됩니다(원칙 152). */
+  const CSS = (RAW.match(/<style>([\s\S]*?)<\/style>/) || ['',''])[1]
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const GUARD = /@media \(hover:hover\)[^{]*\{([\s\S]*?)\n\}/;
+  const inside = (CSS.match(GUARD) || ['',''])[1];
+  const outside = CSS.replace(GUARD, '');
+
+  const nIn  = (inside.match(/:hover/g)  || []).length;
+  const nOut = (outside.match(/:hover/g) || []).length;
+
+  /* ① 🔴 **가드 밖에 hover 규칙이 하나도 없다.**
+     ⏹ 근거(오너 실기 캡쳐 2026.08.20 07:11 · 06:20): 같은 화면 같은 버튼이 한 번은 회색 면,
+       한 번은 흰 면. 화면 코드는 그 사이 한 글자도 안 바뀌었습니다 — iOS·안드로이드는
+       탭한 뒤 `:hover`가 남습니다. 「처음부터 다시 계산하기」는 **파괴적 행동**이라
+       v24.31·v25.9가 일부러 면을 안 준 버튼인데, hover가 그 면을 되돌려 주고 있었습니다(원칙 130). */
+  tt('🔴 hover 규칙이 전부 「hover 가능 기기」 안에 있다 (v25.33)', nOut === 0,
+     nOut + '개가 가드 밖: ' + ((outside.match(/[^\s{};]*:hover[^{]*/g) || []).slice(0,4).join(' / ') || '—'));
+
+  /* ② 그 가드가 **비어 있지 않은가** — 규칙을 전부 지우고 가드만 남겨도 ①은 초록입니다.
+     「측정 대상 0」이 통과하면 아무것도 안 재는 것입니다(원칙 142). */
+  tt('그 가드가 실제로 규칙을 담고 있다 (v25.33)', nIn >= 16, nIn + '개');
+
+  /* ③ 🔴 **자리**를 잠급니다 — 명시도가 같으므로 자기 기본 규칙보다 **뒤**에 있어야 닿습니다.
+     원칙 118이 좌우 여백에서 밟은 그 자리와 같은 종류입니다. */
+  const at = CSS.search(/@media \(hover:hover\)/);
+  const lastBase = CSS.lastIndexOf('.restart-cta{');
+  tt('🔴 hover 가드가 기본 규칙보다 뒤에 있다 (v25.33 · 원칙 118)',
+     at > 0 && lastBase > 0 && at > lastBase, `가드 ${at} · 기본 ${lastBase}`);
+
+  /* ④ ⚠ **값을 안 바꿨는가** — 이 판은 규칙을 옮기기만 했습니다. 파괴적 버튼의 hover가
+     여전히 「면」이라는 사실 자체는 안 고쳤고(마우스에서는 그대로), 손가락에서만 안 붙습니다. */
+  tt('파괴적 버튼의 hover 규칙이 가드 안에 살아 있다 (v25.33)',
+     /\.restart-cta:hover\{/.test(inside), inside.slice(0, 80));
+})();
+
 const total = pass + fails.length;
 console.log('\n영끌계산기 회귀 테스트 — ' + path.basename(FILE));
 console.log('─'.repeat(56));
