@@ -5666,6 +5666,70 @@ HYGIENE.forEach(([name, over]) => {
   tt('도크 자신은 면을 안 갖는다 (v25.26)', !/background:/.test(dock), dock.slice(0,70));
 })();
 
+/* ═══ 🔴 v25.28 — 단계 표시 둘이 같은 사실을 말한다 ══════════════════════════
+
+   진행 막대와 아이브로우(「01 / 03」)는 **같은 사실**(`visible()`)의 두 그림입니다.
+   그런데 막대는 `render()`에서, 아이브로우는 `renderQuestion()`에서 각각 그려졌고,
+   **`render()`를 안 거치는 길**(「주담대는 받지 않을 거예요」 체크)에서 둘 다 옛 값이었습니다.
+
+   🔴 실측(390px · `tools/flow.mjs`) — 켠 직후 막대 **3칸** · 「01 / **03**」,
+      그 순간 남은 걸음은 **둘**. 「다음」을 눌러야 참이 됐습니다(원칙 91).
+   ⚠ `AUDIT-v25.12.md` 3-1의 「막대가 3칸 → 2칸으로 **조용히 바뀌고**」는 **부정확했습니다.**
+     다시 안 잰 이유는 감사 이후 **입력 화면을 재는 장치가 없었기 때문**입니다(원칙 151).
+
+   🔴 잠그는 것은 **함수 이름이 아니라 사실**입니다(원칙 48 · 128) —
+     ① 문자열을 만드는 곳이 하나인가  ② 한 함수가 두 그림을 같이 갱신하는가
+     ③ 그 함수가 **살아 있는 코드로** 불리는가  ④ 카드를 다시 그리지 않는가
+   ⚠ ③은 `//`로 주석 처리하면 뚫립니다 — v25.18이 실제로 그렇게 뚫렸습니다(원칙 122 · 152).
+     그래서 여기서도 **함수 본문 안에서만**, **앞 글자가 `:`가 아닐 때만** 줄 주석을 걷습니다. */
+(() => {
+  const RAW = fs.readFileSync(FILE, 'utf8');
+  const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const stripLine = s => s.replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+
+  /* ① 「NN / 0N」을 조립하는 자리가 하나인가. 두 벌이면 반드시 어긋납니다(원칙 58 · 84).
+     ⚠ 🔴 **`padStart(2,'0')`을 통째로 세면 안 됩니다** — 거래 날짜(`dealDate`)가 같은 꼴을
+       두 번 씁니다. 처음 그렇게 썼다가 「3곳」으로 빨간불이 났습니다. 검사의 전처리가
+       화면 코드에 있을 수 있는 것을 같이 걷어 온 자리입니다(원칙 152).
+     → **단계 번호를 조립하는 것**(`posOf(S.step)`이 붙은 것)만 셉니다. */
+  const pads = (bare.match(/posOf\(S\.step\)\s*\+\s*1\s*\)\s*\.padStart\(/g) || []).length;
+  tt('단계 표시 문자열을 만드는 곳이 하나다 (v25.28)', pads === 1, pads + '곳');
+  /* 그리고 아이브로우 마크업이 **스스로 조립하지 않는가** — 함수를 부르기만 해야 합니다. */
+  const eyeTpl = (bare.match(/class="eyebrow">\$\{([^}]*)\}/) || [])[1];
+  tt('아이브로우 마크업이 라벨을 스스로 안 만든다 (v25.28)',
+     !!eyeTpl && !/padStart|visible\(\)/.test(eyeTpl), eyeTpl || '🔴 못 찾음');
+
+  /* ② 그 한 함수가 **막대와 아이브로우를 같이** 갱신하는가.
+     ⚠ 이름을 손으로 안 적습니다 — `paintProgress`를 부르면서 `.eyebrow`도 만지는 함수를 찾습니다. */
+  const fn = (() => {
+    const m = [...bare.matchAll(/function\s+(\w+)\s*\(\s*\)\s*\{([\s\S]*?)\n\}/g)]
+      .find(x => /paintProgress\s*\(/.test(x[2]) && /\.eyebrow/.test(x[2]));
+    return m ? { name: m[1], body: m[2] } : null;
+  })();
+  tt('막대와 아이브로우를 **한 함수**가 같이 갱신한다 (v25.28)', !!fn, fn ? fn.name : '🔴 그런 함수가 없습니다');
+
+  if(fn){
+    /* ③ 입력 화면을 그리는 길과 **체크박스를 켜는 길** 둘 다에서 살아 있는 코드로 불리는가.
+       하나만 부르면 다른 쪽이 옛 값을 그대로 듭니다 — 이 버그가 정확히 그 모양이었습니다. */
+    const call = new RegExp('(^|[^\\w.])' + fn.name + '\\s*\\(');
+    const rd = stripLine((bare.match(/function render\(\)[\s\S]*?\n\}/) || [''])[0]);
+    const nl = stripLine((bare.match(/\$\('noLoanBox'\)[\s\S]*?syncCta\(\); \};/) || [''])[0]);
+    tt('그 함수가 render에서 불린다 (v25.28)', call.test(rd), rd ? '' : '🔴 render를 못 찾음');
+    tt('🔴 그 함수가 「주담대 안 받음」 처리에서도 불린다 (v25.28)', !!nl && call.test(nl),
+       nl ? nl.slice(0, 120) : '🔴 noLoanBox 처리를 못 찾음');
+    /* ④ ⏹ **미채택을 잠급니다**(6-13). 여기서 `render()`·`renderQuestion()`을 부르면
+       카드가 새로 만들어져 **방금 누른 체크박스가 포커스를 잃습니다.**
+       근거를 같이 적습니다(원칙 148) — 되돌리고 싶으면 먼저 포커스를 실측하십시오. */
+    tt('그 처리가 카드를 다시 그리지 않는다 (v25.28 · 포커스)',
+       !!nl && !/renderQuestion\s*\(/.test(nl) && !/(^|[^\w.])render\s*\(/.test(nl),
+       nl.slice(0, 120));
+    /* ⚠ 아이브로우를 **글자만** 갈아 끼우는가 — innerHTML로 갈면 같은 자리에서 카드가 흔들립니다. */
+    tt('아이브로우는 글자만 갈아 끼운다 (v25.28)', /textContent\s*=/.test(fn.body), fn.body.slice(0, 160));
+    /* ⚠ 칸 수를 손으로 안 적습니다 — v25.6이 세운 규칙을 여기서 같이 지킵니다. */
+    tt('단계 수를 손으로 안 적는다 (v25.6 · v25.28)', /visible\(\)\.length/.test(fn.body), fn.body.slice(0, 160));
+  }
+})();
+
 const total = pass + fails.length;
 console.log('\n영끌계산기 회귀 테스트 — ' + path.basename(FILE));
 console.log('─'.repeat(56));
