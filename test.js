@@ -5730,6 +5730,102 @@ HYGIENE.forEach(([name, over]) => {
   }
 })();
 
+/* ═══ v25.29 — 인테리어 카드가 자기 금액을 말한다 ══════════════════
+   🔴 이 절은 **다섯 판을 살아남은 구멍** 위에 놓입니다.
+     v25.21이 접힌 줄에 금액을 붙였는데 그 write가 `repriceOnly()` 안에만 있었고,
+     `repriceOnly()`는 「직접 입력」 타이핑에서만 불렸습니다. 평형·시공 수준으로
+     금액을 만든 사람에게 그 칸은 **한 번도 채워진 적이 없습니다.**
+     그런데 v25.21의 검사는 초록이었습니다 — **그 줄이 소스에 있는가**를 봤기 때문입니다.
+   → 여기서 잠그는 것은 **불려지는가**입니다(원칙 122). */
+(() => {
+  const RAW = fs.readFileSync(FILE, 'utf8');
+  const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  /* ⚠ 줄 주석은 **앞 글자가 `:`가 아닐 때만** 걷습니다 — URL의 `//`를 지키기 위해서입니다(원칙 152). */
+  const stripLine = s => s.replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  const bodyOf = name => {
+    const m = bare.match(new RegExp('function\\s+' + name + '\\s*\\([^)]*\\)\\s*\\{[\\s\\S]*?\\n\\}'));
+    return m ? stripLine(m[0]) : '';
+  };
+  const refresh = bodyOf('refreshPkg');
+  const reprice = bodyOf('repriceOnly');
+
+  /* ① 접힌 줄 금액을 쓰는 곳이 **하나**인가. 두 벌이면 슬라이더를 움직였을 때 갈립니다(원칙 58 · 84). */
+  const writes = (bare.match(/\$\('itSum'\)/g) || []).length;
+  tt('접힌 줄 금액을 쓰는 곳이 하나다 (v25.29)', writes === 1, writes + '곳');
+
+  /* ② 🔴 **그 함수가 카드 동기화 함수에서 살아 있는 코드로 불리는가.**
+     이것이 v25.21이 안 본 자리입니다 — 「정의됐는가」가 아니라 「불려지는가」(원칙 122). */
+  tt('🔴 카드 동기화(refreshPkg)가 값 계산(repriceOnly)을 부른다 (v25.29)',
+     !!refresh && /(^|[^\w.])repriceOnly\s*\(/.test(refresh),
+     refresh ? '못 부름' : '🔴 refreshPkg를 못 찾음');
+
+  /* ③ 킥커(「N평 인테리어 예산 · 영수증에 더했어요」)를 만드는 곳도 **하나**인가.
+     ⏹ v24.12가 타이핑 경로만 보고 `repriceOnly`에 두 갈래짜리 킥커를 한 벌 더 뒀습니다.
+       ②가 만들어지자마자 그 두 벌이 **바로 어긋났습니다**(평형 32평인데 「금액을 넣으면…」).
+       v25.29가 두 번째 정의를 지웠습니다 — 되살아나는 길을 여기서 막습니다(6-13). */
+  const kick = (bare.match(/\$\('itKicker'\)/g) || []).length;
+  tt('킥커를 만드는 곳이 하나다 (v25.29 · 원칙 58)', kick === 1, kick + '곳');
+  tt('⏹ 값 계산 함수는 킥커를 안 만진다 (v25.29 · 근거: 네 갈래를 두 갈래가 덮었음)',
+     !!reprice && !/itKicker/.test(reprice), reprice ? reprice.slice(0, 120) : '🔴 repriceOnly를 못 찾음');
+
+  /* ④ 「직접 입력」 타이핑도 카드 동기화를 거치는가 — 안 거치면 킥커가 다시 두 벌이 필요해집니다.
+     ⚠ 포커스 보호는 `refreshPkg` 쪽 조건이 합니다(activeElement). 그 조건도 같이 잠급니다. */
+  const typing = stripLine((bare.match(/el\.addEventListener\('input'[\s\S]*?\n  \}\);/) || [''])[0]);
+  tt('직접 입력 타이핑이 카드 동기화를 부른다 (v25.29)',
+     !!typing && /(^|[^\w.])refreshPkg\s*\(/.test(typing), typing.slice(0, 140) || '🔴 못 찾음');
+  tt('🔴 그래도 타이핑 중 입력칸 값을 안 덮는다 (v25.29 · 커서)',
+     /el\s*!==\s*document\.activeElement/.test(refresh), refresh ? '' : '🔴 조건이 없습니다');
+})();
+
+/* ═══ v25.30 — 자금 출처 범례가 금액을 같이 말한다 ═════════════════ */
+(() => {
+  const RAW = fs.readFileSync(FILE, 'utf8');
+  const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const CSS = RAW.replace(/\/\*[\s\S]*?\*\//g, '');
+  const legend = (bare.match(/\$\('fundLegend'\)\.innerHTML[\s\S]*?;\n/) || [''])[0];
+
+  /* ① 범례가 금액을 적는가 — 두 갈래(대출 있음 · 전부 현금) 다.
+     한쪽만 적으면 대출 유무에 따라 범례가 다른 것을 말하게 됩니다. */
+  const uses = (legend.match(/eokShort\(/g) || []).length;
+  tt('범례가 금액을 적는다 · 두 갈래 다 (v25.30)', uses === 3, uses + '번');
+
+  /* ② 🔴 금액이 **막대 폭을 정한 그 두 값**에서 오는가.
+     `c.cashNeeded`를 따로 끌어오면 한 줄 안에서 비율과 금액이 다른 출처를 갖습니다(원칙 58 · 91). */
+  tt('🔴 범례 금액이 막대와 같은 값에서 온다 (v25.30 · 원칙 91)',
+     /eokShort\(own\)/.test(legend) && /eokShort\(loan\)/.test(legend) && !/cashNeeded/.test(legend),
+     legend.slice(0, 160));
+
+  /* ③ 축약 표기와 정책 표기가 **서로를 안 부른다**(원칙 132 — 문법의 재사용과 이름의 재사용은 다릅니다).
+     반올림 자리가 다릅니다: 1,000만원(범례) ↔ 백만원(정책). 한쪽을 고칠 때 다른 쪽이 따라오면 안 됩니다. */
+  const eok = (bare.match(/function eokShort[\s\S]*?\n\}/) || [''])[0];
+  const pol = (bare.match(/function policyAmount[\s\S]*?\n\}/) || [''])[0];
+  tt('축약 표기와 정책 표기가 서로 독립이다 (v25.30 · 원칙 132)',
+     !!eok && !!pol && !/policyAmount/.test(eok) && !/eokShort/.test(pol), eok.slice(0, 120));
+  /* ⚠ 그리고 **1억 미만은 억으로 안 줄입니다** — 「0.8억」은 이 나라에서 읽는 말이 아닙니다.
+     그때는 앱의 금액 표기(formatWon)로 떨어집니다. */
+  tt('1억 미만은 앱의 금액 표기로 떨어진다 (v25.30)',
+     /100000000/.test(eok) && /formatWon\(won\)/.test(eok), eok.slice(0, 160));
+
+  /* ④ 🔴 **이 축약을 범례 밖으로 퍼뜨리지 않습니다.** 최대 500만원까지 실제와 다르게 보이는
+     표기라, 정확한 금액을 말해야 하는 자리(영수증 · 히어로 · 공유 카드)에 들어가면 안 됩니다. */
+  const all = (bare.match(/eokShort\(/g) || []).length;
+  tt('🔴 축약 표기를 쓰는 자리가 범례뿐이다 (v25.30)', all === uses + 1, all + '곳 · 범례 ' + uses + '곳');
+
+  /* ⑤ 줄바꿈 규격 — 잠글 것은 「한 줄이다」가 아니라 **「숫자가 안 갈린다」**입니다.
+     한 줄인지는 폭과 금액이 정합니다(원칙 149 — 값이 아니라 규칙을 잠급니다).
+     실측 근거(360px · 대출 8,000만원): 이 두 줄이 없으면 「8,000만」과 「원」이 갈립니다. */
+  const lg   = (CSS.match(/\.legend\{[^}]*\}/) || [''])[0];
+  const lgdiv= (CSS.match(/\.legend div\{[^}]*\}/) || [''])[0];
+  tt('범례는 항목 단위로 줄을 바꾼다 (v25.30)', /flex-wrap:\s*wrap/.test(lg), lg);
+  tt('🔴 범례 항목 안에서 숫자가 안 갈린다 (v25.30)', /white-space:\s*nowrap/.test(lgdiv), lgdiv);
+
+  /* ⑥ **새 활자 조합을 안 만들었는가** — 금액도 `<b>`라 %와 같은 규격입니다.
+     범례에 새 자식 선택자가 생기면 `audit`의 조합 가짓수가 늘어납니다(DESIGN 2장). */
+  const kids = (CSS.match(/\.legend\s+(\w+)\{/g) || [])
+    .map(s => s.trim().replace(/^\.legend\s+/, '').replace('{', '')).sort().join('·');
+  tt('범례에 새 활자 규격을 안 만들었다 (v25.30)', kids === 'b·div·span', kids);
+})();
+
 const total = pass + fails.length;
 console.log('\n영끌계산기 회귀 테스트 — ' + path.basename(FILE));
 console.log('─'.repeat(56));
