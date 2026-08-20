@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.32 · 정책 2026.08.13 -->
+<!-- BUILD v25.33 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -313,7 +313,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .wordmark{position:relative}
 .wordmark::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:var(--tap)}
 /* ⚠ 앱 배경(--bg) 위의 호버는 --fill이 아니라 --line을 씁니다 — 두 값이 같아 아무 일도 안 일어납니다. */
-.wordmark:hover{color:var(--ink)}
 /* 단계 라벨은 오른쪽 끝, 결과에서만 켜집니다. 비어 있으면 자리도 차지하지 않습니다. */
 /* 🔴 v24.7 — --ink-4는 **흰 카드 위에서 4.62:1로 검증된 값**입니다.
    상단 바는 배경(--bg #F2F4F6) 위라 같은 값이 **4.19:1**로 떨어집니다(4.5 미만).
@@ -507,7 +506,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 값이 없을 때는 숨깁니다 — 지울 게 없는데 「지우기」가 떠 있으면 소음입니다. */
 .clearbtn{flex:none;padding:2px 0;font-size:var(--t7);font-weight:600;color:var(--ink-4);
   letter-spacing:-.02em;line-height:1.4;transition:color .14s}
-.clearbtn:hover{color:var(--ink-2)}
 .clearbtn[hidden]{display:none}
 /* 🔴 v23.22 — 헬퍼 텍스트 컴포넌트. 필드에 **종속**시킵니다(마진 6px · 12.5px · 쿨 그레이).
    ⚠ 색은 --ink-4(#6B7684 · 흰 면 위 4.62:1)입니다. 한 단 밝은 #8B95A1은 3.04:1로
@@ -538,7 +536,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   min-height:var(--h-opt);padding:0 16px;border:1.5px solid var(--line);border-radius:var(--r-pill);
   background:var(--card);font-size:var(--t6);font-weight:700;color:var(--ink-2);box-shadow:var(--sh);
   transition:transform .12s cubic-bezier(.34,1.56,.64,1),background .14s,color .14s,border-color .14s}
-.chip:hover{color:var(--espresso)}
 .chip:active{transform:scale(.94)}
 .chip.pop{animation:pop .34s cubic-bezier(.34,1.56,.64,1)}
 @keyframes pop{0%{transform:scale(1)}38%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -652,7 +649,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 03의 「지금 집이 있으세요?」는 **부속 동작이 아니라 다른 질문**이라 32px입니다(위 `.blockhead`). */
 .debtlink{margin-top:var(--gap);padding:0;font-size:var(--t7);font-weight:600;color:var(--ink-3);
   letter-spacing:-.02em;transition:color .12s}
-.debtlink:hover{color:var(--ink)}
 /* 🔴 v24.29 — 실측 **15px**. 글자 한 줄이 곧 상자였습니다(padding:0).
    ⚠ `padding`으로 키우지 않습니다 — 이 링크는 입력칸 아래 **글자 줄**이라 상자가 커지면
      위 `margin-top:30px`이 뜻을 잃고 덩어리 간격이 흔들립니다(원칙 34).
@@ -701,7 +697,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 @supports (height:100dvh){ .answered:not(:empty){margin-top:auto} }
 .answered:empty{display:none}
 .arow{width:100%;display:flex;align-items:center;gap:12px;padding:15px 4px;text-align:left;border-radius:var(--r-m)}
-.arow:hover{background:var(--line)}
 /* 🔴 v24.19 — --ink-4 → --ink-3. `.arow`는 흰 카드가 아니라 **페이지 면 위**에 있어
    --ink-4가 4.19:1로 떨어집니다(G-19가 「가진 돈」·「연소득」에서 잡았습니다).
    .minigrid .mini와 같은 자리·같은 처방입니다 — 흰 면이 아니면 --ink-3입니다. */
@@ -734,7 +729,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* ⚠ --fill(#EEF0F3)은 앱 배경 --bg(#F2F4F6)와 1.02:1입니다. 독은 배경 위에 떠 있으므로
    회색 면으로 두면 버튼이 사라집니다(원칙 97). 세컨더리는 흰 면 + 헤어라인으로 통일합니다. */
 .cta.back{flex:0 0 90px;width:auto;background:var(--card);border:1px solid var(--line);color:var(--ink-2)}
-.cta.back:hover{color:var(--ink);background:var(--line);filter:none}
 /* CTA — 흰 글자를 고집하면 배경을 #00794A까지 낮춰야 해서 버튼이 탁해집니다(5.48:1).
    글자를 잉크로 뒤집으면 화사한 #00CA71을 그대로 쓰면서 대비가 오히려 올라갑니다.
    #191F28 on #00CA71 = 7.64 : 1. 채도를 죽이는 대신 글자를 바꾼 자리입니다.
@@ -746,7 +740,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   transition:background .14s,color .14s,transform .12s}
 /* 호버에서 색을 바꾸지 않습니다 — 그린이 하나뿐이라 「더 짙은 그린」이 존재하지 않습니다.
    밝기와 그림자로만 반응합니다. 잉크 글자는 그대로라 대비 7.64:1이 유지됩니다. */
-.cta:hover{filter:brightness(.94);box-shadow:var(--sh-lift)}
 .cta:active{transform:scale(.985)}
 .cta:disabled{background:var(--line);color:var(--ink-4);cursor:default;transform:none}
 .dockrow .cta{flex:1;min-width:0;box-shadow:var(--sh-lift)}
@@ -842,7 +835,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
   line-height:1.5;transition:color .12s,background .12s}
 .cond::after{content:'';position:absolute;left:0;right:0;top:50%;
   transform:translateY(-50%);height:var(--tap)}
-.cond:hover{color:var(--ink);background:var(--line)}
 .cond.is-static{pointer-events:none}
 .cond.is-static::after{content:none}
 /* 라벨(지역 · 현금 …)은 한 단 흐리게, 값은 진하게. 알약일 때와 같은 문법입니다.
@@ -1099,7 +1091,6 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;
   padding:16px 2px;border-radius:0;background:transparent;border:0;border-top:1px solid var(--line);
   font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
-.disc:hover .caret{color:var(--ink)}
 .disc .caret{transition:transform .22s,color .14s;font-size:var(--t7);color:var(--ink-4)}
 .disc[aria-expanded="true"] .caret{transform:rotate(180deg);color:var(--ink)}
 /* 🔴 v24.31 — 영수증 줄로 앉은 접기. **`.line`의 활자를 그대로 씁니다** — 이 줄은
@@ -1279,7 +1270,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .mini{display:flex;align-items:center;gap:14px;width:100%;padding:16px 18px;margin-top:16px;
   border-radius:var(--r-m);background:var(--fill);text-align:left;transition:.14s;
   text-decoration:none;color:inherit;cursor:pointer;box-sizing:border-box}
-.mini:hover{background:var(--line)}
 /* 🔴 v24.22 — **한 열 네 줄.** 2×2 격자를 폅니다.
    ⚠ **이 자리는 이번이 세 번째 왕복입니다.** v24.11 한 열 → v24.13 격자 → v24.22 한 열.
      그래서 「왜 돌아왔는가」를 못 박아 둡니다 — **칸 수는 이유가 아닙니다.**
@@ -1320,7 +1310,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .mini.amber{background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.amber .txt b,.mini.amber .arw{color:var(--ink)}
 .mini.amber .txt span{color:var(--ink-3)}
-.mini.amber:hover{background:var(--line)}
 .mini.sm{padding:16px 18px;margin-top:16px;background:var(--card);border:var(--hair);box-shadow:var(--sh)}
 .mini.sm em{font-size:var(--t5)} .mini.sm .txt b{font-size:var(--t7)}
 
@@ -1345,7 +1334,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .deal .caret{flex:none;width:var(--caret-col);text-align:right;
   font-size:var(--t7);color:var(--ink-4);transition:transform .22s,color .14s}
 .deal[aria-expanded="true"] .caret{transform:rotate(180deg);color:var(--ink)}
-.deal:hover .caret{color:var(--ink)}
 .deal .nm{flex:1;min-width:0;font-size:var(--t6);font-weight:700;color:var(--ink);
   letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* 🔴 v24.31 — **부속 줄의 `white-space:nowrap`을 뗐습니다.**
@@ -1442,7 +1430,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .trust{display:inline-flex;align-items:center;gap:6px;height:var(--h-chip);margin:26px 0 0;padding:0 14px;
   border-radius:var(--r-pill);background:none;border:1px solid var(--line);
   font-size:var(--t7);line-height:1;font-weight:600;color:var(--ink-3);transition:.14s}
-.trust:hover{color:var(--ink);background:var(--card)}
 /* 🔴 v25.14 — 14px 리터럴 → `--t6`. **값은 같습니다**(14px). 화면 쪽 스케일 밖 리터럴을
    0으로 만드는 마지막 한 자리였습니다(원칙 117). 남는 리터럴은 공유 카드의 54px 하나이고,
    그건 **일부러 리터럴**입니다 — 내보내는 그림은 보는 기기와 무관해야 해서 반응형 토큰을
@@ -1485,7 +1472,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .sheet-row span .chg b{display:inline;font-size:inherit;font-weight:700;color:var(--ink-2)}
 .sheet-close{width:100%;height:var(--h-cta);margin-top:14px;border-radius:var(--r-m);
   background:var(--fill);color:var(--ink);font-size:var(--t5);font-weight:600;letter-spacing:-.02em}
-.sheet-close:hover{background:var(--line)}
 /* 고스트 버튼 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다.
    흰 면 + 1px 테두리 + 그림자로 덩어리를 만듭니다. */
 /* 🔴 v23.21 — 거대한 버튼 둘을 위아래로 쌓던 것을 **가로 2분할**로 바꿨습니다.
@@ -1507,7 +1493,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
      크기·굵기가 같아야 합니다. 위계는 「면」이 만듭니다(흰 면 ↔ 그린 솔리드). */
   font-size:var(--t5);font-weight:600;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
-.reedit-cta:hover{background:var(--line);color:var(--ink);box-shadow:var(--sh-lift)}
 /* 🔴 v23.23 — 검정 솔리드를 폐기하고 01·02·03의 「다음」과 **같은 버튼**으로 맞췄습니다.
    프라이머리 액션이 화면마다 다른 색이면 그 색은 더 이상 「액션」을 뜻하지 않습니다.
    ⚠ 지침 6-5의 「재계산 CTA는 예외로 검정 면」 조항은 v23.23에서 폐기했습니다. */
@@ -1533,7 +1518,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
   background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh-lift);
   font-size:var(--t5);font-weight:700;letter-spacing:-.02em;transition:.14s;
   padding:0 6px;white-space:nowrap}
-.restart-cta:hover{background:var(--line)}
 /* ⏹ v24.32 — `.gocta`(v24.31의 계층 1 아웃링크)를 **정의부터 지웠습니다.**
    네이버 칸이 다시 `.mini` 한 행이 되면서 쓰는 자리가 없어졌습니다.
    **죽은 CSS는 죽은 값이 아니라 「살아 있는 두 번째 정의」입니다**(원칙 84 · 지침 6-6) —
@@ -1865,6 +1849,46 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
   .card-title{margin-bottom:14px}
   .fundwrap{margin-top:18px}
   .condbar{margin-top:12px}
+}
+
+/* 🔴 v25.33 — **hover 규칙 전부를 「손가락이 아닌 기기」로 가둡니다**(오너 실기 캡쳐).
+
+   ⏹ 무엇이 보였나 — 오너가 같은 화면을 두 번 찍었는데 「처음부터 다시 계산하기」가
+     한 번은 **회색 면**, 한 번은 흰 면이었습니다. 화면 코드는 두 판 사이에 그 버튼을
+     한 글자도 안 건드렸습니다. 범인은 `.restart-cta:hover{background:var(--line)}`이고,
+     **iOS·안드로이드는 탭한 뒤 `:hover`가 그대로 남습니다.** 다른 곳을 누를 때까지.
+
+   🔴 이건 취향이 아니라 **원칙 130 위반이 hover로 새는 자리**입니다.
+     「처음부터 다시 계산하기」는 입력을 전부 지우는 **파괴적 행동**이라 v24.31이 그린을 뗐고
+     v25.9가 「면을 채우지 않았습니다」라고 못 박은 버튼입니다. 그런데 **탭하고 나면
+     회색 면이 남아** 「지금 이것이 선택됨」으로 읽힙니다 — 뗀 면이 hover로 되돌아온 것입니다.
+
+   ⏹ 그리고 이건 **한 버튼의 문제가 아니었습니다.** 화면 전체 hover 규칙 16개 중
+     **하나도** hover 가능 여부를 안 묻고 있었습니다. 조건칩(`.cond`) · 「다음」(`.cta`의
+     `brightness(.94)`) · 「다음 걸음」(`.mini`) · 서랍(`.arow`)이 전부 같은 자리입니다.
+
+   ⚠ **값을 한 개도 안 바꿨습니다.** 규칙을 그대로 옮겨 조건만 씌웠습니다 —
+     마우스 기기에서는 전과 완전히 같고, 손가락 기기에서만 안 붙습니다.
+   ⚠ 🔴 **이 블록은 스타일시트 맨 끝이어야 합니다.** 명시도가 같으므로 자기 기본 규칙보다
+     뒤에 있어야 닿습니다 — 원칙 118이 좌우 여백에서 밟은 그 자리와 같은 종류입니다.
+   ⚠ `pointer:fine`을 같이 묻습니다. `hover:hover`만 보면 일부 터치 기기가 참을 냅니다. */
+@media (hover:hover) and (pointer:fine){
+  .wordmark:hover{color:var(--ink)}
+  .clearbtn:hover{color:var(--ink-2)}
+  .chip:hover{color:var(--espresso)}
+  .debtlink:hover{color:var(--ink)}
+  .arow:hover{background:var(--line)}
+  .cta.back:hover{color:var(--ink);background:var(--line);filter:none}
+  .cta:hover{filter:brightness(.94);box-shadow:var(--sh-lift)}
+  .cond:hover{color:var(--ink);background:var(--line)}
+  .disc:hover .caret{color:var(--ink)}
+  .mini:hover{background:var(--line)}
+  .mini.amber:hover{background:var(--line)}
+  .deal:hover .caret{color:var(--ink)}
+  .trust:hover{color:var(--ink);background:var(--card)}
+  .sheet-close:hover{background:var(--line)}
+  .reedit-cta:hover{background:var(--line);color:var(--ink);box-shadow:var(--sh-lift)}
+  .restart-cta:hover{background:var(--line)}
 }
 </style>
 </head>
@@ -3464,7 +3488,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.32 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.33 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
