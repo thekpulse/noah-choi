@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.35 · 정책 2026.08.13 -->
+<!-- BUILD v25.36 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -2339,10 +2339,23 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              v23.20이 정한 채널 C(제휴·외부는 색을 안 쓰고 **흰 면 + 얇은 윤곽 + ↗로만** 가른다)를
              지키는 쪽입니다. 앱 안에서 끝나는 둘은 레이블이 이미 동작을 말합니다(「저장」·「보내기」).
            ⚠ 기호를 새로 만들지 않았습니다. **둘을 지웠을 뿐입니다.** -->
-      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b></div></button>
+      <!-- 🔴 v25.36 — **기호를 되살렸습니다**(오너 지시 — 「원래 표시가 있었는데 없어지니 심심하다」).
+           ⏹ v25.14가 `↓`와 `⧉`를 **같이** 뗐습니다. 근거는 두 가지가 묶여 있었는데 —
+             「만든 사람조차 못 읽었다」와 「`⧉`(U+29C9)가 Pretendard에 없어 두부(□)로 떨어진다」.
+           🔴 **글꼴을 열어 확인했습니다**(Pretendard-Regular.otf의 cmap):
+           ```
+             ↓ U+2193  있음 ✅        ⧉ U+29C9  🔴 없음 (v25.14가 맞았습니다)
+             ↗ U+2197  있음 ✅        ⬇ ➔ ⇢ ⎘  전부 없음
+           ```
+           → `↓`는 되살리고, `⧉`는 **되살리지 않습니다.** 대신 이 동작의 뜻을 다시 보면
+             「요약 문구 보내기」는 **공유 시트를 열어 다른 앱으로 나갑니다** — 정확히 채널 C입니다.
+           ⚠ 그래서 기호가 **둘**이 됩니다. 각각 뜻이 하나입니다:
+             **`↗` 앱을 떠난다**(네이버 · 국토부 · 요약 문구) · **`↓` 기기에 남는다**(이미지 저장).
+             이미지 저장은 떠나는 게 아니라 **내려받는 것**이라 같은 기호를 쓰면 거짓입니다(원칙 39). -->
+      <button class="mini" id="outSave"><div class="txt"><b>리포트 이미지 저장</b></div><span class="arw">↓</span></button>
       <!-- 🔴 v24.15 — 이름을 「복사하기」에서 바꿨습니다. 이제 폰에서는 **공유 시트가 바로 열립니다.**
            「복사하기」라고 적어 두면 사람이 앱을 나가서 붙여넣을 준비를 합니다 — 안 그래도 되는데. -->
-      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 보내기</b></div></button>
+      <button class="mini" id="outCopy"><div class="txt"><b>요약 문구 보내기</b></div><span class="arw">↗</span></button>
       </div>
     </div>
 
@@ -3488,7 +3501,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.35 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.36 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5945,10 +5958,27 @@ function renderReport(v){
      막대는 비율, 아래 줄은 그 비율의 실제 금액입니다 — 같은 두 값을 두 방식으로 한 번에 보여 줍니다. */
   const own = Math.max(0, c.totalNeeded - c.mortgageLoan);
   const ownPct = c.totalNeeded > 0 ? Math.round(own / c.totalNeeded * 100) : 100;
-  /* 이름 → 비율. **금액은 찍지 않습니다** — 아래 v24.21 주석. */
-  const mixRow = (dot, name, pct) =>
+  /* 🔴 v25.36 — **금액을 되살렸습니다**(오너 지시 — 「이미지 저장 할 때는 %만 있고 금액은
+     없어서 화면과 맞춰야 한다」). v24.21이 **뺐던** 자리이고, 그 잠금의 근거를 다시 쟀습니다.
+
+     ⏹ v24.21이 적어 둔 근거: 「비율이라서 **재산이 역산되지 않습니다**」.
+     🔴 **지금은 그 문장이 거짓입니다.** 카드 맨 위에 헤드라인 금액이 있기 때문입니다 —
+       ```
+         카드에 적힌 것   22억 5,200만원 선  ·  준비할 현금 85%
+         곱하면           22.52 × 0.85 = 19.1억      (실제 20억 · 오차 4.5%)
+         부대비용(6.4%)까지 감안하면  20.4억          (오차 2%)
+       ```
+       **%만으로 이미 오차 5% 안쪽으로 역산됩니다.** 금액을 감추는 것이 사는 것은
+       「정확한 한 숫자」뿐이고, 대신 **화면과 카드가 다른 것을 말하는 값**을 치르고 있었습니다.
+     ⚠ v24.21이 실물에서 겪은 것(「가진 돈 10억이 (10억원)으로 그대로」)은 **여전히 참**입니다.
+       바뀐 것은 **그것을 막을 수 있느냐**입니다 — 헤드라인이 남아 있는 한 못 막습니다.
+       진짜로 막으려면 헤드라인까지 빼야 하는데, 그건 이 카드가 존재하는 이유입니다.
+     ⚠ **표기는 화면 범례와 같은 축약**(`eokShort`)입니다. 카드는 한눈에 읽는 매체라
+       「20억 4,900만원」이 두 줄을 만듭니다. 그리고 **화면과 같은 글자**여야 같은 값으로 읽힙니다(원칙 91).
+     ⚠ 요약 문구(텍스트)는 그대로 `formatWon`입니다 — 거기는 읽는 매체라 정확한 값이 맞습니다. */
+  const mixRow = (dot, name, pct, won) =>
     `<div class="r"><i class="${dot}"></i><span class="k">${name}</span>`
-    + `<span class="v">${pct}%</span></div>`;
+    + `<span class="v">${eokShort(won)}(${pct}%)</span></div>`;
   /* 🔴 v24.21 — 「내 돈」 → 「준비할 현금」, 그리고 **괄호 금액을 뺐습니다.**
      ⏹ 이름 — 「내 돈」은 **「내가 지금 가진 돈」으로 읽힙니다.** 실제 값은 인테리어·부대비용까지
        더한 「내야 하는 현금」이라, 이름이 값보다 작게 약속하고 있었습니다(원칙 39 · 91).
@@ -5967,10 +5997,10 @@ function renderReport(v){
   const note = `<p class="nt">${cashNote(c)}</p>`;
   $('rMix').innerHTML = c.mortgageLoan > 0
     ? `<div class="bar"><i class="f1" style="width:${ownPct}%"></i><i class="f2" style="width:${100-ownPct}%"></i></div>`
-      + `<div class="lg">${mixRow('d1','준비할 현금', ownPct)}`
-      + `${mixRow('d2','주담대', 100-ownPct)}</div>` + note
+      + `<div class="lg">${mixRow('d1','준비할 현금', ownPct, own)}`
+      + `${mixRow('d2','주담대', 100-ownPct, c.mortgageLoan)}</div>` + note
     : `<div class="bar"><i class="f1" style="width:100%"></i></div>`
-      + `<div class="lg">${mixRow('d1','전부 현금', 100)}</div>` + note;
+      + `<div class="lg">${mixRow('d1','전부 현금', 100, own)}</div>` + note;
 
   /* ⏹ v24.15 — 「매달 갚는 돈」과 「소득 대비 부담」·「무엇이 정했나」를 **전부 뺐습니다.**
      · 소득 대비 부담 — 「매달 갚는 돈」과 같이 있으면 **연소득이 역산됩니다**(301만 × 12 ÷ 0.18 ≈ 2억)
