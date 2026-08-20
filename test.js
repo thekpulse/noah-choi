@@ -5126,10 +5126,10 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 「가장 낮게 잡히고」는 **세 지역 사이의 사실**(LTV 40 < 70)이라 금지어에 안 넣습니다.
        금지하는 것은 **좋고 나쁨을 말하는 낱말**입니다. */
   tt('지역 안내가 평가어를 쓰지 않는다', (()=>{
-     const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+     const m = BARE.match(/const tag = \(?z[\s\S]*?: '';/);
      if(!m) return false;
      return !/(엄격|여유로운|편이에요)/.test(m[0]);
-  })(), (()=>{ const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+  })(), (()=>{ const m = BARE.match(/const tag = \(?z[\s\S]*?: '';/);
      return m ? (m[0].match(/(엄격|여유로운|편이에요)/g)||['없음']).join(',') : '못 찾음'; })());
 
   /* 🔴 주의 면(`.tip.info` 오렌지 틴트)은 **규제지역 하나**입니다.
@@ -5137,11 +5137,11 @@ HYGIENE.forEach(([name, over]) => {
      규제가 가장 느슨한 곳에 주의를 다는 꼴이었습니다(원칙 28의 반대 방향).
      ⚠ 잠글 것은 「클래스 문자열」이 아니라 **「면이 갈리는가」**입니다 — 조건식을 봅니다. */
   tt('지역 안내의 주의 면이 규제지역에만 붙는다', (()=>{
-     const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+     const m = BARE.match(/const tag = \(?z[\s\S]*?: '';/);
      if(!m) return false;
      if(/class="tip info"/.test(m[0])) return false;      /* 셋 다 주의면 — 갈리지 않음 */
      return /class="tip\$\{\s*z\s*===\s*'reg'/.test(m[0]);
-  })(), (()=>{ const m = BARE.match(/const tag = z \?[\s\S]*?: '';/);
+  })(), (()=>{ const m = BARE.match(/const tag = \(?z[\s\S]*?: '';/);
      return m ? m[0].slice(0,60).replace(/\n/g,' ') : '못 찾음'; })());
 
   /* ── ④ 원리금 타일이 무슨 대출을 세는지 ────────────────────────
@@ -5610,6 +5610,60 @@ HYGIENE.forEach(([name, over]) => {
   /* ⚠ 그 규제를 **판정하는 척하지 않습니다** — 이 앱은 신용대출 잔액을 안 받습니다. */
   tt('신용대출 잔액을 안 받는다는 전제가 그대로다',
      /creditLoan:\s*0/.test(RAW.replace(/\/\*[\s\S]*?\*\//g,'')));
+})();
+
+/* ═══ 🔴 v25.25 — 「수도권 밖」 안내 폐기 (오너 결정) ═══════════════════════
+   ⏹ 「수도권 밖이에요. 집값 구간별 대출 상한이 없어요.」 — 오너: 「해당 없으면 굳이?」
+     「없다」를 말해야 하는 자리는 **있을 줄 알았는데 없는** 곳입니다. 여기는 규제가 원래
+     없는 지역이라, 없다고 말하면 **없는 규제를 화면에 불러들이는** 꼴입니다(원칙 96).
+   ⚠ 🔴 **문자열만 비우면 안 됩니다** — 빈 `<div class="tip">`이 여백을 그대로 먹습니다
+     (원칙 138 — 보이지 않는데 자리를 먹는 것). **요소 자체를 안 만드는지**를 잠급니다.
+   ⚠ 그리고 **남은 두 줄이 같은 문법인가**를 같이 봅니다 — 둘 다 「무엇이 적용되는가」입니다. */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  tt('수도권 밖에는 지역 안내를 안 만든다 (v25.25)',
+     /z !== 'other'/.test(BARE) && !/상한이 없어요/.test(BARE),
+     (BARE.match(/const tag = [^`]*/)||['없음'])[0].slice(0,60));
+  tt('남은 두 줄이 「적용돼요」 한 문법이다 (v25.25)',
+     (BARE.match(/적용돼요/g)||[]).length >= 3);   /* 03 둘 + 결과 bindingTip */
+})();
+
+/* ═══ 🔴 v25.25 — 접기 줄 값이 오른쪽 끝에 선다 (오너 지적) ════════════════
+   ⏹ `flex:1`이 `.disc.discline .k`에만 있어서, 같은 `.k`+`.v`+`.caret` 구조인데 값의 자리가
+     갈렸습니다 — 부대비용 340px vs 한도 **268px**(90px 왼쪽 · 가운데처럼 보임).
+     `justify-content:space-between`이 셋을 **균등 분배**한 것입니다.
+   ⚠ 잠글 것은 「340px」이 아니라 **「규칙이 변형이 아니라 `.disc .k`에 있는가」**입니다 —
+     변형마다 베끼면 다음 변형에서 또 갈립니다(원칙 58 · 149). */
+(() => {
+  const CSS = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+  const base = (CSS.match(/\.disc \.k\{[^}]*\}/)||[''])[0];
+  tt('접기 줄 이름이 남은 폭을 먹는다 (v25.25)', /flex:1/.test(base), base || '🔴 `.disc .k` 규칙 없음');
+  /* 🔴 **변형에 다시 생기지 않는가** — 두 벌이 되면 한쪽만 고쳐지고 다시 갈립니다. */
+  tt('flex:1이 변형에 두 벌로 안 생겼다 (v25.25)',
+     (CSS.match(/\.disc[^{]*\.k\{[^}]*flex:1/g)||[]).length === 1,
+     String((CSS.match(/\.disc[^{]*\.k\{[^}]*flex:1/g)||[]).length) + '곳');
+})();
+
+/* ═══ 🔴 v25.26 — 도크 뒤로 지나가는 내용을 끊는다 (오너 실기 캡쳐) ══════════
+   ⏹ `.dock`이 **투명한 채로 `position:fixed`**였습니다. 03은 자치구 25칩이라 스크롤이
+     435px 생기고, **scroll 0에서 서초·강남·송파 칩이 도크 뒤**에 있었습니다.
+     칩도 「이전」도 흰 면 + 테두리라 **버튼이 어긋나 보였습니다** — 증상은 「어긋남」,
+     원인은 「비침」이었습니다(원칙 147).
+   ⚠ 잠글 것은 「그라데이션」이 아니라 **「도크 뒤가 끊기는가 + 손가락 면을 안 건드렸는가」**입니다.
+   ⚠ 🔴 **솔리드 면으로 되돌리는 길을 막습니다** — 면을 주면 하단에 띠가 생겨
+     v23.20이 캡슐을 벗겨 얻은 것을 되돌립니다. 필요한 것은 면이 아니라 경계입니다. */
+(() => {
+  const CSS = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+  const fade = (CSS.match(/\.dock::before\{[^}]*\}/)||[''])[0];
+  tt('도크 뒤가 끊긴다 (v25.26)', /linear-gradient/.test(fade), fade ? '있음' : '🔴 없음');
+  tt('그 페이드가 새 색을 안 만든다 (v25.26)',
+     !!fade && /var\(--bg\)/.test(fade) && !/#[0-9a-fA-F]{3,8}/.test(fade));
+  tt('그 페이드가 손가락을 안 막는다 (v25.26)', /pointer-events:none/.test(fade));
+  tt('그 페이드가 버튼 뒤에 있다 (v25.26)', /z-index:-1/.test(fade));
+  /* 🔴 도크 자신은 **면이 없어야** 합니다 — 면을 주면 하단에 띠가 생깁니다. */
+  const dock = (CSS.match(/\.dock\{[^}]*\}/)||[''])[0];
+  tt('도크 자신은 면을 안 갖는다 (v25.26)', !/background:/.test(dock), dock.slice(0,70));
 })();
 
 const total = pass + fails.length;
