@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.26 · 정책 2026.08.13 -->
+<!-- BUILD v25.28 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -3434,7 +3434,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.26 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.28 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3545,7 +3545,9 @@ function eokFromMan(m){ return (m||0) / 10000; }
 
 function renderQuestion(){
   const st = STEPS[S.step], box = $('qBox');
-  const V=visible(), eye = `<p class="eyebrow">${String(posOf(S.step)+1).padStart(2,'0')} / 0${V.length}</p>`;
+  /* ⚠ 🔴 문자열은 `stepLabel()` **한 곳**에서 옵니다(v25.28 · 원칙 58) — 여기 손으로 안 적습니다.
+     막대와 아이브로우가 같은 사실을 말하는데 표기가 두 벌이면 반드시 어긋납니다. */
+  const V=visible(), eye = `<p class="eyebrow">${stepLabel()}</p>`;
   let h='';
   if(st.id==='cash'){
     /* 🔴 v24.18 — 전: 「대출 없이 살 거예요」. **「사다」와 「살다」가 갈립니다** —
@@ -4069,7 +4071,10 @@ function bind(){
   }
   const nl=$('noLoanBox'); if(nl) nl.onchange=()=>{S.noLoan=nl.checked;
     if(S.noLoan) S.income=null;      /* 소득 단계를 건너뛰므로 값도 비웁니다 */
-    renderAnswered(); syncCta(); };
+    /* 🔴 v25.28 — **켠 자리에서 걸음 수가 바뀝니다.** 이 체크박스가 하는 일이 정확히
+       「퍼널을 한 걸음 줄이는 것」인데, 그 결과가 화면에 한 화면 늦게 나타났습니다(원칙 91).
+       ⚠ 여기서 `render()`를 부르면 카드가 새로 그려져 **방금 누른 체크박스가 포커스를 잃습니다.** */
+    syncSteps(); renderAnswered(); syncCta(); };
   box.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{
     /* ⚠ v25.14 — `S.pick`도 같이 비웁니다. 안 비우면 직전 그룹에서 고른 「갈리는 시」의
        서랍이 새 그룹 목록에서 열린 채로 보입니다(`openPick()`이 pick으로도 찾습니다). */
@@ -4282,6 +4287,32 @@ function paintProgress(done, total){
   if(el.children.length !== n) el.innerHTML = new Array(n).fill('<i></i>').join('');
   for(let i = 0; i < n; i++) el.children[i].classList.toggle('on', i < done);
 }
+/* 🔴 v25.28 — **단계 표시 둘을 한 함수로 모았습니다**(원칙 58 · 84).
+
+   ⏹ 전에는 같은 사실(`visible()`)의 두 그림이 **다른 곳에서** 그려졌습니다 —
+     진행 막대는 `render()`에서, 아이브로우(「01 / 03」)는 `renderQuestion()`에서.
+     그래서 **`render()`를 안 거치는 길**에서는 둘 다 옛 값을 들고 있었습니다.
+
+   🔴 실측(390px · 되찾은 `tools/flow.mjs`가 잡았습니다):
+     「주담대는 받지 않을 거예요」를 켠 직후   막대 **3칸** · 「01 / **03**」
+     그런데 그 순간 남은 걸음은 **둘**입니다(`visible()`이 [0,2]).
+     「다음」을 눌러야 2칸 · 「02 / 02」로 바뀌었습니다 — **한 화면 늦게** 참이 됐습니다.
+     👉 화면에 적힌 두 값이 서로 안 맞는 자리입니다(원칙 91).
+
+   ⚠ 🔴 `AUDIT-v25.12.md` 3-1은 「진행 막대가 3칸 → 2칸으로 **조용히 바뀌고**」라고 적었습니다.
+     **그 문장이 부정확했습니다.** 아무도 다시 안 잰 이유는 감사 이후 **입력 화면을 재는 장치가
+     없었기 때문**입니다(원칙 151). 장치를 되찾자마자 첫 판에서 나왔습니다.
+
+   ⚠ **카드를 다시 그리지 않습니다.** `renderQuestion()`을 부르면 방금 누른 체크박스가
+     새로 만들어져 **포커스를 잃습니다.** 아이브로우는 **글자만** 갈아 끼웁니다.
+   ⚠ 문자열을 두 곳에서 만들지 않습니다 — `stepLabel()` 하나가 냅니다. 그래서 표기를
+     바꾸더라도 막대와 아이브로우가 갈릴 수 없습니다. */
+const stepLabel = () => String(posOf(S.step) + 1).padStart(2, '0') + ' / 0' + visible().length;
+function syncSteps(){
+  paintProgress(posOf(S.step) + 1, visible().length);
+  const box = $('qBox'), e = box && box.querySelector('.eyebrow');
+  if(e) e.textContent = stepLabel();
+}
 function render(){
   S.onResult = false;
   $('result').hidden=true; $('funnel').hidden=false; $('dock').hidden=false;
@@ -4291,9 +4322,9 @@ function render(){
   $('prevBtn').hidden = posOf(S.step)===0;
   syncToResultBtn(false);
   $('barLabel').textContent='';
-  paintProgress(posOf(S.step) + 1, visible().length);
   $('ctaBtn').onclick = next;
-  renderQuestion(); renderAnswered(); syncCta();
+  /* ⚠ `syncSteps()`는 **`renderQuestion()` 뒤**입니다 — 아이브로우가 그때 생깁니다. */
+  renderQuestion(); syncSteps(); renderAnswered(); syncCta();
   saveDraft();
 }
 
