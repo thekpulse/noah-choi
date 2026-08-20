@@ -3157,8 +3157,16 @@ HYGIENE.forEach(([name, over]) => {
          && (b.match(/richWon\(/g)||[]).length === 1
          && /richWon\(approx\(headline\)\)/.test(b);
   })());
-  tt('mixRow가 금액 인자를 받지 않는다',
-     /const mixRow = \(dot, name, pct\) =>/.test(repBody()));
+  /* 🔴 v25.36 — **대상을 옮겼습니다**(원칙 128 · 148 · 158).
+     v24.21은 「mixRow가 금액 인자를 안 받는다」를 잠갔습니다. 근거는
+     **「비율이라서 재산이 역산되지 않는다」**였는데, **카드 맨 위에 헤드라인 금액이 있습니다** —
+     22.52억 × 85% = 19.1억(실제 20억 · 오차 4.5%). **적힌 근거가 처음부터 반쯤 거짓**이었고,
+     오너가 「화면과 카드가 다르다」고 지적했습니다.
+     → 잠글 사실은 「금액을 안 찍는다」가 아니라 **「화면과 같은 표기로 찍는다」**입니다(원칙 91). */
+  tt('🔴 공유 카드가 화면과 같은 금액 표기를 쓴다 (v25.36 · 오너 지시)',
+     /const mixRow = \(dot, name, pct, won\) =>/.test(repBody())
+     && /eokShort\(won\)\(\$\{pct\}%\)/.test(repBody().replace(/\$\{/g,'${').replace(/\$\{eokShort\(won\)\}/,'eokShort(won)')),
+     (repBody().match(/const mixRow[\s\S]*?;\n/)||[''])[0].slice(0,180));
   /* ⚠ 요약 문구(텍스트)에는 금액을 **남깁니다.** 매체가 다르면 판단도 갈립니다 —
      그림은 재전달되지만 텍스트는 보내기 전에 본인이 읽습니다. 여기서 같이 지우면 과잉입니다. */
   tt('요약 문구에는 금액이 남아 있다',
@@ -5510,12 +5518,23 @@ HYGIENE.forEach(([name, over]) => {
   /* ⚠ 마크업 덩어리를 정규식으로 자르지 않습니다 — 사이에 주석이 끼면 조용히 짧게 잘립니다
      (실제로 한 번 그랬습니다 · 지침 6-24의 계열). **id로 네 칸을 직접** 집습니다. */
   const MINI = id => (SCREEN2.match(new RegExp('<(a|button)[^>]*id="'+id+'"[\\s\\S]*?<\\/\\1>'))||[''])[0];
-  tt('화살표가 밖으로 나가는 것에만 붙는다', (()=>{
+  /* 🔴 v25.36 — **기호가 둘이 됐습니다**(오너 지시 — 「원래 표시가 있었는데 없어지니 심심하다」).
+     각각 뜻이 **하나**입니다. 그것이 이 검사가 잠그는 사실입니다:
+       **`↗` 앱을 떠난다** — 네이버 · 국토부 · 요약 문구(공유 시트로 나갑니다)
+       **`↓` 기기에 남는다** — 리포트 이미지 저장
+     ⚠ 이미지 저장에 `↗`를 쓰면 거짓입니다 — 떠나는 게 아니라 **내려받는 것**입니다(원칙 39).
+     ⚠ 🔴 **`⧉`는 안 되살렸습니다** — Pretendard cmap에 U+29C9가 **없습니다**(글꼴을 열어 확인).
+       v25.14의 그 판단은 맞았습니다. `↓`(U+2193)·`↗`(U+2197)는 **있습니다.** */
+  tt('기호가 하나씩만 뜻을 갖는다 (v25.36)', (()=>{
      const four = ['outNaver','outHogang','outSave','outCopy'].map(MINI);
      if(four.some(x => !x)) return false;
-     return four.every(it => /class="arw"/.test(it) === /target="_blank"/.test(it));
+     const arw = it => (it.match(/class="arw">([^<]*)</)||[])[1] || '';
+     const [nv, hg, sv, cp] = four;
+     return arw(nv) === '↗' && arw(hg) === '↗'      /* 밖으로 나가는 링크 */
+         && arw(cp) === '↗'                          /* 공유 시트도 밖입니다 */
+         && arw(sv) === '↓';                         /* 저장은 내려받는 것 */
   })(), ['outNaver','outHogang','outSave','outCopy'].map(id=>{ const it=MINI(id);
-     return id + (/target="_blank"/.test(it)?'(밖)':'(안)') + (/class="arw"/.test(it)?'↗':'—'); }).join(' · '));
+     return id + ((it.match(/class="arw">([^<]*)</)||['','—'])[1]); }).join(' · '));
 })();
 
 /* ═══ v25.15 — 실기 지적 반영 (마이크로카피 · 위계 · 동선) ══════════
@@ -5871,7 +5890,16 @@ HYGIENE.forEach(([name, over]) => {
   /* ④ 🔴 **이 축약을 범례 밖으로 퍼뜨리지 않습니다.** 최대 500만원까지 실제와 다르게 보이는
      표기라, 정확한 금액을 말해야 하는 자리(영수증 · 히어로 · 공유 카드)에 들어가면 안 됩니다. */
   const all = (bare.match(/eokShort\(/g) || []).length;
-  tt('🔴 축약 표기를 쓰는 자리가 범례뿐이다 (v25.30)', all === uses + 1, all + '곳 · 범례 ' + uses + '곳');
+  /* 🔴 v25.36 — **공유 카드가 한 자리 더 씁니다**(오너 지시 · 화면과 같은 글자여야 같은 값으로 읽힙니다).
+     ⚠ 잠글 사실은 그대로입니다 — **정확한 금액을 말해야 하는 자리에 안 퍼진다.**
+       영수증 · 히어로 · 요약 문구(텍스트)는 `formatWon`입니다. 늘려도 **두 자리까지**입니다. */
+  const spread = (bare.match(/eokShort\(/g) || []).length - 1;   /* 선언 한 줄을 뺍니다 */
+  /* ⚠ **선언(`function eokShort(won){`)이 같은 글자입니다** — 처음에 그걸 같이 세서
+     「공유 카드 2곳」이 나왔습니다. 템플릿 자리(`${…}`)만 셉니다(원칙 152). */
+  const inCard = (bare.match(/\$\{eokShort\(won\)\}/g) || []).length;
+  tt('🔴 축약 표기가 범례와 공유 카드에만 있다 (v25.30 · v25.36)',
+     spread === uses + inCard && inCard === 1 && !/row\('집값', eokShort/.test(bare),
+     `전체 ${spread}곳 · 범례 ${uses} · 공유 카드 ${inCard}`);
 
   /* ⑤ 줄바꿈 규격 — 잠글 것은 「한 줄이다」가 아니라 **「숫자가 안 갈린다」**입니다.
      한 줄인지는 폭과 금액이 정합니다(원칙 149 — 값이 아니라 규칙을 잠급니다).
