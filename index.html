@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.28 · 정책 2026.08.13 -->
+<!-- BUILD v25.30 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -1020,8 +1020,15 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .stack{height:12px;border-radius:4px;display:flex;gap:2px;background:var(--fill);margin-top:16px}
 .stack i{height:100%;display:block;border-radius:4px;transition:width .55s cubic-bezier(.22,1,.36,1)}
 .stack i.f1{background:var(--ink)} .stack i.f2{background:var(--green)}
-.legend{margin-top:16px;display:flex;gap:22px}
-.legend div{display:flex;align-items:center;gap:8px;font-size:var(--t7);color:var(--ink-3)}
+/* 🔴 v25.30 — **줄바꿈 규칙을 못 박습니다.** 금액이 붙으면서 좁은 폭에서 이 줄이
+   흔들릴 수 있게 됐는데, `flex`는 기본으로 **항목 안쪽을 쪼갭니다** — 실측(360px ·
+   대출 8,000만원)에서 「주담대 12% 8,000만」과 「원」이 두 줄로 갈렸습니다.
+   숫자가 줄에서 끊기는 것은 금액이 아니라 **글자로 읽힙니다.**
+   → 항목은 `nowrap`으로 통째로 두고, 모자라면 **항목 단위로** 아랫줄에 갑니다.
+   ⚠ 그래서 이 줄은 「한 줄」이 아니라 **「숫자가 안 갈린다」**가 규격입니다 —
+     한 줄인지는 폭과 금액이 정하고, 다섯 폭 실측 표는 HANDOVER v25.30에 있습니다. */
+.legend{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px 22px}
+.legend div{display:flex;align-items:center;gap:8px;font-size:var(--t7);color:var(--ink-3);white-space:nowrap}
 .legend span{width:8px;height:8px;border-radius:3px;flex:none}
 .legend .f1{background:var(--ink)} .legend .f2{background:var(--green)}
 .legend b{font-size:var(--t6);font-weight:700;color:var(--ink)}
@@ -2464,6 +2471,25 @@ function formatWon(n){
   return (neg ? '-' : '') + str.trim() + '원';
 }
 
+/* 🔴 v25.30 — **자금 출처 범례 전용 축약 표기.**
+   「15억」 · 「3.5억」 — **1,000만원 자리에서 반올림**하고 `.0`은 뗍니다.
+
+   ⚠ **`policyAmount`를 쓰지 않았습니다.** 그건 「POLICY 값을 문장에 옮기는 규칙」이고
+     반올림 자리가 다릅니다(백만원 자리 → 「3.45억」). 문법이 닮았다고 이름을 빌리면
+     한쪽 규칙을 고칠 때 다른 쪽이 조용히 따라옵니다 — **문법의 재사용과 이름의 재사용은
+     다릅니다**(원칙 132).
+   ⚠ 🔴 **이것은 축약이라 최대 500만원까지 실제와 다르게 보입니다.** 그래서 이 표기를
+     쓰는 자리는 **범례 하나뿐**입니다. 정확한 금액은 같은 화면 영수증이 `formatWon`으로
+     적습니다 — 범례가 답하는 질문은 「얼마쯤인가」이고, 영수증이 답하는 질문은
+     「정확히 얼마인가」입니다. **다른 자리에 이 함수를 퍼뜨리지 마십시오.**
+   ⚠ **1억 미만은 억으로 못 줄입니다** — 그때는 `formatWon` 그대로입니다(「8,000만원」).
+     그 줄이 5폭에서 한 줄인지는 아래 실측 표에 있습니다(HANDOVER v25.30). */
+function eokShort(won){
+  if(!Number.isFinite(won) || Math.abs(won) < 100000000) return formatWon(won);
+  const v = Math.round(won / 10000000) / 10;
+  return (Number.isInteger(v) ? v : v.toFixed(1)) + '억';
+}
+
 /* 🔴 v24.28 — **정책 확인일. 화면에 뜨는 날짜는 전부 여기서 나옵니다.**
    ⏹ v23.15에서 「화면에서 날짜를 뺀다(관리 지옥)」는 락이 걸렸습니다. **근거는 날짜가 아니라
      중복이었습니다** — 같은 날짜가 여러 곳에 손으로 적히면 하나만 고치고 나머지를 잊습니다.
@@ -3434,7 +3460,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.28 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.30 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4608,9 +4634,28 @@ function renderBento(c){
        비율이 0%가 될 수 있고, 그때 그려야 할 것은 「0% 조각」이 아니라 **아무것도 아닙니다**. */
   $('fundStack').innerHTML=`<i class="f1" style="width:${ownPct}%"></i>`
     + (100-ownPct > 0 ? `<i class="f2" style="width:${100-ownPct}%"></i>` : '');
+  /* 🔴 v25.30 — **비율 옆에 금액을 같이 적습니다**(오너 지시 —
+       「%만 나오니깐 얼마지 생각하게 되더라고」).
+
+     ⏹ 왜 한 줄인가 — 오너가 「가급적 한 줄로」라고 정했고, 5폭 실측이 그것을 허락합니다.
+       ```
+                       필요한 폭   쓸 수 있는 폭(360px)
+         금액 그대로    393px            304px   🔴 5폭 전부 넘침
+         축약 「15억」   293px            304px   ✅ 다섯 폭 전부 한 줄
+       ```
+       금액을 `formatWon` 그대로 적으면(「3억 4,500만원」) 어느 폭에서도 한 줄이 안 됩니다 —
+       **그래서 축약이 「짧아서 좋다」가 아니라 「한 줄의 조건」입니다**(원칙 158 — 지금 값을 재고 적습니다).
+     ⚠ **새 활자 조합을 안 만들었습니다.** 금액도 `<b>`(`--t6` 14 / 700 / `--ink`)라
+       %와 **같은 규격**입니다. 두 값이 한 쌍으로 읽히고, `audit`의 조합 가짓수가 안 늘어납니다.
+     ⚠ 금액은 `own`·`loan`에서 옵니다 — **막대 폭을 정한 바로 그 두 값**입니다. `c.cashNeeded`를
+       따로 끌어오면 같은 줄 안에서 비율과 금액이 다른 출처를 갖게 됩니다(원칙 58 · 91).
+       (영수증의 「준비할 현금」과는 원 단위 10원 이내로 같고 — G-11이 그 자리를 잽니다 —
+        만원 단위 표기에서는 늘 같은 글자입니다.)
+     ⚠ 「전부 현금」 갈래에도 같이 답니다. 한쪽만 적으면 대출이 있고 없고에 따라
+       범례가 다른 것을 말하게 됩니다. */
   $('fundLegend').innerHTML = loan>0
-    ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b></div><div><span class="f2"></span>주담대 <b>${100-ownPct}%</b></div>`
-    : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>100%</b></div>`;
+    ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b><b>${eokShort(own)}</b></div><div><span class="f2"></span>주담대 <b>${100-ownPct}%</b><b>${eokShort(loan)}</b></div>`
+    : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>100%</b><b>${eokShort(own)}</b></div>`;
   const rate = simRate();
   const m=monthlyPaymentCalc(loan, rate, D.years);
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
@@ -4984,8 +5029,13 @@ function bindItInput(){
     S.itTouched = true;
     S.itCustom = digits ? parseInt(digits, 10) : null;
     /* ⚠ 여기서 showResult를 부르면 이 칸이 다시 그려져 커서가 날아갑니다.
-       영수증과 금액만 갱신합니다. */
-    repriceOnly();
+       영수증과 금액만 갱신합니다.
+       🔴 v25.29 — `repriceOnly()`가 아니라 **`refreshPkg()`**를 부릅니다.
+         `refreshPkg()`가 카드의 유일한 동기화 함수이고, 그 끝에서 `repriceOnly()`를 부릅니다.
+         ⚠ 타이핑 중에 안전합니다 — `refreshPkg()`는 입력칸이 **포커스를 갖고 있으면
+           값을 안 덮습니다**(아래 `el !== document.activeElement`), 칩을 다시 그리지도 않고,
+           설명은 글자가 달라질 때만 바꿉니다. */
+    refreshPkg();
   });
 }
 /* 집값은 이미 잠겨 있습니다(showResult 주석). 인테리어만 바뀌었으므로
@@ -5011,12 +5061,17 @@ function repriceOnly(){
      ⚠ 값이 있을 때만 값을 적는 것은 v25.16의 날짜 처리와 같은 규칙입니다(원칙 124). */
   const its = $('itSum');
   if(its) its.textContent = c.interiorCost > 0 ? formatWon(c.interiorCost) : '';
-  /* 🔴 v24.12 — 킥커도 같이 갱신합니다. 직접 입력에 금액이 들어가면
-     「금액을 넣으면 영수증에 더해요」 → 「총 인테리어 예산 · 영수증에 더했어요」로 바뀌어야 합니다.
-     ⚠ textContent만 씁니다. 입력칸을 다시 그리면 타이핑 중 커서가 날아갑니다. */
-  const k = $('itKicker');
-  if(k) k.textContent = (S.itCustom > 0)
-    ? '총 인테리어 예산 · 영수증에 더했어요' : '금액을 넣으면 영수증에 더해요';
+  /* 🔴 v25.29 — **킥커를 여기서 지웠습니다. 같은 사실의 두 번째 정의였습니다**(원칙 58 · 84).
+     ⏹ v24.12가 타이핑 경로만 보고 여기에 킥커를 한 벌 더 뒀습니다. 그런데 `refreshPkg()`에는
+       **네 갈래**(평형 있음 / 없음 × 칩 / 직접 입력)를 다 아는 킥커가 이미 있었고,
+       여기 것은 **두 갈래**만 압니다. 두 함수가 한 번도 이어서 불린 적이 없어서
+       **다섯 판 동안 어긋나 있는 줄 몰랐습니다.**
+     🔴 이번 판이 `refreshPkg()` → `repriceOnly()` 순서를 만들자마자 **바로 드러났습니다** —
+       평형 32평을 정했는데 킥커가 「금액을 넣으면 영수증에 더해요」로 덮였습니다.
+       실측으로 잡았습니다(아래). 두 벌은 **반드시** 어긋납니다.
+     → 킥커는 `refreshPkg()` 한 곳에서만 만듭니다. 이 함수는 **영수증과 접힌 줄 금액**만 봅니다.
+     ⚠ 타이핑 경로도 이제 `refreshPkg()`를 거치므로 킥커가 그대로 갱신됩니다
+       (「총 인테리어 예산 · 영수증에 더했어요」 — 글자까지 같습니다). */
   saveDraft();
 }
 function refreshPkg(){
@@ -5072,6 +5127,34 @@ function refreshPkg(){
     setTimeout(() => { tipEl.innerHTML = nextTip; tipEl.dataset.txt = nextTip;
                        tipEl.classList.remove('fading'); }, 180);
   }
+  /* 🔴 v25.29 — **접힌 줄 금액(`itSum`)을 여기서 같이 갱신합니다**(오너 실기 지적 —
+       「평수 하면 원래 그 칸에서 보였는데 없어졌다」).
+
+     ⏹ 무엇이 틀렸나 — v25.21이 접힌 줄에 금액을 붙였는데, 그 write가 **`repriceOnly()`
+       안에만** 있었습니다. 그런데 `repriceOnly()`를 부르는 곳은 **「직접 입력」 칸의
+       타이핑 하나뿐**입니다(`bindItInput`). 즉 **평형 슬라이더와 시공 수준 칩으로**
+       금액을 만든 사람에게 이 칸은 **한 번도 채워진 적이 없습니다.**
+     🔴 그 위에 v25.23이 「같은 금액이 두 곳」이라며 **펴진 안의 금액(`itQuote`)까지
+       감췄습니다.** 위가 채워지고 있다고 **믿고** 아래를 지운 것입니다 —
+       그래서 v25.23부터 다섯 판 동안 인테리어 금액은 **영수증 줄 하나에만** 남아 있었습니다.
+       원칙 158 그대로입니다: 「A로 바꾸면 넘친다」류의 판단은 **지금 B가 어떤지 재고 나서만**
+       근거입니다. v25.23은 가정만 보고 현재를 안 쟀습니다.
+     🔴 검사는 있었습니다(v25.21이 넣은 「itSum이 c.interiorCost를 쓰고 0이면 비운다」).
+       다만 그 검사가 본 것은 **그 줄이 소스에 있는가**였습니다 — **불려지는가가 아니었습니다**
+       (원칙 122). 이번 판의 검사는 **부르는 자리**를 셉니다.
+
+     실측(390px · 종로구 앵커 · 클릭 퍼널):
+       열기 전 / 연 직후 / 평형 32평 / 시공 수준 칩  →  `#itSum` 전부 **빈 문자열**
+       같은 순간 `#itQuote`는 4,800만원을 들고 **hidden**, 영수증만 4,800만원
+
+     → **값을 여기서 다시 만들지 않습니다.** 만드는 함수를 부릅니다 — 접힌 줄 금액은
+       영수증 인테리어 줄과 **같은 `c.interiorCost` 하나**에서 와야 합니다(원칙 58 · 84).
+     ⚠ `repriceOnly()`는 재 보니 **1회 0.10ms**입니다(200회 평균 · 390px). 슬라이더를
+       끄는 동안 매 틱 불러도 됩니다. 덤으로 **영수증도 끄는 동안 같이 따라옵니다** —
+       전에는 킥커가 「32평 예산 · 영수증에 더했어요」라고 말하는 순간에도 영수증은
+       손을 뗄 때까지 옛 금액이었습니다(원칙 91).
+     ⚠ `repriceOnly()`는 `refreshPkg()`를 부르지 않습니다. 순환이 아닙니다. */
+  repriceOnly();
   /* 🔴 v25.23 — **검색어를 빼고, 라벨에서 평수를 뺐습니다**(오너 실기 지적).
      ⏹ 전 : `ohou.se/projects?query=47평 아파트` · 라벨 「47평 시공 사례와 견적 보기」.
        🔴 **오너가 눌러 보니 「찾으시는 결과가 없다」가 계속 떴습니다.**
