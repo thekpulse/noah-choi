@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.30 · 정책 2026.08.13 -->
+<!-- BUILD v25.32 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -1212,6 +1212,10 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .slider-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
 .slider-head .k{font-size:var(--t7);font-weight:700;color:var(--ink-4)}
 .slider-head .v{font-size:var(--t3);font-weight:700}
+/* 🔴 v25.32 — **값이 없어도 줄 높이를 지킵니다.** 비우면 이 줄이 30 → 19.5px로 주저앉고,
+   슬라이더를 처음 잡는 순간 값이 뜨면서 **손가락 밑에서 10.5px 내려갑니다**(원칙 34 · 3폭 실측).
+   ⚠ 잠글 것은 「\00a0을 쓴다」가 아니라 **「값이 있을 때와 없을 때 줄 높이가 같다」**입니다. */
+.slider-head .v:empty::after{content:"\00a0"}
 /* 슬라이더 — 브라우저 기본 스타일을 전부 덮습니다.
    채워진 구간은 JS가 --fill-pct를 갱신해 그립니다. */
 /* 🔴 v24.29 — **상자 높이를 6px → --tap(44px)으로 올렸습니다.** 실측에서 이 컨트롤의
@@ -2174,7 +2178,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
         <span class="k">입주 전에 드는 인테리어 비용</span><span class="v" id="itSum"></span><span class="caret">▾</span></button>
       <div class="costbox" id="itBox">
       <div class="tweak">
-        <div class="slider-head"><span class="k">평형 (공급면적)</span><span class="v" id="pyeongVal">모름</span></div>
+        <div class="slider-head"><span class="k">평형 (공급면적)</span><span class="v" id="pyeongVal"></span></div>
         <!-- 🔴 v24.22 — 상한 50 → 100평. 50평은 대형 평형과 하이엔드 거래를 통째로 잘라내고 있었습니다.
              ⚠ 여기 `max`는 **자리표시자**입니다. 실제 값은 renderPkg()가 `PYEONG_MAX`로 덮어씁니다. -->
         <input type="range" id="pyeongRange" min="0" max="100" step="1" value="0" aria-label="평형">
@@ -3460,7 +3464,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.30 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.32 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4653,9 +4657,39 @@ function renderBento(c){
         만원 단위 표기에서는 늘 같은 글자입니다.)
      ⚠ 「전부 현금」 갈래에도 같이 답니다. 한쪽만 적으면 대출이 있고 없고에 따라
        범례가 다른 것을 말하게 됩니다. */
+  /* 🔴 v25.31 — **금액을 앞으로, 비율을 뒤로**(오너 지시 — 「현금 먼저 15억(81%)가 낫지 않아?」).
+     ⏹ v25.30은 「비율 → 금액」이었습니다. 그런데 오너가 이 자리에 금액을 넣어 달라고 한 이유가
+       **「얼마지 생각하게 된다」**였으므로, 이 줄의 주인공은 금액입니다. 주인공을 뒤에 두면
+       한 번 더 읽어야 합니다. 그리고 바로 아래 영수증도 **「준비할 현금 15억 7,554만원」** 순서라
+       눈이 이어집니다.
+     🔴 **괄호는 못 씁니다 — 실측입니다.** 오너가 적은 「15억(81%)」 꼴을 다섯 폭에서 쟀습니다:
+       ```
+                                            필요한 폭   360px에서 쓸 수 있는 폭
+         금액 먼저 · 괄호 없음                 300px            304px   ✅
+         금액 먼저 · 괄호 (같은 굵기)          321px            304px   🔴
+         금액 먼저 · 괄호 (13px로 줄여도)      315px            304px   🔴
+         비율 먼저(v25.30)                     300px            304px   ✅  ← 폭은 같습니다
+       ```
+       괄호 두 짝이 **15~21px**을 먹는데 360px에는 그 여유가 없습니다.
+       ⚠ 그래서 이 판은 **순서 한 채널만** 움직입니다(원칙 157). 폭 비용 0 · 새 활자 조합 0 ·
+         되돌리기는 두 토큰의 자리를 되바꾸는 것입니다.
+     ⏹ **「%를 작게」는 미채택** — 296px으로 들어가긴 합니다(재 봤습니다). 하지만 활자 조합이
+       하나 늘고, 같은 판에서 **순서와 크기 두 채널**을 같이 움직이게 됩니다. 순서만으로
+       부족하다고 판정되면 그때 크기를 봅니다. */
+  /* 🔴 v25.31 — **금액과 비율을 한 덩어리로 묶습니다.** 근거가 둘입니다.
+     ① **뜻** — 둘은 한 값의 두 표현입니다. 라벨↔금액과 금액↔비율이 **똑같이 8px**이면
+        셋이 평평하게 늘어서서 어디까지가 한 묶음인지 안 보입니다.
+     ② **폭** — 360px 실측. 인테리어를 켜서 금액에 소수점이 붙으면(「15.8억」):
+        ```
+          따로 두 조각 (8px 간격)   313px   >  304px   🔴 두 줄로 접힘
+          한 덩어리 (공백)          303px   ≤  304px   ✅ 한 줄
+        ```
+     ⚠ 그래도 **여유가 1px입니다.** 금액이 더 길어지면(「100.5억」) 다시 접히는데,
+       그때는 `flex-wrap`이 **항목 단위로** 조용히 내립니다(v25.30 · 넘침 0).
+       **한 줄은 목표이고, 규격은 「숫자가 안 갈린다」입니다**(원칙 149). */
   $('fundLegend').innerHTML = loan>0
-    ? `<div><span class="f1"></span>준비할 현금 <b>${ownPct}%</b><b>${eokShort(own)}</b></div><div><span class="f2"></span>주담대 <b>${100-ownPct}%</b><b>${eokShort(loan)}</b></div>`
-    : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>100%</b><b>${eokShort(own)}</b></div>`;
+    ? `<div><span class="f1"></span>준비할 현금 <b>${eokShort(own)} ${ownPct}%</b></div><div><span class="f2"></span>주담대 <b>${eokShort(loan)} ${100-ownPct}%</b></div>`
+    : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>${eokShort(own)} 100%</b></div>`;
   const rate = simRate();
   const m=monthlyPaymentCalc(loan, rate, D.years);
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
@@ -4997,9 +5031,23 @@ function renderPkg(){
   const paintTrack = () => r.style.setProperty('--fill-pct',
     ((r.value - r.min) / (r.max - r.min) * 100) + '%');
   r.value=S.pyeong; paintTrack();
-  $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'모름';
+  /* 🔴 v25.32 — **「모름」을 뺐습니다**(오너 지적 — 「첨에 평형 입력 전 모름은 좀 별론 것 같아」).
+     ⏹ 「모름」은 **사용자의 상태를 단정**합니다. 실제로 참인 것은 「사용자가 모른다」가 아니라
+       **「아직 안 정했다」**입니다(원칙 124 — 「없음」과 「0」을 같은 답으로 만들지 않는다).
+       그리고 이 화면은 그 사실을 **이미 두 번** 말하고 있습니다 — 슬라이더 손잡이가 맨 왼쪽에
+       있고, 바로 아래 킥커가 「아직 영수증에 없어요 · 평형을 정하면 더해요」입니다(원칙 43).
+     → **값이 없으면 비웁니다.** v25.23이 인테리어 접힌 줄에서 내린 것과 **같은 규칙**입니다 —
+       새 규칙을 안 만들었습니다(원칙 58).
+     🔴 ⚠ **그냥 비우면 안 됩니다 — 재 보고 알았습니다.** `.slider-head .v`는 20px(`--t3`)이고
+       `.k`는 13px이라, 비우는 순간 그 줄이 **30 → 19.5px**로 주저앉습니다. 그러면 손잡이를
+       잡고 첫 픽셀을 움직이는 순간 값이 뜨면서 **슬라이더가 손가락 밑에서 10.5px 내려갑니다**
+       (원칙 34 — 상태가 바뀌어도 상자가 움직이면 안 된다). 세 폭에서 같은 값이었습니다.
+       → CSS에서 **빈 값일 때 자리만 지킵니다**(`.v:empty::after`). 글자는 없고 높이는 그대로입니다.
+     ⚠ 문자열을 여기 두 곳에 적습니다 — 한 곳은 첫 렌더, 한 곳은 끄는 중입니다.
+       둘이 갈리면 끄는 순간 글자가 바뀝니다(원칙 58). 검사가 **두 곳이 같은 식인지** 봅니다. */
+  $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'';
   r.oninput = () => { S.itTouched=true; S.pyeong=+r.value; paintTrack();
-    $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':'모름'; refreshPkg(); };
+    $('pyeongVal').textContent = S.pyeong? S.pyeong+'평':''; refreshPkg(); };
   r.onchange = () => showResult(true);
   $('interiorChips').innerHTML = INTERIOR.map(o=>
     `<button class="chip ${S.interior===o.v?'is-on':''}" data-it="${o.v}" aria-pressed="${S.interior===o.v}">${o.label}</button>`).join('');
