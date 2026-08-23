@@ -864,7 +864,18 @@ HYGIENE.forEach(([name, over]) => {
   const la=lum(A), lb=lum(B);
   const cr=(la!==null&&lb!==null) ? (Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05) : 0;
   tt('영문 킥 문구 삭제', !/PREMIUM ASSET SIMULATION|brandmark/.test(fs.readFileSync(FILE,'utf8')));
-  tt('타이틀 세로선이 있다', /\.headline::before\{[^}]*width:4px/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v25.40 — **헤드라인(그린 세로선)을 지웠습니다**(오너 지시 · 제미나이 대화 PART 3-1).
+     이 검사가 잠그던 것은 **그 부품의 규격**이었고, 부품이 사라졌으므로 잴 것이 없습니다.
+     ⚠ 지우는 대신 **되살아나지 않는 것**을 잠급니다 — 안 잠그면 다음 판이 조용히 되살립니다
+       (v25.20의 히어로 알약과 같은 처방 · 원칙 128 · 141).
+     ⚠ **마크업 · CSS 둘 다** 봅니다. 하나만 남아도 살아 있는 두 번째 정의입니다(원칙 84). */
+  tt('첫 화면 헤드라인이 되살아나지 않았다 (v25.40)', (()=>{
+     const raw = fs.readFileSync(FILE,'utf8');
+     const bare = raw.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return !/class="headline"/.test(bare) && !/class="subline"/.test(bare)
+         && !/\n\.headline\{/.test(bare) && !/\n\.subline\{/.test(bare)
+         && !/\.headline::before\{/.test(bare);
+  })());
   tt('CTA가 「결과 확인하기」', /'결과 확인하기'/.test(UI));
   tt('단위가 값에 붙어 있다', /\.mfield\{[^}]*gap:0/.test(fs.readFileSync(FILE,'utf8')));
 
@@ -880,8 +891,8 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v23.20 — 자간을 두 단으로 나눴습니다.
      타이틀은 -.05em(문장이라 붙어도 읽힘), 금액은 -.04em(숫자가 떡지면 못 읽힘). */
   tt('큰 타이틀 자간이 -.05em', (()=>{
-     const want = ['\\.q-title\\{[^}]*letter-spacing:-\\.05em',
-                   '\\.headline\\{[^}]*letter-spacing:-\\.05em'];
+     /* ⚠ v25.40 — `.headline`이 사라져 **질문 제목 하나만** 남습니다(부품이 없어진 자리). */
+     const want = ['\\.q-title\\{[^}]*letter-spacing:-\\.05em'];
      return want.every(r => new RegExp(r).test(css2));
   })());
   tt('큰 금액 자간이 -.04em', (()=>{
@@ -930,8 +941,7 @@ HYGIENE.forEach(([name, over]) => {
 
   /* v23.19 — 타이틀·금액은 900 고정, 행간 1.1~1.2 */
   tt('타이틀·금액이 900이다', (()=>{
-     const want=['\\.headline\\{[^}]*font-weight:900',
-                 '\\.q-title\\{[^}]*font-weight:900',
+     const want=['\\.q-title\\{[^}]*font-weight:900',
                  '\\.mfield input\\{[^}]*font-weight:900',
                  '\\.rhead-amount\\{[^}]*font-weight:900',
                  '\\.tile-v\\{[^}]*font-weight:900'];
@@ -941,7 +951,7 @@ HYGIENE.forEach(([name, over]) => {
      문장 타이틀은 **1.22** — 900 + 자간 -.05em에서 2줄이 되면 받침이 붙습니다.
      숫자는 **1.15** — 받침이 없고, 벌리면 큰 금액이 두 덩어리로 흩어집니다.
      v23.19의 「1.1~1.2 한 값」 락을 **두 값으로** 다시 씁니다(지침 5층 3번). */
-  tt('문장 타이틀 행간이 1.22다', ['\\.headline\\{','\\.q-title\\{'].every(x=>{
+  tt('문장 타이틀 행간이 1.22다', ['\\.q-title\\{'].every(x=>{
      const m=css2.match(new RegExp(x+'[^}]*line-height:([\\d.]+)'));
      return m && +m[1]===1.22;
   }));
@@ -1333,8 +1343,11 @@ HYGIENE.forEach(([name, over]) => {
         적고 있어서, 안 걷으면 검사가 **자기 근거를 적은 글에** 걸려 빨간불을 냅니다. */
      const line = (UI.match(/function dealLine\([^)]*\)[\s\S]*?\n\}/) || [''])[0]
        .replace(/\/\*[\s\S]*?\*\//g, '');
+     /* 🔴 v25.38 — 꺾쇠가 **글자에서 그림으로** 바뀌었습니다(`▾`가 Pretendard에 없습니다).
+        잠글 사실은 「어느 글자인가」가 아니라 **「밖으로 나가는 표식(↗)이 아니라 꺾쇠다」**입니다.
+        → 글리프를 안 보고 **꺾쇠 스팬이 있는가**를 봅니다(원칙 128). */
      return !!line.trim() && !/↗/.test(line)
-         && /<span class="caret" aria-hidden="true">▾<\/span>/.test(line);
+         && /<span class="caret" aria-hidden="true"><\/span>/.test(line);
   })());
   /* 🆕 v25.16 — 접기 셋과 **같은 짝**(aria-expanded ↔ aria-controls)을 씁니다. */
   tt('거래 줄이 접기 셋과 같은 짝을 쓴다',
@@ -2166,7 +2179,15 @@ HYGIENE.forEach(([name, over]) => {
      && !/\.restart-cta\{[^}]*background:var\(--(green|espresso|ink)\)/.test(css2));
 
   /* 3. 시각적 노이즈 — 왼쪽 굵은 세로선(레거시 인용문 문법) 전면 폐기 */
-  tt('안내 박스에 왼쪽 세로선이 없다', !/border-left/.test(css2));
+  /* 🔴 v25.38 — **대상을 옮겼습니다**(원칙 128). 전에는 `border-left`라는 **글자**를 금지했습니다.
+     v25.38이 꺾쇠를 CSS 삼각형으로 그리면서 `border-left:4px solid transparent`가 생겼는데,
+     그건 **선이 아니라 삼각형을 만드는 관용구**입니다(투명이라 아무것도 안 그려집니다).
+     ⚠ 잠글 사실은 「그 낱말이 없다」가 아니라 **「보이는 왼쪽 세로선이 없다」**입니다(원칙 149).
+       → 색이 있는 `border-left`만 봅니다. 투명은 통과입니다. */
+  tt('안내 박스에 왼쪽 세로선이 없다', (()=>{
+     const hits = css2.match(/border-left:[^;}]+/g) || [];
+     return hits.every(h => /transparent/.test(h));
+  })(), (css2.match(/border-left:[^;}]+/g) || []).filter(h => !/transparent/.test(h)).join(' / ') || '없음');
   /* 🔴 v25.20 — **대상을 옮겼습니다**(원칙 128 · 6-13). 알약을 뺐으므로 「그 알약의 면」은
      잴 것이 없습니다. 대신 **되살아나지 않는 것**을 잠급니다 — 안 잠그면 다음 판에 조용히
      다시 들어옵니다. 근거는 원칙 141(세 판 연속 같은 22자를 다툰 것 = 존재 문제)이고,
@@ -2396,7 +2417,13 @@ HYGIENE.forEach(([name, over]) => {
      && /::-webkit-slider-thumb\{[^}]*box-shadow:0 3px 8px/.test(css2));
 
   /* v23.16 — 그린 브랜드 · 카드 분리 · 슬라이더 커스텀 */
-  tt('세로선이 그린', /\.brand \.headline::before\{background:var\(--green\)/.test(css2));
+  /* 🔴 v25.40 — 세로선이 있던 자리입니다. 지금 첫 화면 상단은 **한 줄 각인**이고,
+     잠글 것은 그 줄의 **규격**입니다 — 12px(`--t8`) · 500 · `--ink-3`.
+     ⚠ 색이 `--ink-4`면 앱 배경 위 4.19:1로 미달입니다(원칙 97). 그 사실을 여기서 잠급니다. */
+  tt('첫 화면 각인이 브랜드 규격이다 (v25.40)',
+     /\.brandline\{[^}]*font-size:var\(--t8\)/.test(css2)
+     && /\.brandline\{[^}]*font-weight:500/.test(css2)
+     && /\.brand \.brandline\{color:var\(--ink-3\)\}/.test(css2));
   /* v23.18 — 흰 글자를 지키려고 배경 채도를 죽이던 타협을 뒤집었습니다.
      화사한 --green 면 + --espresso 글자 = 7.64:1 (이전 흰 글자 조합은 5.48:1). */
   tt('CTA가 화사한 그린 배경 + 잉크 글자',
@@ -2620,7 +2647,10 @@ HYGIENE.forEach(([name, over]) => {
   tt('워드마크가 실제로 홈으로 간다', /\$\('homeBtn'\)\.onclick\s*=\s*goHome/.test(UI));
   tt('하단 CTA·이전 버튼에 핸들러가 있다',
      /\$\('ctaBtn'\)\.onclick/.test(UI) && /\$\('prevBtn'\)\.onclick/.test(UI));
-  tt('계산 기준이 ⓘ 인디케이터로 접혔다',
+  /* 🔴 v25.38 — 이름에서 `ⓘ`를 뺐습니다. **기호가 아니라 버튼 하나로** 접혔다는 것이
+     잠근 사실이고, `ⓘ`(U+24D8)는 Pretendard에 없어 v25.38에서 뗐습니다.
+     ⚠ 검사 내용은 v23.24 그대로입니다 — 버튼이 있고 · 레이블이 살아 있고 · 옛 긴 줄이 없다. */
+  tt('계산 기준이 버튼 하나로 접혔다',
      /id="trustBtn"/.test(fs.readFileSync(FILE,'utf8'))
      && /계산 기준 보기/.test(fs.readFileSync(FILE,'utf8'))
      && !/스트레스 DSR · 취득세 · 지방교육세 · 중개보수 상한요율 기준 반영/.test(UI));
@@ -4138,8 +4168,10 @@ HYGIENE.forEach(([name, over]) => {
      /<h2 class="card-title">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
   /* 🔴 v25.1 — 교체된 첫 화면 카피가 **그 자리에 있는가.** 문자열을 잠그는 것이
      아니라 「부제가 비어 있지 않고, 옛 문장으로 조용히 되돌아가지 않았는가」를 봅니다. */
-  tt('첫 화면 부제가 교체된 카피다',
-     /class="subline">환상 없는 진짜 예산,<br>내 집 마련의 가장 현실적인 출발선<\/p>/.test(SRC));
+  /* 🔴 v25.40 — 두 줄 부제가 **한 줄 각인**이 됐습니다(`<br>`이 사라졌습니다).
+     잠글 사실은 그대로입니다 — **그 카피가 그 자리에 있고 옛 문장으로 안 돌아갔는가.** */
+  tt('첫 화면 각인이 교체된 카피다',
+     /class="brandline">환상 없는 진짜 예산, 내 집 마련의 가장 현실적인 출발선<\/h1>/.test(SRC));
   /* 🔴 지시서: 「(34평)에 Bold + 포인트 컬러」. 흰 카드 위 --green은 **2.17:1**이라 G-19에서
      즉시 빨간불입니다. 강조는 **굵기와 잉크 한 단**으로만 냅니다(지침 6-3 · 원칙 62).
      ⚠ 괄호 포맷도 미채택입니다 — 두 자가 늘면서 390px에서 「2018년」이 잘렸습니다(실측). */
@@ -4680,13 +4712,14 @@ HYGIENE.forEach(([name, over]) => {
      🔴 오너 지적: 인앱 브라우저에서 「대출은 받지 않을 거예요」가 도크에 반쯤 가립니다.
      ⚠ **글자 크기·자간은 한 자도 안 건드렸습니다**(원칙 117). 줄인 것은 전부 여백입니다.
        그 사실을 잠급니다 — 다음 사람이 「글자를 줄이면 더 들어간다」로 가지 않게. */
+  /* 🔴 v25.40 — 헤드라인·부제가 각인 한 줄로 접혔습니다. 잠글 사실은 그대로 —
+     **첫 화면 활자가 스케일 안에 있는가**(스케일 밖 리터럴 0 · 원칙 117). */
   tt('첫 화면 활자가 스케일 그대로다',
-     /\.headline\{[^}]*font-size:var\(--t2\)/.test(CSS)
-     && /\.subline\{[^}]*font-size:var\(--t6\)/.test(CSS)
+     /\.brandline\{[^}]*font-size:var\(--t8\)/.test(CSS)
      && /\.q-title\{font-size:var\(--t2\)/.test(CSS)
-     && /\.headline\{[^}]*letter-spacing:-\.05em/.test(CSS));
+     && /\.q-title\{[^}]*letter-spacing:-\.05em/.test(CSS));
   /* 🔴 부제 행간이 **스케일 안**으로 들어왔습니다(1.8은 1.06·1.3·1.6 밖에 혼자 있던 값). */
-  tt('부제 행간이 토큰이다', /\.subline\{[^}]*line-height:var\(--lh-body\)/.test(CSS));
+  tt('각인 행간이 토큰이다', /\.brandline\{[^}]*line-height:var\(--lh-body\)/.test(CSS));
   /* 🔴 「지우기」 줄이 **빈 채로 40px을 먹던** 자리 — 흐름에서 뺐습니다.
      ⚠ 흐름으로 되돌리면 값을 넣는 순간 입력칸이 아래로 뜁니다. 그 사고를 이름으로 잠급니다. */
   tt('「지우기」 줄이 빈 자리를 먹지 않는다',
@@ -4696,22 +4729,28 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 렌더 없이 재는 것이라 **선언된 여백의 합**만 봅니다. 진짜 측정은 브라우저가 합니다. */
   tt('첫 화면 상단 여백이 줄었다', (()=>{
      const brand = +((CSS.match(/\.brand\{background:var\(--bg\);padding:(\d+)px/)||[])[1]||99);
-     const sub   = +((CSS.match(/\.subline\{[^}]*margin:(\d+)px/)||[])[1]||99);
+     /* ⚠ v25.40 — 부제(margin 12px)가 각인(margin 0)으로 바뀌었습니다. 잠글 사실은
+        「위 여백이 예산 안인가」이고, 각인은 **자기 여백을 안 씁니다.** */
+     const sub   = /\.brandline\{[^}]*margin:0/.test(CSS) ? 0 : 99;
      const q     = (CSS.match(/\.funnel > \.q\{[^}]*margin-top:var\(--gap\)/)||[])[0];
      return brand <= 20 && sub <= 14 && !!q;
   })(), (()=>{
      const brand = (CSS.match(/\.brand\{background:var\(--bg\);padding:[^;}]*/)||['?'])[0];
-     const sub   = (CSS.match(/\.subline\{[^}]*margin:[^;}]*/)||['?'])[0];
+     const sub   = (CSS.match(/\.brandline\{[^}]*margin:[^;}]*/)||['?'])[0];
      return brand + ' / ' + sub; })());
 
   /* ── ④ 기준일 뱃지 — ⏹ v25.7에서 삭제. 잠금은 위 v25.1 장으로 옮겼습니다(원칙 128) ── */
 
   /* ── ⑤ 각주 넷 한 규격 (위 v25.1 장에도 짝이 있습니다) ───── */
   tt('--t8이 각주 단으로 정의돼 있다', /--t8:12px/.test(CSS));
-  /* 🔴 **--t8은 각주 전용입니다.** 본문·라벨·헬퍼가 쓰기 시작하면 활자 사다리가 한 단 내려앉습니다. */
+  /* 🔴 **--t8은 각주와 브랜드 각인만 씁니다.** 본문·라벨·헬퍼가 쓰기 시작하면 활자 사다리가
+     한 단 내려앉습니다.
+     ⚠ 🔴 v25.40 — **대상을 넓혔습니다**(원칙 128). 첫 화면 카피가 12px 한 줄 각인이 되면서
+       이 단을 쓰는 자리가 하나 늘었습니다. **넓힌 것은 목록이고, 규칙은 그대로입니다** —
+       「본문·라벨·헬퍼는 못 쓴다」. 각인은 브랜드 서술이지 본문이 아닙니다. */
   tt('--t8을 각주 밖이 쓰지 않는다', (()=>{
      const users = [...CSS.matchAll(/([^{};]+)\{[^}]*font-size:var\(--t8\)/g)].map(m => m[1].trim());
-     return users.length > 0 && users.every(s => /caveat|foot|copyright/.test(s));
+     return users.length > 0 && users.every(s => /caveat|foot|copyright|brandline/.test(s));
   })(), (()=>{ const u=[...CSS.matchAll(/([^{};]+)\{[^}]*font-size:var\(--t8\)/g)].map(m=>m[1].trim());
      return u.join(' | ')||'없음'; })());
 
@@ -4917,7 +4956,9 @@ HYGIENE.forEach(([name, over]) => {
         검사에 걸립니다 — 근거를 적을수록 빨개지는 검사는 근거를 지우게 만듭니다(원칙 48). */
      const bare = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
      return !/text-wrap:\s*pretty/.test(bare)
-         && /h1,h2,p,\.q-title,\.headline,\.card-title,\.hero-label\{text-wrap:balance\}/.test(bare)
+         /* ⚠ v25.40 — `.headline`이 사라져 `.brandline`이 그 자리를 받습니다.
+            목록을 **늘리지 않았습니다** — 한 칸을 갈아 끼운 것입니다(원칙 128). */
+         && /h1,h2,p,\.q-title,\.brandline,\.card-title,\.hero-label\{text-wrap:balance\}/.test(bare)
          && (bare.match(/text-wrap:/g)||[]).length === 1;
   })(), (CSS.replace(/\/\*[\s\S]*?\*\//g,'').match(/[^{};]*\{[^}]*text-wrap:[^;}]*/g)||['없음']).join(' | ').slice(0,120));
   /* 🔴 실측으로 줄인 문장 다섯이 **다시 길어지지 않았는가.** 글자 수로 잠급니다 —
@@ -5229,7 +5270,7 @@ HYGIENE.forEach(([name, over]) => {
      🔴 **v25.37 — 잠글 사실은 그대로이고, 그 사실을 말하는 자리가 옮겨졌습니다**(원칙 128).
         범위(「주담대」)를 **타일 이름**이 말하게 되었으므로, 검사도 **이름**을 봅니다.
         같은 사실을 이름과 부속 줄이 둘 다 말하면 그건 중복입니다(원칙 43) — 그것도 잠급니다. */
-  tt('원리금 타일이 무슨 대출을 세는지 이름이 말한다',
+  tt('원리금 타일이 무슨 대출을 세는지 이름이 말한다 (v25.37)',
      /class="tile-k">[^<]*주담대[^<]*원리금</.test(BARE),
      (()=>{ const m = BARE.match(/class="tile-k">([^<]*원리금)</); return m ? m[1] : '없음'; })());
   /* 빈 값 문장이 **전체 대출**을 말하면 조건칩(「갚는 대출 월 N만원」)과 어긋납니다.
@@ -5247,7 +5288,7 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.37 신설 — **범위를 두 번 말하지 않는다**(원칙 43).
      이름이 「주담대」를 말하는 동안 부속 줄은 그것을 되풀이하지 않습니다. 되풀이하면
      부속 줄의 자리(「무엇을 가정했나」)가 밀려나고, 한쪽을 고칠 때 다른 쪽이 조용히 남습니다. */
-  tt('원리금 타일이 범위를 이름과 부속 줄에서 두 번 말하지 않는다', (()=>{
+  tt('원리금 타일이 범위를 이름과 부속 줄에서 두 번 말하지 않는다 (v25.37)', (()=>{
      const nm = BARE.match(/class="tile-k">([^<]*원리금)</);
      const sb = BARE.match(/tileMonthlySub'\)\.textContent = m>0 \? `([^`]+)`/);
      if(!nm || !sb) return false;
@@ -5561,6 +5602,93 @@ HYGIENE.forEach(([name, over]) => {
          && arw(sv) === '↓';                         /* 저장은 내려받는 것 */
   })(), ['outNaver','outHogang','outSave','outCopy'].map(id=>{ const it=MINI(id);
      return id + ((it.match(/class="arw">([^<]*)</)||['','—'])[1]); }).join(' · '));
+})();
+
+/* ═══ v25.38 — 글꼴에 **없는 글자**를 화면에서 걷어냈습니다 ═══════════
+   v25.36이 Pretendard cmap을 열어 `▾`(U+25BE)가 없다는 것을 찾아 두고 「다음 판」으로 넘겼습니다.
+   이번 판이 같은 조회를 다시 하다 **`ⓘ`(U+24D8)도 없다**는 것을 찾았습니다 — 「계산 기준 보기」에
+   쓰고 있었습니다. 둘 다 두부(□)가 아니라 **시스템 대체 글꼴로** 떨어져 그려졌습니다.
+   그래서 아무도 못 봤고, **기기마다 크기·굵기가 다른 상태**로 살고 있었습니다.
+   ⚠ 잠그는 것은 「어느 글자를 쓰는가」가 아니라 **「글꼴이 가진 글자만 쓰는가」**입니다(원칙 149).
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+  const RAW  = fs.readFileSync(FILE,'utf8');
+  const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+  const CSSB = (RAW.match(/<style>([\s\S]*?)<\/style>/)||['',''])[1].replace(/\/\*[\s\S]*?\*\//g,'');
+
+  /* 🔴 Pretendard 1.3.9 cmap을 직접 열어 **없는 것으로 확인된** 글자들입니다.
+     ⚠ 이 목록은 짐작이 아닙니다 — `fontTools`로 cmap을 조회한 결과입니다.
+       새 기호를 쓰기 전에 **글꼴을 먼저 여십시오**(DESIGN 3 · 기호 절). */
+  const MISSING = [['▾','U+25BE'],['⌄','U+2304'],['▿','U+25BF'],['⏷','U+23F7'],
+                   ['⧉','U+29C9'],['ⓘ','U+24D8'],['⬇','U+2B07']];
+  const found = MISSING.filter(([ch]) => BARE.includes(ch));
+  tt('글꼴에 없는 글자를 화면에 쓰지 않는다 (v25.38)', found.length === 0,
+     found.length ? found.map(([c,u]) => c+' '+u).join(' · ') : '없음');
+
+  /* 꺾쇠는 이제 **그림**입니다. 글꼴에 안 기대므로 기기마다 같은 크기로 그려집니다. */
+  tt('꺾쇠를 CSS가 그린다 (v25.38)',
+     /\.caret::before\{[^}]*content:''[^}]*border-top:[\d.]+px solid currentColor/.test(CSSB));
+  /* 🔴 **회전한 상자로 그리지 않습니다** — 45°를 돌리면 대각선이 상자를 넘어
+     재는 장치가 넘침으로 셉니다(v25.38이 실제로 밟은 자리). */
+  tt('꺾쇠 그림이 상자를 넘지 않는다 · 회전 45° 금지 (v25.38)',
+     !/\.caret::before\{[^}]*rotate\(45deg\)/.test(CSSB));
+  /* 🔴 **그리는 규칙이 하나여야** 다섯 자리가 같은 그림입니다(원칙 58).
+     둘이 되는 순간 한쪽만 고쳐지고 그 차이는 렌더에서만 보입니다. */
+  tt('꺾쇠를 그리는 규칙이 하나다 (v25.38)', (CSSB.match(/\.caret::before\{/g)||[]).length === 1);
+  /* 꺾쇠 스팬은 **비어 있습니다.** 글자가 하나라도 들어가면 다시 글꼴에 기댑니다. */
+  tt('꺾쇠 스팬이 비어 있다 · 다섯 자리 (v25.38)', (()=>{
+     const spans = BARE.match(/<span class="caret"[^>]*>[^<]*<\/span>/g) || [];
+     return spans.length >= 5 && spans.every(x => /">\s*<\/span>/.test(x));
+  })(), (BARE.match(/<span class="caret"[^>]*>[^<]*<\/span>/g)||[]).length + '자리');
+  /* 「계산 기준 보기」는 **앱 안에서 끝나는 동작**입니다 — 레이블이 동작을 말하고 기호를 안 붙입니다
+     (v25.14가 정한 규칙 · DESIGN 3 기호 절). */
+  tt('계산 기준 버튼이 기호 없이 레이블로 말한다 (v25.38)',
+     /<button class="trust" id="trustBtn">계산 기준 보기<\/button>/.test(BARE));
+  /* 쓰는 곳이 없어진 규칙은 죽은 값이 아니라 **살아 있는 두 번째 정의**입니다(지침 6-6). */
+  tt('ⓘ를 떼면서 죽은 규칙을 남기지 않았다 (v25.38)', !/\.trust i\{/.test(CSSB));
+
+  /* ═══ v25.39 → v25.40 — 첫 화면의 위계 ════════════════════════
+     ⏹ v25.39는 카피 헤드라인을 22 → 17px로 **줄이기만** 했습니다. 그건 「작게 만든 것」이지
+       오너가 정한 **「각인」**이 아니었습니다(제미나이 대화 PART 3-1 — 「앱바 바로 아래 여백에
+       12px 회색 한 줄로 스며들듯」). v25.40이 헤드라인을 **빼고** 한 줄만 남겼습니다.
+     ⚠ 잠글 사실은 v25.39와 **같습니다** — 「첫 화면 상단 글자가 질문 제목보다 작은 단인가」.
+       대상만 `.headline` → `.brandline`으로 옮겼습니다(원칙 128 · 149). */
+  const SCALE = ['--d1','--t1','--t2','--t3','--t4','--t5','--t6','--t7','--t8'];
+  const tokenOf = sel => (CSSB.match(new RegExp(sel + '\\{[^}]*font-size:var\\((--[a-z0-9-]+)\\)')) || [])[1];
+  tt('첫 화면 각인이 질문 제목보다 작은 단이다 (v25.40)', (()=>{
+     const copy = tokenOf('\\.brandline'), q = tokenOf('\\.q-title');
+     if (!copy || !q) return false;
+     const ci = SCALE.indexOf(copy), qi = SCALE.indexOf(q);
+     return ci > -1 && qi > -1 && ci > qi;          /* 뒤로 갈수록 작은 단 */
+  })(), `각인 ${tokenOf('\\.brandline') || '없음'} / 질문 ${tokenOf('\\.q-title') || '없음'}`);
+  /* 🔴 **첫 화면의 900은 질문 하나입니다.** 각인이 900을 쓰면 주인공이 다시 둘이 됩니다
+     (v25.39가 잰 자리 — 22/900 카피 ↔ 22/900 질문). */
+  tt('첫 화면 각인이 900을 쓰지 않는다 (v25.40)',
+     /\.brandline\{[^}]*font-weight:500/.test(CSSB) && !/\.brandline\{[^}]*font-weight:900/.test(CSSB));
+
+  /* ── v25.40 ② 대출 서랍 버튼의 어포던스 (제미나이 대화 PART 3-2) ──
+     ⏹ 전 : 면 없음 · 테두리 없음 · 곡률 0 — **글자만 있고 누를 것으로 안 읽혔습니다.**
+     ⚠ 잠글 것 둘 — ① **누를 것처럼 보이는가**(면 + 헤어라인 + 알약)
+                    ② 🔴 **값을 더하는 칩(`.chip`)의 모양이 아닌가.** 그 칩은 뜻이 다릅니다(DESIGN 0).
+     ⚠ 높이는 `--h-chip`입니다 — 46px 옵션칩이 되면 「고르는 것」으로 읽힙니다(원칙 112). */
+  tt('대출 서랍 버튼이 누를 것처럼 보인다 (v25.40)',
+     /\.debtlink\{[^}]*background:var\(--card\)/.test(CSSB)
+     && /\.debtlink\{[^}]*border:1px solid var\(--line\)/.test(CSSB)
+     && /\.debtlink\{[^}]*border-radius:var\(--r-pill\)/.test(CSSB)
+     && /\.debtlink\{[^}]*height:var\(--h-chip\)/.test(CSSB));
+  /* 손가락 면은 **보이는 크기와 따로** 갑니다(원칙 123) — 알약이 35px이어도 닿는 높이는 44px. */
+  tt('대출 서랍 버튼의 손가락 면이 44px 그대로다 (v25.40)',
+     /\.debtlink\{position:relative\}/.test(CSSB)
+     && /\.debtlink::after\{[^}]*height:var\(--tap\)/.test(CSSB));
+
+  /* ── v25.40 ③ 억·만 칸을 한 덩어리로 (제미나이 대화 PART 3-3) ──
+     ⚠ 잠글 것은 「간격이 0이다」가 아니라 **「한 상자로 보이는가」**입니다(원칙 149) —
+       간격 0 + 사이 헤어라인 + **바깥쪽만 곡률**. 셋이 한 벌입니다.
+     ⚠ 입력은 **여전히 둘**입니다. 하나로 합치는 것은 입력 규칙이 바뀌는 다른 판입니다(원칙 41). */
+  tt('억·만 칸이 한 덩어리로 보인다 (v25.40)',
+     /\.mgrid\{[^}]*gap:0/.test(CSSB)
+     && /\.mgrid \.mfield:first-child\{border-radius:var\(--r-m\) 0 0 var\(--r-m\)\}/.test(CSSB)
+     && /\.mgrid \.mfield:last-child\{[^}]*box-shadow:inset 1px 0 0 var\(--line\)/.test(CSSB));
 })();
 
 /* ═══ v25.15 — 실기 지적 반영 (마이크로카피 · 위계 · 동선) ══════════
