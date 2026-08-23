@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.45 · 정책 2026.08.13 -->
+<!-- BUILD v25.49 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -673,7 +673,16 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .sidoscroll::-webkit-scrollbar{display:none}
 .sidoscroll .chip{flex:none;padding:0 16px;font-size:var(--t6)}
 
-.seg{margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--fill);
+/* 🔴 v25.47 — **칸 수를 손으로 안 적습니다**(오너 지적 · 원칙 84 · 118).
+   ⏹ 전: `grid-template-columns:1fr 1fr 1fr` — **3칸 고정**이었습니다. 보유 세그먼트(셋)에는
+     맞았지만 v25.0이 더한 **채수 세그먼트(둘)**가 같은 규칙을 물려받아, 버튼 둘이 1·2칸에 앉고
+     **세 번째 칸이 빈 채로** 남았습니다 — 390px 실측 트랙 298px 중 **약 100px이 빈 자리**.
+     화면에서는 「2칸인데 3칸처럼」 보입니다.
+   → `grid-auto-flow:column` + `grid-auto-columns:1fr`. **칸 수가 버튼 수에서 저절로** 나옵니다.
+     지역 격자의 `TAG_WIDE`가 「열 수를 손으로 안 적는다」로 푼 것과 **같은 처방**입니다(DESIGN 5).
+   ⚠ 셋짜리(보유)는 **한 픽셀도 안 바뀝니다** — 실측으로 대조했습니다.
+   ⚠ 선택지를 넷으로 늘리면 저절로 4칸이 됩니다. 다만 그때는 **폭을 다시 재십시오**(원칙 140). */
+.seg{margin-top:12px;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;background:var(--fill);
   padding:5px;border-radius:var(--r-m)}
 /* 세그먼트도 칩과 같은 선택 언어입니다 — 폭 고정 1.5px, 색만 바뀝니다. */
 .seg button{min-height:var(--h-opt);padding:0 4px;border:1.5px solid transparent;border-radius:var(--r-s);
@@ -853,7 +862,11 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .rhead-amount .u{color:var(--ink-3);font-weight:400}
 .rhead-amount{position:relative;display:inline-block;
   font-size:clamp(32px,11vw,var(--d1));line-height:1.1;font-weight:900;
-  letter-spacing:-.04em;margin:8px 0 0}
+  letter-spacing:-.04em;margin:8px 0 24px}
+/* 🔴 v25.49 — **아래 여백 24px**(오너 지적 — 「집값 외 부대비용이 저기에 붙으니깐」).
+   실측 0px이었습니다. 라벨 → 금액이 8px(한 덩어리)인데 금액 → 다음 줄도 0px이면
+   **어디까지가 답인지** 눈이 못 자릅니다.
+   ⚠ 24는 이 카드가 이미 쓰는 「덩어리 ↔ 덩어리」 값입니다(`.fundwrap`도 같은 단) — 새 값이 아닙니다. */
 .rhead-amount > span{white-space:nowrap}
 .u{font-style:normal;font-size:.72em;font-weight:400;color:var(--ink-3);letter-spacing:-.01em;margin-left:.05em}
 /* 🔴 v25.11 — 이 규칙에 **`color`가 두 번** 선언돼 있었습니다(`--ink-3`가 뒤에서 이겼습니다).
@@ -927,7 +940,12 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    🔴 v25.4 — 히어로가 흰 카드가 되면서 `--ink-4`도 4.19 → 4.62:1로 올라가 이제는 쓸 수 있습니다.
      **그래도 `--ink-3`을 그대로 둡니다** — 통과하니까 내리는 것은 근거가 아닙니다(원칙 100).
      ⚠ 다음 사람에게: 이 값이 `--ink-3`인 이유는 이제 **대비가 아니라 위계**입니다. */
-.fundwrap{margin-top:24px}
+/* 🔴 v25.49 — **선 위아래를 같은 16px으로** 맞췄습니다(오너 지적 — 「여백 등 다 안 맞네」).
+   ⏹ 실측: 선 위 28px(줄 패딩 12 + 16) · 선 아래 **32px**(패딩 16 + 막대 16). 어긋나 있었고,
+     선이 위 덩어리에 붙어 보였습니다. 가르는 선은 **양쪽에서 같은 거리**여야 갈라 보입니다.
+   → 위 = 줄 패딩 12 + 4 = 16 · 아래 = 16(막대 자체 여백은 0). */
+.fundwrap{margin-top:4px;padding-top:16px;border-top:1px solid var(--line)}
+.fundwrap .stack{margin-top:0}
 .fund-k{font-size:var(--t7);font-weight:500;color:var(--ink-3);margin:0;letter-spacing:.04em}
 /* 🔴 v24.28 — 2열 격자 → **한 열.**
    ⏹ 타일이 「자금구성(전폭) · 원리금(반칸) · 부담(전폭)」이던 시절의 격자입니다.
@@ -1080,13 +1098,30 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    → 항목은 `nowrap`으로 통째로 두고, 모자라면 **항목 단위로** 아랫줄에 갑니다.
    ⚠ 그래서 이 줄은 「한 줄」이 아니라 **「숫자가 안 갈린다」**가 규격입니다 —
      한 줄인지는 폭과 금액이 정하고, 다섯 폭 실측 표는 HANDOVER v25.30에 있습니다. */
+/* 🔴 v25.48 — **화면 범례를 뺐습니다.** 그 두 줄이 영수증으로 들어갔습니다(위 마크업 주석).
+   ⚠ `.legend` 규칙은 **남깁니다** — 공유 카드(`.report .legend`)가 그대로 씁니다.
+     화면에서 안 쓴다고 지우면 내보내는 그림이 통째로 무너집니다(지침 6-6의 예외 —
+     죽은 규칙이 아니라 **다른 매체가 쓰는 규칙**입니다). */
 .legend{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px 22px}
 .legend div{display:flex;align-items:center;gap:8px;font-size:var(--t7);color:var(--ink-3);white-space:nowrap}
 .legend span{width:8px;height:8px;border-radius:3px;flex:none}
 .legend .f1{background:var(--ink)} .legend .f2{background:var(--green)}
 .legend b{font-size:var(--t6);font-weight:700;color:var(--ink)}
+/* 🔴 v25.48 — 영수증의 **자금 출처 두 줄**. 점은 막대 조각과 같은 색이고, 크기·곡률은
+   범례가 쓰던 값 그대로입니다(원칙 58 — 새 값을 만들지 않습니다).
+   ⚠ 비율은 이름에 딸린 **보조 값**이라 금액(`--ink-2` 700)보다 한 단 조용합니다 —
+     이 줄의 주인공은 금액입니다(v25.31 오너 지시의 연장). */
+.line .k .f1,.line .k .f2{display:inline-block;width:8px;height:8px;border-radius:3px;
+  margin-right:8px;vertical-align:middle}
+.line .k .f1{background:var(--ink)} .line .k .f2{background:var(--green)}
+.line .k .fpct{margin-left:6px;font-size:var(--t7);font-weight:700;color:var(--ink-4)}
 
-.line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;font-size:var(--t6)}
+/* 🔴 v25.49 — **행간을 적습니다.** 실측에서 `.line`은 21px인데 같은 표에 서는 접기 줄
+   (`.disc` · `.disc.discline`)만 **선언이 없어** 브라우저 기본으로 그려지고 있었습니다.
+   v25.16이 `.tile-s`에서 겪은 그 자리입니다 — **없는 글자는 소스에서 못 찾습니다**(원칙 144 · G-28).
+   ⚠ 숫자 줄이라 문장 행간(1.6)을 안 씁니다. 세 줄이 **같은 1.5**입니다. */
+.line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:12px 0;
+  font-size:var(--t6);line-height:1.5}
 /* 🔴 v25.9 — **금액 오른쪽 끝을 한 열에 세웁니다**(오너 지적 · 실측으로 확인).
    영수증은 네 줄인데 그중 하나(`집값 외 부대비용`)만 접히는 줄이라 ▾가 오른쪽 끝을 먹고,
    그 줄의 금액만 18px 안으로 들어와 있었습니다. 자릿수가 안 맞으니 세로로 훑을 수가 없습니다.
@@ -1101,9 +1136,22 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 🔴 v24.15 — 합계 줄의 간격을 12+20 → 8+16으로 좁혔습니다.
    위 줄의 padding-bottom 11까지 더하면 43px이었습니다 — 카드 안 최대 간격이 여기였습니다.
    가르는 일은 **선**이 합니다. 여백은 선을 거들 만큼만 있으면 됩니다. */
-.line.total{border-top:1px solid var(--line);margin-top:8px;padding-top:16px}
-.line.total .k{font-size:var(--t5);font-weight:700;color:var(--ink)}
-.line.total .v{font-size:var(--t3);font-weight:700;letter-spacing:-.04em}
+/* 🔴 v25.48 — **가르는 선을 막대 위로 옮겼습니다**(`.fundwrap`). 전에는 이 줄 위에 있어서
+   「주담대 ↔ 준비할 현금」이라는 **한 쌍의 사이를** 갈랐습니다. 둘은 같은 것(자금 출처)의
+   두 조각이고, 갈라야 할 자리는 그 **묶음과 부대비용 사이**입니다(원칙 43 · 149). */
+/* 🔴 v25.49 — **같은 종류의 줄을 두 규격으로 두지 않습니다**(오너 지적 · 원칙 58).
+   ⏹ 전: 이름 16(`--t5`) · 금액 **20**(`--t3`) · 자간 -.04em — 옆줄(주담대)은 14 · 14 · -.02em이라
+     같은 「자금 출처」가 크기 둘 · 자간 둘이었습니다. 그리고 `margin-top:2px`은 어디에도 없는 값입니다.
+   → **이름은 옆줄과 같은 크기(14)**, 다른 것은 **굵기와 잉크**뿐입니다(원칙 100 —
+     위계를 크기로만 내지 않습니다). **금액만 한 단 위(`--t4` 17)**입니다 — 이 카드에서
+     사용자가 실제로 마련해야 하는 값이고, 히어로(40)와는 2.35배라 주인공을 안 흔듭니다.
+   ⚠ 자간은 **크기가 정합니다**(DESIGN 2) — 17px은 `--ls-ttl`(-.02em)이고, -.04em은 40px대 값입니다. */
+/* 🔴 v25.49 — 히어로 카드의 **두 선을 같은 리듬으로**. 실측 — 막대 위 선은 18/17,
+   한도 줄의 선은 **4/17**이었습니다. 가르는 선이 한쪽에 붙어 있으면 무엇과 무엇을 가르는지
+   안 보입니다. `.discline`(부대비용)은 제 선을 `::after`로 그리므로 대상에서 뺍니다. */
+.rhead > .disc:not(.discline){margin-top:18px}
+.line.total .k{font-weight:700;color:var(--ink)}
+.line.total .v{font-size:var(--t4);font-weight:700;color:var(--ink);letter-spacing:var(--ls-ttl)}
 .overnote{margin-top:14px;padding:12px 14px;border:0;border-radius:var(--r-m);
   background:var(--warn-tint);
   font-size:var(--t7);line-height:1.6;font-weight:600;color:var(--warn)}
@@ -1151,7 +1199,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    17px은 이 파일에서 여기 한 곳에만 있던 값이었습니다. */
 .disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;
   padding:16px 2px;border-radius:0;background:transparent;border:0;border-top:1px solid var(--line);
-  font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
+  font-size:var(--t6);font-weight:700;color:var(--ink);line-height:1.5;transition:.14s}
 /* 🔴 v25.38 — **꺾쇠를 글자로 안 그립니다. CSS로 그립니다.**
    ⏹ v25.36이 Pretendard cmap을 열어 `▾`(U+25BE)가 **글꼴에 없다**는 것을 찾았습니다.
      두부(□)는 아니고 **시스템 대체 글꼴로** 떨어져 그려졌습니다 — 그래서 아무도 못 봤고,
@@ -1187,7 +1235,7 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 🔴 G-22가 잡았습니다 — `.line`의 여백(11px)을 그대로 쓰니 손가락 면이 **40px**이 됐습니다.
    보이는 크기는 그대로 두고 **투명 면만** 넓힙니다(v24.27 문법 · 원칙 122 · 123).
    ⚠ `.disc`는 `::after`를 안 쓰고 있습니다(꺾쇠는 `.caret` 스팬입니다). 붙이기 전에 확인한 자리입니다. */
-.disc.discline{position:relative;margin-top:0;padding:11px 0;border-top:0;font-size:var(--t6);font-weight:400}
+.disc.discline{position:relative;margin-top:0;padding:12px 0;border-top:0;font-size:var(--t6);font-weight:400;line-height:1.5}
 /* 🔴 v25.23 — **카드의 제목 자리에 앉는 접기 줄**(인테리어 카드).
    ⏹ v25.21이 여기에 `.discline`을 썼다가 위계가 세 단 내려갔습니다 — `.discline`은
      **영수증 카드 *안*의 종속 줄** 규격이고, 이 줄은 **카드의 제목**입니다(원칙 132).
@@ -2086,11 +2134,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              검증된 값이고, 여기는 앱 배경(--bg)이라 **4.19:1**입니다. `.barlabel`·`.arow`와
              정확히 같은 자리입니다(원칙 97). → `--ink-3`(6.45:1)로 쓰는 `.fund-k`를 둡니다.
            → 결과 블록 7 → 6. -->
-      <div class="fundwrap">
-        <p class="fund-k">이 돈이 어디서 오나요?</p>
-        <div class="stack" id="fundStack"></div>
-        <div class="legend" id="fundLegend"></div>
-      </div>
       <!-- 🔴 v25.44 — **히어로와 영수증을 한 카드로 합쳤습니다**(제미나이 지시서 PART 1 · 오너 결정).
            ⏹ 전에는 흰 카드 둘이었습니다. 그런데 **두 면은 한 값도 다르지 않았습니다** —
              렌더 실측 `.rhead` = `.card` : 면 #FFFFFF · 곡률 26px · 그림자 동일 · 안쪽 여백 16px.
@@ -2103,7 +2146,11 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              「답은 한 덩어리, 조건칩은 입력으로 돌아가는 문」. 영수증도 답이라 칩이 그 앞에 서면
              v25.7이 만들었던 그 상태(답이 조건에 딸린 것처럼 읽힘)가 다시 생깁니다.
            ⚠ **순서 재조정(PART 2)은 이 판에 안 섞습니다** — 세로가 왜 바뀌었는지 못 가립니다(원칙 41). -->
-      <h2 class="card-title rc-head">이 집을 살 때 실제로 드는 돈</h2>
+      <!-- 🔴 v25.48 — **제목을 뺐습니다**(오너 지적 · 「예상 매수 가능 금액 … 문구도 중복」).
+           한 카드에 라벨이 셋(「예상 매수 가능 금액」 · 「이 돈이 어디서 오나요?」 ·
+           「이 집을 살 때 실제로 드는 돈」)이었습니다. 카드가 하나면 **머리도 하나**입니다.
+           ⚠ 「집값 말고 얼마가 더 드는가」는 이제 **부대비용 줄 자신이** 말합니다
+             (「집값 외 부대비용 · 집값의 4.1%」). 제목이 하던 일을 줄이 하고 있었습니다(원칙 43). -->
       <div id="receipt"></div>
 
       <!-- 🔴 v24.31 — **부대비용을 영수증 한 줄로 접었습니다(블록 3).**
@@ -2150,6 +2197,18 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
       </div>
       <!-- 🔴 v24.31 — 영수증의 **아랫단**입니다. 부대비용 서랍이 열리든 닫히든
            「주택담보대출 −」과 「준비할 현금」은 **언제나 여기 있습니다.** 위 주석의 약속입니다. -->
+      <!-- 🔴 v25.48 — **막대를 자금 출처 두 줄 바로 위로** 옮겼습니다.
+           ⏹ 히어로 금액 바로 아래 두었더니, 막대 밑에 붙는 줄이 「집값 외 부대비용」이라
+             **막대가 그 줄을 설명하는 것처럼** 읽혔습니다(실기 그림에서 확인).
+           → 읽는 순서가 이제 셈의 순서와 같습니다 :
+             집값(히어로) → 여기에 부대비용이 더 들고 → **그 돈은 이렇게 마련합니다**(막대 + 두 줄).
+           ⏹ 「이 돈이 어디서 오나요?」 라벨은 그대로 없습니다 — 막대가 그림으로 말하고,
+             바로 아래 두 줄이 색점으로 조각과 이름을 잇습니다(원칙 43).
+           ⚠ 가르는 선은 **막대 위**에 있습니다(`.fundwrap`) — 전에는 「준비할 현금」 줄 위에
+             있어서 **한 쌍인 두 줄 사이를** 갈랐습니다. -->
+      <div class="fundwrap">
+        <div class="stack" id="fundStack"></div>
+      </div>
       <div id="receiptBot"></div>
 
       <button class="disc" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
@@ -2733,6 +2792,20 @@ const POLICY = {
     firstTime:    {metro: 0.7, other: 0.8}   // 생애최초는 '수도권' 기준(규제지역 아님)
   },
 
+  /* 🔴 v25.46 — **일시적 2주택(처분조건부)의 종전 주택 처분기한.**
+     1주택자가 새 집을 사면서 **기한 안에 종전 주택을 팔면** 취득세가 중과되지 않고
+     **1주택 기본세율(1~3%)**입니다. 지역(조정/비조정)과 **무관**합니다.
+       출처 : 지방세법 시행령 제28조의5(일시적 2주택) · 행정안전부 보도자료
+              「일시적 2주택자의 종전주택 처분기한 연장」(2년 → 3년 · 2023.1.12 소급 적용)
+       확인일 : 2026.08.23
+     ⚠ 🔴 **2026 세제개편의 「3년 → 2년 단축」은 이 값이 아닙니다** — 그건 **양도소득세·종합부동산세**의
+       1세대1주택 특례 기간입니다(조정대상지역 · 2026.8.4 이후 취득분). **취득세는 3년 그대로**입니다.
+       세목을 섞으면 이 화면이 취득세를 양도세 기한으로 말하게 됩니다(원칙 91).
+     ⚠ **계산은 이 숫자를 안 씁니다** — 세율이 갈리는 것은 「팔 것인가」이고, 3년은 **조건**입니다.
+       화면이 그 조건을 말하려고 둡니다(원칙 39 — 이름이 값보다 더 약속하면 안 됩니다).
+     ⚠ 기한 안에 안 팔면 **중과세율과의 차액이 추징**됩니다. 그 사실도 화면이 말합니다. */
+  dispose: {years: 3},
+
   /* 서민·실수요자 우대 — 규제지역 한정, LTV 60%
      주택가격 상한은 투기과열지구 9억 / 조정대상지역 8억이나, 여기서는 9억으로 단일 적용합니다.
      출처: 은행권 여신심사 운영기준 / 확인일 2026.08.05 */
@@ -3163,11 +3236,20 @@ const RATE_BAND = {
    시장 평균이 아니고, 계산 결과가 실제보다 넉넉하게 나오지 않도록 고른 값이에요. */
 const RATE_DEFAULT = 5.4;
 
-function getLTV(houseStatus, reg, metro){
+/* 🔴 v25.46 — **처분조건부 1주택**이 인자로 들어왔습니다(오너 결정 · 인수인계 0장).
+   ⚠ **기존 갈래를 하나도 안 지웠습니다** — 「1주택 이상」의 규제지역 0%는 국토부 원자료값이고
+     그대로 참입니다(v25.24 전수 대조). 갈래를 **하나 더** 둔 것뿐입니다(원칙 128).
+   ⚠ **`ownCount === 1`일 때만** 처분조건부입니다. 2주택을 갖고 한 채를 팔면 취득 후에도 2주택이라
+     「무주택과 같게 본다」가 성립하지 않습니다 — 이름이 값보다 더 약속하면 안 됩니다(원칙 39).
+   ⚠ 자료의 칸 이름이 이미 **`noneOrDispose`(무주택 · 처분조건부 1주택)**입니다. 새 값을 안 만들었습니다. */
+const isDispose = ctx => ctx.houseStatus === 'multi' && ctx.ownCount === 1 && !!ctx.disposePlan;
+
+function getLTV(houseStatus, reg, metro, dispose){
   /* reg   = 규제지역(투기과열지구·조정대상지역) → LTV 강화가 여기만 적용돼요
      metro = 수도권(규제지역 포함)               → 생애최초 LTV 상한이 여기 기준이에요 */
   const L = POLICY.ltv;
-  if(houseStatus === 'multi') return reg   ? L.multi.reg      : L.multi.other;
+  if(houseStatus === 'multi' && !dispose) return reg ? L.multi.reg : L.multi.other;
+  if(houseStatus === 'multi') return reg ? L.noneOrDispose.reg : L.noneOrDispose.other;
   if(houseStatus === 'first') return metro ? L.firstTime.metro : L.firstTime.other;
   return reg ? L.noneOrDispose.reg : L.noneOrDispose.other;   /* 무주택 · 처분조건부 */
 }
@@ -3183,7 +3265,7 @@ function isSeominEligible(ctx){
 
 function getEffectiveLTV(ctx){
   if(isSeominEligible(ctx)) return POLICY.seomin.ltv;
-  return getLTV(ctx.houseStatus, ctx.regulated, ctx.metro);
+  return getLTV(ctx.houseStatus, ctx.regulated, ctx.metro, isDispose(ctx));
 }
 
 /* ⏹ v25.14 — `loanTypeLabel()`을 **정의부터 지웠습니다.** 파일 전체에서 **부르는 곳이 0곳**이었습니다
@@ -3335,7 +3417,7 @@ function computeLoan(ctx){
   }
 }
 
-function acquisitionTaxRate(price, houseStatus, regulated, ownCount){
+function acquisitionTaxRate(price, houseStatus, regulated, ownCount, dispose){
   const eok = price / 100000000;
   /* 중과는 조정대상지역(=규제지역) 기준이고, **취득 후 주택 수**로 갈립니다.
      ⚠ `ownCount`는 **지금 갖고 있는 수**입니다. 취득 후 수는 그보다 하나 많습니다.
@@ -3344,6 +3426,12 @@ function acquisitionTaxRate(price, houseStatus, regulated, ownCount){
      ⚠ 비조정 + 취득 후 2주택은 **표준세율**입니다(중과가 아닙니다). `null`이 그 뜻이고,
        숫자 0으로 두면 「0%」와 구별이 안 됩니다. */
   const A = POLICY.acqTax;
+  /* 🔴 v25.46 — **일시적 2주택**은 중과가 아니라 1주택 기본세율(1~3%)입니다.
+     ⚠ 대출과 세금이 **같은 전제**를 써야 합니다(원칙 91) — 대출을 「팔 것」으로 계산해 놓고
+       세금만 2주택으로 매기면 한 화면 안에서 앞뒤가 갈립니다. 그래서 같은 `dispose`를 봅니다.
+     ⚠ 기한(`POLICY.dispose.years` · 3년) 안에 안 팔면 **차액이 추징**됩니다 — 계산은 그 조건이
+       지켜진다는 전제이고, 그 사실은 화면이 말합니다(원칙 39). */
+  if(houseStatus === 'multi' && dispose && ownCount === 1) return generalRate(eok);
   if(houseStatus === 'multi'){
     const band = (ownCount >= 2) ? A.heavyMulti.own2 : A.heavyMulti.own1;
     const r = regulated ? band.reg : band.other;
@@ -3360,7 +3448,7 @@ function acquisitionTaxRate(price, houseStatus, regulated, ownCount){
 }
 
 function calcCosts(ctx){
-  const baseRate = acquisitionTaxRate(ctx.price, ctx.houseStatus, ctx.regulated, ctx.ownCount);
+  const baseRate = acquisitionTaxRate(ctx.price, ctx.houseStatus, ctx.regulated, ctx.ownCount, isDispose(ctx));
   let tax = ctx.price * baseRate;
 
   /* 지방교육세: 표준세율(1~3%) 구간은 취득세액의 10%.
@@ -3643,7 +3731,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.45 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.49 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3690,7 +3778,7 @@ const PYEONG_MAX = 100;
 let SIM_RATE = null;                       /* null이면 D.rate를 씁니다 */
 const simRate = () => SIM_RATE == null ? D.rate : SIM_RATE;
 
-const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none', ownCount:1,
+const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none', ownCount:1, disposePlan:false,
             group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false,
             /* 🔴 v25.14 — **결과에서 조건을 고치러 왔는가.** 켜져 있으면 하단 CTA가
                「결과 다시 보기」가 되고 한 번에 결과로 돌아갑니다(위 `syncCta`·`next`).
@@ -3897,13 +3985,27 @@ function ownDrawer(){
   /* 🔴 클래스 이름을 `.drawer`로 쓰면 **G-23이 이걸 지역 서랍으로 오인합니다** —
      그 게이트는 화면 전체에서 `.drawer`를 찾아 「격자 안에 있는가」를 봅니다(원칙 124의 결과).
      같은 문법을 쓰되 **이름은 겹치지 않게** 둡니다. 제목·설명 줄은 그대로 나눠 씁니다. */
+  /* 🔴 v25.46 — **처분조건부(일시적 2주택) 체크 하나**(오너 결정 · 인수인계 0장).
+     ⏹ 전에는 처분조건부인 사람도 「1주택 이상」을 골라 **규제지역 LTV 0%**를 받았습니다.
+       원자료값은 **40%**(`ltv.noneOrDispose.reg`)이고, 엔진에는 그 값이 이미 있었는데
+       **부르는 자리가 없었습니다.** v25.24 주석이 「입력이 한 칸 느는 판이라 따로 정하십시오」로
+       남겨 둔 자리입니다.
+     ⚠ **1주택일 때만 묻습니다.** 2주택을 갖고 한 채를 팔면 취득 후에도 2주택이라
+       「무주택과 같게 본다」가 성립하지 않습니다(원칙 39).
+     ⚠ **새 부품 0** — `.subtoggle`은 01의 「주담대는 받지 않을 거예요」와 같은 것입니다.
+     ⚠ 이 값은 **저장에 안 실립니다** — 형제인 `ownCount`가 이미 그렇습니다(`DRAFT_KEYS`).
+       한쪽만 실으면 다음 방문에 「2주택 + 처분 예정」 같은 없는 상태가 복원됩니다(원칙 91). */
+  const dispose = S.ownCount === 1
+    ? `<label class="subtoggle"><input type="checkbox" id="disposeBox" ${S.disposePlan ? 'checked' : ''}>`
+      + `지금 집은 팔고 옮길 거예요</label>`
+    : '';
   return `<div class="ownbox">`
     + `<p class="drawer-t">지금 몇 채 갖고 계세요?</p>`
     + `<p class="pane-note">취득세율이 여기서 갈려요.</p>`
     + `<div class="seg" id="ownSeg">`
     + `<button data-own="1" class="${on(1).trim()}">1주택</button>`
     + `<button data-own="2" class="${on(2).trim()}">2주택 이상</button>`
-    + `</div></div>`;
+    + `</div>` + dispose + `</div>`;
 }
 /* 고른 것에 대한 한 줄 응답. **상태에서 옵니다** — 전에는 클릭 핸들러가 글자를 직접 넣어서,
    화면을 다시 그리면 그 줄만 비었습니다(서랍이 생기면서 다시 그리게 됐습니다). */
@@ -3911,6 +4013,12 @@ function houseEchoText(){
   if(S.houseStatus === 'first') return '생애최초 기준이 적용돼 대출 한도가 늘어나요.';
   if(S.houseStatus !== 'multi') return '';
   /* 🔴 v25.0 — 「중과」를 무조건 말하지 않습니다. **비조정지역에서 2주택은 중과가 아닙니다.** */
+  /* 🔴 v25.46 — 처분조건부는 **무엇이 달라지고 무엇이 조건인지**를 한 줄에 답니다.
+     ⚠ 기한을 손으로 안 적습니다 — `POLICY.dispose.years` 한 곳에서 옵니다(원칙 84 · 58).
+     ⚠ **못 팔면 어떻게 되는지도 말합니다** — 안 말하면 이 화면이 「팔지 않아도 되는 혜택」을
+       약속하는 것이 됩니다(원칙 39). 계산은 그 조건이 지켜진다는 전제입니다. */
+  if(S.ownCount === 1 && S.disposePlan)
+    return `종전 집을 ${POLICY.dispose.years}년 안에 팔면 무주택과 같은 기준이에요. 못 팔면 차액을 다시 내요.`;
   return S.ownCount >= 2
     ? '취득 후 3주택 이상이라 취득세가 가장 높은 구간이에요. 4주택 이상은 여기서 더 올라가요.'
     : '집이 있으면 대출 한도가 줄어요. 취득세는 규제지역에서만 중과돼요.';
@@ -4300,8 +4408,18 @@ function bind(){
   const oseg=$('ownSeg');
   if(oseg) oseg.querySelectorAll('[data-own]').forEach(b=>b.onclick=()=>{
     S.ownCount = +b.dataset.own;
+    /* 🔴 v25.46 — 2주택 이상으로 옮기면 처분 체크는 **뜻이 없는 값**이 됩니다.
+       화면에서 사라지는데 상태만 남으면 계산이 보이지 않는 값으로 갈립니다(원칙 124 · 142). */
+    if(S.ownCount !== 1) S.disposePlan = false;
     renderQuestion(); syncCta();
   });
+  /* 🔴 v25.46 — 처분조건부 체크. **카드를 다시 그리지 않습니다** —
+     `renderQuestion()`을 부르면 방금 누른 체크박스가 포커스를 잃습니다(v25.28이 `noLoanBox`에서
+     같은 판단을 했습니다). 바뀌는 것은 응답 줄 한 줄뿐이라 `textContent`만 갈아 끼웁니다. */
+  const dp=$('disposeBox'); if(dp) dp.onchange=()=>{
+    S.disposePlan = dp.checked;
+    const echo = $('houseEcho'); if(echo) echo.textContent = houseEchoText();
+    renderAnswered(); syncCta(); };
   /* ⏹ v25.0 — 여기 있던 「고르면 글자를 직접 넣는」 코드를 지웠습니다. `houseEchoText()`가
        **상태에서** 만듭니다 — 서랍이 생기면서 화면을 다시 그리게 됐고, 그러면 핸들러가
        넣어 둔 글자만 사라집니다(원칙 91 — 같은 사실이 두 곳에서 만들어지면 한쪽이 늙습니다).
@@ -4549,7 +4667,7 @@ const ETC_ROWS = [['legal','법무사 · 등기비'], ['move','이사 · 입주�
 const etcMan = () => ETC_ROWS.reduce((s,[k]) => s + (S[k].on ? S[k].v : 0), 0);
 function ctx(){
   const z = zoneFromSgg(S.sgg);
-  return { price:0, houseStatus:S.houseStatus, ownCount:S.ownCount, regulated:z==='reg', metro:z!=='other',
+  return { price:0, houseStatus:S.houseStatus, ownCount:S.ownCount, disposePlan:S.disposePlan, regulated:z==='reg', metro:z!=='other',
     income:man(S.income), incomeEntered:!!S.income, rate:D.rate, years:D.years,
     stressBp:computeStressBp(z!=='other', D.rateType, D.fixedYears, D.years),
     creditLoan:0, otherDebtMonthly:(S.debtMonthly||0)*10000,   /* 만원 → 원 (원칙 93) */   /* v23.3: 소득만으로 DSR을 봅니다 (면책에 명시) */
@@ -4660,7 +4778,15 @@ function showResult(keepScroll){
        그리고 그 순간 영수증과 히어로가 잠깐 다른 값을 말합니다(원칙 91).
      ⚠ 끝값은 애니메이션과 **무관하게** `approx(headline)`입니다. 중간 값도 같은 `approx`를
        거치므로 자릿수가 튀지 않습니다. */
-  rollUpWon($('heroAmount'), approx(headline), !keepScroll);
+  /* 🔴 v25.48 — **반올림을 뗐습니다**(오너 지적 · 「위에도 예상 매수 가능 금액, 밑에 … 집값 나오고」).
+     ⏹ 전: `approx(headline)` — 100만원 단위 반올림. 그래서 **정확한 집값이 사는 자리**가
+       따로 필요했고, 그것이 영수증의 「집값」 줄이었습니다. 병합(v25.44)으로 둘이 **한 카드 안**에
+       들어오자 17억 7,200만 ↔ 17억 7,222만이 나란히 서서 서로를 반박했습니다(원칙 91).
+     → 히어로가 **정확한 값**을 말합니다. 그러면 「집값」 줄이 할 일이 없어져 사라집니다(원칙 43).
+     ⚠ **「예상」은 그대로입니다** — 반올림이 아니라 **추정 계산**이라는 뜻이고, 실제 한도는
+       은행 심사에서 정해집니다(원칙 39). v25.41이 「최종」을 못 쓴 근거는 반올림이 아니라 이것도 함께였습니다.
+     ⚠ 자릿수가 늘지 않습니다 — 「17억 7,200만원」 ↔ 「17억 7,222만원」 같은 글자 수입니다(실측). */
+  rollUpWon($('heroAmount'), headline, !keepScroll);
   $('heroTail').textContent = '';   /* v25.41 — 라벨의 「예상」이 이 일을 합니다(위 주석) */
   renderCondBar(price);
 
@@ -4759,7 +4885,10 @@ function renderCondBar(price){
   const py = (S.itTouched && S.pyeong) ? S.pyeong+'평' : null;
   const items = [
     ['<u>지역</u> '+regionLabel(), 2],
-    ['<u>보유</u> '+HOUSE[S.houseStatus], 2],
+    /* 🔴 v25.46 — **처분조건부는 조건칩이 말합니다.** 대출 한도와 취득세가 이 값으로 갈리는데
+       결과 화면에 그 사실이 없으면 같은 「1주택 이상」이 두 결과를 냅니다(원칙 91). */
+    ['<u>보유</u> '+HOUSE[S.houseStatus]
+      + (S.houseStatus==='multi' && S.ownCount===1 && S.disposePlan ? ' (처분 예정)' : ''), 2],
     ['<u>현금</u> '+formatWon(man(S.cash)) + (S.noLoan?' · 대출 없이':''), 0]
   ];
   if(!S.noLoan){
@@ -4825,9 +4954,17 @@ function cashNote(c){
   return `집값 말고 ${p.join(', ')}까지 들어 있어요`;
 }
 
+/* 🔴 v25.48 — **자금 구성을 나누는 곳은 하나입니다**(원칙 58 · 91).
+   막대(`renderBento`)와 영수증의 자금 출처 두 줄(`renderReceipt`)이 **같은 함수**를 씁니다.
+   ⏹ 두 곳에서 따로 계산하면 반올림이 갈려 막대와 글자가 다른 비율을 말할 수 있습니다 —
+     v25.30이 「금액은 막대 폭을 정한 그 두 값에서 온다」로 이미 정한 사실입니다. */
+function fundSplit(c){
+  const total = c.totalNeeded, loan = c.mortgageLoan, own = Math.max(0, total - loan);
+  return { total, loan, own, ownPct: total > 0 ? Math.round(own / total * 100) : 100 };
+}
+
 function renderBento(c){
-  const total=c.totalNeeded, loan=c.mortgageLoan, own=Math.max(0,total-loan);
-  const ownPct = total>0 ? Math.round(own/total*100) : 100;
+  const {total, loan, own, ownPct} = fundSplit(c);
   /* 🔴 v25.6 — **0%짜리 조각은 안 그립니다.** 조각 사이가 `gap:2px`이 되면서, 폭 0인 조각도
      제 앞의 2px을 차지합니다 — 「전부 현금」인 사람의 막대 오른쪽 끝에 **이유 없는 홈**이 생깁니다.
      ⚠ `loan > 0`이 아니라 `100 - ownPct > 0`으로 봅니다. 반올림 때문에 대출이 있어도
@@ -4901,9 +5038,10 @@ function renderBento(c){
      ⚠ 그래도 **여유가 1px입니다.** 금액이 더 길어지면(「100.5억」) 다시 접히는데,
        그때는 `flex-wrap`이 **항목 단위로** 조용히 내립니다(v25.30 · 넘침 0).
        **한 줄은 목표이고, 규격은 「숫자가 안 갈린다」입니다**(원칙 149). */
-  $('fundLegend').innerHTML = loan>0
-    ? `<div><span class="f1"></span>준비할 현금 <b>${eokShort(own)}(${ownPct}%)</b></div><div><span class="f2"></span>주담대 <b>${eokShort(loan)}(${100-ownPct}%)</b></div>`
-    : `<div><span class="f1"></span>전부 현금으로 마련해요 <b>${eokShort(own)}(100%)</b></div>`;
+  /* 🔴 v25.48 — **화면 범례를 안 그립니다.** 같은 두 값을 영수증이 정확한 금액으로 말합니다
+     (`renderReceipt`의 `fundRow`). 요소는 마크업에서 뺐고, 여기서는 **그리는 일 자체**를 없앱니다 —
+     `$('fundLegend')`가 이제 없으므로 부르면 죽습니다.
+     ⚠ 공유 카드(`#rMix`)는 **그대로**입니다 — 다른 매체이고, 축약이 거기서는 맞습니다(v25.36). */
   const rate = simRate();
   const m=monthlyPaymentCalc(loan, rate, D.years);
   $('tileMonthly').innerHTML = m>0 ? richWon(m) : '없어요';
@@ -5056,7 +5194,8 @@ function renderReceipt(c, price){
      ⚠ 합계를 **여기서 다시 더하지 않습니다.** 아래 `etcSum`은 화면에 적힌 항목들의 합이고,
        「준비할 현금」은 엔진이 준 `c.cashNeeded`입니다. 둘이 어긋나면 그건 화면 버그가 아니라
        **엔진과 화면이 다른 항목을 세고 있다는 뜻**이라, 그 자리를 검사가 따로 봅니다(G-11). */
-  let h = row('집값', formatWon(price));
+  /* 🔴 v25.48 — **「집값」 줄을 뺐습니다.** 바로 위 히어로가 **같은 값을 정확히** 말합니다(원칙 43). */
+  let h = '';
   /* 접힌 줄에 적히는 소계 — 취득세 · 중개보수 · (인테리어) · 켠 항목.
      🔴 **화면에 적힌 값끼리 더합니다.** 원 단위 원값을 그냥 더하면 소계가
        4,872 + 974 + 65 = 5,911인데 화면에는 **5,912**로 뜹니다(항목마다 만원으로 반올림되고
@@ -5083,12 +5222,29 @@ function renderReceipt(c, price){
     ? `집값의 ${(etcSum / price * 100).toFixed(1)}%` : '';
   $('receipt').innerHTML = h;
   h = '';
-  if(c.mortgageLoan>0) h += row('주담대','-'+formatWon(c.mortgageLoan),'minus');
+  /* 🔴 v25.48 — **범례가 이 두 줄로 들어왔습니다**(오너 지적 · 「또 밑에 준비할 현금 나오고」).
+     ⏹ 전: 막대 아래 범례가 「준비할 현금 15억(81%) · 주담대 3.5억(19%)」를 **축약**(`eokShort`)으로
+       말하고, 그 아래 영수증이 **같은 두 값을 정확히** 다시 말했습니다. 한 카드에 두 벌이었습니다.
+     → 색점(`.f1`·`.f2`)과 비율을 **영수증 줄로** 옮깁니다. 점이 막대의 어느 조각인지 잇고,
+       금액은 **정확한 값 하나**만 남습니다 — 🔴 **`eokShort` 축약이 화면에서 사라집니다**
+       (최대 500만원까지 실제와 다르게 보이던 표기입니다 · DESIGN 3).
+     ⚠ **마이너스를 뗐습니다.** 「집값」 줄이 없어져 이 둘은 빼는 값이 아니라 **자금 출처**입니다 —
+       주담대 + 준비할 현금 = 집값 + 부대비용. 부호를 남기면 무엇에서 빼는지가 화면에 없습니다.
+     ⚠ 비율은 `renderBento`가 막대를 그린 그 두 값에서 옵니다(원칙 58 · 91). */
+  const {ownPct: fOwnPct} = fundSplit(c);
+  const fundRow = (cls, name, pct, val, extra) =>
+    `<div class="line ${extra||''}"><span class="k"><span class="${cls}"></span>${name}`
+    + `<b class="fpct">${pct}%</b></span><span class="v">${val}</span></div>`;
+  /* 🔴 v25.49 — **현금이 먼저입니다**(오너 지시 · v25.31에서 정한 사실).
+     ⏹ v25.48이 범례를 영수증으로 옮기면서 순서를 뒤집었습니다 — 범례는 「준비할 현금 → 주담대」였는데
+       영수증에서는 「주담대 → 준비할 현금」이 됐습니다. 오너가 v25.31에 정한 것을 판이 되돌렸습니다(원칙 148).
+     ⚠ 막대도 왼쪽이 현금(`.f1`)입니다 — 줄 순서가 막대의 왼쪽→오른쪽과 같습니다. */
+  h += fundRow('f1', '준비할 현금', c.mortgageLoan>0 ? fOwnPct : 100, richWon(Math.max(0,c.cashNeeded)), 'total');
+  if(c.mortgageLoan>0) h += fundRow('f2', '주담대', 100-fOwnPct, formatWon(c.mortgageLoan));
   /* 🔴 v24.21 — 「내가 준비할 현금」 → 「준비할 현금」.
      같은 값이 네 자리에서 「내 돈」·「내가 준비할 현금」·「준비할 현금」 셋으로 불리고 있었고,
      그중 둘(공유 이미지·요약 문구)은 **한 번의 공유로 같이 나갑니다.**
      받는 사람은 두 값이 같은 것인지 알 수 없었습니다(원칙 91). 넷을 「준비할 현금」으로 맞춥니다. */
-  h += row('준비할 현금', richWon(Math.max(0,c.cashNeeded)),'total');
   const over = c.cashNeeded - man(S.cash);
   if(over > 10000) h += `<div class="overnote">가진 돈보다 <b>${formatWon(over)}</b>이 더 필요해요</div>`;
   $('receiptBot').innerHTML=h;
@@ -6414,7 +6570,7 @@ document.addEventListener('keydown', e => {
 
 function restart(){
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
-  Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',
+  Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',disposePlan:false,
     group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
   render(); window.scrollTo(0,0);
 }
