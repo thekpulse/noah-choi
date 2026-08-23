@@ -2115,13 +2115,29 @@ HYGIENE.forEach(([name, over]) => {
      && /\n\.result\{padding:0 16px/.test(css2));
   tt('카드 안쪽 여백이 20px', /--pad:20px/.test(css2));
   tt('질문 카드 안쪽 여백이 토큰을 쓴다', /\.funnel > \.q\{[^}]*padding:var\(--pad\)/.test(css2));
-  /* 타이틀 시작점(brandPad+18) = 카드 글자 시작점(16+20). 어긋나면 첫 화면이 계단처럼 보입니다. */
-  tt('타이틀과 카드 글자의 시작점이 맞는다', (()=>{
-     const bp = (css2.match(/\n\.brand\{background:var\(--bg\);padding:\d+px (\d+)px/)||[])[1];
-     const pad = (css2.match(/--pad:(\d+)px/)||[])[1];
-     const gut = (css2.match(/\n\.funnel\{padding:\d+px (\d+)px/)||[])[1];
-     return bp && pad && gut && (+bp + 18) === (+gut + +pad);
-  })());
+  /* 🔴 v25.43 — **대상을 두 번째로 옮겼습니다**(원칙 128). 이 검사는 v23.21의
+       「각인 글자 시작점 == 카드 글자 시작점」이었습니다.
+     ⏹ v25.42가 옛 산수(`(brandPad+18)===(gut+pad)`)를 걷어냈습니다 — 그 식은 기본값끼리 더해서
+       **401~413px, 13px짜리 띠 하나**만 재고 있었습니다(신설 원칙 167).
+     ⏹ v25.43은 **각인을 앱바 안, 워드마크 옆으로 옮겼습니다**(오너 지시). 각인이 카드 위가 아니므로
+       「카드 글자와 같은 세로선」은 **이제 참이 아니고, 참일 이유도 없습니다.**
+     → 남는 사실 둘을 잠급니다.
+       ① `.funnel`과 `.result`의 좌우 여백은 **세 단 전부에서 같다**(본문 세로선은 여전히 하나)
+       ② 각인은 앱바 안이다 — 위 v25.43 절이 잠급니다
+     ⚠ 🔴 **진짜 판정은 렌더입니다** — `node tools/inputgate.mjs`가 일곱 폭에서 잽니다(원칙 144 · 151). */
+  tt('본문 좌우 세로선이 세 단 전부에서 하나다 (v25.43 재타겟)', (()=>{
+     const g = re => (css2.match(re)||[])[1];
+     const tiers = [
+       [g(/\n\.funnel\{padding:\d+px (\d+)px/),                      g(/\n\.result\{padding:0 (\d+)px/)],
+       [g(/\n  \.funnel\{padding:\d+px (\d+)px \d+px\}/),            g(/\.funnel\{padding:\d+px \d+px \d+px\} \.result\{padding:0 (\d+)px calc/)],
+       [g(/\n  \.funnel\{padding-left:(\d+)px;padding-right:\d+px\}/), g(/\.funnel\{padding-left:\d+px;padding-right:\d+px\} \.result\{padding-left:(\d+)px/)],
+     ];
+     return tiers.every(([a,b]) => a && b && a === b);
+  })(), (()=>{
+     const g = re => (css2.match(re)||['?'])[1] || '?';
+     return `기본 ${g(/\n\.funnel\{padding:\d+px (\d+)px/)}↔${g(/\n\.result\{padding:0 (\d+)px/)}`
+       + ` · 좁게 ${g(/\n  \.funnel\{padding:\d+px (\d+)px \d+px\}/)}↔${g(/\.funnel\{padding:\d+px \d+px \d+px\} \.result\{padding:0 (\d+)px calc/)}`
+       + ` · 넓게 ${g(/\n  \.funnel\{padding-left:(\d+)px;padding-right:\d+px\}/)}↔${g(/\.funnel\{padding-left:\d+px;padding-right:\d+px\} \.result\{padding-left:(\d+)px/)}`; })());
 
   /* 2. 하단 조작 버튼 — 세로 2단 → 가로 2분할 (35 : 65) */
   tt('되돌아가기 · 재계산이 가로 2분할이다',
@@ -2428,7 +2444,7 @@ HYGIENE.forEach(([name, over]) => {
   tt('첫 화면 각인이 브랜드 규격이다 (v25.40)',
      /\.brandline\{[^}]*font-size:var\(--t8\)/.test(css2)
      && /\.brandline\{[^}]*font-weight:500/.test(css2)
-     && /\.brand \.brandline\{color:var\(--ink-3\)\}/.test(css2));
+     && /\.brandline\{color:var\(--ink-3\)\}/.test(css2));   /* v25.43 — `.brand` 껍데기가 사라져 선택자가 짧아졌습니다(원칙 128) */
   /* v23.18 — 흰 글자를 지키려고 배경 채도를 죽이던 타협을 뒤집었습니다.
      화사한 --green 면 + --espresso 글자 = 7.64:1 (이전 흰 글자 조합은 5.48:1). */
   tt('CTA가 화사한 그린 배경 + 잉크 글자',
@@ -2866,8 +2882,13 @@ HYGIENE.forEach(([name, over]) => {
   })(), (css2.match(/const POLICY_ASOF = '([\d.]+)'/)||[])[1]);
 
   /* 입력 첫 화면 네이비 밴드 */
+  /* 🔴 v25.43 — **대상을 옮겼습니다**(원칙 128). 지키려는 사실은 그대로입니다 —
+     「첫 화면 상단에 넓은 어두운 면이 없다」(v23.14가 딥 네이비 밴드를 걷어낸 자리).
+     ⏹ 그 사실을 들고 있던 `.brand` 헤더는 v25.43이 지웠습니다(각인이 앱바 안으로).
+       이제 첫 화면 상단의 면을 정하는 것은 **앱바 하나**입니다. */
   tt('입력 01에 넓은 어두운 면이 없다',
-     /\.brand\{background:var\(--bg\)/.test(css2));
+     /\.appbar\{[^}]*background:var\(--bg\)/.test(css2)
+     && !/<header class="brand"/.test(css2));   /* ⚠ `.brand{` 문자열은 **주석에도** 있습니다 — 마크업으로 봅니다(지침 6-24) */
   tt('상단바도 밝다', /\.app\.hero-on \.appbar\{background:var\(--bg\)/.test(css2));
   tt('밴드는 01에서만 켜진다', /classList\.toggle\('hero-on',\s*S\.step===0\)/.test(UI));
   tt('결과에서는 밴드가 꺼진다', /classList\.remove\('hero-on'\)/.test(UI));
@@ -4187,8 +4208,16 @@ HYGIENE.forEach(([name, over]) => {
      아니라 「부제가 비어 있지 않고, 옛 문장으로 조용히 되돌아가지 않았는가」를 봅니다. */
   /* 🔴 v25.40 — 두 줄 부제가 **한 줄 각인**이 됐습니다(`<br>`이 사라졌습니다).
      잠글 사실은 그대로입니다 — **그 카피가 그 자리에 있고 옛 문장으로 안 돌아갔는가.** */
-  tt('첫 화면 각인이 교체된 카피다',
-     /class="brandline">환상 없는 진짜 예산, 내 집 마련의 가장 현실적인 출발선<\/h1>/.test(SRC));
+  tt('첫 화면 각인이 교체된 카피다 (v25.43)',
+     /class="brandline" id="brand">환상 없는 진짜 예산<\/h1>/.test(SRC));
+  /* 🔴 v25.43 — **문구가 앞 절로 줄었습니다.** 자리를 앱바 안으로 옮기니 폭이 값을 정했습니다 —
+     360px 실측 : 워드마크 78.1 + 8 + 전문 257.7 = 343.8 > 쓸 수 있는 폭 340 → 워드마크가 두 줄로 깨짐.
+     오너가 후보 넷(전문 · 앞 절 · 뒷 절 · 지금 자리 유지) 중 **앞 절**을 골랐습니다.
+     ⚠ 잠그는 것은 문장이 아니라 **「앱바 안이고, 한 줄을 강제하고, 워드마크 뒤에 온다」**입니다. */
+  tt('각인이 앱바 안에서 한 줄로 강제된다 (v25.43)',
+     /\n\.brandline\{[^}]*white-space:nowrap/.test(SRC)
+     && /class="wordmark"[\s\S]{0,2000}?class="brandline"/.test(SRC)
+     && !/<header class="brand"/.test(SRC));
   /* 🔴 지시서: 「(34평)에 Bold + 포인트 컬러」. 흰 카드 위 --green은 **2.17:1**이라 G-19에서
      즉시 빨간불입니다. 강조는 **굵기와 잉크 한 단**으로만 냅니다(지침 6-3 · 원칙 62).
      ⚠ 괄호 포맷도 미채택입니다 — 두 자가 늘면서 390px에서 「2018년」이 잘렸습니다(실측). */
@@ -4746,25 +4775,74 @@ HYGIENE.forEach(([name, over]) => {
      && /\.q-title\{font-size:var\(--t2\)/.test(CSS)
      && /\.q-title\{[^}]*letter-spacing:-\.05em/.test(CSS));
   /* 🔴 부제 행간이 **스케일 안**으로 들어왔습니다(1.8은 1.06·1.3·1.6 밖에 혼자 있던 값). */
-  tt('각인 행간이 토큰이다', /\.brandline\{[^}]*line-height:var\(--lh-body\)/.test(CSS));
+  /* v25.43 — 앱바 안 **한 줄 라벨**이라 본문 행간(1.6)이 아니라 `--lh-ttl`입니다(지침 6-9).
+     ⚠ 잠그는 것은 값이 아니라 **「행간이 스케일 안의 토큰이다」**입니다 — 1.2 같은 리터럴 금지(원칙 117). */
+  tt('각인 행간이 토큰이다 (v25.43 재타겟)', /\.brandline\{[^}]*line-height:var\(--lh-(ttl|body|hero)\)/.test(CSS));
   /* 🔴 「지우기」 줄이 **빈 채로 40px을 먹던** 자리 — 흐름에서 뺐습니다.
      ⚠ 흐름으로 되돌리면 값을 넣는 순간 입력칸이 아래로 뜁니다. 그 사고를 이름으로 잠급니다. */
   tt('「지우기」 줄이 빈 자리를 먹지 않는다',
      /\.flabel\.only-clear\{position:absolute/.test(CSS)
      && /\.funnel > \.q\{position:relative/.test(CSS));
-  /* 🔴 짝 — 실제로 재 봅니다. 첫 화면 요소들의 세로 합이 예산 안인가.
-     ⚠ 렌더 없이 재는 것이라 **선언된 여백의 합**만 봅니다. 진짜 측정은 브라우저가 합니다. */
-  tt('첫 화면 상단 여백이 줄었다', (()=>{
-     const brand = +((CSS.match(/\.brand\{background:var\(--bg\);padding:(\d+)px/)||[])[1]||99);
-     /* ⚠ v25.40 — 부제(margin 12px)가 각인(margin 0)으로 바뀌었습니다. 잠글 사실은
-        「위 여백이 예산 안인가」이고, 각인은 **자기 여백을 안 씁니다.** */
-     const sub   = /\.brandline\{[^}]*margin:0/.test(CSS) ? 0 : 99;
-     const q     = (CSS.match(/\.funnel > \.q\{[^}]*margin-top:var\(--gap\)/)||[])[0];
-     return brand <= 20 && sub <= 14 && !!q;
+  /* 🔴 v25.43 — **대상을 옮겼습니다**(원칙 128). 이 검사는 「첫 화면 상단 여백이 줄었다」였고
+       `.brand` 헤더의 padding을 읽었습니다. 그 헤더는 v25.43이 지웠습니다 —
+       각인이 **앱바 안**으로 들어가면서 첫 화면 상단이 **세로를 아예 안 먹습니다**(41px → 0).
+     → 잠글 사실 : **각인이 자기 세로 여백을 쓰지 않는다**(앱바가 이미 56px을 씁니다).
+     ⚠ 위아래 margin이 0이어야 합니다 — 좌우(8px)는 워드마크와의 간격이라 다른 값입니다. */
+  tt('첫 화면 상단이 세로를 안 먹는다 (v25.43 재타겟)', (()=>{
+     const m = (CSS.match(/\n\.brandline\{[^}]*margin:([^;}]*)/)||[])[1];
+     if(!m) return false;
+     const p = m.trim().split(/\s+/);                     /* margin: 상 우 하 좌 */
+     const top = p[0], bot = p.length>=3 ? p[2] : p[0];
+     return top === '0' && bot === '0' && !/<header class="brand"/.test(RAW);
+  })(), (CSS.match(/\n\.brandline\{[^}]*margin:[^;}]*/)||['?'])[0]);
+
+  /* 🔴 v25.43 — **안내 시트의 항목 하나가 혼자 길지 않은가**(제미나이 ① · 절반 채택).
+     ⏹ LTV 줄만 **네 문장**이었고 나머지는 둘이었습니다. 마지막 문장이 말하던 것(「소득이 높아도
+       한도가 안 는다」)은 **바로 아래 DSR 줄이 이미** 말합니다(원칙 43).
+     ⚠ 잠그는 것은 문장이 아니라 **「어느 항목도 세 문장을 안 넘는다」**입니다(원칙 149).
+       ⚠ 약어 풀이(「주택담보대출(주담대).」)는 한 문장으로 세어집니다 — 그 줄만 셋입니다. */
+  tt('안내 시트 항목이 세 문장을 안 넘는다 (v25.43)', (()=>{
+     const rows = [...SRC.matchAll(/<div class="sheet-row">.*?<span>([\s\S]*?)<\/span>/g)]
+       .map(m => m[1].replace(/<[^>]*>/g,'').trim());
+     if(!rows.length) return false;
+     const over = rows.filter(r => (r.match(/[.?!]\s|[다요]\.\s*$|\.\s/g)||[]).length > 3
+                                || r.split(/(?<=[.?!])\s+/).filter(Boolean).length > 3);
+     return over.length === 0;
   })(), (()=>{
-     const brand = (CSS.match(/\.brand\{background:var\(--bg\);padding:[^;}]*/)||['?'])[0];
-     const sub   = (CSS.match(/\.brandline\{[^}]*margin:[^;}]*/)||['?'])[0];
-     return brand + ' / ' + sub; })());
+     const rows = [...SRC.matchAll(/<div class="sheet-row">.*?<span>([\s\S]*?)<\/span>/g)]
+       .map(m => m[1].replace(/<[^>]*>/g,'').trim());
+     const n = rows.map(r => r.split(/(?<=[.?!])\s+/).filter(Boolean).length);
+     return `항목 ${rows.length}개 · 문장 수 최대 ${Math.max(...n)}`; })());
+
+  /* ═══ v25.42 — 첫 화면 상단의 **세로선**과 **퍼널 상수** ═══════════════════
+     🔴 둘 다 「한 사실이 두 곳에 있고 한쪽만 바뀐 자리」입니다(원칙 58 · 84).
+     ⚠ 값을 잠그지 않습니다 — 잠글 것은 **관계**입니다(원칙 149). */
+
+  /* ① 각인의 들여쓰기가 리터럴이 아니라 `--pad`에서 온다.
+     ⏹ 18px 리터럴은 `--pad`가 늘 20이던 시절의 값이었고, v25.12가 ≤400px에서 16으로
+       내리면서 **360·375·390px에서 각인이 카드 글자보다 4px 오른쪽**에 섰습니다.
+     ⚠ 🔴 ≥414px에서는 우연히 맞아서 **웹 캡쳐(520px)로는 안 보입니다**(원칙 149 · 160).
+       진짜 판정은 `tools/inputgate.mjs`가 일곱 폭에서 렌더로 합니다. */
+  tt('각인 들여쓰기가 카드 안쪽 여백 토큰에서 온다 (v25.42)',
+     /\.brandline\{[^}]*padding-left:var\(--pad\)/.test(CSS)
+     && !/\.brandline\{[^}]*padding-left:\d+px/.test(CSS),
+     (CSS.match(/\.brandline\{[^}]*padding-left:[^;}]*/)||['없음'])[0]);
+
+  /* ③ 🔴 퍼널 min-height의 상수가 **앱바 + 진행 막대**와 같다.
+     ⏹ v25.11이 진행 막대를 2 → 3px로 올렸는데 이 상수는 56+2 그대로였습니다 —
+       **열한 판 동안 02·03이 모든 폭에서 정확히 1px 스크롤**했습니다.
+     ⚠ 값(59)을 적어 두는 것이 아니라 **두 선언에서 읽어 더한 값과 대조**합니다 —
+       막대 굵기가 또 바뀌면 이 검사가 그때 물립니다(원칙 58 · 149). */
+  tt('퍼널 세로 상수가 앱바+진행막대와 같다 (v25.42)', (()=>{
+     const k   = +((CSS.match(/\.funnel\{[^}]*min-height:calc\(100dvh - (\d+)px/)||[])[1]||-1);
+     const bar = +((CSS.match(/\.appbar\{[^}]*height:(\d+)px/)||[])[1]||-1);
+     const pro = +((CSS.match(/\.progress\{[^}]*height:(\d+)px/)||[])[1]||-1);
+     return k>0 && bar>0 && pro>0 && k === bar + pro;
+  })(), (()=>{
+     const k   = (CSS.match(/\.funnel\{[^}]*min-height:calc\(100dvh - \d+px/)||['?'])[0].slice(-8);
+     const bar = (CSS.match(/\.appbar\{[^}]*height:\d+px/)||['?'])[0].slice(-9);
+     const pro = (CSS.match(/\.progress\{[^}]*height:\d+px/)||['?'])[0].slice(-9);
+     return k+' vs '+bar+' + '+pro; })());
 
   /* ── ④ 기준일 뱃지 — ⏹ v25.7에서 삭제. 잠금은 위 v25.1 장으로 옮겼습니다(원칙 128) ── */
 
