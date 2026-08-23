@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.40 · 정책 2026.08.13 -->
+<!-- BUILD v25.41 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -1512,14 +1512,21 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .sheet-title{font-size:var(--t4);font-weight:900;letter-spacing:-.03em;line-height:1.3;margin:0 0 4px}
 .sheet-row{padding:16px 0;border-bottom:1px solid var(--line)}
 .sheet-row:last-of-type{border-bottom:0}
-.sheet-row b{display:block;font-size:var(--t6);font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.sheet-row b{font-size:var(--t6);font-weight:700;color:var(--ink);letter-spacing:-.02em}
 .sheet-row span{display:block;margin-top:4px;font-size:var(--t7);line-height:1.6;color:var(--ink-3)}
 /* 🔴 v25.1 — 「곧 바뀌는 것」의 항목 하나. **여백만** 만듭니다 — 색·크기·굵기는 위 규칙 그대로.
    ⚠ 마지막 항목에는 아래 여백을 안 답니다. 달면 `.sheet-row`의 16px 아래 여백에 24px이
      더해져 다음 행과의 간격만 조용히 늘어납니다(원칙 126). */
 .sheet-row span .chg{display:block}
 .sheet-row span .chg + .chg{margin-top:24px}
-.sheet-row span .chg b{display:inline;font-size:inherit;font-weight:700;color:var(--ink-2)}
+/* 🔴 v25.41 — **실기에서 문장이 토막나 있었습니다**(오너 캡쳐).
+   `.sheet-row b`가 `display:block`이라, 설명(`span`) **안에 있는 `<b>`까지** 블록이 되어
+   「주택담보대출 / 을 줄여 / 주담대 / 라고 적어요」로 네 줄에 흩어졌습니다.
+   ⏹ v25.1이 「곧 바뀌는 것」에서 같은 증상을 만나 `.chg b`에만 인라인을 줬습니다 —
+     **한 자리만 고친 것**이라 나머지가 그대로 남았습니다(원칙 128의 반대 사례).
+   → 설명 안의 강조는 **전부 인라인**입니다. 제목(`.sheet-row > b`)만 블록입니다. */
+.sheet-row > b{display:block}
+.sheet-row span b{display:inline;font-size:inherit;font-weight:700;color:var(--ink-2)}
 .sheet-close{width:100%;height:var(--h-cta);margin-top:14px;border-radius:var(--r-m);
   background:var(--fill);color:var(--ink);font-size:var(--t5);font-weight:600;letter-spacing:-.02em}
 /* 고스트 버튼 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다.
@@ -2104,7 +2111,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
            → 격자에 반칸이 없어졌으므로 **빈칸이 생길 구조 자체가 사라집니다.** 블록은 8 → 7.
            ⚠ 두 값은 `.payrow`에서 **줄바꿈하지 않습니다.** wrap을 허용하면 좁은 화면에서
              오른쪽 값만 아래로 떨어져 v24.25와 같은 모양이 됩니다. -->
-      <div class="tile">
+      <div class="tile" id="payTile">
         <!-- 🔴 v25.37 — **타일 이름이 무슨 대출인지 먼저 말합니다**(오너 지시).
              ⏹ v25.13이 이 자리를 재고 **이름은 안 건드리고 부속 줄에** 「주담대 ·」를 달았습니다.
                근거 둘이었습니다 — ① 검사 셋이 이름을 잠그고 있다 ② 「매달」을 빼면 총액으로 읽힌다.
@@ -2439,7 +2446,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 
 
 
-    <div id="restartWrap"></div>
 <!-- 🔴 v25.38 — **ⓘ를 뗐습니다.** 근거 둘이 겹칩니다:
            ① `ⓘ`(U+24D8)는 **Pretendard에 없습니다**(cmap 확인 · `▾`와 같은 조회에서 나왔습니다).
               대체 글꼴로 떨어져 기기마다 다르게 그려지고 있었습니다.
@@ -2455,6 +2461,16 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
        ⚠ 여기에 세 번째 ※를 다시 만들지 마십시오. 아래 `.legal`은 **5줄 상한**(G-18)이 걸린
          법적 고지 블록이고, 계산 범위 설명은 그 블록의 것이 아닙니다. -->
     <p class="foot" id="footNote"></p>
+    <!-- 🔴 v25.41 — **동선 버튼 둘을 화면 맨 아래로 내렸습니다**(오너 지시 · 제미나이 지시서 4번).
+         ⏹ 전 : 「다음 걸음」 카드 **바로 다음**이라, 흰 알약 둘이 카드 리듬을 이어받아
+           **또 하나의 카드**처럼 보였습니다(실기 캡쳐에서 그렇게 읽힙니다).
+         ⚠ 🔴 **각주 뒤가 맞는 이유** — 이 둘은 「결과를 다 읽은 다음」의 동작입니다.
+           그리고 「처음부터 다시 계산하기」는 **입력을 전부 지우는 파괴적 행동**이라
+           읽는 흐름 한가운데 두지 않습니다(원칙 130). 저작권(꼬리말) **앞**입니다.
+         ⚠ **면 · 그림자 · 높이는 한 값도 안 바꿨습니다** — 옮긴 것은 자리 하나입니다(원칙 157).
+         ⚠ 「이전 단계」는 여전히 여기 있습니다 — 결과에서 조건을 고치는 길은 위 조건칩이
+           **먼저** 냅니다(원칙 111). 이 버튼은 그 길의 두 번째입니다. -->
+    <div id="restartWrap"></div>
   </section>
   <!-- 🔴 v24.29 — Copyright. **`.result` 밖 · `.app` 안**입니다.
        ⚠ 자리가 곧 뜻입니다 — `.result` 안에 두면 입력 화면에는 없는 표시가 되고,
@@ -2498,7 +2514,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
        ⚠ 검색을 노려 글자 수를 채우지 않습니다. **읽으라고 쓰는 글**만 둡니다 —
          숨기려고 만든 글은 정책 위반이자, 이 도구가 지켜 온 것과도 반대입니다.
        ⚠ 숫자(40% · 6억)는 POLICY 값입니다. 정책이 바뀌면 **여기도 같이** 고치세요. -->
-  <div class="sheet-row"><b>주담대 비율(LTV)</b><span><b>주택담보대출</b>을 줄여 <b>주담대</b>라고 적어요. 집값의 몇 %까지 빌릴 수 있는지예요. 규제지역인지, 집이 몇 채인지, 생애최초인지에 따라 달라져요. 여기서 막히면 소득이 아무리 높아도 한도가 안 늘어요.</span></div>
+  <div class="sheet-row"><b>주담대 비율(LTV)</b><span><b>주택담보대출(주담대)</b>. 집값의 몇 %까지 빌릴 수 있는지예요. 규제지역인지, 집이 몇 채인지, 생애최초인지에 따라 달라져요. 여기서 막히면 소득이 아무리 높아도 한도가 안 늘어요.</span></div>
   <div class="sheet-row"><b>소득 대비 대출 규제(DSR)</b><span>연소득의 40%까지만 원리금 상환에 쓸 수 있어요. 갚고 있는 대출이 먼저 빠지고, 남은 몫으로 한도를 봐요.</span></div>
   <div class="sheet-row"><b>스트레스 DSR</b><span>변동금리에 정부가 정한 가산금리를 더해 봐요. 실제보다 높게 잡아 한도가 보수적으로 나와요.</span></div>
   <div class="sheet-row"><b>취득세 · 지방교육세</b><span>집값 구간과 보유 주택 수에 따라 세율이 달라져요. 대출을 안 받아도 늘 계산에 넣어요.</span></div>
@@ -3586,7 +3602,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.40 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.41 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3856,7 +3872,7 @@ function houseEchoText(){
   /* 🔴 v25.0 — 「중과」를 무조건 말하지 않습니다. **비조정지역에서 2주택은 중과가 아닙니다.** */
   return S.ownCount >= 2
     ? '취득 후 3주택 이상이라 취득세가 가장 높은 구간이에요. 4주택 이상은 여기서 더 올라가요.'
-    : '집이 있는 상태에서 더 사면 대출 한도가 크게 줄어요. 취득세는 규제지역에서만 중과돼요.';
+    : '집이 있으면 대출 한도가 줄어요. 취득세는 규제지역에서만 중과돼요.';
 }
 /* 🔴 v23.23 — 폼 3단 위계. 라벨(명사형) → 입력 → 헬퍼. 예외 없습니다. */
 /* 🔴 v25.0 — **보이는 라벨을 뗐습니다.** 「지금 모은 돈이 얼마인가요?」 바로 아래 「가진 돈」,
@@ -4587,7 +4603,16 @@ function showResult(keepScroll){
   const isOverride = S.priceOverride!=null;
   const headline = isOverride ? Math.max(0,c.cashNeeded) : price;
 
-  $('heroLabel').textContent = isOverride ? '이 집을 사려면 준비해야 할 현금은' : '현재 조건으로 예상되는 매수 가능 금액은';
+  /* 🔴 v25.41 — **구어체 서술을 명사형 라벨로**(오너 지시 · 두 번째 · 원칙 148).
+     ⏹ 전 : 라벨 「현재 조건으로 예상되는 매수 가능 금액은」 + 꼬리 「수준이에요」
+       금액 하나를 **문장이 앞뒤에서 감싸고** 있었습니다. 실기에서 라벨이 한 줄을 통째로 먹습니다.
+     ⚠ 🔴 **꼬리(「수준이에요」)를 지울 수 있는 근거는 라벨의 「예상」입니다.**
+       이 숫자는 `approxWon`으로 **100만원 단위 반올림**한 값입니다(정확한 값은 아래 영수증 「집값」).
+       꼬리만 지우고 라벨이 「매수 가능 금액」이면 **반올림값이 확정으로** 읽힙니다(원칙 39 · 28).
+       → 「**예상** 매수 가능 금액」이 그 일을 대신합니다. 두 자리에서 두 번 말하지 않습니다(원칙 43).
+     ⚠ 🔴 **「최종 매수 가능 예산」은 못 씁니다** — 지시서 문구지만 「최종」은 **거짓**입니다.
+       반올림된 추정치이고, 실제 한도는 은행 심사에서 정해집니다(면책이 그렇게 적습니다). */
+  $('heroLabel').textContent = isOverride ? '준비해야 할 현금' : '예상 매수 가능 금액';
   /* 🔴 v25.6 — **결과에 처음 들어올 때만** 숫자가 0에서 올라옵니다.
      ⚠ `keepScroll`이면 애니메이션을 안 겁니다. 그건 결과 화면 안에서 스위치·슬라이더를
        만졌을 때인데, 거기서 숫자가 매번 0부터 다시 오르면 **바뀐 폭이 안 보입니다** —
@@ -4595,7 +4620,7 @@ function showResult(keepScroll){
      ⚠ 끝값은 애니메이션과 **무관하게** `approx(headline)`입니다. 중간 값도 같은 `approx`를
        거치므로 자릿수가 튀지 않습니다. */
   rollUpWon($('heroAmount'), approx(headline), !keepScroll);
-  $('heroTail').textContent = '수준이에요';
+  $('heroTail').textContent = '';   /* v25.41 — 라벨의 「예상」이 이 일을 합니다(위 주석) */
   renderCondBar(price);
 
   /* 🔴 v24.23 — 결과를 다시 계산할 때마다 시뮬레이터를 기준 금리로 되돌립니다.
@@ -4873,6 +4898,14 @@ function renderBento(c){
      ⚠ 「가정」과 `${D.years}` 자리표시자는 그대로입니다(v24.23 · 원칙 48이 잠근 사실).
      ⚠ 금리는 여기 안 적습니다 — 아래 슬라이더가 말합니다(원칙 91). */
   $('tileMonthlySub').textContent = m>0 ? `${D.years}년 원리금균등 가정` : '';
+  /* 🔴 v25.41 — **대출이 없으면 이 카드를 통째로 숨깁니다**(오너 실기 지적).
+     ⏹ 전 : 「주담대 매달 갚을 원리금 **없어요** / 소득 대비 부담 **—**」가 빈 카드로 서 있었습니다.
+       v25.37이 부속 줄을 비웠고(82px), 그래도 **값이 없는 카드가 자리를 먹는 것**은 그대로였습니다.
+     ⚠ 이 카드는 원리금과 부담 **둘**을 담습니다. 대출이 0이면 **둘 다 없는 값**이라 함께 사라집니다
+       (하나만 남기면 반칸이 비어 v24.25가 고쳤던 그 모양이 됩니다).
+     ⚠ 「없는 데이터를 안 만든다」와 같은 규칙입니다(원칙 124) — 빈 값도, **빈 카드**도 안 만듭니다.
+     ⚠ 게이지·금리 시뮬은 이미 대출 0에서 숨습니다. 이제 그 둘을 감싼 카드까지 함께입니다. */
+  const payTile = $('payTile'); if(payTile) payTile.hidden = !(m > 0);
   const g=$('gauge');
   const vd=$('burdenVerdict');
   if(!S.income || m<=0){ $('tileBurden').className='tile-v'; $('tileBurden').innerHTML='—';
