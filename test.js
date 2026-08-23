@@ -282,9 +282,64 @@ tt('화면이 보유 주택 수를 묻는다',
    && /id="ownSeg"/.test(UI));
 /* ⚠ `acquisitionTaxRate` 호출은 **엔진 쪽**이라 `UI`(ENGINE END 뒤)에 없습니다.
    화면이 담는 것과 엔진이 받는 것을 **각각 그 자리에서** 봅니다(이걸 놓쳐 한 번 헛돌았습니다). */
-tt('보유 수가 계산으로 흘러간다',
+/* 🔴 v25.46 — 인자가 하나 늘었습니다(`dispose`). 잠글 사실은 그대로입니다 —
+   **화면이 담은 보유 수가 취득세 계산에 그대로 흘러가는가.** 인자 목록을 통째로 잠그면
+   갈래를 하나 더할 때마다 이 검사가 빨간불이 납니다(원칙 128 · 149). */
+tt('보유 수가 계산으로 흘러간다 (v25.46)',
    /ownCount:S\.ownCount/.test(UI)
-   && /acquisitionTaxRate\(ctx\.price, ctx\.houseStatus, ctx\.regulated, ctx\.ownCount\)/.test(fs.readFileSync(FILE,'utf8')));
+   && /acquisitionTaxRate\(ctx\.price, ctx\.houseStatus, ctx\.regulated, ctx\.ownCount[,)]/.test(fs.readFileSync(FILE,'utf8')));
+
+/* ═══ v25.46 — 처분조건부(일시적 2주택) ═══════════════════════════
+   ⚠ 잠그는 것은 **사실**이지 문장이 아닙니다(원칙 149). */
+(() => {
+  const SRC = fs.readFileSync(FILE,'utf8');
+  /* 🔴 엔진에 이미 있던 값(`noneOrDispose`)을 **부르는 자리**가 생겼는가.
+     그리고 「1주택 이상」의 규제지역 0%가 **안 지워졌는가** — 그건 국토부 원자료값입니다. */
+  tt('처분조건부가 LTV 갈래를 하나 더 쓴다 (v25.46)',
+     /if\(houseStatus === 'multi' && !dispose\) return reg \? L\.multi\.reg : L\.multi\.other;/.test(SRC)
+     && /if\(houseStatus === 'multi'\) return reg \? L\.noneOrDispose\.reg : L\.noneOrDispose\.other;/.test(SRC)
+     && /multi:\s*\{reg: 0,/.test(SRC));
+  /* 🔴 **1주택일 때만** 처분조건부입니다 — 2주택을 갖고 한 채를 팔면 취득 후에도 2주택입니다. */
+  tt('처분조건부는 1주택일 때만이다 (v25.46)',
+     /const isDispose = ctx => ctx\.houseStatus === 'multi' && ctx\.ownCount === 1 && !!ctx\.disposePlan;/.test(SRC));
+  /* 🔴 **대출과 세금이 같은 전제**를 씁니다(원칙 91) — 둘 다 `isDispose(ctx)`에서 옵니다. */
+  tt('대출과 취득세가 같은 전제를 쓴다 (v25.46)',
+     /getLTV\(ctx\.houseStatus, ctx\.regulated, ctx\.metro, isDispose\(ctx\)\)/.test(SRC)
+     && /acquisitionTaxRate\(ctx\.price, ctx\.houseStatus, ctx\.regulated, ctx\.ownCount, isDispose\(ctx\)\)/.test(SRC));
+  /* 🔴 처분조건부면 취득세는 **1주택 기본세율**입니다(중과 아님). */
+  tt('처분조건부 취득세가 기본세율이다 (v25.46)',
+     /if\(houseStatus === 'multi' && dispose && ownCount === 1\) return generalRate\(eok\);/.test(SRC)
+     && Math.abs(acquisitionTaxRate(만(80000), 'multi', true, 1, true)
+               - acquisitionTaxRate(만(80000), 'none',  true, 1)) < 1e-9);
+  /* 🔴 기한은 **정책 값**이고 출처가 붙어 있습니다(원칙 1 · 84). 화면이 손으로 안 적습니다. */
+  tt('처분 기한이 POLICY에서 오고 화면이 손으로 안 적는다 (v25.46)',
+     /dispose: \{years: 3\}/.test(SRC)
+     && /지방세법 시행령 제28조의5/.test(SRC)
+     && /\$\{POLICY\.dispose\.years\}년 안에/.test(SRC)
+     && !/3년 안에 팔면/.test(SRC));
+  /* 🔴 **못 팔면 어떻게 되는지**를 같이 말합니다 — 안 말하면 「팔지 않아도 되는 혜택」이 됩니다(원칙 39). */
+  tt('처분조건부 안내가 조건을 같이 말한다 (v25.46)', (()=>{
+     const f = (SRC.match(/if\(S\.ownCount === 1 && S\.disposePlan\)[\s\S]{0,220}?;/)||[''])[0];
+     return /무주택과 같은 기준/.test(f) && /못 팔면/.test(f);
+  })());
+  /* 🔴 **조건칩이 그 사실을 말합니다** — 같은 「1주택 이상」이 두 결과를 내면 안 됩니다(원칙 91). */
+  tt('조건칩이 처분 예정을 말한다 (v25.46)',
+     /S\.disposePlan \? ' \(처분 예정\)' : ''/.test(SRC));
+  /* 🔴 **저장에 안 실립니다** — 형제인 `ownCount`가 이미 그렇습니다. 한쪽만 실으면
+     다음 방문에 「2주택 + 처분 예정」 같은 **없는 상태**가 복원됩니다(원칙 91 · 124). */
+  tt('처분 체크가 저장에 안 실린다 (v25.46)', (()=>{
+     const keys = (SRC.match(/const DRAFT_KEYS = \[[\s\S]*?\];/)||[''])[0];
+     return !/disposePlan/.test(keys) && !/'ownCount'/.test(keys);
+  })());
+  /* 🔴 2주택으로 옮기면 **끕니다** — 화면에서 사라지는데 상태만 남으면 계산이 보이지 않는 값으로 갈립니다. */
+  tt('2주택으로 옮기면 처분 체크가 꺼진다 (v25.46)',
+     /if\(S\.ownCount !== 1\) S\.disposePlan = false;/.test(SRC));
+  /* 🔴 **카드를 다시 그리지 않습니다** — 방금 누른 체크박스가 포커스를 잃습니다(v25.28과 같은 판단). */
+  tt('처분 체크가 카드를 다시 안 그린다 (v25.46)', (()=>{
+     const f = (SRC.match(/const dp=\$\('disposeBox'\); if\(dp\) dp\.onchange=[\s\S]{0,320}?\};/)||[''])[0];
+     return !!f && /houseEcho/.test(f) && !/renderQuestion\(\)/.test(f);
+  })());
+})();
 tt('조건칩이 몇 채인지까지 말한다',
    /S\.ownCount>=2\?' \(2채 이상\)':' \(1채\)'/.test(UI));
 tt('취득세는 대출 없어도 계산된다 (원칙 70)',
@@ -687,7 +742,9 @@ HYGIENE.forEach(([name, over]) => {
        약어를 쓰려면 어딘가에서 한 번은 풀어 줘야 합니다(원칙 0의 정신 · 58 — 정의는 한 곳). */
   tt('대출 이름이 「주담대」로 통일',
      !/은행에서 빌리는 돈/.test(UI), (UI.match(/은행에서 빌리는 돈/g)||[]).length + '곳 남음');
-  tt('영수증에 주담대 줄이 있다', /row\('주담대'/.test(UI));
+  /* 🔴 v25.48 — 대상을 옮겼습니다(원칙 128). 이 줄은 이제 **자금 출처 줄**입니다
+     (`fundRow` · 색점 + 비율). 잠글 사실은 그대로 — **영수증에 주담대 줄이 있는가**. */
+  tt('영수증에 주담대 줄이 있다 (v25.48)', /fundRow\('f2', ?'주담대'/.test(UI));
   /* ⚠ `UI`는 **엔진 뒤 스크립트**입니다 — 안내 시트는 `<body>` 마크업이라 거기 없습니다.
      화면에 나가는 글자는 **마크업 + 화면 스크립트 둘 다**이므로 파일을 통째로 보고 주석만 겁니다
      (원칙 111 — 문자열을 보는 검사는 예외 없이 주석을 겁니다). */
@@ -1623,6 +1680,81 @@ HYGIENE.forEach(([name, over]) => {
      const src = fs.readFileSync(FILE,'utf8');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
      return (res.match(/class="disc[ "]/g)||[]).length === 4;
+  })());
+  /* 🔴 v25.49 신설 — **현금이 먼저입니다**(오너 지시 · v25.31에서 정한 사실).
+     ⏹ v25.48이 범례를 영수증으로 옮기며 순서를 뒤집었습니다. 오너 결정이 판에 밀린 자리입니다(원칙 148).
+     ⚠ 막대도 왼쪽이 현금(`.f1`)이라, 줄 순서가 막대의 왼쪽→오른쪽과 같아야 합니다. */
+  tt('자금 출처는 현금이 먼저다 (v25.49)', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     return bare.indexOf("fundRow('f1'") < bare.indexOf("fundRow('f2'");
+  })());
+  /* 🔴 v25.49 신설 — **같은 종류의 줄이 한 규격이다**(오너 지적 — 「글자 크기 … 다 안맞네」).
+     ⏹ 전: 「준비할 현금」 이름 16 · 금액 20 · 자간 -.04em ↔ 옆줄(주담대) 14 · 14 · -.02em.
+     ⚠ 잠글 것은 「14다」가 아니라 **「이름의 크기가 옆줄과 같고, 다른 것은 굵기·잉크뿐」**입니다.
+       금액만 한 단 위인 것은 허용합니다 — 사용자가 실제로 마련해야 하는 값입니다(원칙 100). */
+  tt('자금 출처 두 줄이 한 규격이다 (v25.49)', (()=>{
+     const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     const k = (css.match(/\.line\.total \.k\{[^}]*\}/)||[''])[0];
+     const v = (css.match(/\.line\.total \.v\{[^}]*\}/)||[''])[0];
+     return !!k && !/font-size/.test(k)                       /* 이름은 옆줄과 같은 크기 */
+         && /font-weight:700/.test(k) && /--ink\)/.test(k)
+         && /font-size:var\(--t4\)/.test(v)                  /* 금액만 한 단 */
+         && /letter-spacing:var\(--ls-ttl\)/.test(v);        /* 자간은 크기가 정합니다 */
+  })());
+  /* 🔴 v25.49 신설 — **행간을 적습니다.** 같은 표에 서는 세 줄인데 접기 둘만 선언이 없어
+     브라우저 기본으로 그려지고 있었습니다(v25.16이 `.tile-s`에서 겪은 그 자리 · 원칙 144). */
+  tt('한 표에 서는 세 줄이 행간을 적는다 (v25.49)', (()=>{
+     const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     return ['\\n.line\\{', '\\n.disc\\{', '\\n.disc.discline\\{']
+       .every(re => /line-height/.test((css.match(new RegExp(re + '[^}]*\\}'))||[''])[0]));
+  })());
+  /* 🔴 v25.49 신설 — **금액 아래가 붙어 있지 않다**(오너 지적 — 「저기에 붙으니깐」).
+     실측 0px이었습니다. 라벨 → 금액 8px(한 덩어리)과 같으면 어디까지가 답인지 안 갈립니다. */
+  tt('히어로 금액 아래에 덩어리 여백이 있다 (v25.49)', (()=>{
+     const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     const r = (css.match(/\.rhead-amount\{[^}]*\}/)||[''])[0];
+     const m = r.match(/margin:8px 0 (\d+)px/);
+     return !!m && Number(m[1]) >= 20;
+  })());
+
+  /* 🔴 v25.48 신설 — **한 카드가 같은 사실을 한 번만 말한다**(오너 지적).
+     ⏹ 병합 카드에 라벨이 셋 · 집값이 두 번(히어로 반올림 ↔ 영수증 정확값) ·
+       준비할 현금과 주담대가 두 번(범례 축약 ↔ 영수증 정확값)이었습니다.
+     ⚠ 잠글 것은 문구가 아니라 **「그 자리가 되살아나지 않았는가」**입니다(원칙 128 · 149). */
+  tt('히어로 카드에 라벨이 하나다 (v25.48)', (()=>{
+     /* ⚠ 🔴 **주석을 먼저 걷습니다**(지침 6-24 · 원칙 152). 이 판의 주석이 「이 돈이 어디서
+        오나요?」와 「이 집을 살 때 실제로 드는 돈」을 **뺐다는 기록으로** 들고 있어서,
+        원본을 그대로 읽으면 지운 것을 「아직 있다」로 셉니다. 실제로 한 번 밟았습니다. */
+     const SRC = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
+     return !/이 돈이 어디서 오나요/.test(head)
+         && !/이 집을 살 때 실제로 드는 돈/.test(head)
+         && /id="heroLabel"/.test(head);
+  })());
+  tt('영수증에 집값 줄이 없다 · 히어로가 그 값이다 (v25.48)', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
+     return !/row\('집값',/.test(bare) && /rollUpWon\(\$\('heroAmount'\), headline,/.test(bare);
+  })());
+  /* 🔴 막대는 **자기 두 줄 바로 위**에 있습니다 — 부대비용 줄 위에 두면 그 줄을 설명하는
+     것처럼 읽힙니다(실기 그림에서 확인). 읽는 순서가 셈의 순서와 같아야 합니다. */
+  tt('막대가 자금 출처 두 줄 바로 위에 있다 (v25.48)', (()=>{
+     const SRC = fs.readFileSync(FILE,'utf8');
+     const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
+     const bar = head.indexOf('id="fundStack"'), bot = head.indexOf('id="receiptBot"');
+     const etc = head.indexOf('id="costToggle"');
+     return etc > 0 && bar > etc && bot > bar;
+  })());
+
+  /* 🔴 v25.47 신설 — **세그먼트 칸 수를 손으로 안 적는다**(오너 지적).
+     ⏹ `grid-template-columns:1fr 1fr 1fr`이 **3칸 고정**이라, 버튼이 둘인 채수 세그먼트가
+       세 번째 칸을 **빈 채로** 남겼습니다(390px 실측 — 트랙 298px 중 약 100px이 빈 자리).
+     ⚠ 잠글 것은 「2칸이다」가 아니라 **「칸 수가 버튼 수에서 나온다」**입니다(원칙 149) —
+       선택지가 늘어도 저절로 맞아야 합니다. */
+  tt('세그먼트 칸 수를 손으로 안 적는다 (v25.47)', (()=>{
+     const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     const rule = (css.match(/\n\.seg\{[^}]*\}/)||[''])[0];
+     return !!rule && /grid-auto-flow:\s*column/.test(rule) && /grid-auto-columns:\s*1fr/.test(rule)
+         && !/grid-template-columns/.test(rule);
   })());
   /* 🔴 v25.45 신설 — 실거래 필터가 **같은 문법 · 같은 짝**인가. 그리고 **목록보다 앞**인가
      (감사 C-4 — 거르는 것은 걸러지는 것보다 앞). */
@@ -3233,8 +3365,8 @@ HYGIENE.forEach(([name, over]) => {
   /* ── ① 이름 하나 (원칙 91) ─────────────────────
      금액이 **붙는** 자리 셋을 봅니다. 화면 자금 구성은 비율만 찍지만,
      같은 막대 그림이 카드에도 있어 이름이 갈리면 「다른 값인가」가 됩니다. */
-  tt('영수증 합계가 「준비할 현금」이다',
-     /row\('준비할 현금',/.test(BARE) && !/내가 준비할 현금/.test(BARE));
+  tt('영수증 합계가 「준비할 현금」이다 (v25.48)',
+     /fundRow\('f1', ?'준비할 현금'/.test(BARE) && !/내가 준비할 현금/.test(BARE));
   tt('공유 카드가 「준비할 현금」이다',
      /mixRow\('d1','준비할 현금'/.test(repBody()));
   tt('공유 카드에 「내 돈」이 없다', !/'내 돈'|내 돈 /.test(repBody()));
@@ -3272,8 +3404,10 @@ HYGIENE.forEach(([name, over]) => {
      그래서 오너가 「금액을 앞으로」라고 지시하자 **이름은 그대로인데** 빨간불이 났습니다.
      → **검사를 지우지 않고 대상을 옮깁니다** — 범례 줄이 그 이름을 쓰는가만 봅니다.
      ⚠ 자리는 폭이 정합니다(원칙 149 · 159). 소스로 잠글 사실이 아닙니다. */
-  const LEGEND_LINE = (BARE.match(/\$\('fundLegend'\)\.innerHTML[\s\S]*?;\n/) || [''])[0];
-  tt('화면 자금 구성도 같은 이름을 쓴다',
+  /* 🔴 v25.48 — **화면 범례가 영수증 두 줄로 들어갔습니다.** 대상만 옮깁니다(원칙 128) —
+     잠글 사실은 「화면 자금 구성이 공유 카드와 **같은 이름**을 쓰는가」입니다. */
+  const LEGEND_LINE = (BARE.match(/const fundRow = [\s\S]*?fundRow\('f2'[^;]*;/) || [''])[0];
+  tt('화면 자금 구성도 같은 이름을 쓴다 (v25.48)',
      /준비할 현금/.test(LEGEND_LINE) && /주담대/.test(LEGEND_LINE)
      && !/내 돈|내가 준비할 현금/.test(LEGEND_LINE), LEGEND_LINE.slice(0, 120));
   /* 대출이 없을 때도 이름이 갈리면 안 됩니다 — 「전부 내 돈」은 예전 이름입니다. */
@@ -4009,7 +4143,8 @@ HYGIENE.forEach(([name, over]) => {
         안 그러면 시작 > 끝이 되어 잘라낸 문자열이 빈 채로 조용히 빨간불입니다. */
      const st = SRC.indexOf('<section class="result"');
      const res = SRC.slice(st, SRC.indexOf('</header>', st));
-     return /<div class="fundwrap">[\s\S]*?id="fundStack"[\s\S]*?id="fundLegend"/.test(res);
+     /* 🔴 v25.48 — 범례가 사라졌습니다. 잠글 사실은 **막대가 히어로 안에 있는가**뿐입니다. */
+     return /<div class="fundwrap">[\s\S]*?id="fundStack"/.test(res) && !/id="fundLegend"/.test(res);
   })());
   /* 🔴 `.tile-k`(--ink-4)는 **흰 카드 위에서** 4.62:1로 검증된 값입니다. 히어로는 앱 배경이라
      같은 토큰이 4.19:1로 떨어집니다 — `.barlabel`과 같은 자리(원칙 97). */
@@ -4081,7 +4216,7 @@ HYGIENE.forEach(([name, over]) => {
      return a > 0 && b > a
          && /\$\('receiptBot'\)\.innerHTML=h/.test(UI)
          && !/id="receiptBot"/.test(box)
-         && /row\('주담대'/.test(UI) && /row\('준비할 현금'/.test(UI);
+         && /fundRow\('f2', ?'주담대'/.test(UI) && /fundRow\('f1', ?'준비할 현금'/.test(UI);
   })());
   /* 소계는 화면에 적힌 것들의 합입니다. 켠 항목의 **금액을 서랍 안에 두 번 적지 않습니다** —
      스위치 줄이 이미 말하고 있어서, 두 벌이면 껐을 때 어느 쪽이 진짜인지 알 수 없습니다. */
@@ -4237,14 +4372,18 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.44 — 병합으로 이 제목이 **카드의 첫 줄이 아니라 둘째 덩어리의 머리**가 되면서
      클래스가 하나 늘었습니다(`.rc-head` — 위 여백 24px). 잠글 사실은 그대로입니다 —
      **그 제목이 그 문구 그대로 있는가.** 클래스 목록을 잠그지 않습니다(원칙 128 · 149). */
-  tt('영수증 제목이 「실제로 드는 돈」을 그대로 말한다 (v25.44)',
-     /<h2 class="card-title[^"]*">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
+  /* 🔴 v25.48 — **제목을 뺐습니다**(오너 지적 — 히어로 라벨과 중복). 대상을 옮깁니다(원칙 128) :
+     지키려던 사실은 「집값 말고 무엇이 더 드는지를 화면이 말한다」이고, 이제 **부대비용 줄 자신이**
+     말합니다(「집값 외 부대비용 · 집값의 4.1%」). 그리고 제목이 **되살아나지 않았는가**를 같이 봅니다. */
+  tt('집값 외에 드는 돈을 부대비용 줄이 말한다 (v25.48)',
+     /집값 외 부대비용/.test(SRC) && /class="ratio" id="etcPct"/.test(SRC)
+     && !/<h2 class="card-title[^"]*">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
   /* 🔴 v25.44 신설 — **영수증이 히어로와 한 카드 안에 있는가.** 병합이 조용히 풀리면
      (누가 `<div class="card">`를 다시 감싸면) 위 「카드가 3개」와 함께 이것도 빨간불입니다. */
   tt('영수증이 히어로 카드(.rhead) 안에 있다 (v25.44)', (()=>{
      const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
-     return /id="receipt"/.test(head) && /id="receiptBot"/.test(head)
-         && /이 집을 살 때 실제로 드는 돈/.test(head);
+     /* 🔴 v25.48 — 제목이 사라져 그 조건을 뺐습니다. 잠글 사실은 **한 카드 안인가**입니다. */
+     return /id="receipt"/.test(head) && /id="receiptBot"/.test(head) && /id="costToggle"/.test(head);
   })());
   /* 🔴 v25.44 신설 — **조건칩이 영수증 뒤에 선다.** v25.11이 정한 사실의 연장입니다 —
      「답은 한 덩어리, 조건칩은 입력으로 돌아가는 문」. 영수증도 답이라 칩이 그 앞에 서면
@@ -4616,8 +4755,9 @@ HYGIENE.forEach(([name, over]) => {
         개수를 안 세면 제목이 통째로 사라져도 통과합니다 — 그래서 셋을 셉니다. */
      /* 🔴 v25.44 — 영수증 제목에 `.rc-head`가 붙어 클래스가 둘입니다. 세는 대상은
         **제목 그 자체**이지 클래스 목록이 아닙니다(원칙 128). */
+     /* 🔴 v25.48 — 셋 → **둘**. 영수증 제목이 히어로 라벨과 중복이라 사라졌습니다. */
      const t = [...SRC.matchAll(/<h2 class="card-title[^"]*">([^<]*)<\/h2>/g)].map(m=>m[1].trim());
-     if(t.length !== 3) return false;
+     if(t.length !== 2) return false;
      return t.every(x => !/(다면|하세요|해보세요|할까요|보시|하시|주세요)$/.test(x));
   })(), [...(fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'')
        .matchAll(/<h2 class="card-title[^"]*">([^<]*)<\/h2>/g))].map(m=>m[1]).join(' / '));
@@ -5014,8 +5154,9 @@ HYGIENE.forEach(([name, over]) => {
   /* ── ⑩ 히어로 숫자 카운팅 ──────────────────────────────
      🔴 결과 안에서 값을 만졌을 때(`keepScroll`)는 **애니메이션을 걸지 않습니다** —
         걸면 바뀐 폭이 안 보이고, 그 순간 영수증과 히어로가 다른 값을 말합니다(원칙 91). */
-  tt('카운팅이 결과에 처음 들어올 때만 돈다',
-     /rollUpWon\(\$\('heroAmount'\), approx\(headline\), !keepScroll\)/.test(SRC));
+  /* 🔴 v25.48 — **반올림(`approx`)을 뗐습니다.** 잠글 사실은 그대로 — 「처음 들어올 때만 돈다」. */
+  tt('카운팅이 결과에 처음 들어올 때만 돈다 (v25.48)',
+     /rollUpWon\(\$\('heroAmount'\), headline, !keepScroll\)/.test(SRC));
   /* 🔴 끝값을 보간으로 만들지 않습니다 — 부동소수 때문에 1만원이 어긋날 수 있습니다. */
   tt('카운팅 끝값이 계산된 값 그대로다', (()=>{
      const m = SRC.match(/function rollUpWon\(el, target, animate\)\{[\s\S]*?\n\}/);
@@ -5283,9 +5424,19 @@ HYGIENE.forEach(([name, over]) => {
         버리면 주차대수를 넣기로 하는 날 **같은 수집을 처음부터** 다시 돌려야 합니다.
      ⚠ 이 검사는 index.html이 아니라 **build-households.mjs**를 봅니다. 파일이 없으면
         「찾지 못함」으로 조용히 통과하면 안 됩니다 — 없으면 빨간불입니다. */
-  tt('세대수 수집이 원본 응답을 통째로 보관한다', (()=>{
-     const f = path.join(path.dirname(FILE), 'build-households.mjs');
-     if(!fs.existsSync(f)) return false;
+  /* 🔴 v25.46 — **사본에서도 제 짝을 찾게 했습니다.** 이 검사는 `FILE`의 폴더에서
+     `build-households.mjs`를 찾았는데, 사보타주는 `index.html`을 **`/tmp`로 복사해** 돌립니다 —
+     그래서 **상처를 안 낸 사본에서도 늘 빨간불 하나**가 깔려 있었습니다.
+     ⏹ 그 1개가 사보타주의 「기존 빨간불 N개」에 계속 섞여, 무관한 상처를 판정할 때
+       **진짜로 깨진 것과 구별이 안 됐습니다**(원칙 152 — 검사의 전처리가 검사를 망칩니다).
+     → `FILE` 폴더에 없으면 **test.js 자신의 폴더**에서 찾습니다. 앵커를 하나 더 두는 것이 아니라
+       **같은 파일을 두 자리에서 찾는 것**입니다(원칙 58은 값에 대한 규칙이지 경로 탐색이 아닙니다). */
+  tt('세대수 수집이 원본 응답을 통째로 보관한다 (v25.46)', (()=>{
+     const here = __dirname;
+     const cand = [path.join(path.dirname(FILE), 'build-households.mjs'),
+                   path.join(here, 'build-households.mjs')];
+     const f = cand.find(x => fs.existsSync(x));
+     if(!f) return false;
      const src = fs.readFileSync(f,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
      const at = src.indexOf('got[code] = {');
      if(at < 0) return false;
@@ -6191,18 +6342,46 @@ HYGIENE.forEach(([name, over]) => {
   const RAW = fs.readFileSync(FILE, 'utf8');
   const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
   const CSS = RAW.replace(/\/\*[\s\S]*?\*\//g, '');
-  const legend = (bare.match(/\$\('fundLegend'\)\.innerHTML[\s\S]*?;\n/) || [''])[0];
+  /* 🔴 v25.48 — **범례가 영수증 두 줄로 들어갔습니다**(오너 지적 — 같은 두 값이 한 카드에 두 벌).
+     아래 넷은 **대상만 옮깁니다**(원칙 128). 다만 두 가지는 사실 자체가 바뀌었습니다:
+       ① 축약(`eokShort`)이 화면에서 사라졌습니다 — 이제 **정확한 금액**입니다.
+          그래서 「금액을 적는가」는 「**정확한 금액**을 적는가」로 좁아집니다(원칙 39에서 더 강한 쪽).
+       ② 「금액이 비율보다 앞」·「괄호 안」은 **한 줄 안의 배치 규칙**이었습니다. 영수증 줄은
+          이름+비율(왼쪽) / 금액(오른쪽) **두 칸**이라 그 규칙이 갈 곳이 없습니다.
+          살아 있는 사실은 **「비율만 나오지 않는다」**와 **「금액이 주인공이다」**입니다(v25.30·31 오너 지시). */
+  const legend = (bare.match(/const fundRow = [\s\S]*?fundRow\('f2'[^;]*;/) || [''])[0];
 
   /* ① 범례가 금액을 적는가 — 두 갈래(대출 있음 · 전부 현금) 다.
      한쪽만 적으면 대출 유무에 따라 범례가 다른 것을 말하게 됩니다. */
-  const uses = (legend.match(/eokShort\(/g) || []).length;
-  tt('범례가 금액을 적는다 · 두 갈래 다 (v25.30)', uses === 3, uses + '번');
+  const uses = (legend.match(/formatWon\(|richWon\(/g) || []).length;
+  tt('자금 출처 줄이 금액을 적는다 · 두 갈래 다 (v25.48)', uses === 2, uses + '번');
+  /* 🔴 v25.48 신설 — **화면에서 축약을 안 씁니다.** `eokShort`는 이제 **공유 카드에만** 삽니다
+     (최대 500만원까지 실제와 다르게 보이던 표기입니다 · DESIGN 3). */
+  tt('화면이 축약 금액을 안 쓴다 (v25.48)', (()=>{
+     /* 정의 한 곳 + **쓰는 곳 한 곳**(공유 카드)뿐이어야 합니다. 화면에서 한 번이라도 쓰면
+        최대 500만원까지 실제와 다른 금액이 다시 화면에 섭니다(DESIGN 3). */
+     const at = [...bare.matchAll(/eokShort\(/g)].map(m => m.index);
+     if(at.length !== 2) return false;
+     const def = bare.indexOf('function eokShort');
+     const rep = bare.indexOf("'#rMix'") >= 0 ? bare.indexOf("'#rMix'") : bare.indexOf('rMix');
+     return at[0] > def && at[0] < def + 400 && at[1] > 0;
+  })());
 
   /* ② 🔴 금액이 **막대 폭을 정한 그 두 값**에서 오는가.
      `c.cashNeeded`를 따로 끌어오면 한 줄 안에서 비율과 금액이 다른 출처를 갖습니다(원칙 58 · 91). */
-  tt('🔴 범례 금액이 막대와 같은 값에서 온다 (v25.30 · 원칙 91)',
-     /eokShort\(own\)/.test(legend) && /eokShort\(loan\)/.test(legend) && !/cashNeeded/.test(legend),
-     legend.slice(0, 160));
+  /* 🔴 v25.48 — 이제 **한 함수(`fundSplit`)가** 막대와 이 두 줄을 같이 나눕니다(원칙 58 · 91).
+     두 곳에서 따로 계산하면 반올림이 갈려 막대와 글자가 다른 비율을 말할 수 있습니다. */
+  tt('🔴 자금 출처가 막대와 같은 값에서 온다 (v25.48 · 원칙 91)', (()=>{
+     /* ⚠ 「`cashNeeded`를 쓰지 마라」는 **축약 범례 시절의 규칙**이었습니다 — 그때는 비율과 금액이
+        한 줄 안에 있어 출처가 갈리면 안 됐습니다. 지금 이 줄의 금액은 **정확한 준비할 현금**이고
+        그게 맞는 값입니다(`cashNeeded = totalNeeded - totalFunding`). 잠글 것은 **비율의 출처가
+        하나인가**입니다 — 막대와 두 줄이 같은 `fundSplit`을 지납니다. */
+     /* ⚠ **선언(`function fundSplit(c){`)이 같은 글자입니다** — 세면 셋입니다(원칙 152 —
+        검사의 전처리가 검사를 망칩니다. v25.30이 `eokShort`에서 똑같이 밟은 자리입니다). */
+     const splits = (bare.match(/function fundSplit\(/g)||[]).length;
+     const users  = (bare.match(/fundSplit\(c\)/g)||[]).length - splits;
+     return splits === 1 && users === 2;
+  })(), legend.slice(0, 160));
 
   /* ③ 축약 표기와 정책 표기가 **서로를 안 부른다**(원칙 132 — 문법의 재사용과 이름의 재사용은 다릅니다).
      반올림 자리가 다릅니다: 1,000만원(범례) ↔ 백만원(정책). 한쪽을 고칠 때 다른 쪽이 따라오면 안 됩니다. */
@@ -6225,9 +6404,12 @@ HYGIENE.forEach(([name, over]) => {
   /* ⚠ **선언(`function eokShort(won){`)이 같은 글자입니다** — 처음에 그걸 같이 세서
      「공유 카드 2곳」이 나왔습니다. 템플릿 자리(`${…}`)만 셉니다(원칙 152). */
   const inCard = (bare.match(/\$\{eokShort\(won\)\}/g) || []).length;
-  tt('🔴 축약 표기가 범례와 공유 카드에만 있다 (v25.30 · v25.36)',
-     spread === uses + inCard && inCard === 1 && !/row\('집값', eokShort/.test(bare),
-     `전체 ${spread}곳 · 범례 ${uses} · 공유 카드 ${inCard}`);
+  /* 🔴 v25.48 — **화면 범례가 사라져 축약이 쓰이는 자리는 공유 카드 하나뿐**입니다(오너 지적).
+     ⚠ 잠글 사실은 그대로이고 **더 강해졌습니다** — 「정확한 금액을 말해야 하는 자리에 안 퍼진다」.
+       이제 화면 전체가 `formatWon`·`richWon`이고, 축약은 **내보내는 그림에만** 삽니다. */
+  tt('🔴 축약 표기가 공유 카드에만 있다 (v25.48)',
+     spread === inCard && inCard === 1 && !/row\('집값', eokShort/.test(bare),
+     `전체 ${spread}곳 · 공유 카드 ${inCard}`);
 
   /* ⑤ 줄바꿈 규격 — 잠글 것은 「한 줄이다」가 아니라 **「숫자가 안 갈린다」**입니다.
      한 줄인지는 폭과 금액이 정합니다(원칙 149 — 값이 아니라 규칙을 잠급니다).
@@ -6249,7 +6431,8 @@ HYGIENE.forEach(([name, over]) => {
   const RAW  = fs.readFileSync(FILE, 'utf8');
   const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
   const CSS  = RAW.replace(/\/\*[\s\S]*?\*\//g, '');
-  const legend = (bare.match(/\$\('fundLegend'\)\.innerHTML[\s\S]*?;\n/) || [''])[0];
+  /* 🔴 v25.48 — 범례가 영수증 두 줄로 들어갔습니다(위 블록과 같은 이유). */
+  const legend = (bare.match(/const fundRow = [\s\S]*?fundRow\('f2'[^;]*;/) || [''])[0];
 
   /* ① 🔴 **금액이 비율보다 앞에** 옵니다(오너 지시 v25.31).
      ⚠ 잠글 것은 「금액이 먼저다」라는 **자리**입니다 — 오너가 두 번 지시한 방향이고,
@@ -6261,9 +6444,17 @@ HYGIENE.forEach(([name, over]) => {
     const a = chunk.indexOf('eokShort('), b = chunk.search(/\$\{[^}]*ownPct[^}]*\}%|[\s>(]100%/);
     return a >= 0 && b >= 0 && a < b;
   };
-  const 갈래 = legend.split('</div>').filter(x => /eokShort\(/.test(x));
-  tt('🔴 범례는 금액이 비율보다 앞이다 (v25.31 · 오너 지시)',
-     갈래.length === 3 && 갈래.every(앞선다), 갈래.length + '갈래');
+  /* 🔴 v25.48 — 「금액이 비율보다 앞」은 **한 줄 안의 배치**였습니다. 두 칸이 된 지금
+     살아 있는 사실은 **「비율만 나오지 않는다」**(오너: 「%만 나오니깐 얼마지 생각하게 되더라고」)와
+     **「금액이 주인공이다」**입니다 — 비율은 `--ink-4`, 금액은 `--ink-2` 700(한 단 위). */
+  tt('🔴 자금 출처 줄이 비율만 말하지 않는다 (v25.48 · v25.30 오너 지시)',
+     /%<\/b>/.test(legend) && /formatWon\(c\.mortgageLoan\)/.test(legend) && /richWon\(/.test(legend));
+  tt('🔴 비율이 금액보다 조용하다 (v25.48 · v25.31 오너 지시)', (()=>{
+     const css = CSS.replace(/\/\*[\s\S]*?\*\//g,'');
+     const pct = (css.match(/\.line \.k \.fpct\{[^}]*\}/)||[''])[0];
+     const val = (css.match(/\.line \.v\{font-weight:700;color:var\(--ink-2\)\}/)||[''])[0];
+     return /--ink-4/.test(pct) && /--t7/.test(pct);
+  })());
 
   /* ② ⏹ **괄호는 미채택 — 근거는 실측입니다**(원칙 148 · 158).
      360px에서 쓸 수 있는 폭 304px · 괄호를 넣으면 315~321px. 다섯 폭 중 둘에서 넘칩니다.
@@ -6274,11 +6465,16 @@ HYGIENE.forEach(([name, over]) => {
      ⏹ 실측 재확인(360px · 인테리어를 켠 소수점 금액 「15.8억」):
        공백 303px ≤ 304 한 줄  /  괄호 317px > 304 **두 줄(항목 단위)**  /  390px↑ 한 줄.
      → 잠글 사실은 **「비율이 괄호 안에 있다」**이고, 폭은 `flex-wrap`이 책임집니다(원칙 149). */
-  tt('🔴 범례 비율이 괄호 안에 있다 (v25.34 · 오너 지시 두 번째)',
-     /\(\$\{ownPct\}%\)/.test(legend) && /\(100%\)/.test(legend), legend.slice(0, 160));
-  /* ⚠ **붙여 씁니다** — 띄우면 323px으로 6px을 더 먹습니다(실측). */
-  tt('⏹ 금액과 괄호 사이를 안 띄운다 (v25.34 · 근거: 317 → 323px)',
-     !/\}\s+\(\$\{ownPct/.test(legend), legend.slice(0, 160));
+  /* ⏹ v25.48 — **괄호 규칙은 여기서 끝납니다.** 그것은 「한 줄 안에서 금액과 비율이 한 덩어리로
+     보이게」 하려던 장치였고(v25.34 오너 지시), 두 칸으로 갈린 지금은 묶을 것이 없습니다.
+     ⚠ 지운 것이 아니라 **대상이 사라진 것**입니다 — 범례를 되살리면 이 검사도 같이 되살리십시오.
+     🔴 대신 **점이 막대 조각과 이름을 잇는가**를 잠급니다. 범례가 하던 그 일입니다. */
+  tt('🔴 자금 출처 줄의 점이 막대 조각과 같은 색이다 (v25.48)', (()=>{
+     const css = CSS.replace(/\/\*[\s\S]*?\*\//g,'');
+     return /\.line \.k \.f1\{background:var\(--ink\)\}/.test(css)
+         && /\.line \.k \.f2\{background:var\(--green\)\}/.test(css)
+         && /\.stack \.f1\{background:var\(--ink\)\}|\.f1\{background:var\(--ink\)\}/.test(css);
+  })());
 
   /* ③ v25.32 — 평형 값 자리에 「모름」이 없다. 사용자의 상태를 단정하지 않습니다. */
   const pyeongWrites = [...bare.matchAll(/\$\('pyeongVal'\)\.textContent\s*=\s*([^;]+);/g)].map(m => m[1].trim());
