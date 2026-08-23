@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.37 · 정책 2026.08.13 -->
+<!-- BUILD v25.40 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -277,7 +277,7 @@ body{background:var(--bg);color:var(--ink);
   font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   font-size:var(--t5);line-height:1.5;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
   word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
-h1,h2,p,.q-title,.headline,.card-title,.hero-label{text-wrap:balance}
+h1,h2,p,.q-title,.brandline,.card-title,.hero-label{text-wrap:balance}
 /* 🔴 v23.23 — Light(300)를 팔레트에서 뺐습니다. 가장 얇은 글자는 400입니다.
    한글 300은 12~17px에서 획이 끊겨 보이고, 「힘을 뺀 것」이 아니라 「흐린 것」으로 읽힙니다.
    대비는 굵기 400 ↔ 900으로 만듭니다. */
@@ -353,9 +353,20 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ **글자 크기·자간은 한 자도 안 건드렸습니다**(원칙 117 — 스케일 밖 값이 생깁니다).
      줄인 것은 전부 **여백**입니다. 실측 근거는 아래 `.subline`·`.funnel > .q` 주석과 한 벌입니다. */
 .brand{background:var(--bg);padding:18px 18px 4px;margin:0}
-.brand .headline{color:var(--ink)}
-.brand .headline::before{background:var(--green)}
-.brand .subline{color:var(--ink-3)}
+/* 🔴 v25.39 — **카피 헤드라인을 `--t2` → `--t4`(17px)로 내렸습니다**(위계 · 오너 지시).
+   ⏹ 실측(390×844)에서 이랬습니다 — **카피 22px/900 ↔ 질문 제목 22px/900.**
+     크기도 굵기도 같아서 **화면의 주인공이 둘**이었습니다. 열여덟 번째 외부 검토가
+     「상단 카피가 공간을 낭비한다」로 가리킨 자리인데, **원인은 공간이 아니라 위계**입니다
+     (실측 — 카드 아래가 363px 비어 있고 **스크롤이 0**입니다 · 원칙 147).
+   ⚠ 🔴 **지시서의 「12px 한 줄로 압축」은 미채택입니다.** 12px(`--t8`)은 **각주 전용**이고,
+     크기와 줄 수 **두 채널**을 한 판에 움직입니다(원칙 157 · 117).
+   ⚠ **한 단(`--t3` 20px)도 재 보고 버렸습니다** — 360px에서 질문이 22px이라 **차이가 2px**,
+     즉 위계가 안 생깁니다. `--t4`는 5px 차이입니다(360 · 390 기준 22 ↔ 17 · 430은 25 ↔ 17).
+   ⚠ **굵기(900 → 700)도 재 보고 버렸습니다** — 22px이 여전히 화면에서 가장 큰 글자라
+     위계가 거의 안 바뀝니다. 그리고 이 줄은 **헤드라인 역할**이라 900이 맞습니다.
+   ⚠ **색은 안 건드립니다** — 위계를 낮출 때 색부터 빼지 않습니다(원칙 100 · 157).
+   ⚠ 세로선(`::before`)은 `em` 기준이라 글자와 **같이 줄어듭니다.** 서브라인(14/400)은 그대로입니다. */
+.brand .brandline{color:var(--ink-3)}
 /* 🔴 밴드가 화면 위쪽을 이미 먹었으므로 퍼널은 min-height를 푸니다.
    안 풀면 페이지가 1.5배로 늘어나 하단이 통째로 비어 보입니다. */
 .app.hero-on .funnel{padding-top:0;min-height:0;padding-bottom:24px}
@@ -367,22 +378,15 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    900 + 자간 -.05em + 25px에서 2줄이 되면 윗줄 받침과 아랫줄 첫 획이 붙습니다.
    ⚠ 숫자(.mfield input · .rhead-amount · .tile-v)는 1.15 그대로입니다 — 받침이 없고,
      행간을 벌리면 큰 금액이 두 덩어리로 흩어집니다. **문장과 숫자는 다른 값입니다**(지침 6-9). */
-.headline{position:relative;font-size:var(--t2);line-height:1.22;font-weight:900;
-  letter-spacing:-.05em;margin:0;padding-left:18px}
-.headline::before{content:'';position:absolute;left:0;top:.18em;bottom:.18em;
-  width:4px;border-radius:2px;background:var(--espresso)}
-.headline b{color:inherit;font-weight:900;letter-spacing:-.05em}
-/* 🔴 v25.1 — `word-break:keep-all`. 교체된 카피는 360~390px에서 두 줄이 됩니다.
-   ⚠ **이것만으로는 부족했습니다.** 실측 390px에서 「환상 없는 진짜 예산, 내 집 / 마련의 …」로
-     끊겼는데, 그건 낱말 **안**이 아니라 **띄어쓰기 자리**라 keep-all이 막지 않습니다.
-     끊길 자리를 마크업이 정합니다(`<br>`) — 헤드라인이 이미 쓰는 방법입니다.
-   ⚠ `overflow-wrap:anywhere`는 **안 씁니다.** keep-all과 같이 두면 anywhere가 이깁니다. */
-/* 🔴 v25.6 — **위 여백 18 → 12px · 행간 1.8 → `--lh-body`(1.6).**
-   ⏹ 1.8은 스케일(1.06 · 1.3 · 1.6) **밖에 혼자 있던 값**이었습니다. 내리는 김에 스케일 안으로
-     들어옵니다 — 여백을 줄이면서 원칙 117을 어기는 게 아니라 **지키는 쪽으로** 갑니다.
-   ⚠ **글자 크기(--t6)와 자간은 그대로입니다.** 두 줄 부제라 행간 0.2단(약 5.6px)이 줄어듭니다. */
-.subline{font-size:var(--t6);line-height:var(--lh-body);font-weight:400;color:var(--ink-3);margin:12px 0 0;padding-left:18px;
-  word-break:keep-all}
+/* 🔴 v25.40 — **브랜드 각인.** 헤드라인(`.headline` · 그린 세로선)과 서브라인(`.subline`)을
+   **둘 다 지웠습니다** — 쓰는 곳이 없어진 규칙은 죽은 값이 아니라 **살아 있는 두 번째 정의**라
+   다음 판이 그걸 보고 되살립니다(원칙 84 · 지침 6-6).
+   ⚠ 지운 것 : `.headline` · `.headline::before`(그린 세로선 4px) · `.headline b` · `.subline`.
+     되살리려면 **마크업 · CSS · 검사 셋을 같이** 되살려야 합니다(v25.20의 히어로 알약과 같은 자리).
+   ⚠ 이 줄의 규격은 **12px(`--t8`) · 500 · `--ink-3` · 행간 1.4 · 왼쪽 18px**입니다.
+     500은 「이름 · 캡션 · 마이크로 라벨」 단이고(DESIGN 2), 이 줄이 정확히 그것입니다. */
+.brandline{font-size:var(--t8);line-height:var(--lh-body);font-weight:500;margin:0;padding-left:18px;
+  letter-spacing:0;word-break:keep-all}
 /* 🔴 v25.1 — 기준일 뱃지. **새 색·새 규격을 만들지 않습니다** — 면 `--fill` · 글자 `--ink-3` ·
    곡률 `--r-pill`은 「거래 활발」 뱃지(v25.0)와 같은 조합이고, 그 면 위 6.45:1로 이미 검증된 짝입니다.
    ⚠ `padding-left:18px`가 아니라 **바깥 여백 18px**입니다. 타이틀 세로선이 먹는 18px와 맞춰
@@ -438,7 +442,17 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .moneycard{margin-top:8px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none}
 /* 두 칸 입력 — 320px 화면에서도 넘치지 않게 폭을 계산해 잡았습니다.
    이전 값(패딩 16·글자 28px 고정)은 360px에서 14px 넘쳤습니다. */
-.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+/* 🔴 v25.40 — **두 칸을 한 덩어리로 봅니다**(오너 지시 · 제미나이 대화 PART 3-3 —
+   「15 억 박스와 0 만 박스가 물리적으로 뚝 떨어져 있어 하나의 금액으로 안 읽힌다」).
+   ⏹ 전 : `gap:8px` — 두 칸이 **각각 독립된 상자**로 보였습니다.
+   → 간격을 **0**으로 두고, 사이를 **헤어라인 1px**로 가릅니다. 바깥 곡률만 남겨
+     **한 상자 안의 두 칸**으로 읽힙니다.
+   ⚠ **입력은 여전히 둘입니다** — 하나로 합치지 않았습니다. 합치면 「억·만」을 한 칸에
+     받아야 하고, 그건 계산이 아니라 **입력 규칙이 바뀌는 판**입니다(원칙 41).
+   ⚠ 손가락 면은 그대로입니다 — 각 칸이 60px 높이를 유지합니다(폭도 안 줄었습니다). */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:0;min-width:0}
+.mgrid .mfield:first-child{border-radius:var(--r-m) 0 0 var(--r-m)}
+.mgrid .mfield:last-child{border-radius:0 var(--r-m) var(--r-m) 0;box-shadow:inset 1px 0 0 var(--line)}
 /* 🔴 v23.22 전역 규칙 — 입력 필드는 **테두리 0 · 옅은 회색 면**입니다.
    ⚠ 포커스 표시는 outline으로 냅니다. border를 키우면 상자가 커져 줄이 흔들립니다(원칙 34).
      outline은 레이아웃을 전혀 건드리지 않습니다. */
@@ -653,6 +667,18 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ `padding`으로 키우지 않습니다 — 이 링크는 입력칸 아래 **글자 줄**이라 상자가 커지면
      위 `margin-top:30px`이 뜻을 잃고 덩어리 간격이 흔들립니다(원칙 34).
    ⚠ `.condchip`·`.trust`·`.wordmark`와 **같은 문법**입니다. 네 자리에 네 방법을 두지 않습니다. */
+/* 🔴 v25.40 — **어포던스**(오너 지시 · 제미나이 대화 PART 3-2 — 「단순 텍스트라 버튼으로 안 읽힌다」).
+   ⏹ 전 : 면 없음 · 테두리 없음 · 곡률 0 · 13px/600 — **글자만 있고 누를 것처럼 보이지 않았습니다.**
+     (AUDIT B-3 · B-4가 「01·02·03의 같은 자리에 부품 셋」으로 이미 적어 둔 자리입니다.)
+   ⚠ 🔴 **빠른 추가 칩(`.chip`)의 모양을 쓰지 않습니다.** 그 칩은 「값을 더한다」는 뜻이고
+     이 버튼은 「서랍을 연다」입니다 — 같은 모양이 두 일을 하면 안 됩니다(DESIGN 0).
+   → **`.trust`와 같은 조합**을 씁니다 — 흰 면 + `--line` 헤어라인 + 알약 + 13px/600.
+     그 부품의 뜻이 「앱 안에서 끝나는 조용한 보조 동작」이고, 이 버튼이 정확히 그것입니다
+     (「결과 보기」 · 「계산 기준 보기」와 한 벌 · 원칙 58 · 지침 6-22). **새 부품 0.**
+   ⚠ 높이는 `--h-chip`(35px)입니다 — 46px 옵션칩이 되면 「고르는 것」으로 읽힙니다(원칙 112).
+     손가락 면은 아래 `::after`가 그대로 44px로 냅니다(보이는 크기는 안 키웁니다 · 원칙 123). */
+.debtlink{display:inline-flex;align-items:center;height:var(--h-chip);padding:0 14px;
+  border-radius:var(--r-pill);background:var(--card);border:1px solid var(--line)}
 .debtlink{position:relative}
 .debtlink::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:var(--tap)}
 .debtbox{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
@@ -1091,8 +1117,33 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 .disc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;
   padding:16px 2px;border-radius:0;background:transparent;border:0;border-top:1px solid var(--line);
   font-size:var(--t6);font-weight:700;color:var(--ink);transition:.14s}
+/* 🔴 v25.38 — **꺾쇠를 글자로 안 그립니다. CSS로 그립니다.**
+   ⏹ v25.36이 Pretendard cmap을 열어 `▾`(U+25BE)가 **글꼴에 없다**는 것을 찾았습니다.
+     두부(□)는 아니고 **시스템 대체 글꼴로** 떨어져 그려졌습니다 — 그래서 아무도 못 봤고,
+     **기기마다 크기·굵기가 다른 상태**로 다섯 자리에서 살고 있었습니다(원칙 39의 조용한 형태).
+   ⚠ **글꼴 안에 있는 글자로 바꾸는 길은 안 갔습니다.** cmap을 다시 열어 확인한 것:
+       ▾ U+25BE 🔴 없음 · ⌄ U+2304 🔴 없음 · ▿ U+25BF 🔴 없음 · ⏷ U+23F7 🔴 없음
+       ▼ U+25BC ✅ 있음 · ▽ U+25BD ✅ 있음 · ˅ U+02C5 ✅ 있음
+     ▼는 렌더에서 **눈에 띄게 크고 진합니다**(같은 13px에서 획이 두 배 가까이). 꺾쇠는
+     「누를 수 있다」를 조용히 말하는 표식이라, 크기를 맞추려면 **스케일 밖 리터럴**이
+     하나 생깁니다(원칙 117). 그림으로 그리면 **크기·굵기를 우리가 정합니다.**
+   🔴 **얻는 것은 「기기마다 같다」입니다.** 글꼴에 안 기대므로 iOS·안드로이드·데스크톱이
+     같은 그림을 냅니다. 다섯 자리가 **한 규칙**에서 나옵니다(원칙 58).
+   ⚠ 회전(`rotate(180deg)`)은 그대로 스팬에 걸립니다 — 그림이 스팬 안에 있어 같이 돕니다.
+   ⚠ **폭은 여전히 `--caret-col`(18px)이 정합니다.** 그림 크기(7px)는 그 안입니다 —
+     열 폭을 바꾸면 영수증 네 줄의 금액 자리가 같이 움직입니다(v24.31이 잰 자리). */
 .disc .caret{transition:transform .22s,color .14s;font-size:var(--t7);color:var(--ink-4)}
 .disc[aria-expanded="true"] .caret{transform:rotate(180deg);color:var(--ink)}
+/* ⚠ 🔴 **회전한 사각형(셰브론)으로 그리지 않았습니다.** 두 가지가 걸립니다:
+     ① 45° 돌린 7px 상자는 **대각선이 9.9px**이라 8px 상자를 넘습니다 — 눈에는 안 보이지만
+        재는 장치가 **넘침으로 셉니다**(다섯 폭 전부 `.caret`·`.disc.discline`에서 잡혔습니다).
+     ② 셰브론은 **모양을 바꾸는 일**입니다. 이 판이 고치는 것은 「기기마다 다르다」 하나이고,
+        모양까지 같이 바꾸면 한 판에 두 채널입니다(원칙 157 · 112).
+   → **같은 삼각형을 테두리로 그립니다.** 폭 8px · 높이 4.5px · 회전 0 —
+     지금 화면과 같은 그림이고, 열면 스팬이 180° 돌아 위를 가리킵니다(넘침 0). */
+.caret::before{content:'';display:inline-block;width:0;height:0;vertical-align:middle;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-top:4.5px solid currentColor}
 /* 🔴 v24.31 — 영수증 줄로 앉은 접기. **`.line`의 활자를 그대로 씁니다** — 이 줄은
    버튼처럼 생길 필요가 없습니다. 같은 표 안의 한 줄인데 **누를 수 있을 뿐**이고,
    누를 수 있다는 것은 ▾가 말합니다(채널 A는 모양이 아니라 표식으로 냅니다 · 원칙 62 · 112).
@@ -1434,7 +1485,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    0으로 만드는 마지막 한 자리였습니다(원칙 117). 남는 리터럴은 공유 카드의 54px 하나이고,
    그건 **일부러 리터럴**입니다 — 내보내는 그림은 보는 기기와 무관해야 해서 반응형 토큰을
    못 씁니다(검사가 `--d1`·`--t1`·`--t2` 사용을 막습니다). */
-.trust i{font-style:normal;font-size:var(--t6);line-height:1}
 /* 🔴 v24.29 — v24.27은 `.condchip`만 고쳤습니다. **같은 --h-chip(35px)을 쓰는 버튼이 하나 더**
    있었는데 그때 세지 않았습니다 — 실측에서 35px로 남아 있었습니다.
    ⚠ 보이는 크기는 그대로 둡니다(원칙 112 · 지침 6-3). 이 칩이 46px 옵션칩 덩치가 되면
@@ -1950,7 +2000,6 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
          그림자가 「눌리는 것」을 말하는 신호라, 뱃지는 그 한 겹을 뺍니다(채널 A 유지).
        🔴 v25.6 — **이 자리에서 상단 바로 옮겼습니다.** 위 `.appbar` 주석을 보세요.
          면·글자·곡률은 한 값도 안 바꿨습니다. 바뀐 것은 **놓인 자리와 그 아래 여백**뿐입니다. -->
-    <h1 class="headline">내 예산에 맞춘<br>집 매수 예상 시나리오</h1>
     <!-- 🔴 v24.18 — 전: 「단 세 번의 입력으로 집을 사기 위한 현실적인 예산을 확인하세요.」
          ①「확인하세요」는 지시문입니다 ②「단」·「현실적인」은 광고 어조입니다(평가).
          길이는 그대로 두고 **사실 서술로만** 바꿨습니다.
@@ -1962,7 +2011,21 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
          첫 화면이 무엇을 약속하는지는 검사가 안 봅니다(원칙 128 — 열어 둔 것은 적습니다).
        ⚠ v24.18이 「현실적인」을 광고 어조로 보고 뺀 자리에 그 낱말이 돌아왔습니다.
          프로덕트 오너의 브랜드 카피 결정이라 그대로 씁니다. 되돌리려면 이 한 줄입니다. -->
-    <p class="subline">환상 없는 진짜 예산,<br>내 집 마련의 가장 현실적인 출발선</p>
+    <!-- 🔴 v25.40 — **마케팅 카피를 한 줄 각인으로 접었습니다**(오너 지시 · 제미나이 대화 PART 3-1).
+         ⏹ 전 : 헤드라인 2줄(22~25px / 900 / 그린 세로선) + 서브라인 2줄(14px) = **132px · 네 줄**
+         ⏹ v25.39는 헤드라인을 17px로 **줄이기만** 했습니다 — 그건 「작게 만든 것」이지 각인이 아닙니다.
+           오너가 정한 것은 **「앱바 바로 아래 여백에 12px 회색 한 줄로 스며들게」**였습니다.
+         → 헤드라인은 **뺐습니다**(「내 예산에 맞춘 집 매수 예상 시나리오」는 화면이 이미 하는 말입니다 —
+           바로 아래 카드가 「지금 모은 돈이 얼마인가요?」로 묻습니다 · 원칙 43).
+         → 남긴 한 줄은 **철학을 말하는 쪽**입니다(오너: 「그 감각, 대표님의 마인드」).
+         ⚠ **12px은 `--t8`입니다** — 스케일 안입니다. 「각주 전용」이라고 적어 둔 규칙의 **대상을 옮겼습니다**
+           (각주 + 브랜드 각인 · 원칙 128). 스케일 밖 리터럴을 만들지 않았습니다(원칙 117).
+         ⚠ 🔴 **색은 `--ink-4`가 아니라 `--ink-3`입니다.** 이 줄은 앱 배경(`--bg`) 위라
+           `--ink-4`는 **4.19:1로 미달**입니다(원칙 97 · G-19가 렌더에서 잽니다). `--ink-3`은 6.45:1.
+         ⚠ **글자 시작점은 36px 그대로**입니다(브랜드 여백 18 + 이 줄의 18). 카드 글자(16+20)와
+           같은 세로선에 섭니다 — v23.21이 정한 정렬이고 검사가 잽니다.
+         ⚠ `<h1>`을 유지합니다 — 헤드라인을 빼면 문서에 h1이 하나도 안 남습니다. -->
+    <h1 class="brandline">환상 없는 진짜 예산, 내 집 마련의 가장 현실적인 출발선</h1>
   </header>
 
   <main class="funnel" id="funnel">
@@ -2138,7 +2201,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              정밀도를 두 번 말하는 셈입니다(원칙 43). 반올림은 자릿수가 이미 말합니다.
            ⚠ 소계가 0이거나 집값이 0이면 **알약이 통째로 없습니다**(`:empty`). 「0.0%」를
              띄우면 「부대비용이 안 든다」로 읽힙니다. -->
-        <span class="k">집값 외 부대비용<b class="ratio" id="etcPct"></b></span><span class="v" id="etcTotal">—</span><span class="caret">▾</span></button>
+        <span class="k">집값 외 부대비용<b class="ratio" id="etcPct"></b></span><span class="v" id="etcTotal">—</span><span class="caret" aria-hidden="true"></span></button>
       <div class="costbox" id="costBox">
         <div id="costItems"></div>
         <p class="tile-s" id="costLead"></p>
@@ -2162,7 +2225,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
       <div id="receiptBot"></div>
 
       <button class="disc" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
-        <span class="k">대출 한도 산출 기준</span><span class="v" id="limitBind"></span><span class="caret">▾</span></button>
+        <span class="k">대출 한도 산출 기준</span><span class="v" id="limitBind"></span><span class="caret" aria-hidden="true"></span></button>
       <!-- 🔴 v25.7 — **※ 각주를 카드 맨 아래로 내렸습니다**(오너 지적).
            ⏹ 전: 막대 → 「무엇이 한도를 정했나」 설명 → **※ 둘** → 방공제 설명.
              한도 이야기를 읽는 도중에 ※(전제 조건 · 면책)가 끼어들고, 그 뒤에 다시
@@ -2214,7 +2277,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
              제목을 남기면 다시 「제목 + 같은 말」 두 줄이 됩니다.
            ⚠ 금액은 `renderPkg()`가 넣습니다 — 손으로 안 적습니다(원칙 84). -->
       <button class="disc disc-head" id="itToggle" aria-expanded="false" aria-controls="itBox">
-        <span class="k">입주 전에 드는 인테리어 비용</span><span class="v" id="itSum"></span><span class="caret">▾</span></button>
+        <span class="k">입주 전에 드는 인테리어 비용</span><span class="v" id="itSum"></span><span class="caret" aria-hidden="true"></span></button>
       <div class="costbox" id="itBox">
       <div class="tweak">
         <div class="slider-head"><span class="k">평형 (공급면적)</span><span class="v" id="pyeongVal"></span></div>
@@ -2377,7 +2440,14 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 
 
     <div id="restartWrap"></div>
-    <div class="trustwrap"><button class="trust" id="trustBtn"><i>ⓘ</i>계산 기준 보기</button></div>
+<!-- 🔴 v25.38 — **ⓘ를 뗐습니다.** 근거 둘이 겹칩니다:
+           ① `ⓘ`(U+24D8)는 **Pretendard에 없습니다**(cmap 확인 · `▾`와 같은 조회에서 나왔습니다).
+              대체 글꼴로 떨어져 기기마다 다르게 그려지고 있었습니다.
+           ② v25.14가 정한 규칙 그대로입니다 — **앱 안에서 끝나는 동작은 레이블이 동작을 말합니다**
+              (기호를 붙이지 않습니다). 「계산 기준 보기」가 이미 그 일을 합니다(원칙 43).
+           ⚠ 시트를 여는 것도, 버튼이 있다는 것도 그대로입니다 — 검사 둘이 그걸 지킵니다.
+           ⚠ `.trust i` 규칙도 같이 지웠습니다 — 쓰는 곳이 없는 규칙은 **살아 있는 두 번째 정의**입니다(지침 6-6). -->
+    <div class="trustwrap"><button class="trust" id="trustBtn">계산 기준 보기</button></div>
     <!-- ⏹ v25.12 — **투명성 캡션(`#caveatNote`)이 여기 있었습니다.** 지운 이유와 옮긴 자리는
          스타일시트의 `.caveat` 자리 주석에 적혀 있습니다. 한 줄로 —
          **성격이 다른 둘(등기 채권 매입비 · 은행 우대금리)이 한 문장에 묶여 있어서**
@@ -3516,7 +3586,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.37 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.40 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -3710,7 +3780,7 @@ function renderQuestion(){
         <!-- 🔴 v23.23 — 여러 개를 머릿속으로 더하게 하지 않습니다.
              여기 넣은 값이 위 칸으로 **자동 합산**됩니다. 엔진으로 가는 값은 위 칸 하나뿐입니다. -->
         <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts">
-          <span>대출이 여러 개인가요? 항목별로 더하기</span><span class="caret">▾</span></button>
+          <span>대출이 여러 개인가요? 항목별로 더하기</span><span class="caret" aria-hidden="true"></span></button>
         <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts">
           <div class="costrow"><div class="nm">신용대출</div>
             <div class="amt"><input id="inDebtCredit" inputmode="numeric" pattern="[0-9]*" placeholder="0"
@@ -5615,7 +5685,7 @@ function dealLine(x, priceMan, hot, i){
        + `<button type="button" class="deal" data-deal="${i}" aria-expanded="false" aria-controls="dealBox${i}">`
        + `<span class="nm">${esc(x.name)}<small>${sub}</small></span>`
        + `<span class="amt">${formatWon(x.amountMan*10000)}${gap}</span>`
-       + `<span class="caret" aria-hidden="true">▾</span></button>`
+       + `<span class="caret" aria-hidden="true"></span></button>`
        + dealBox(x, i) + `</div>`;
 }
 
