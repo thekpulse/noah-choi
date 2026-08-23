@@ -1614,10 +1614,38 @@ HYGIENE.forEach(([name, over]) => {
      넓혔습니다. 부대비용 접기가 영수증 줄로 앉으면서 `class="disc discline"`이 됐고,
      **접기가 늘어난 것이 아니라 같은 접기가 클래스를 하나 더 얻은 것**인데 검사가 사라진 것으로
      읽었습니다 — 잠글 것은 「어떻게 적혔나」가 아니라 **「접기가 셋인가」**입니다(원칙 120). */
-  tt('결과 화면 아코디언은 3종 (부대비용 · 한도 · 인테리어)', (()=>{
+  /* 🔴 v25.45 — 3종 → **4종**. 실거래 필터 칩 넉 개가 접기 줄 하나가 됐습니다.
+     ⚠ 숫자만 올린 것이 아닙니다 — **넷이 같은 문법을 쓰는지**를 바로 아래에서 함께 봅니다.
+       칩 넷을 한 줄로 놓으면 416px이라 다섯 폭 전부 **두 줄 101px**이었고(카드의 16%),
+       그 자리는 감사 C-4가 「거르는 것이 걸러지는 것보다 뒤」로 열어 둔 자리였습니다.
+     ⚠ 접기를 늘릴 때마다 **새 클래스를 만들지 않았는가**가 이 검사의 본뜻입니다(원칙 120). */
+  tt('결과 화면 아코디언은 4종 (부대비용 · 한도 · 인테리어 · 실거래 필터) (v25.45)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
-     return (res.match(/class="disc[ "]/g)||[]).length === 3;
+     return (res.match(/class="disc[ "]/g)||[]).length === 4;
+  })());
+  /* 🔴 v25.45 신설 — 실거래 필터가 **같은 문법 · 같은 짝**인가. 그리고 **목록보다 앞**인가
+     (감사 C-4 — 거르는 것은 걸러지는 것보다 앞). */
+  tt('실거래 필터가 접기 문법이고 목록보다 앞이다 (v25.45)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const ok = /class="disc discline" id="dealFilterToggle"[^>]*aria-controls="dealFilterBox"/.test(src)
+             && /<div class="costbox" id="dealFilterBox">/.test(src)
+             && /\['dealFilterToggle','dealFilterBox','filterOpen', DEAL\]/.test(src);
+     return ok && src.indexOf('id="dealFilterToggle"') < src.indexOf('<div id="dealList">');
+  })());
+  /* 🔴 v25.45 신설 — 펴짐이 **저장에 안 실립니다.** `S`에 두면 다음 방문에 서랍이 펴진 채 뜹니다 —
+     그건 사용자의 답이 아니라 보기 상태입니다(v25.16이 `DEAL.open`에 쓴 것과 같은 판단). */
+  tt('실거래 필터 펴짐이 DEAL에 있고 S에 없다 (v25.45)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     return /filterOpen:false/.test(src) && !/S\.filterOpen/.test(src) && !/S\.dealFilterOpen/.test(src);
+  })());
+  /* 🔴 v25.45 신설 — **접혀 있어도 켠 조건을 말합니다.** 안 그러면 걸러진 목록이 이유 없이
+     짧아 보입니다(원칙 91). 그리고 켠 게 없으면 **비웁니다**(원칙 124 — 「없음」·「전체」 금지). */
+  tt('접힌 필터 줄이 켠 조건을 말하고, 없으면 비운다 (v25.45)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     const f = (src.match(/\$\('dealFilterOn'\)\.textContent = [\s\S]{0,200}?;/)||[''])[0];
+     return !!f && /filterOn\.length/.test(f) && /: ''/.test(f)
+         && !/없음|전체/.test(f);
   })());
   /* 인테리어는 **닫힌 채로 시작합니다.** 기본값이 열림이면 접은 의미가 없습니다. */
   /* 🔴 v25.21 — **대상을 옮겼습니다**(원칙 128). 인테리어 접기 줄이 `.disc` →
@@ -1656,10 +1684,14 @@ HYGIENE.forEach(([name, over]) => {
      (RES.match(/<div/g)||[]).length + ' / ' + (RES.match(/<\/div>/g)||[]).length);
   tt('인테리어·다음걸음이 result 안에 있다',
      RES.includes('id="outInterior"') && RES.includes('id="outSave"'));
-  /* 🔴 v24.0 — 실거래 카드가 하나 늘어 **4개**입니다.
-     ⚠ G-9(결과 블록 ≤ 8)가 이제 **꽉 찼습니다** — 헤더 1 + 타일 3 + 카드 4 = 8.
-       다음에 무엇을 더하려면 **무엇을 접을지 먼저 정해야 합니다**(지침 4층 3번). */
-  tt('result 안 카드가 4개', (RES.match(/<div class="card[ "]/g)||[]).length === 4,
+  /* 🔴 v24.0 — 실거래 카드가 하나 늘어 **4개**였습니다.
+     🔴 v25.44 — **셋입니다.** 영수증 카드가 히어로(`.rhead`)와 한 카드로 합쳐졌습니다.
+       ⏹ 두 면은 렌더에서 한 값도 다르지 않았습니다(면 #FFFFFF · 곡률 26 · 그림자 · 여백 16).
+       ⚠ G-9(결과 블록 ≤ 8)가 **꽉 찬 상태에서 한 칸 비었습니다** — 헤더 1 + 타일 3 + 카드 3 = 7.
+         그래도 다음에 무엇을 더할 때는 **무엇을 접을지 먼저** 정하십시오(지침 4층 3번).
+     ⚠ 잠그는 사실은 「셋이다」가 아니라 **「영수증이 제 카드를 다시 세우지 않았다」**입니다. */
+  tt('result 안 카드가 3개 (v25.44 · 영수증 병합)',
+     (RES.match(/<div class="card[ "]/g)||[]).length === 3,
      (RES.match(/<div class="card[ "]/g)||[]).length + '개');
 
   /* 🔴 v25.6 — **대상만 옮겼습니다**(원칙 128). 잠글 사실은 「질문 카드가 밴드에 붙지 않는다」이지
@@ -4202,8 +4234,25 @@ HYGIENE.forEach(([name, over]) => {
        그건 v24.28이 「영수증을 접지 않는다」로 잠근 것과 짝이라 그대로 둡니다.
      ⏹ **열어 둔 것:** 첫 화면이 무엇을 약속하는지는 이제 아무 검사도 안 봅니다.
        카피를 다시 약속형으로 되돌리면 이 검사를 옛 형태로 살리세요(원칙 128). */
-  tt('영수증 제목이 「실제로 드는 돈」을 그대로 말한다',
-     /<h2 class="card-title">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
+  /* 🔴 v25.44 — 병합으로 이 제목이 **카드의 첫 줄이 아니라 둘째 덩어리의 머리**가 되면서
+     클래스가 하나 늘었습니다(`.rc-head` — 위 여백 24px). 잠글 사실은 그대로입니다 —
+     **그 제목이 그 문구 그대로 있는가.** 클래스 목록을 잠그지 않습니다(원칙 128 · 149). */
+  tt('영수증 제목이 「실제로 드는 돈」을 그대로 말한다 (v25.44)',
+     /<h2 class="card-title[^"]*">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
+  /* 🔴 v25.44 신설 — **영수증이 히어로와 한 카드 안에 있는가.** 병합이 조용히 풀리면
+     (누가 `<div class="card">`를 다시 감싸면) 위 「카드가 3개」와 함께 이것도 빨간불입니다. */
+  tt('영수증이 히어로 카드(.rhead) 안에 있다 (v25.44)', (()=>{
+     const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
+     return /id="receipt"/.test(head) && /id="receiptBot"/.test(head)
+         && /이 집을 살 때 실제로 드는 돈/.test(head);
+  })());
+  /* 🔴 v25.44 신설 — **조건칩이 영수증 뒤에 선다.** v25.11이 정한 사실의 연장입니다 —
+     「답은 한 덩어리, 조건칩은 입력으로 돌아가는 문」. 영수증도 답이라 칩이 그 앞에 서면
+     v25.7이 만들었던 상태(답이 조건에 딸린 것처럼 읽힘)가 다시 생깁니다. */
+  tt('조건칩이 영수증 뒤에 있다 (v25.44)', (()=>{
+     const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
+     return head.indexOf('id="receiptBot"') < head.indexOf('id="condBar"');
+  })());
   /* 🔴 v25.1 — 교체된 첫 화면 카피가 **그 자리에 있는가.** 문자열을 잠그는 것이
      아니라 「부제가 비어 있지 않고, 옛 문장으로 조용히 되돌아가지 않았는가」를 봅니다. */
   /* 🔴 v25.40 — 두 줄 부제가 **한 줄 각인**이 됐습니다(`<br>`이 사라졌습니다).
@@ -4565,11 +4614,13 @@ HYGIENE.forEach(([name, over]) => {
      /* ⏹ v25.21 — 넷 → **셋**입니다. 인테리어 카드의 제목 줄이 접기 줄과 합쳐졌습니다
         (감사 C-3 · 원칙 43). 잠그는 사실은 개수가 아니라 **「전부 명사구인가」**이지만,
         개수를 안 세면 제목이 통째로 사라져도 통과합니다 — 그래서 셋을 셉니다. */
-     const t = [...SRC.matchAll(/<h2 class="card-title">([^<]*)<\/h2>/g)].map(m=>m[1].trim());
+     /* 🔴 v25.44 — 영수증 제목에 `.rc-head`가 붙어 클래스가 둘입니다. 세는 대상은
+        **제목 그 자체**이지 클래스 목록이 아닙니다(원칙 128). */
+     const t = [...SRC.matchAll(/<h2 class="card-title[^"]*">([^<]*)<\/h2>/g)].map(m=>m[1].trim());
      if(t.length !== 3) return false;
      return t.every(x => !/(다면|하세요|해보세요|할까요|보시|하시|주세요)$/.test(x));
   })(), [...(fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'')
-       .matchAll(/<h2 class="card-title">([^<]*)<\/h2>/g))].map(m=>m[1]).join(' / '));
+       .matchAll(/<h2 class="card-title[^"]*">([^<]*)<\/h2>/g))].map(m=>m[1]).join(' / '));
   /* 🔴 v25.21 — **대상을 옮겼습니다**(원칙 128). 이 문구는 `<h2>`에서 접기 줄의 `.k`로
      자리를 옮겼을 뿐 **그대로 살아 있습니다.** 지키려던 사실은 「'예산'이 아니라 '비용'」입니다. */
   tt('인테리어 카드가 예산이 아니라 비용을 말한다', (()=>{
