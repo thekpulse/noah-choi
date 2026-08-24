@@ -758,9 +758,15 @@ HYGIENE.forEach(([name, over]) => {
      있었고**(`.sheet-row b`가 블록이라), 오너 지시로 괄호 한 벌로 압축했습니다.
      ⚠ 잠글 사실은 그대로입니다 — **시트 한 곳에서 정식 명칭과 줄임말이 함께 나온다**(원칙 0 · 153).
        어느 문장 꼴이냐는 이 검사가 잴 사실이 아닙니다. */
-  tt('안내 시트가 정식 명칭을 한 번 풀어 준다 (v25.41)',
-     /주택담보대출[^<>]{0,6}주담대/.test(SCREEN),
-     '🔴 시트에서 「주택담보대출」과 「주담대」를 한 번에 이어 말해야 합니다');
+  /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128). v25.41은 둘이 **한 문장 안에 이어** 나오는
+     꼴(`주택담보대출(주담대)`)을 봤는데, v25.50이 정식 명칭을 **제목으로** 올리면서
+     사이에 태그가 들어갔습니다(오너 지적 — 「밑처럼 디자인을 맞추던지」).
+     ⚠ 잠글 사실은 그대로입니다 — **시트의 한 항목이 정식 명칭과 줄임말을 둘 다 말한다**
+       (원칙 0 · 153). 어느 태그를 사이에 두느냐는 이 검사가 잴 사실이 아닙니다(원칙 149). */
+  tt('안내 시트 한 항목이 정식 명칭과 줄임말을 둘 다 말한다 (v25.50 재타겟)', (()=>{
+     const rows = [...SCREEN.matchAll(/<div class="sheet-row">([\s\S]*?)<\/div>/g)].map(m=>m[1]);
+     return rows.some(r => /주택담보대출/.test(r) && /주담대/.test(r));
+  })(), '🔴 시트의 한 항목이 「주택담보대출」과 「주담대」를 둘 다 말해야 합니다');
   /* 🔴 v24.15 — 검사의 **목적은 이름 일치**이고, 표현(.report-line)만 바뀌었습니다(원칙 48).
      진단서에서 .report-line이 사라지고 자금 구성 줄(mixRow)로 합쳐졌습니다.
      구조를 묻지 말고 **renderReport 안에 그 이름이 있는가**만 봅니다 — 다음에 또 옮겨도 안 깨집니다. */
@@ -1380,8 +1386,11 @@ HYGIENE.forEach(([name, over]) => {
          && !/역세권|학군|세대수|1,000세대/.test(src)
          && /x\.buildYear && thisYear - x\.buildYear <= DEAL\.newYears/.test(UI);
   })());
-  tt('신축 칩이 기존 옵션 칩 컴포넌트를 쓴다',
-     /<button class="chip" id="dealNew"/.test(fs.readFileSync(FILE,'utf8')));
+  /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128). 잠글 사실은 「**기존 칩 컴포넌트**를 쓴다」이지
+     「클래스가 정확히 `chip`이다」가 아닙니다. v25.50이 상태 칩 크기(`.chip.sm` — `--h-chip` 35px ·
+     13px)로 옮겼고, 선택 언어(테두리 1.5px · `.is-on`)는 **한 글자도 안 바뀌었습니다**. */
+  tt('신축 칩이 기존 옵션 칩 컴포넌트를 쓴다 (v25.50 재타겟)',
+     /<button class="chip(?: [a-z]+)?" id="dealNew"/.test(fs.readFileSync(FILE,'utf8')));
   /* 🔴 v24.7 — `aria-pressed` 문자열이 파일 어디든 1회만 있으면 통과했습니다.
      setAttribute 두 줄을 다 지워도, 마크업 초기값만 지워도 초록이었습니다. 양쪽을 봅니다. */
   tt('칩 상태가 마크업과 스크립트 양쪽에 있다', (()=>{
@@ -1676,11 +1685,17 @@ HYGIENE.forEach(([name, over]) => {
        칩 넷을 한 줄로 놓으면 416px이라 다섯 폭 전부 **두 줄 101px**이었고(카드의 16%),
        그 자리는 감사 C-4가 「거르는 것이 걸러지는 것보다 뒤」로 열어 둔 자리였습니다.
      ⚠ 접기를 늘릴 때마다 **새 클래스를 만들지 않았는가**가 이 검사의 본뜻입니다(원칙 120). */
-  tt('결과 화면 아코디언은 4종 (부대비용 · 한도 · 인테리어 · 실거래 필터) (v25.45)', (()=>{
+  /* 🔴 v25.50 — **3종으로 돌아왔습니다**(부대비용 · 한도 · 인테리어). 실거래 필터가
+     접기를 그만뒀습니다(오너 지적 — 「그럴 거면 삭제하던지」).
+     ⚠ 잠글 사실은 **「접기 문법이 한 벌이고, 그 수를 아무도 모르게 늘리지 않는다」**입니다
+       (원칙 149). 수가 바뀌면 이 줄을 고치되 **왜 바뀌었는지를 같이 적습니다**(원칙 148). */
+  tt('결과 화면 아코디언은 3종 (부대비용 · 한도 · 인테리어) (v25.50 재타겟)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
-     return (res.match(/class="disc[ "]/g)||[]).length === 4;
-  })());
+     return (res.match(/class="disc[ "]/g)||[]).length === 3;
+  })(), (()=>{ const src = fs.readFileSync(FILE,'utf8');
+     const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
+     return (res.match(/class="disc[ "]/g)||[]).length + '개'; })());
   /* 🔴 v25.49 신설 — **현금이 먼저입니다**(오너 지시 · v25.31에서 정한 사실).
      ⏹ v25.48이 범례를 영수증으로 옮기며 순서를 뒤집었습니다. 오너 결정이 판에 밀린 자리입니다(원칙 148).
      ⚠ 막대도 왼쪽이 현금(`.f1`)이라, 줄 순서가 막대의 왼쪽→오른쪽과 같아야 합니다. */
@@ -1758,26 +1773,44 @@ HYGIENE.forEach(([name, over]) => {
   })());
   /* 🔴 v25.45 신설 — 실거래 필터가 **같은 문법 · 같은 짝**인가. 그리고 **목록보다 앞**인가
      (감사 C-4 — 거르는 것은 걸러지는 것보다 앞). */
-  tt('실거래 필터가 접기 문법이고 목록보다 앞이다 (v25.45)', (()=>{
+  /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128 · 오너 지적).
+     ⏹ v25.45가 잠근 것은 「접기 문법이다 + 목록보다 앞이다」 둘이었습니다.
+       앞의 하나는 **v25.45가 폭 때문에 고른 수단**이지 지킬 사실이 아니었습니다 —
+       오너가 「버튼을 한 줄에」와 「그럴 거면 삭제하던지」를 같이 말했고, 다시 재니
+       13/600 · 좌우 8px이면 **360px에서 259.1px(여유 45px)**으로 한 줄에 듭니다.
+     ⚠ 지키는 사실 **둘**은 그대로입니다 —
+       ① **목록보다 앞**(감사 C-4 · 거르는 것은 걸러지는 것보다 앞)
+       ② **한 줄**(오너 지시 · `flex-wrap:nowrap`이라 넘치면 넘침으로 드러납니다 · 원칙 142). */
+  tt('실거래 필터가 목록보다 앞이고 한 줄이다 (v25.50 재타겟)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     const ok = /class="disc discline" id="dealFilterToggle"[^>]*aria-controls="dealFilterBox"/.test(src)
-             && /<div class="costbox" id="dealFilterBox">/.test(src)
-             && /\['dealFilterToggle','dealFilterBox','filterOpen', DEAL\]/.test(src);
-     return ok && src.indexOf('id="dealFilterToggle"') < src.indexOf('<div id="dealList">');
+     const css = src.replace(/\/\*[\s\S]*?\*\//g,'');
+     return /<div class="chips oneline" id="dealChips">/.test(src)
+         && /\.chips\.oneline\{[^}]*flex-wrap:nowrap/.test(css)
+         && src.indexOf('id="dealChips"') < src.indexOf('<div id="dealList">');
   })());
   /* 🔴 v25.45 신설 — 펴짐이 **저장에 안 실립니다.** `S`에 두면 다음 방문에 서랍이 펴진 채 뜹니다 —
      그건 사용자의 답이 아니라 보기 상태입니다(v25.16이 `DEAL.open`에 쓴 것과 같은 판단). */
-  tt('실거래 필터 펴짐이 DEAL에 있고 S에 없다 (v25.45)', (()=>{
+  /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128). `filterOpen`은 필터가 접기를 그만두면서
+     읽는 곳이 0이 되어 걷었습니다(원칙 84). 지키는 사실은 그대로입니다 —
+     **보기 상태는 `DEAL`에 있고 `S`(저장되는 답)에 없다.** 지금 그 상태는 줄 펴짐(`open`)입니다. */
+  tt('실거래 보기 상태가 DEAL에 있고 S에 없다 (v25.50 재타겟)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     return /filterOpen:false/.test(src) && !/S\.filterOpen/.test(src) && !/S\.dealFilterOpen/.test(src);
+     const bare = src.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return /open:null/.test(bare) && !/S\.dealOpen/.test(bare)
+         && !/filterOpen/.test(bare);
   })());
   /* 🔴 v25.45 신설 — **접혀 있어도 켠 조건을 말합니다.** 안 그러면 걸러진 목록이 이유 없이
      짧아 보입니다(원칙 91). 그리고 켠 게 없으면 **비웁니다**(원칙 124 — 「없음」·「전체」 금지). */
-  tt('접힌 필터 줄이 켠 조건을 말하고, 없으면 비운다 (v25.45)', (()=>{
+  /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128). v25.45는 접힌 줄이 켠 조건을 **대신 말하는가**를
+     봤습니다. 필터가 늘 보이면 그 말을 **칩 자신이** 합니다 — 같은 사실을 두 곳에 두지 않습니다
+     (원칙 43). 지키는 사실은 그대로 원칙 91입니다: **켠 조건이 화면에 보인다.**
+     ⚠ 그래서 잠글 것은 「상자가 늘 열려 있고, 칩이 자기 상태를 말한다」입니다. */
+  tt('필터가 늘 보이고 칩이 자기 상태를 말한다 (v25.50 재타겟)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
-     const f = (src.match(/\$\('dealFilterOn'\)\.textContent = [\s\S]{0,200}?;/)||[''])[0];
-     return !!f && /filterOn\.length/.test(f) && /: ''/.test(f)
-         && !/없음|전체/.test(f);
+     return /<div class="costbox open" id="dealFilterBox">/.test(src)
+         && /id="dealNew" aria-pressed="false"/.test(src)
+         && /setAttribute\('aria-pressed'/.test(UI)
+         && !/dealFilterOn/.test(src.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,''));
   })());
   /* 인테리어는 **닫힌 채로 시작합니다.** 기본값이 열림이면 접은 의미가 없습니다. */
   /* 🔴 v25.21 — **대상을 옮겼습니다**(원칙 128). 인테리어 접기 줄이 `.disc` →
@@ -2936,9 +2969,15 @@ HYGIENE.forEach(([name, over]) => {
      /\.mfield\{[^}]*background:var\(--fill\)/.test(css2)
      && /\.mfield\{[^}]*border:0/.test(css2));
   /* 포커스는 outline으로만 냅니다 — border를 키우면 필드가 커져 두 칸 그리드가 흔들립니다. */
-  tt('입력 포커스가 레이아웃을 흔들지 않는다',
+  /* 🔴 v25.50 — **대상을 좁혔습니다**(원칙 128). 잠글 사실은 「포커스가 **상자 크기**를
+     안 바꾼다」입니다(원칙 34). 옛 정규식은 `border`로 시작하는 **모든** 속성을 막고 있었는데,
+     `border-radius`는 상자를 한 픽셀도 안 움직입니다.
+     ⚠ v25.50이 포커스 테의 네 모서리를 둥글렸습니다 — 반쪽만 둥근 테가 한 장인 면을
+       **찢어 놓은 것처럼** 보였습니다(오너 지적의 그 자리). */
+  tt('입력 포커스가 레이아웃을 흔들지 않는다 (v25.50 재타겟)',
      /\.mfield:focus-within\{outline:2px solid var\(--green\);outline-offset:-2px\}/.test(css2)
-     && !/\.mfield:focus-within\{[^}]*border/.test(css2));
+     && !/\.mfield:focus-within\{[^}]*border(?!-radius)/.test(css2)
+     && !/\.mfield:focus-within\{[^}]*padding/.test(css2));
   tt('선택 3종이 같은 테두리 문법을 쓴다', (()=>{
      const w = sel => (css2.match(new RegExp(sel+'\\{[^}]*border:([\\d.]+)px solid'))||[])[1];
      return ['\\.chip','\\.zonecard','\\.seg button'].every(x => w(x) === '1.5');
@@ -4432,7 +4471,9 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 지키는 사실은 그대로입니다 — **「준공」이 붙어 있어 기간으로 안 읽힌다.**
        바뀐 것은 **자릿수와 자리**뿐입니다. 「식」 금지도 그대로 둡니다(지침 6-13). */
   tt('연식이 네 자리 + 「준공」이고 펴진 상자에 있다', (()=>{
-     if(!/id="dealNew"[^>]*>신축 \(10년\)/.test(SRC)) return false;
+     /* 🔴 v25.50 — 칩 라벨을 「신축 (10년)」 → 「신축 10년」으로 줄였습니다(한 줄에 넣는 판).
+        잠글 사실은 **연식이 네 자리 + 「준공」**이지 칩 라벨의 괄호가 아닙니다(원칙 149). */
+     if(!/id="dealNew"[^>]*>신축 ?\(?10년\)?/.test(SRC)) return false;
      const f = (SRC.match(/const yearFull = [\s\S]*?\n/)||[''])[0];
      if(!/n \+ '년 준공'/.test(f)) return false;
      if(/slice\(-2\) \+ '년 준공'/.test(SRC)) return false;      /* 두 자리로 안 돌아갔는가 */
@@ -4659,13 +4700,13 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 「무주택 세대주」는 정책대출 조건 문구라 예외입니다 — 그건 API가 주는 값이 아니라
        사용자가 고른 조건입니다. 세는 것은 **단지의 세대수**뿐입니다. */
   tt('없는 값(세대수)을 화면이 말하지 않는다', (()=>{
-     const box = (SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
+     const box = (SRC.match(/<div class="chips[^"]*" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
      const chips = (box.match(/id="([^"]+)"/g)||[]).join(',');
      return chips === 'id="dealChips",id="dealNew",id="deal59",id="deal84",id="dealOver"'
          && !/세대/.test(box)
          && !/\$\{[^}]*\}세대|세대수|세대 ·|· \$\{[^}]*\}세대/.test(SRC);
   })(), (()=>{
-     const box = (SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
+     const box = (SRC.match(/<div class="chips[^"]*" id="dealChips"[\s\S]*?<\/div>/)||[''])[0];
      return (box.match(/id="([^"]+)"/g)||[]).join(','); })());
   /* 🔴 v25.6 — 표기가 「17년식」 → 「17년 준공」으로 바뀌었습니다(위 항목). **대상만 옮깁니다** —
      잠글 사실은 **「함수 하나에서만 만들어지는가」**이지 그 문자열이 무엇인가가 아닙니다(원칙 128).
@@ -4864,10 +4905,127 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 🔴 각주 둘이 **한 자리**에 있는가 — v25.1은 칩을 사이에 두고 갈라 놨습니다. */
   tt('실거래 각주 둘이 칩 아래 나란히 있다', (()=>{
-     const m = SRC.match(/<div class="chips" id="dealChips"[\s\S]*?<\/div>\s*<p class="deal-note" id="dealNote"><\/p>\s*<p class="deal-note" id="dealFoot"><\/p>/);
+     /* 🔴 v25.50 — 각주 둘은 그대로 **한 자리**입니다. 사이에 `#dealList`가 있는 것도 그대로고,
+        바뀐 것은 칩 묶음의 클래스(`chips oneline`)뿐입니다(원칙 149 — 사실이 아니라 표기). */
+     const m = SRC.match(/<div class="chips[^"]*" id="dealChips"[\s\S]*?<p class="deal-note" id="dealNote"><\/p>\s*<p class="deal-note" id="dealFoot"><\/p>/);
      return !!m;
   })());
   tt('각주 둘 사이 간격이 좁다', /\.deal-note \+ \.deal-note\{margin-top:6px\}/.test(RAW));
+
+  /* ═══ 🆕 v25.50 — 오너 실기 지적 여덟 (화면 정돈 · 계산 0) ═════════
+     ⚠ 여기 잠그는 것은 **값이 아니라 사실**입니다(원칙 149). */
+
+  /* 🔴 펴고 접을 때 **꺾쇠가 자리를 옮기면 안 됩니다.** 18px 상자를 통째로 회전하는데
+     그림이 한쪽에 쏠려 있으면, 여는 순간 그림이 반대쪽 끝으로 튀어 금액에 붙습니다
+     (오너 지적 「안에 화살표가 이상한것도」 · 390px 실측에서 10px 튐). */
+  tt('꺾쇠가 상자 가운데에 있다 — 회전해도 안 움직인다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     const off = [...css.matchAll(/\.(?:disc\.discline|deal) \.caret\{([^}]*)\}/g)]
+       .filter(m => /text-align:(?!center)/.test(m[1]));
+     return off.length === 0
+         && /\.disc\.discline \.caret\{[^}]*text-align:center/.test(css)
+         && /\.deal \.caret\{[^}]*text-align:center/.test(css);
+  })());
+
+  /* 🔴 부대비용 서랍의 **첫 줄이 뜨지 않는다**(오너 지적 「취득세 등이 하늘에 떠있는것도」).
+     원인 둘 — ①`.costbox`의 위 여백과 `.line`의 위 패딩이 **겹침** ②10px 들여쓰기가
+     위계가 아니라 **어긋남**으로 읽힘. 둘 다 **지운 것**이라 값이 아니라 부재를 잽니다. */
+  tt('부대비용 첫 줄이 여백을 두 번 먹지 않는다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     return /#costItems\{margin:0 0 4px\}/.test(css)
+         && !/#costItems\{[^}]*padding-left/.test(css)
+         && /#costItems \.line:first-child\{padding-top:0\}/.test(css);
+  })());
+
+  /* 🔴 판정 뱃지는 **값 옆**입니다(오너 지적 「원리금 칸도 좀더 깔끔하고 납작하게」).
+     아래로 떨어뜨리면 오른쪽 칸만 26.2px 길어져 두 칸의 바닥이 어긋납니다(390px 실측).
+     ⚠ 잠글 것은 「26px 줄었다」가 아니라 **「값과 뱃지가 한 줄에 있다」**입니다(원칙 149). */
+  tt('판정 뱃지가 값 옆에 선다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     return /\.payitem\.end \.tile-v\{display:inline-block/.test(css)
+         && /\.payitem\.end \.verdict\{[^}]*margin-top:0/.test(css);
+  })());
+
+  /* 🔴 채수 세그먼트가 **면 대비를 갖는다**(인수인계 0장 ㉱ · v25.38이 찾아 둔 자리).
+     흰 트랙 위 흰 알약이면 고른 표시가 그린 테두리 하나뿐입니다 — 선택 신호 셋 중 둘이 죽습니다. */
+  tt('채수 세그먼트가 흰 트랙 위 흰 알약이 아니다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     const rule = (css.match(/\.ownbox \.seg\{[^}]*\}/)||[''])[0];
+     return !!rule && !/background:var\(--card\)/.test(rule);
+  })());
+
+  /* 🔴 채수 서랍이 **같은 말을 두 번 안 합니다**(오너 지적 「밑에 설명이 있는데 불필요」).
+     「취득세율이 여기서 갈려요」는 바로 아래 응답 줄이 이미 하는 말입니다(원칙 43). */
+  tt('채수 서랍이 취득세 설명을 두 번 안 한다 (v25.50)', (()=>{
+     const f = (UI.match(/function ownDrawer\(\)\{[\s\S]*?\n\}/)||[''])[0];
+     return !!f && !/취득세/.test(f.replace(/\/\*[\s\S]*?\*\//g,''));
+  })());
+
+  /* 🔴 각인이 **워드마크와 붙어 있지 않습니다**(오너 지적 「이상하게 수정됐어」).
+     8px이면 「기」의 세로획이 구분선처럼 읽힙니다 — 360px 실측 78.1+12+91.8=181.9 ≤ 340. */
+  /* ── 🆕 v25.50 중복 전수 감사가 잡은 넷 (원칙 43 · 58) ──────────
+     ⚠ 오너: 「디자인이나 문구가 중복되거나 등 당장 생각은 안 나지만 은근 거슬리는 게 있다」.
+       자리를 못 짚는 지적은 **모아야 보이는 것**이라 화면 전체를 훑어서 찾았습니다
+       (`tools/dupaudit.mjs` — 보이는 글자 전수 · 활자 조합 · 낱말 빈도). */
+
+  /* 🔴 한도 이름이 **한 벌**인가. 막대가 「집값 기준」이라 부르는 것을 시트가
+     「주택담보대출 비율(LTV)」이라고만 부르면, 둘을 잇는 말이 화면에 없습니다(감사 A-2). */
+  tt('한도 막대 이름이 시트의 약어와 이어진다 (v25.50)', (()=>{
+     const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     const m = bare.match(/const LNAME=\{([^}]*)\}/);
+     if(!m) return false;
+     return /LTV:'[^']*\(LTV\)'/.test(m[1]) && /DSR:'[^']*\(DSR\)'/.test(m[1])
+         && /주담대 비율\(LTV\)|주택담보대출 비율\(LTV\)/.test(bare)   /* 시트가 푼다 */
+         && !/LTV:'집값 기준'/.test(m[1]);
+  })());
+
+  /* 🔴 이름이 길어졌으면 **막대 시작점이 세 줄에서 같은가.** 이름 폭이 갈리면 줄마다
+     막대가 다른 자리에서 시작합니다(실측 57.7 ↔ 97.5px). 값이 아니라 정렬을 잠급니다. */
+  tt('한도 세 줄의 막대가 한 세로선에서 시작한다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     const m = css.match(/\.limitrow \.k\{[^}]*min-width:(\d+)px/);
+     return !!m && Number(m[1]) >= 98;
+  })(), (RAW.match(/\.limitrow \.k\{[^}]*min-width:[^;}]*/)||['?'])[0]);
+
+  /* 🔴 「N년 원리금균등」이 한 화면에 **한 번**인가(원칙 43). 원리금 타일의 부속 줄이
+     말하므로 한도 각주는 자기만 할 수 있는 말(「시중은행」)만 합니다.
+     ⚠ 둘은 **함께 뜨고 함께 사라집니다**(대출 0원이면 타일도 각주도 없음 · 실측). */
+  tt('원리금균등 가정을 한 곳에서만 말한다 (v25.50)', (()=>{
+     const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return (bare.match(/년 원리금균등/g)||[]).length === 1
+         && /tileMonthlySub'\)\.textContent = m>0 \? `[^`]*년 원리금균등/.test(bare);
+  })(), (RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'')
+        .match(/년 원리금균등/g)||[]).length + '곳');
+
+  /* 🔴 부대비용 줄에 「집값」이 **한 번**인가. 「집값 외 부대비용 · 집값의 4.1%」로 두 번이었습니다.
+     ⚠ 기준은 바로 왼쪽 이름이 말하므로 알약은 `+N%`면 충분합니다(원칙 43). */
+  tt('부대비용 줄이 「집값」을 두 번 말하지 않는다 (v25.50)', (()=>{
+     const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return /집값 외 부대비용/.test(bare)
+         && /pctEl\.textContent = [\s\S]{0,120}?`\+\$\{/.test(bare)
+         && !/`집값의 \$\{/.test(bare);
+  })());
+
+  /* 🔴 02에서 「자동차 · 학자금 등」이 **한 번**인가(원칙 43). 헬퍼가 목록을 세고,
+     서랍의 「기타 대출」은 위 칸과 어떻게 갈리는지만 말합니다. */
+  tt('02가 대출 예시 목록을 두 번 세지 않는다 (v25.50)', (()=>{
+     const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return (bare.match(/자동차 · 학자금/g)||[]).length === 1;
+  })(), (RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'')
+        .match(/자동차 · 학자금/g)||[]).length + '곳');
+
+  /* 🔴 `hidden`이 `.open`을 이기는가 — 한 엔진의 UA `!important`에 기대지 않습니다(원칙 140). */
+  tt('접기 상자의 hidden이 open을 이긴다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     const i = css.indexOf('.costbox.open{display:block}');
+     const j = css.indexOf('.costbox[hidden]{display:none}');
+     return i > -1 && j > i;
+  })());
+
+  tt('각인이 워드마크와 한 단 떨어져 있다 (v25.50)', (()=>{
+     const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     return /\.brandline\{[^}]*margin:0 0 0 var\(--gap\)/.test(css);
+  })());
 })();
 
 /* ═══ v25.6 — 중개보수 토글 · 첫 화면 여백 · 퍼널/영수증 디테일 ═════════
@@ -6010,10 +6168,25 @@ HYGIENE.forEach(([name, over]) => {
      return foot > 0 && restart > foot && copy > restart;
   })());
 
-  tt('억·만 칸이 한 덩어리로 보인다 (v25.40)',
-     /\.mgrid\{[^}]*gap:0/.test(CSSB)
-     && /\.mgrid \.mfield:first-child\{border-radius:var\(--r-m\) 0 0 var\(--r-m\)\}/.test(CSSB)
-     && /\.mgrid \.mfield:last-child\{[^}]*box-shadow:inset 1px 0 0 var\(--line\)/.test(CSSB));
+  /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128 · 오너 지적 「붙은 게 너무 못생겼어」).
+     ⏹ v25.40은 「한 덩어리」를 **간격 0 + 사이 헤어라인**으로 만들었습니다. 헤어라인이
+       한 금액 한가운데를 가르는 선이 됐고, 두 값은 여전히 1fr/1fr 오른쪽 정렬이라
+       **약 150px 떨어져** 있었습니다(390px 실측).
+     → 이음매를 떼고 **「만」 칸을 118px로 못 박습니다.** 두 값이 가까이 서서 한 숫자로 읽힙니다.
+     ⚠ 잠글 사실 셋 — ①**틈이 없다**(gap:0) ②**바깥 곡률만 있다**(안쪽 모서리를 살리면 두 상자)
+       ③**사이에 선이 없다**. ①②는 v25.40 그대로이고 ③만 뒤집혔습니다. 값이 아니라
+       **「한 장으로 보이는가」**를 잠급니다(원칙 149).
+     ⚠ 118px은 「9,999만」에서 잰 값입니다 — `auto`로 두면 자릿수마다 칸이 흔들립니다(원칙 34). */
+  /* 🔴 v25.50-b — 오너가 「밸런스가 안 맞는다」고 다시 짚었습니다. 잠글 사실이 하나 늘었습니다 —
+     ①**면이 한 장이다**(이음매 없음) ②**두 칸이 같은 폭이다** ③**묶음이 가운데 선다**.
+     ②③이 없으면 숫자가 한쪽으로 쏠려 슬래브의 반이 빕니다(원칙 149 — 값이 아니라 관계). */
+  tt('억·만 칸이 한 장이고 가운데에 선다 (v25.50-b)',
+     /\.mgrid\{[^}]*background:var\(--fill\)/.test(CSSB)          /* 면은 묶음이 든다 */
+     && /\.mgrid\{[^}]*justify-content:center/.test(CSSB)          /* 가운데 */
+     && /\.mgrid \.mfield\{[^}]*background:transparent/.test(CSSB) /* 칸은 면을 안 든다 */
+     && /\.mgrid \.mfield\{[^}]*width:126px/.test(CSSB)            /* 두 칸이 같은 폭 */
+     && !/\.mgrid \.mfield[^{]*\{[^}]*box-shadow:inset/.test(CSSB) /* 이음매 없음 */
+     && !/\.mgrid \.mfield:(first|last)-child\{[^}]*width:/.test(CSSB));
 })();
 
 /* ═══ v25.15 — 실기 지적 반영 (마이크로카피 · 위계 · 동선) ══════════
