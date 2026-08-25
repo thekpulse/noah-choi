@@ -744,7 +744,10 @@ HYGIENE.forEach(([name, over]) => {
      !/은행에서 빌리는 돈/.test(UI), (UI.match(/은행에서 빌리는 돈/g)||[]).length + '곳 남음');
   /* 🔴 v25.48 — 대상을 옮겼습니다(원칙 128). 이 줄은 이제 **자금 출처 줄**입니다
      (`fundRow` · 색점 + 비율). 잠글 사실은 그대로 — **영수증에 주담대 줄이 있는가**. */
-  tt('영수증에 주담대 줄이 있다 (v25.48)', /fundRow\('f2', ?'주담대'/.test(UI));
+  /* 🔴 v25.51 재타겟(원칙 128) — 영수증 두 줄이 **대차대조표 오른쪽 열**이 됐습니다.
+     잠글 사실은 그대로 — **주담대 줄이 있고, 그 값을 그리는 코드가 살아 있다.** */
+  tt('대차대조표에 주담대 줄이 있다 (v25.51 재타겟)',
+     /id="bsLoanIt"[\s\S]*?주담대/.test(fs.readFileSync(FILE,'utf8')) && /put\('bsLoan'/.test(UI));
   /* ⚠ `UI`는 **엔진 뒤 스크립트**입니다 — 안내 시트는 `<body>` 마크업이라 거기 없습니다.
      화면에 나가는 글자는 **마크업 + 화면 스크립트 둘 다**이므로 파일을 통째로 보고 주석만 겁니다
      (원칙 111 — 문자열을 보는 검사는 예외 없이 주석을 겁니다). */
@@ -921,8 +924,10 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 비율 막대 두 조각이 다른 색인가 (원칙 94) */
   const css = fs.readFileSync(FILE,'utf8');
-  const f1 = (css.match(/\.stack i\.f1\{background:var\((--[a-z0-9-]+)\)/) || [])[1];
-  const f2 = (css.match(/\.stack i\.f2\{background:var\((--[a-z0-9-]+)\)/) || [])[1];
+  /* 🔴 v25.51 재타겟 — 조각 색이 `.stack i`에서 **열 막대**(`.bs-bar i`)로 옮겨졌습니다.
+     잠글 사실은 그대로입니다 — **두 조각이 다른 색이고 대비가 3:1 이상**(원칙 94). */
+  const f1 = (css.match(/\.bs-bar i\.f1\{background:var\((--[a-z0-9-]+)\)/) || [])[1];
+  const f2 = (css.match(/\.bs-bar i\.f2\{background:var\((--[a-z0-9-]+)\)/) || [])[1];
   const val = tok => (css.match(new RegExp(tok + ':\\s*(#[0-9a-fA-F]{3,8})')) || [])[1];
   const lum = h => { h=(h||'').replace('#',''); if(h.length!==6) return null;
     const c=[0,2,4].map(i=>{ let v=parseInt(h.substr(i,2),16)/255;
@@ -1493,7 +1498,8 @@ HYGIENE.forEach(([name, over]) => {
      대비는 400 ↔ 900으로 만듭니다. */
   tt('본문에 Light(300)를 쓰지 않는다',
      !/font-weight:300/.test(css2), (css2.match(/[^{;]*font-weight:300/g)||[]).slice(0,3).join(' | '));
-  tt('핵심 수치가 700 이상이다', ['\\.rhead-amount','\\.tile-v','\\.mfield input','\\.line\\.total \\.v']
+  /* 🔴 v25.51 재타겟 — `.line.total .v`(준비할 현금 금액)가 `.bs-am`으로 옮겨졌습니다. */
+  tt('핵심 수치가 700 이상이다 (v25.51 재타겟)', ['\\.rhead-amount','\\.tile-v','\\.mfield input','\\.bs-am']
      .every(x=>{ const m=css2.match(new RegExp(x+'\\{[^}]*font-weight:(\\d+)')); return m && +m[1]>=700; }));
   /* 지시 6 — 이모지를 화면에서 완전히 뺐습니다(v23.20에서 1개 허용했던 것을 폐기). */
   /* ⚠ __selfcheck는 **콘솔 진단**입니다. ✅·🔴·🟡는 화면에 안 뜹니다 — 잘라내고 봅니다.
@@ -1689,38 +1695,51 @@ HYGIENE.forEach(([name, over]) => {
      접기를 그만뒀습니다(오너 지적 — 「그럴 거면 삭제하던지」).
      ⚠ 잠글 사실은 **「접기 문법이 한 벌이고, 그 수를 아무도 모르게 늘리지 않는다」**입니다
        (원칙 149). 수가 바뀌면 이 줄을 고치되 **왜 바뀌었는지를 같이 적습니다**(원칙 148). */
-  tt('결과 화면 아코디언은 3종 (부대비용 · 한도 · 인테리어) (v25.50 재타겟)', (()=>{
-     const src = fs.readFileSync(FILE,'utf8');
+  /* 🔴 v25.51 재타겟 — 부대비용 줄이 대차대조표 안으로 들어가면서 그 버튼은 `.disc`가 아니라
+     **이름 자체**(`.bs-toggle`)가 됐습니다. 잠글 사실은 그대로입니다 —
+     **접기가 세 자리이고, 셋 다 같은 문법(꺾쇠 + `aria-controls` + `.costbox`)이다**(원칙 149).
+     ⚠ 세는 방법을 「클래스 개수」에서 **「서랍을 여는 버튼 개수」**로 옮겼습니다. 클래스를 세면
+       변형이 하나 생길 때마다 검사가 헛돕니다(v25.50이 실거래 필터에서 밟은 자리). */
+  tt('결과 화면 접기는 3종 (부대비용 · 한도 · 인테리어) (v25.51 재타겟)', (()=>{
+     const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
-     return (res.match(/class="disc[ "]/g)||[]).length === 3;
-  })(), (()=>{ const src = fs.readFileSync(FILE,'utf8');
+     const btn = res.match(/aria-controls="[a-zA-Z]+"/g)||[];
+     return btn.length === 3 && (res.match(/<span class="caret"/g)||[]).length >= 3;
+  })(), (()=>{ const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
      const res = src.slice(src.indexOf('<section class="result"'), src.indexOf('</section>'));
-     return (res.match(/class="disc[ "]/g)||[]).length + '개'; })());
+     return (res.match(/aria-controls="[a-zA-Z]+"/g)||[]).length + '개'; })());
   /* 🔴 v25.49 신설 — **현금이 먼저입니다**(오너 지시 · v25.31에서 정한 사실).
      ⏹ v25.48이 범례를 영수증으로 옮기며 순서를 뒤집었습니다. 오너 결정이 판에 밀린 자리입니다(원칙 148).
      ⚠ 막대도 왼쪽이 현금(`.f1`)이라, 줄 순서가 막대의 왼쪽→오른쪽과 같아야 합니다. */
-  tt('자금 출처는 현금이 먼저다 (v25.49)', (()=>{
-     const bare = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
-     return bare.indexOf("fundRow('f1'") < bare.indexOf("fundRow('f2'");
+  tt('자금 출처는 현금이 먼저다 (v25.51 재타겟)', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return bare.indexOf('id="bsCash"') < bare.indexOf('id="bsLoan"');
   })());
   /* 🔴 v25.49 신설 — **같은 종류의 줄이 한 규격이다**(오너 지적 — 「글자 크기 … 다 안맞네」).
      ⏹ 전: 「준비할 현금」 이름 16 · 금액 20 · 자간 -.04em ↔ 옆줄(주담대) 14 · 14 · -.02em.
      ⚠ 잠글 것은 「14다」가 아니라 **「이름의 크기가 옆줄과 같고, 다른 것은 굵기·잉크뿐」**입니다.
        금액만 한 단 위인 것은 허용합니다 — 사용자가 실제로 마련해야 하는 값입니다(원칙 100). */
-  tt('자금 출처 두 줄이 한 규격이다 (v25.49)', (()=>{
+  /* 🔴 v25.51 재타겟 — 규격을 들고 있던 자리가 `.line.total`에서 `.bs-nm`·`.bs-am`으로
+     옮겨졌습니다. 잠글 사실은 그대로 — **네 줄이 한 규격이고, 이름과 금액이 갈리는 것은
+     크기 한 단과 잉크뿐**입니다(원칙 100 · v25.49). 오너 지적(「주담대와 현금은 동등하게
+     중요해 보이는데」)대로 **두 줄에 굵기 차이를 두지 않습니다.** */
+  tt('대차대조표 네 줄이 한 규격이다 (v25.51 재타겟)', (()=>{
      const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
-     const k = (css.match(/\.line\.total \.k\{[^}]*\}/)||[''])[0];
-     const v = (css.match(/\.line\.total \.v\{[^}]*\}/)||[''])[0];
-     return !!k && !/font-size/.test(k)                       /* 이름은 옆줄과 같은 크기 */
-         && /font-weight:700/.test(k) && /--ink\)/.test(k)
-         && /font-size:var\(--t4\)/.test(v)                  /* 금액만 한 단 */
-         && /letter-spacing:var\(--ls-ttl\)/.test(v);        /* 자간은 크기가 정합니다 */
+     const nm = (css.match(/\.bs-nm\{[^}]*\}/)||[''])[0];
+     const am = (css.match(/\.bs-am\{[^}]*\}/)||[''])[0];
+     return /font-size:var\(--t7\)/.test(nm) && /font-weight:400/.test(nm) && /--ink-3\)/.test(nm)
+         && /font-size:var\(--t6\)/.test(am) && /font-weight:700/.test(am)
+         && /letter-spacing:var\(--ls-ttl\)/.test(am)
+         && !/\.bs-side:last-child|\.bs-it:first-child \.bs-am\{/.test(css);
   })());
   /* 🔴 v25.49 신설 — **행간을 적습니다.** 같은 표에 서는 세 줄인데 접기 둘만 선언이 없어
      브라우저 기본으로 그려지고 있었습니다(v25.16이 `.tile-s`에서 겪은 그 자리 · 원칙 144). */
-  tt('한 표에 서는 세 줄이 행간을 적는다 (v25.49)', (()=>{
+  /* 🔴 v25.51 재타겟 — `.disc.discline`이 사라졌습니다(부대비용이 대차대조표로).
+     같은 표에 서는 줄은 이제 `.line`(서랍 안) · `.disc`(한도) · `.bs-nm` · `.bs-am`입니다.
+     잠글 사실은 그대로 — **행간을 안 적는 줄이 없다**(원칙 144 · G-28이 렌더에서 잽니다). */
+  tt('한 표에 서는 줄이 행간을 적는다 (v25.51 재타겟)', (()=>{
      const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
-     return ['\\n.line\\{', '\\n.disc\\{', '\\n.disc.discline\\{']
+     return ['\\n.line\\{', '\\n.disc\\{', '\\n.bs-nm\\{', '\\n.bs-am\\{']
        .every(re => /line-height/.test((css.match(new RegExp(re + '[^}]*\\}'))||[''])[0]));
   })());
   /* 🔴 v25.49 신설 — **금액 아래가 붙어 있지 않다**(오너 지적 — 「저기에 붙으니깐」).
@@ -1746,18 +1765,29 @@ HYGIENE.forEach(([name, over]) => {
          && !/이 집을 살 때 실제로 드는 돈/.test(head)
          && /id="heroLabel"/.test(head);
   })());
-  tt('영수증에 집값 줄이 없다 · 히어로가 그 값이다 (v25.48)', (()=>{
+  /* 🔴 v25.51 재타겟 — 히어로가 **필요한 돈**(총액)이 되고, 집값은 대차대조표 왼쪽 첫 줄입니다.
+     잠글 사실은 그대로 — **같은 값이 두 곳에 안 적힌다**(원칙 43) + **히어로 금액의 출처가 하나**. */
+  tt('집값이 한 줄뿐이고 히어로는 총액이다 (v25.51 재타겟)', (()=>{
      const bare = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
-     return !/row\('집값',/.test(bare) && /rollUpWon\(\$\('heroAmount'\), headline,/.test(bare);
+     return !/row\('집값',/.test(bare)
+         && (bare.match(/<p class="bs-nm">집값<\/p>/g)||[]).length === 1
+         && /rollUpWon\(\$\('heroAmount'\), heroFigures\(c, price\)\.T \* 10000,/.test(bare);
   })());
   /* 🔴 막대는 **자기 두 줄 바로 위**에 있습니다 — 부대비용 줄 위에 두면 그 줄을 설명하는
      것처럼 읽힙니다(실기 그림에서 확인). 읽는 순서가 셈의 순서와 같아야 합니다. */
-  tt('막대가 자금 출처 두 줄 바로 위에 있다 (v25.48)', (()=>{
-     const SRC = fs.readFileSync(FILE,'utf8');
+  /* 🔴 v25.51 재타겟 — 자금 구성 막대가 사라지고 **열마다 4px 막대**가 그 일을 합니다.
+     잠글 사실 : **막대는 자기 열의 머리 바로 아래, 그 열의 줄들 바로 위**에 있습니다 —
+     열 밖으로 나가면 「무엇의 비율인가」가 다시 흐려집니다(v25.48이 실기 그림에서 밟은 자리). */
+  tt('열 막대가 제 열 안에 있다 (v25.51 재타겟)', (()=>{
+     const SRC = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
      const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
-     const bar = head.indexOf('id="fundStack"'), bot = head.indexOf('id="receiptBot"');
-     const etc = head.indexOf('id="costToggle"');
-     return etc > 0 && bar > etc && bot > bar;
+     const sides = head.match(/<div class="bs-side">[\s\S]*?<\/div>\s*<\/div>/g) || [];
+     const one = (side, barId, firstId) => {
+        const cap = side.indexOf('bs-cap'), bar = side.indexOf(barId), row = side.indexOf(firstId);
+        return cap >= 0 && bar > cap && row > bar; };
+     return head.indexOf('id="bsBarUse"') > 0 && head.indexOf('id="bsBarFund"') > 0
+         && one(head.slice(0, head.indexOf('id="bsBarFund"')), 'id="bsBarUse"', 'id="bsPrice"')
+         && one(head.slice(head.indexOf('id="bsBarFund"') - 200), 'id="bsBarFund"', 'id="bsCash"');
   })());
 
   /* 🔴 v25.47 신설 — **세그먼트 칸 수를 손으로 안 적는다**(오너 지적).
@@ -1781,12 +1811,17 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 지키는 사실 **둘**은 그대로입니다 —
        ① **목록보다 앞**(감사 C-4 · 거르는 것은 걸러지는 것보다 앞)
        ② **한 줄**(오너 지시 · `flex-wrap:nowrap`이라 넘치면 넘침으로 드러납니다 · 원칙 142). */
-  tt('실거래 필터가 목록보다 앞이고 한 줄이다 (v25.50 재타겟)', (()=>{
+  /* 🔴 v25.51 재타겟(원칙 128 · 168) — **자리가 목록 뒤로 바뀌었습니다**(오너 결정).
+     ⏹ v25.45가 감사 C-4(「거르는 것은 걸러지는 것보다 앞」)를 근거로 앞으로 옮긴 자리입니다.
+       되돌리기 전에 그 근거를 그림과 함께 오너에게 냈고, 오너가 **「제목 다음에 답(목록)」**을
+       골랐습니다. 근거를 지우지 않고 **결정을 적어 둡니다**(원칙 148).
+     ⚠ 지키는 사실 하나는 그대로입니다 — **한 줄**(`flex-wrap:nowrap`이라 넘치면 넘침으로 드러납니다). */
+  tt('실거래 필터가 목록 뒤이고 한 줄이다 (v25.51 재타겟)', (()=>{
      const src = fs.readFileSync(FILE,'utf8');
      const css = src.replace(/\/\*[\s\S]*?\*\//g,'');
      return /<div class="chips oneline" id="dealChips">/.test(src)
          && /\.chips\.oneline\{[^}]*flex-wrap:nowrap/.test(css)
-         && src.indexOf('id="dealChips"') < src.indexOf('<div id="dealList">');
+         && src.indexOf('id="dealChips"') > src.indexOf('<div id="dealList">');
   })());
   /* 🔴 v25.45 신설 — 펴짐이 **저장에 안 실립니다.** `S`에 두면 다음 방문에 서랍이 펴진 채 뜹니다 —
      그건 사용자의 답이 아니라 보기 상태입니다(v25.16이 `DEAL.open`에 쓴 것과 같은 판단). */
@@ -2029,8 +2064,11 @@ HYGIENE.forEach(([name, over]) => {
 
     /* 영수증의 기타비용. 이름 안에 이미 가운뎃점이 있어, 이름들을 ' · '로 이으면
        세 항목이 여섯으로 읽힙니다. **켠 것마다 한 줄**이 원래 모양입니다. */
-    tt('영수증 기타비용이 항목별 한 줄이다',
-       /const ETC_ROWS\s*=/.test(src) && /ETC_ROWS\.forEach/.test(src) && !/etcLabel\s*\(/.test(src));
+    /* 🔴 v25.51 재타겟 — 소계를 화면 값끼리 더하던 `etcSum`이 사라졌습니다(부대비용은 이제
+       총액에서 집값을 뺀 나머지 · `heroFigures`). 잠글 사실은 그대로 —
+       **켠 항목이 이름별로 살아 있고, 이름들을 한 줄로 합치는 옛 함수가 안 돌아왔다.** */
+    tt('기타비용이 항목별로 남아 있다 (v25.51 재타겟)',
+       /const ETC_ROWS\s*=/.test(src) && /ETC_ROWS\.reduce/.test(src) && !/etcLabel\s*\(/.test(src));
     /* 순서가 어긋나면 영수증과 「부대비용 상세 설정」을 눈으로 대조할 수 없습니다. */
     /* ⚠ 스위치는 **마크업**에 있습니다. `UI`는 BUILD 줄 뒤의 스크립트만 담으므로
          여기서는 파일 전문을 다시 읽습니다(이걸 놓쳐 검사가 한 번 헛돌았습니다). */
@@ -3404,8 +3442,10 @@ HYGIENE.forEach(([name, over]) => {
   /* ── ① 이름 하나 (원칙 91) ─────────────────────
      금액이 **붙는** 자리 셋을 봅니다. 화면 자금 구성은 비율만 찍지만,
      같은 막대 그림이 카드에도 있어 이름이 갈리면 「다른 값인가」가 됩니다. */
-  tt('영수증 합계가 「준비할 현금」이다 (v25.48)',
-     /fundRow\('f1', ?'준비할 현금'/.test(BARE) && !/내가 준비할 현금/.test(BARE));
+  /* 🔴 v25.51 재타겟 — 그 줄이 대차대조표 오른쪽 첫 줄이 됐습니다. 이름은 그대로입니다. */
+  tt('대차대조표가 「준비할 현금」이다 (v25.51 재타겟)',
+     /<p class="bs-nm">준비할 현금<\/p>/.test(fs.readFileSync(FILE,'utf8'))
+     && !/내가 준비할 현금/.test(BARE));
   tt('공유 카드가 「준비할 현금」이다',
      /mixRow\('d1','준비할 현금'/.test(repBody()));
   tt('공유 카드에 「내 돈」이 없다', !/'내 돈'|내 돈 /.test(repBody()));
@@ -3414,12 +3454,15 @@ HYGIENE.forEach(([name, over]) => {
         같은 판에서 괄호로 금액을 찍었습니다. 실물에서 가진 돈 10억이 「(10억원)」으로 그대로 나갔습니다 —
         인테리어를 안 켜면 준비할 현금 = 가진 돈입니다. 그림은 저장돼 재전달됩니다.
      ⚠ 헤드라인(매수 가능 금액)은 남습니다 — 그건 집값이지 재산이 아닙니다. */
-  tt('공유 카드가 현금·대출 금액을 찍지 않는다', (()=>{
+  /* 🔴 v25.51 재타겟(원칙 128) — 카드 머리가 **「필요한 돈」**이 되면서 그리는 값이
+     `headline`(집값)에서 `heroFigures(...).T`(총액)로 바뀌었습니다.
+     잠글 사실은 그대로입니다 — **카드가 정확한 금액을 찍는 길은 머리 하나뿐이다**
+     (아래 자금 구성은 축약 `eokShort` · 재산이 그대로 나가지 않게 · v24.15 · v25.36). */
+  tt('공유 카드가 현금·대출 금액을 찍지 않는다 (v25.51 재타겟)', (()=>{
      const b = repBody();
-     /* 금액을 그리는 길은 헤드라인 하나뿐이어야 합니다. */
      return !/formatWon\(/.test(b)
          && (b.match(/richWon\(/g)||[]).length === 1
-         && /richWon\(approx\(headline\)\)/.test(b);
+         && /richWon\(approx\(heroFigures\(c, v\.price\)\.T \* 10000\)\)/.test(b);
   })());
   /* 🔴 v25.36 — **대상을 옮겼습니다**(원칙 128 · 148 · 158).
      v24.21은 「mixRow가 금액 인자를 안 받는다」를 잠갔습니다. 근거는
@@ -3445,8 +3488,11 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 자리는 폭이 정합니다(원칙 149 · 159). 소스로 잠글 사실이 아닙니다. */
   /* 🔴 v25.48 — **화면 범례가 영수증 두 줄로 들어갔습니다.** 대상만 옮깁니다(원칙 128) —
      잠글 사실은 「화면 자금 구성이 공유 카드와 **같은 이름**을 쓰는가」입니다. */
-  const LEGEND_LINE = (BARE.match(/const fundRow = [\s\S]*?fundRow\('f2'[^;]*;/) || [''])[0];
-  tt('화면 자금 구성도 같은 이름을 쓴다 (v25.48)',
+  /* 🔴 v25.51 재타겟 — 화면 자금 구성이 **대차대조표 오른쪽 열**입니다.
+     잠글 사실은 그대로 — 화면과 공유 카드가 **같은 이름**을 씁니다(원칙 91). */
+  const LEGEND_LINE = (fs.readFileSync(FILE,'utf8')
+     .match(/<p class="bs-cap">어떻게 마련하나<\/p>[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
+  tt('화면 자금 구성도 같은 이름을 쓴다 (v25.51 재타겟)',
      /준비할 현금/.test(LEGEND_LINE) && /주담대/.test(LEGEND_LINE)
      && !/내 돈|내가 준비할 현금/.test(LEGEND_LINE), LEGEND_LINE.slice(0, 120));
   /* 대출이 없을 때도 이름이 갈리면 안 됩니다 — 「전부 내 돈」은 예전 이름입니다. */
@@ -4182,8 +4228,10 @@ HYGIENE.forEach(([name, over]) => {
         안 그러면 시작 > 끝이 되어 잘라낸 문자열이 빈 채로 조용히 빨간불입니다. */
      const st = SRC.indexOf('<section class="result"');
      const res = SRC.slice(st, SRC.indexOf('</header>', st));
-     /* 🔴 v25.48 — 범례가 사라졌습니다. 잠글 사실은 **막대가 히어로 안에 있는가**뿐입니다. */
-     return /<div class="fundwrap">[\s\S]*?id="fundStack"/.test(res) && !/id="fundLegend"/.test(res);
+     /* 🔴 v25.51 재타겟 — 막대 자리를 **대차대조표**가 받았습니다.
+        잠글 사실 : **답을 그리는 것이 히어로 카드 안에 있다**(카드가 다시 갈리지 않았는가). */
+     return /<div class="bs" id="bsheet">/.test(res) && !/id="fundLegend"/.test(res)
+         && !/id="fundStack"/.test(res);
   })());
   /* 🔴 `.tile-k`(--ink-4)는 **흰 카드 위에서** 4.62:1로 검증된 값입니다. 히어로는 앱 배경이라
      같은 토큰이 4.19:1로 떨어집니다 — `.barlabel`과 같은 자리(원칙 97). */
@@ -4229,43 +4277,64 @@ HYGIENE.forEach(([name, over]) => {
   /* ④ 블록 3 — 부대비용 소계 접기. **영수증 자체는 안 접습니다.** */
   /* 🔴 v25.6 — **대상만 옮겼습니다**(원칙 128). 이름 span 안에 비율 알약이 하나 들어왔습니다.
      잠글 사실은 「이름과 금액이 한 줄에 나란하다」이지 「둘 사이에 아무것도 없다」가 아닙니다. */
-  tt('부대비용이 영수증 소계 한 줄로 접힌다',
-     /<button class="disc discline" id="costToggle"/.test(SRC)
-     && /<span class="k">집값 외 부대비용[\s\S]*?<\/span><span class="v" id="etcTotal">/.test(SRC));
+  /* 🔴 v25.51 재타겟 — 부대비용이 **대차대조표 왼쪽 둘째 줄**이 되고, 이름 자체가 서랍을
+     여는 버튼입니다. 이름은 「집값 외 부대비용」 → **「부대비용」**(바로 위 줄이 「집값」이라
+     같은 말을 두 번 하던 자리 · 원칙 43). 잠글 사실 : **한 줄로 접히고 금액을 말한다.** */
+  tt('부대비용이 한 줄로 접히고 금액을 말한다 (v25.51 재타겟)',
+     /<button class="bs-nm bs-toggle" id="costToggle"[^>]*aria-controls="costBox">부대비용/.test(SRC)
+     && /<p class="bs-am" id="bsEtc">/.test(SRC));
   /* 🔴 v25.9 — **영수증 금액이 한 열에 선다**(오너 지적).
      접히는 줄만 오른쪽 끝에 ▾가 서서 그 줄의 금액이 혼자 안으로 들어와 있었습니다
      (실측 360px: 다른 넷 328 · 이 줄 310). 비우는 폭은 **한 곳(`--caret-col`)**에서 옵니다.
      ⚠ 「18px인가」를 안 잽니다 — 값이 아니라 **두 자리가 같은 토큰을 보는가**를 잽니다(원칙 84).
      ⚠ 꺾쇠에 고정 폭이 없으면 열이 **글리프 폭에 딸려** 갑니다. 이 앱은 글꼴이 늦게 붙습니다(v25.8). */
-  tt('영수증 금액이 꺾쇠 열만큼 비운다', (()=>{
-     const gutter = (SRC.match(/#receipt \.line,#receiptBot \.line,#costItems \.line\{padding-right:var\((--[a-z0-9-]+)\)\}/)||[])[1];
-     const caret  = (SRC.match(/\.disc\.discline \.caret\{[^}]*width:var\((--[a-z0-9-]+)\)/)||[])[1];
+  /* 🔴 v25.51 재타겟 — 영수증 네 줄이 대차대조표로 가면서 이 열이 남은 자리는
+     **서랍 안 줄**(`#costItems .line`)과 **실거래 줄**(`.deal .caret`)입니다.
+     잠글 사실은 그대로 — **비우는 폭과 꺾쇠 폭이 같은 토큰에서 온다**(원칙 84). */
+  tt('접히는 줄의 금액이 꺾쇠 열만큼 비운다 (v25.51 재타겟)', (()=>{
+     const gutter = (SRC.match(/#costItems \.line\{padding-right:var\((--[a-z0-9-]+)\)\}/)||[])[1];
+     const caret  = (SRC.match(/\.deal \.caret\{[^}]*width:var\((--[a-z0-9-]+)\)/)||[])[1];
      return !!gutter && gutter === caret;
   })());
   /* ⚠ `gap`이 「이름↔금액」과 「금액↔꺾쇠」를 겸하면 열 폭이 두 값의 합이 됩니다. 0으로 내리고
      간격은 이름 쪽 여백이 냅니다 — 그래야 비우는 폭이 `--caret-col` 하나로 끝납니다. */
-  tt('소계 줄의 꺾쇠 간격이 열 폭에 안 섞인다',
-     /\.disc\.discline\{gap:0\}/.test(SRC)
-     && /\.disc\.discline \.caret\{[^}]*margin-left:0/.test(SRC));
+  /* 🔴 v25.51 재타겟 — `.disc.discline`이 사라졌습니다. 같은 사실을 지키는 자리는
+     이제 **부대비용 이름 버튼**입니다 — 이름과 꺾쇠 사이는 `gap` 하나로만 정해지고,
+     그 값이 열 폭에 섞이지 않습니다(꺾쇠가 이름 옆에 있어 비우는 열 자체가 없습니다). */
+  tt('부대비용 꺾쇠가 이름 옆에 붙는다 (v25.51 재타겟)',
+     /\.bs-toggle\{[^}]*display:inline-flex/.test(SRC)
+     && /\.bs-toggle\{[^}]*gap:6px/.test(SRC));
   /* 🔴 여기가 이 판의 선입니다 — 대출과 준비할 현금은 **서랍 밖**입니다.
      서랍 안으로 들어가면 첫 화면의 약속(「실제로 드는 돈이 나와요」)이 접힌 채로 시작합니다. */
-  tt('대출 · 준비할 현금이 접히는 서랍 밖이다', (()=>{
-     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="receiptBot"');
+  /* 🔴 v25.51 재타겟 — 두 줄이 대차대조표 오른쪽 열입니다. **여기가 이 판의 선**입니다:
+     대출과 준비할 현금은 서랍 밖에 있어야 합니다(첫 화면의 약속이 접힌 채로 시작하면 안 됩니다). */
+  tt('대출 · 준비할 현금이 접히는 서랍 밖이다 (v25.51 재타겟)', (()=>{
+     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="limitToggle"');
      const box = SRC.slice(a, b);
      return a > 0 && b > a
-         && /\$\('receiptBot'\)\.innerHTML=h/.test(UI)
-         && !/id="receiptBot"/.test(box)
-         && /fundRow\('f2', ?'주담대'/.test(UI) && /fundRow\('f1', ?'준비할 현금'/.test(UI);
+         && SRC.indexOf('id="bsCash"') < a && SRC.indexOf('id="bsLoan"') < a
+         && !/id="bsCash"|id="bsLoan"/.test(box)
+         && /put\('bsCash'/.test(UI) && /put\('bsLoan'/.test(UI);
   })());
   /* 소계는 화면에 적힌 것들의 합입니다. 켠 항목의 **금액을 서랍 안에 두 번 적지 않습니다** —
      스위치 줄이 이미 말하고 있어서, 두 벌이면 껐을 때 어느 쪽이 진짜인지 알 수 없습니다. */
-  tt('부대비용 소계가 켠 항목까지 센다',
-     /ETC_ROWS\.forEach\(\(\[k\]\) => \{ if\(S\[k\]\.on && S\[k\]\.v > 0\) etcSum \+= man10k\(S\[k\]\.v \* 10000\); \}\);/.test(UI));
+  /* 🔴 v25.51 재타겟 — 소계를 화면에서 다시 더하지 않습니다. 켠 항목은 **엔진으로** 들어가고
+     (`ctx()`의 `etc:etcMan()`), 화면의 부대비용은 총액에서 집값을 뺀 나머지입니다.
+     잠글 사실은 그대로 — **켠 항목이 부대비용에 반영된다**(안 그러면 스위치가 거짓말을 합니다). */
+  tt('켠 항목이 부대비용 계산에 들어간다 (v25.51 재타겟)',
+     /const etcMan = \(\) => ETC_ROWS\.reduce/.test(UI) && /etc:etcMan\(\)/.test(UI.replace(/\s+/g,'')));
   /* 🔴 소계는 **화면에 적힌 값끼리** 더합니다. 원값 합을 다시 반올림하면 항목 합과 1만원 어긋나고,
      사람은 이 표를 눈으로 더해 봅니다(실기에서 5,911 vs 5,912로 실제로 어긋났습니다 · 원칙 91). */
-  tt('부대비용 소계가 화면에 적힌 단위로 더해진다',
-     /const man10k = v => Math\.round\(v\/10000\)\*10000;/.test(UI)
-     && /etcSum = man10k\(c\.tax\) \+ man10k\(c\.brokerFee\)/.test(UI));
+  /* 🔴 v25.51 재타겟 — **표가 반드시 맞습니다**(오너 결정). 항목마다 반올림해 더하면
+     「집값 + 부대비용」과 「현금 + 주담대」가 30.2%에서 1만원 어긋났습니다(576케이스 실측).
+     이제 총액을 먼저 정하고 나머지를 빼서 만듭니다 — 그리고 갈리는 1만원은 **보수적인 쪽**입니다. */
+  tt('좌우 두 쪽이 반올림까지 맞는다 (v25.51 재타겟)', (()=>{
+     const f = (UI.match(/function heroFigures\([\s\S]*?\n\}/)||[''])[0];
+     return /Math\.ceil\(Math\.max\(0, c\.totalNeeded/.test(f)      /* 총액은 올림 */
+         && /const P = Math\.floor/.test(f) && /const L = Math\.floor/.test(f)
+         && /const E = Math\.max\(0, T - P\)/.test(f)
+         && /const C = Math\.max\(0, T - L\)/.test(f);
+  })());
   /* ⑤ 실거래 부속 줄 — 잘림. 사용자 캡쳐에서 「2017ㄴ」으로 확인, 390px 실측 37px 넘침. */
   tt('실거래 부속 줄이 두 줄로 흐른다',
      /\.deal \.nm small\{[^}]*white-space:normal/.test(SRC)
@@ -4387,16 +4456,20 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 🔴 **잠글 사실은 「단정하지 않는가」입니다.** 이 숫자는 100만원 단위 반올림값이라
        확정처럼 말하면 거짓입니다(원칙 39 · 28). 그 일을 이제 **라벨의 「예상」**이 합니다.
      ⚠ 금지어에 **「최종」**을 넣습니다 — 지시서가 쓴 말이고, 이 값에는 못 씁니다. */
-  tt('히어로가 단정하지 않는다 (v25.41)', (()=>{
-     const m = SRC.match(/\$\('heroLabel'\)\.textContent = isOverride \? '([^']*)' : '([^']*)'/);
+  /* 🔴 v25.51 재타겟 — 히어로 라벨이 **「필요한 돈」 하나**가 됐습니다(대차대조표의 머리).
+     ⏹ 「예상」은 라벨에서 사라졌습니다 — 이 값은 반올림이 아니라 **총액**이고, 추정이라는 사실은
+       카드 아래 각주와 면책이 말합니다. 잠글 사실은 그대로 — **히어로가 단정하지 않는다**
+       (「최종」·「최대」·「노려볼 수 있는」이 안 들어온다 · 원칙 39). */
+  tt('히어로가 단정하지 않는다 (v25.51 재타겟)', (()=>{
+     const m = SRC.match(/\$\('heroLabel'\)\.textContent = '([^']*)'/);
      if(!m) return false;
      /* ⚠ 금지어는 **히어로 문자열 안에서만** 봅니다 — 화면 다른 곳의 「LTV 최대 80%」는
         정책 사실 서술이라 잡으면 안 됩니다(원칙 152 — 검사가 엉뚱한 자리를 물면 근거를 지우게 됩니다). */
      const tail = (SRC.match(/\$\('heroTail'\)\.textContent = '([^']*)'/)||['',''])[1];
-     const hero = m[1] + ' ' + m[2] + ' ' + tail;
-     return /예상/.test(m[2]) && !/노려볼 수 있는|최종|최대/.test(hero);
-  })(), (()=>{ const m = SRC.match(/\$\('heroLabel'\)\.textContent = isOverride \? '([^']*)' : '([^']*)'/);
-     return m ? m[2] : '없음'; })());
+     const hero = m[1] + ' ' + tail;
+     return !/노려볼 수 있는|최종|최대/.test(hero);
+  })(), (()=>{ const m = SRC.match(/\$\('heroLabel'\)\.textContent = '([^']*)'/);
+     return m ? m[1] : '없음'; })());
   /* 🔴 지시서: 영수증 제목을 「필요 자금 총액」으로. 첫 화면이 「입력 세 번이면 **집 살 때 실제로
      드는 돈**이 나와요」라고 약속하고 이 제목이 그 약속을 받습니다 — 바꾸면 약속과 받는 말이
      어긋납니다(v24.28이 영수증 접기를 미채택한 것과 같은 근거).
@@ -4414,15 +4487,19 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.48 — **제목을 뺐습니다**(오너 지적 — 히어로 라벨과 중복). 대상을 옮깁니다(원칙 128) :
      지키려던 사실은 「집값 말고 무엇이 더 드는지를 화면이 말한다」이고, 이제 **부대비용 줄 자신이**
      말합니다(「집값 외 부대비용 · 집값의 4.1%」). 그리고 제목이 **되살아나지 않았는가**를 같이 봅니다. */
-  tt('집값 외에 드는 돈을 부대비용 줄이 말한다 (v25.48)',
-     /집값 외 부대비용/.test(SRC) && /class="ratio" id="etcPct"/.test(SRC)
+  /* 🔴 v25.51 재타겟 — 「집값 말고 얼마가 더 드는가」를 이제 **왼쪽 열이 통째로** 말합니다
+     (머리 「어디에 쓰나」 + 집값 + 부대비용). 비율 알약은 **필요한 돈 대비 %**로 바뀌어
+     금액 옆 괄호에 있습니다 — 한 화면에 기준을 둘 두지 않습니다(원칙 91). */
+  tt('집값 외에 드는 돈을 왼쪽 열이 말한다 (v25.51 재타겟)',
+     /<p class="bs-cap">어디에 쓰나<\/p>/.test(SRC) && />부대비용<span class="caret"/.test(SRC)
+     && !/class="ratio" id="etcPct"/.test(SRC)
      && !/<h2 class="card-title[^"]*">이 집을 살 때 실제로 드는 돈<\/h2>/.test(SRC));
   /* 🔴 v25.44 신설 — **영수증이 히어로와 한 카드 안에 있는가.** 병합이 조용히 풀리면
      (누가 `<div class="card">`를 다시 감싸면) 위 「카드가 3개」와 함께 이것도 빨간불입니다. */
   tt('영수증이 히어로 카드(.rhead) 안에 있다 (v25.44)', (()=>{
      const head = (SRC.match(/<header class="rhead">[\s\S]*?<\/header>/)||[''])[0];
-     /* 🔴 v25.48 — 제목이 사라져 그 조건을 뺐습니다. 잠글 사실은 **한 카드 안인가**입니다. */
-     return /id="receipt"/.test(head) && /id="receiptBot"/.test(head) && /id="costToggle"/.test(head);
+     /* 🔴 v25.51 재타겟 — 영수증이 대차대조표가 됐습니다. 잠글 사실은 **한 카드 안인가**입니다. */
+     return /id="bsheet"/.test(head) && /id="costToggle"/.test(head) && /id="limitToggle"/.test(head);
   })());
   /* 🔴 v25.44 신설 — **조건칩이 영수증 뒤에 선다.** v25.11이 정한 사실의 연장입니다 —
      「답은 한 덩어리, 조건칩은 입력으로 돌아가는 문」. 영수증도 답이라 칩이 그 앞에 서면
@@ -4920,10 +4997,11 @@ HYGIENE.forEach(([name, over]) => {
      (오너 지적 「안에 화살표가 이상한것도」 · 390px 실측에서 10px 튐). */
   tt('꺾쇠가 상자 가운데에 있다 — 회전해도 안 움직인다 (v25.50)', (()=>{
      const css = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
-     const off = [...css.matchAll(/\.(?:disc\.discline|deal) \.caret\{([^}]*)\}/g)]
+     /* 🔴 v25.51 재타겟 — `.disc.discline`이 사라졌습니다. 열 폭을 갖는 꺾쇠는
+        실거래 줄 하나이고, 부대비용 꺾쇠는 이름 옆이라 **열이 없어 튈 자리도 없습니다.** */
+     const off = [...css.matchAll(/\.deal \.caret\{([^}]*)\}/g)]
        .filter(m => /text-align:(?!center)/.test(m[1]));
      return off.length === 0
-         && /\.disc\.discline \.caret\{[^}]*text-align:center/.test(css)
          && /\.deal \.caret\{[^}]*text-align:center/.test(css);
   })());
 
@@ -4999,11 +5077,11 @@ HYGIENE.forEach(([name, over]) => {
 
   /* 🔴 부대비용 줄에 「집값」이 **한 번**인가. 「집값 외 부대비용 · 집값의 4.1%」로 두 번이었습니다.
      ⚠ 기준은 바로 왼쪽 이름이 말하므로 알약은 `+N%`면 충분합니다(원칙 43). */
-  tt('부대비용 줄이 「집값」을 두 번 말하지 않는다 (v25.50)', (()=>{
+  /* 🔴 v25.51 재타겟 — 이름이 **「부대비용」**이 됐습니다. 바로 위 줄이 「집값」이라
+     「집값 외」가 같은 말을 두 번 하던 자리입니다(원칙 43 · 오너 판단에 맡긴 이름). */
+  tt('부대비용 줄이 「집값」을 두 번 말하지 않는다 (v25.51 재타겟)', (()=>{
      const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
-     return /집값 외 부대비용/.test(bare)
-         && /pctEl\.textContent = [\s\S]{0,120}?`\+\$\{/.test(bare)
-         && !/`집값의 \$\{/.test(bare);
+     return !/집값 외 부대비용/.test(bare) && />부대비용<span class="caret"/.test(bare);
   })());
 
   /* 🔴 02에서 「자동차 · 학자금 등」이 **한 번**인가(원칙 43). 헬퍼가 목록을 세고,
@@ -5108,8 +5186,8 @@ HYGIENE.forEach(([name, over]) => {
      /<div class="costrow"><div class="nm">중개보수/.test(SRC)
      && !/row\('중개보수/.test(SRC));
   /* 🔴 결과 화면 쪽에 둡니다 — 01~03단계에 넣으면 입력 피로가 늘어납니다(오너 지시). */
-  tt('중개보수 줄이 부대비용 서랍 안이다', (()=>{
-     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="receiptBot"');
+  tt('중개보수 줄이 부대비용 서랍 안이다 (v25.51 재타겟)', (()=>{
+     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="limitToggle"');
      return a > 0 && b > a && SRC.slice(a,b).indexOf('id="swBroker"') > 0;
   })());
 
@@ -5278,43 +5356,54 @@ HYGIENE.forEach(([name, over]) => {
   /* ── ⑧ 부대비용 비율 알약 ──────────────────────────────
      🔴 분자·분모가 **화면에 적힌 두 값**이어야 합니다. 엔진 원값으로 나누면
         사람이 화면의 두 숫자로 검산했을 때 안 맞습니다(원칙 91 · v24.31 `man10k`와 같은 규칙). */
-  tt('비율이 화면에 적힌 소계 ÷ 집값이다', (()=>{
-     const m = UI.replace(/\/\*[\s\S]*?\*\//g,'').match(/pctEl\.textContent = [\s\S]*?;/);
-     return !!m && /etcSum \/ price \* 100/.test(m[0]);
+  /* 🔴 v25.51 재타겟 — 기준이 **집값**에서 **필요한 돈**으로 바뀌었습니다(오너 지시 ·
+     양쪽에 같은 기준으로 %를 답니다). 잠글 사실은 그대로 —
+     **비율이 화면에 적힌 금액에서 나온다**(엔진 원값으로 따로 나누지 않는다 · 원칙 91). */
+  tt('비율이 화면에 적힌 금액에서 나온다 (v25.51 재타겟)', (()=>{
+     const f = (UI.match(/function heroFigures\([\s\S]*?\n\}/)||[''])[0];
+     return /const pct = v => T > 0 \? Math\.round\(v \/ T \* 100\) : 0;/.test(f)
+         && /pEtc: Math\.max\(0, 100 - pPrice\)/.test(f)
+         && /pLoan: Math\.max\(0, 100 - pCash\)/.test(f);
   })());
   /* 🔴 값이 없으면 **알약이 통째로 없습니다.** 「0.0%」를 띄우면 「부대비용이 안 든다」로 읽힙니다. */
-  tt('소계가 0이면 비율 알약이 없다', (()=>{
-     const m = UI.replace(/\/\*[\s\S]*?\*\//g,'').match(/pctEl\.textContent = [\s\S]*?;/);
-     return !!m && /etcSum > 0 && price > 0/.test(m[0])
-         && /\.disc\.discline \.k \.ratio:empty\{display:none\}/.test(CSS);
+  /* 🔴 v25.51 재타겟 — 알약이 사라졌습니다. 같은 사실(**없는 값을 0으로 적지 않는다** ·
+     원칙 124)을 지키는 자리는 이제 **주담대 줄**입니다 — 대출이 0이면 줄을 아예 안 세웁니다. */
+  tt('대출이 0이면 주담대 줄을 안 세운다 (v25.51 재타겟)', (()=>{
+     const f = (UI.match(/function renderBalance\([\s\S]*?\n\}/)||[''])[0];
+     return /const hasLoan = f\.L > 0;/.test(f) && /loanIt\.hidden = !hasLoan/.test(f);
   })());
   /* 🔴 새 색·새 규격을 만들지 않았는가 — 「거래 활발」·「적정」과 같은 조합입니다(원칙 58 · 62). */
-  tt('비율 알약이 새 색을 만들지 않는다', (()=>{
-     const m = (CSS.match(/\.disc\.discline \.k \.ratio\{[^}]*\}/)||[''])[0];
-     return /background:var\(--fill\)/.test(m) && /color:var\(--ink-3\)/.test(m)
-         && /border-radius:var\(--r-pill\)/.test(m) && !/#[0-9A-Fa-f]{3,6}|rgba?\(/.test(m);
+  /* 🔴 v25.51 재타겟 — 알약이 **금액 옆 괄호 %**가 됐습니다(오너 지시).
+     잠글 사실은 그대로 — **새 색·새 활자 규격을 만들지 않았는가.** `.fpct`는 이미 있던 규격이고
+     선택자만 `.line .k` 밖으로 냈습니다(원칙 58). */
+  tt('괄호 %가 새 규격을 만들지 않는다 (v25.51 재타겟)', (()=>{
+     const m = (CSS.match(/\n\.fpct\{[^}]*\}/)||[''])[0];
+     return /font-size:var\(--t7\)/.test(m) && /font-weight:700/.test(m)
+         && /color:var\(--ink-4\)/.test(m) && !/#[0-9A-Fa-f]{3,6}|rgba?\(/.test(m);
   })());
 
   /* ── ⑨ 자금 구조 막대 ──────────────────────────────────
      🔴 화면과 공유 카드가 **같은 문법**이어야 합니다 — 한쪽만 고치면 저장한 그림과
         보고 있던 화면이 다르게 생깁니다(원칙 91). */
-  tt('막대 조각이 화면 · 공유 카드에서 같은 문법이다',
-     /\.stack\{[^}]*gap:2px/.test(CSS) && /\.stack i\{[^}]*border-radius:4px/.test(CSS)
+  /* 🔴 v25.51 재타겟 — 화면 막대가 `.stack`에서 **열 막대**(`.bs-bar`)로 바뀌었습니다.
+     잠글 사실은 그대로 — **조각 사이가 같은 값(2px)이고 조각에 곡률이 있다.** */
+  tt('막대 조각이 화면 · 공유 카드에서 같은 문법이다 (v25.51 재타겟)',
+     /\.bs-bar\{[^}]*gap:2px/.test(CSS) && /\.bs-bar i\{[^}]*border-radius/.test(CSS)
      && /\.report-mix \.bar\{[^}]*gap:2px/.test(CSS)
      && /\.report-mix \.bar i\{[^}]*border-radius:4px/.test(CSS));
   /* 🔴 흰 선으로 가르던 방식으로 되돌아가면 빨간불 — 그 흰색은 `--card` 리터럴이라
      막대가 흰 카드 밖으로 나가는 순간 안 보입니다(원칙 97). */
   tt('막대를 흰 선으로 가르지 않는다', !/\.stack i\.f1 \+ i\.f2\{box-shadow/.test(CSS));
   /* 🔴 폭 0인 조각을 안 그립니다 — 「전부 현금」인 사람의 막대 끝에 이유 없는 홈이 생깁니다. */
-  tt('0%짜리 조각은 그리지 않는다',
-     /100-ownPct > 0 \? `<i class="f2"/.test(UI.replace(/\/\*[\s\S]*?\*\//g,'')));
+  tt('0%짜리 조각은 그리지 않는다 (v25.51 재타겟)',
+     UI.replace(/\/\*[\s\S]*?\*\//g,'').includes('100 - pct > 0 ?'));
 
   /* ── ⑩ 히어로 숫자 카운팅 ──────────────────────────────
      🔴 결과 안에서 값을 만졌을 때(`keepScroll`)는 **애니메이션을 걸지 않습니다** —
         걸면 바뀐 폭이 안 보이고, 그 순간 영수증과 히어로가 다른 값을 말합니다(원칙 91). */
   /* 🔴 v25.48 — **반올림(`approx`)을 뗐습니다.** 잠글 사실은 그대로 — 「처음 들어올 때만 돈다」. */
-  tt('카운팅이 결과에 처음 들어올 때만 돈다 (v25.48)',
-     /rollUpWon\(\$\('heroAmount'\), headline, !keepScroll\)/.test(SRC));
+  tt('카운팅이 결과에 처음 들어올 때만 돈다 (v25.51 재타겟)',
+     /rollUpWon\(\$\('heroAmount'\), heroFigures\(c, price\)\.T \* 10000, !keepScroll\)/.test(SRC));
   /* 🔴 끝값을 보간으로 만들지 않습니다 — 부동소수 때문에 1만원이 어긋날 수 있습니다. */
   tt('카운팅 끝값이 계산된 값 그대로다', (()=>{
      const m = SRC.match(/function rollUpWon\(el, target, animate\)\{[\s\S]*?\n\}/);
@@ -5779,21 +5868,27 @@ HYGIENE.forEach(([name, over]) => {
      if(!f) return false;
      /* ⚠ 공백을 걷지 않습니다 — 「정부 상한」의 가운데 공백까지 사라져 자기 발등을 찍습니다
         (옛 검사가 대안 둘을 둔 이유가 이것입니다 · 원칙 152). */
+     /* 🔴 v25.51 재타겟 — 접힌 줄에서 값을 뗐으므로(오너 지시) `limitBind`가 없습니다.
+        잠글 사실은 그대로 — **이름이 `LNAME` 한 벌에서 온다**(막대 줄과 시트가 같은 문자열). */
      const bar = /'구간한도'\s*:\s*'정부 상한'/.test(BARE);
-     const bind = /limitBind/.test(f) && /LNAME\[c\.binding\]/.test(f.replace(/\s+/g,''));
+     const bind = /LNAME\[k\]/.test(f.replace(/\s+/g,''));
      return bar && bind;
-  })(), '🔴 서랍 줄과 막대가 같은 LNAME을 써야 합니다');
+  })(), '🔴 막대 줄이 LNAME을 써야 합니다');
   /* 🔴 v25.20 — **대상을 옮겼습니다**(원칙 128). 알약이 금액을 적던 자리가 사라졌습니다.
      ⏹ 옛 검사가 지키던 것은 「금액을 손으로 안 적는다 · 무한값에 괄호를 안 붙인다」였고,
        그 금액은 이제 **한도 막대**가 `formatWon(L[k])`로 적습니다 — 손으로 적을 자리가 없습니다.
      🔴 대신 **새 사실**을 잠급니다 — **접힌 줄에 금액을 안 적는다.** 접힌 줄에 금액을 적으면
        바로 위 영수증 금액 열과 세로로 겹쳐 **다른 것을 비교하게** 됩니다(원칙 91).
        그리고 접힌 줄이 말할 것은 「무엇이」이고 「얼마」는 펴면 막대가 말합니다(원칙 43). */
-  tt('접힌 한도 줄이 금액을 안 적는다 (v25.20)', (()=>{
-     const f = (BARE.match(/function renderLimits\([\s\S]*?\n\}/)||[''])[0];
-     const line = (f.match(/lb\.textContent[^;]*/)||[''])[0];
-     return !!line && !/formatWon|억|만원/.test(line);
-  })(), (BARE.match(/lb\.textContent[^;]*/)||['🔴 못 찾음'])[0].slice(0,60));
+  /* 🔴 v25.51 재타겟 — 접힌 줄이 **값 자체를 안 적습니다**(오너 지시 — 「정부 상한이란 말을
+     없애고 … 부수적 설명이자나」). 옛 잠금(「금액을 안 적는다」)보다 강해졌습니다.
+     ⚠ 답은 펴면 첫 줄이 굵게 말합니다(`.limitrow.bind`) — 사실을 지운 게 아니라 위계를 내렸습니다. */
+  tt('접힌 한도 줄이 값을 안 적는다 (v25.51 재타겟)', (()=>{
+     const SRCF = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
+     const btn = (SRCF.match(/<button class="disc quiet" id="limitToggle"[\s\S]*?<\/button>/)||[''])[0];
+     return !!btn && !/id="limitBind"/.test(SRCF) && !/class="v"/.test(btn)
+         && /<span class="caret"/.test(btn);
+  })());
   tt('한도 막대 금액이 값에서 온다 (v25.20)', (()=>{
      const f = (BARE.match(/function renderLimits\([\s\S]*?\n\}/)||[''])[0];
      return !!f && /formatWon\(L\[k\]\)/.test(f) && !/[0-9]억원|[0-9]만원/.test(f);
@@ -6180,13 +6275,61 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.50-b — 오너가 「밸런스가 안 맞는다」고 다시 짚었습니다. 잠글 사실이 하나 늘었습니다 —
      ①**면이 한 장이다**(이음매 없음) ②**두 칸이 같은 폭이다** ③**묶음이 가운데 선다**.
      ②③이 없으면 숫자가 한쪽으로 쏠려 슬래브의 반이 빕니다(원칙 149 — 값이 아니라 관계). */
-  tt('억·만 칸이 한 장이고 가운데에 선다 (v25.50-b)',
-     /\.mgrid\{[^}]*background:var\(--fill\)/.test(CSSB)          /* 면은 묶음이 든다 */
-     && /\.mgrid\{[^}]*justify-content:center/.test(CSSB)          /* 가운데 */
-     && /\.mgrid \.mfield\{[^}]*background:transparent/.test(CSSB) /* 칸은 면을 안 든다 */
-     && /\.mgrid \.mfield\{[^}]*width:126px/.test(CSSB)            /* 두 칸이 같은 폭 */
-     && !/\.mgrid \.mfield[^{]*\{[^}]*box-shadow:inset/.test(CSSB) /* 이음매 없음 */
-     && !/\.mgrid \.mfield:(first|last)-child\{[^}]*width:/.test(CSSB));
+  /* 🔴 v25.51 재타겟(오너 지시 — 「두 개가 구분이 안되고」 · 「양옆을 꽉 채우는건 어때」).
+     ⏹ v25.50은 **한 장 · 126px 고정**이었습니다. 그 근거(자릿수마다 안 흔들리게 · 원칙 34)는
+       `flex:1`로도, 오히려 더 잘 지켜집니다 — 칸 폭을 **카드가** 정하기 때문입니다
+       (일곱 폭 × 세 자릿수 실측 · 두 칸 언제나 같은 폭 · 「9999억 9,999만원」 넘침 0).
+     ⚠ 잠글 것은 「126px이다」가 아니라 **「두 칸이 같은 폭이고, 폭이 값에 안 딸린다」**입니다. */
+  tt('억·만 칸이 두 상자이고 양옆을 꽉 채운다 (v25.51 재타겟)',
+     /\.mgrid\{[^}]*background:transparent/.test(CSSB)              /* 면은 칸이 든다 */
+     && /\.mgrid\{[^}]*gap:8px/.test(CSSB)                          /* 두 상자 사이 */
+     && /\.mgrid \.mfield\{[^}]*background:var\(--fill\)/.test(CSSB)
+     && /\.mgrid \.mfield\{[^}]*flex:1 1 0/.test(CSSB)              /* 두 칸이 같은 폭 */
+     && !/\.mgrid \.mfield\{[^}]*width:126px/.test(CSSB)            /* 값에 안 딸린다 */
+     && /\.mgrid \.mfield\{[^}]*padding-right:12px/.test(CSSB)      /* 단위 글자가 안 잘린다 */
+     && !/\.mgrid \.mfield[^{]*\{[^}]*box-shadow:inset/.test(CSSB));
+
+  /* 🔴 v25.51 신설 — **보이는 크기를 줄이면서 누르는 면까지 줄이지 않았는가**(원칙 112 · 123).
+     한도 줄을 「부수 설명」으로 낮추자(오너 지시) 줄 높이가 54 → 32px이 됐고 G-22가 바로 물었습니다.
+     ⚠ 렌더 게이트가 잡는 자리이지만 **소스에도 잠급니다** — 사보타주는 `test.js`로 돕니다(원칙 127). */
+  /* 🔴 v25.51 신설 — **내보내는 매체의 머리도 화면과 같은 말이다**(오너 지시).
+     ⏹ 화면 머리만 「필요한 돈」으로 바뀌면 **공유 카드·요약 문구만 다른 것을 머리로** 말합니다 —
+       받는 사람은 두 값이 같은 것인지 알 수 없습니다(원칙 91 · v25.36이 금액에서 겪은 자리).
+     ⚠ 잠글 것은 「필요한 돈」이라는 **문자열이 아니라** 「세 자리가 같은 말을 쓴다」입니다 —
+       화면 라벨을 고치면 이 검사가 같이 물어야 합니다. */
+  tt('화면 · 공유 카드 · 요약 문구가 같은 머리를 쓴다 (v25.51)', (()=>{
+     const bare = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     const hero = (bare.match(/\$\('heroLabel'\)\.textContent = '([^']*)'/)||[])[1];
+     const card = (bare.match(/\$\('rLabel'\)\.textContent = '([^']*)'/)||[])[1];
+     const sum  = (bare.match(/L\.push\('([^']*)'\);\s*\n\s*L\.push\(`\$\{approxWon/)||[])[1];
+     return !!hero && hero === card && hero === sum;
+  })(), (()=>{ const bare = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+     return '화면 ' + ((bare.match(/\$\('heroLabel'\)\.textContent = '([^']*)'/)||[])[1] || '?')
+          + ' · 카드 ' + ((bare.match(/\$\('rLabel'\)\.textContent = '([^']*)'/)||[])[1] || '?'); })());
+
+  /* 🔴 v25.51 신설 — **요약 문구 안에서도 표가 맞는다.** 머리(총액)와 아래 두 줄(현금 · 주담대)이
+     같은 `heroFigures`에서 오므로 받는 사람이 더해도 맞습니다(원칙 91). */
+  tt('요약 문구의 머리와 두 줄이 한 출처다 (v25.51)', (()=>{
+     const b = sumBody();
+     return /heroFigures\(c, LASTVIEW\.price\)/.test(b)
+         && /approxWon\(heroFigures\(c, LASTVIEW\.price\)\.T \* 10000\)/.test(b)
+         && /fig\.C \* 10000/.test(b) && /fig\.L > 0/.test(b);
+  })());
+
+  /* 🔴 v25.51 신설 — **뗀 값을 안내 문장이 가리키지 않는다**(오너 지적 — 「위 막대의 정부
+     상한이란건 이제 없어져서」). 접힌 줄에서 값을 떼면 그 값을 가리키던 문장도 같이 늙습니다
+     (원칙 166 — 적힌 근거도 늙습니다). ⚠ 답은 서랍 안 굵은 줄이 그대로 말합니다(원칙 43). */
+  tt('한도 안내가 없어진 표시를 가리키지 않는다 (v25.51)', (()=>{
+     const f = (fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'')
+                 .match(/function bindingTip\([\s\S]*?\n\}/)||[''])[0];
+     return !!f && !/위 막대/.test(f) && /정부 규제 기준이에요/.test(f);
+  })());
+
+  tt('한도 줄이 작아져도 손가락 면은 --tap이다 (v25.51)', (()=>{
+     const r = (CSSB.match(/\.disc\.quiet::after\{[^}]*\}/)||[''])[0];
+     return /height:var\(--tap\)/.test(r) && /position:absolute/.test(r)
+         && /\.disc\.quiet\{[^}]*position:relative/.test(CSSB);
+  })());
 })();
 
 /* ═══ v25.15 — 실기 지적 반영 (마이크로카피 · 위계 · 동선) ══════════
@@ -6206,9 +6349,14 @@ HYGIENE.forEach(([name, over]) => {
      `LNAME[c.binding]`으로 말합니다. 알약에 주어를 붙이려던 v25.15·v25.19의 다툼은
      **알약을 빼면서 끝났습니다** — 서랍 줄은 「대출 한도 산출 기준」이라는 제목 옆에 서므로
      주어가 제목에 이미 있습니다(원칙 43 · 141). */
-  tt('걸린 한도를 접힌 줄이 말한다 (v25.20)', (()=>{
+  /* 🔴 v25.51 재타겟 — 「무엇이 한도를 정했나」는 이제 **펴진 서랍의 굵은 줄**이 말합니다.
+     잠글 사실 : 그 표시가 살아 있고, 이름이 `LNAME` 한 벌에서 온다(원칙 58). */
+  tt('걸린 한도를 서랍 첫 줄이 굵게 말한다 (v25.51 재타겟)', (()=>{
      const f = (BARE.match(/function renderLimits\([\s\S]*?\n\}/)||[''])[0];
-     return !!f && /LNAME\[c\.binding\]/.test(f.replace(/\s+/g,''));
+     const flat = f.replace(/\s+/g,'');
+     return !!f && /LNAME\[k\]/.test(flat) && /bind/.test(flat)
+         && /\.limitrow\.bind \.k,\.limitrow\.bind \.v\{[^}]*font-weight:700/
+              .test(fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,''));
   })());
 
   /* ── ② 히어로 서술이 금액보다 두 단 아래다 ──────────────────────
@@ -6522,12 +6670,16 @@ HYGIENE.forEach(([name, over]) => {
        ② 「금액이 비율보다 앞」·「괄호 안」은 **한 줄 안의 배치 규칙**이었습니다. 영수증 줄은
           이름+비율(왼쪽) / 금액(오른쪽) **두 칸**이라 그 규칙이 갈 곳이 없습니다.
           살아 있는 사실은 **「비율만 나오지 않는다」**와 **「금액이 주인공이다」**입니다(v25.30·31 오너 지시). */
-  const legend = (bare.match(/const fundRow = [\s\S]*?fundRow\('f2'[^;]*;/) || [''])[0];
+  /* 🔴 v25.51 재타겟 — 자금 출처 두 줄이 **대차대조표 오른쪽 열**이 됐습니다.
+     읽는 자리를 `fundRow` 조각에서 **`renderBalance` 함수**로 옮깁니다(원칙 128). */
+  const legend = (bare.match(/function renderBalance\([\s\S]*?\n\}/) || [''])[0];
 
   /* ① 범례가 금액을 적는가 — 두 갈래(대출 있음 · 전부 현금) 다.
      한쪽만 적으면 대출 유무에 따라 범례가 다른 것을 말하게 됩니다. */
-  const uses = (legend.match(/formatWon\(|richWon\(/g) || []).length;
-  tt('자금 출처 줄이 금액을 적는다 · 두 갈래 다 (v25.48)', uses === 2, uses + '번');
+  /* ⚠ 네 값(집값 · 부대비용 · 현금 · 주담대)이 전부 금액을 적어야 합니다 —
+     한쪽만 적으면 대차대조표가 반쪽이 됩니다. `w()` 한 곳을 지나므로 **네 번** 불립니다. */
+  const uses = (legend.match(/put\('bs[A-Za-z]+'/g) || []).length;
+  tt('대차대조표 네 줄이 금액을 적는다 (v25.51 재타겟)', uses === 4, uses + '번');
   /* 🔴 v25.48 신설 — **화면에서 축약을 안 씁니다.** `eokShort`는 이제 **공유 카드에만** 삽니다
      (최대 500만원까지 실제와 다르게 보이던 표기입니다 · DESIGN 3). */
   tt('화면이 축약 금액을 안 쓴다 (v25.48)', (()=>{
@@ -6544,16 +6696,18 @@ HYGIENE.forEach(([name, over]) => {
      `c.cashNeeded`를 따로 끌어오면 한 줄 안에서 비율과 금액이 다른 출처를 갖습니다(원칙 58 · 91). */
   /* 🔴 v25.48 — 이제 **한 함수(`fundSplit`)가** 막대와 이 두 줄을 같이 나눕니다(원칙 58 · 91).
      두 곳에서 따로 계산하면 반올림이 갈려 막대와 글자가 다른 비율을 말할 수 있습니다. */
-  tt('🔴 자금 출처가 막대와 같은 값에서 온다 (v25.48 · 원칙 91)', (()=>{
+  tt('🔴 자금 출처가 막대와 같은 값에서 온다 (v25.51 재타겟 · 원칙 91)', (()=>{
      /* ⚠ 「`cashNeeded`를 쓰지 마라」는 **축약 범례 시절의 규칙**이었습니다 — 그때는 비율과 금액이
         한 줄 안에 있어 출처가 갈리면 안 됐습니다. 지금 이 줄의 금액은 **정확한 준비할 현금**이고
         그게 맞는 값입니다(`cashNeeded = totalNeeded - totalFunding`). 잠글 것은 **비율의 출처가
         하나인가**입니다 — 막대와 두 줄이 같은 `fundSplit`을 지납니다. */
      /* ⚠ **선언(`function fundSplit(c){`)이 같은 글자입니다** — 세면 셋입니다(원칙 152 —
         검사의 전처리가 검사를 망칩니다. v25.30이 `eokShort`에서 똑같이 밟은 자리입니다). */
-     const splits = (bare.match(/function fundSplit\(/g)||[]).length;
-     const users  = (bare.match(/fundSplit\(c\)/g)||[]).length - splits;
-     return splits === 1 && users === 2;
+     /* 🔴 v25.51 — 이제 **`heroFigures` 한 함수**가 히어로 · 네 줄 · 두 막대 · 요약 문구 ·
+        공유 카드를 같이 먹입니다. 두 벌로 두면 반올림이 갈려 표가 안 맞습니다(원칙 58 · 91). */
+     const defs = (bare.match(/function heroFigures\(/g)||[]).length;
+     const users = (bare.match(/heroFigures\(/g)||[]).length - defs;
+     return defs === 1 && users >= 4;
   })(), legend.slice(0, 160));
 
   /* ③ 축약 표기와 정책 표기가 **서로를 안 부른다**(원칙 132 — 문법의 재사용과 이름의 재사용은 다릅니다).
@@ -6605,7 +6759,9 @@ HYGIENE.forEach(([name, over]) => {
   const bare = RAW.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
   const CSS  = RAW.replace(/\/\*[\s\S]*?\*\//g, '');
   /* 🔴 v25.48 — 범례가 영수증 두 줄로 들어갔습니다(위 블록과 같은 이유). */
-  const legend = (bare.match(/const fundRow = [\s\S]*?fundRow\('f2'[^;]*;/) || [''])[0];
+  /* 🔴 v25.51 재타겟 — 자금 출처 두 줄이 **대차대조표 오른쪽 열**이 됐습니다.
+     읽는 자리를 `fundRow` 조각에서 **`renderBalance` 함수**로 옮깁니다(원칙 128). */
+  const legend = (bare.match(/function renderBalance\([\s\S]*?\n\}/) || [''])[0];
 
   /* ① 🔴 **금액이 비율보다 앞에** 옵니다(오너 지시 v25.31).
      ⚠ 잠글 것은 「금액이 먼저다」라는 **자리**입니다 — 오너가 두 번 지시한 방향이고,
@@ -6620,13 +6776,17 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.48 — 「금액이 비율보다 앞」은 **한 줄 안의 배치**였습니다. 두 칸이 된 지금
      살아 있는 사실은 **「비율만 나오지 않는다」**(오너: 「%만 나오니깐 얼마지 생각하게 되더라고」)와
      **「금액이 주인공이다」**입니다 — 비율은 `--ink-4`, 금액은 `--ink-2` 700(한 단 위). */
-  tt('🔴 자금 출처 줄이 비율만 말하지 않는다 (v25.48 · v25.30 오너 지시)',
-     /%<\/b>/.test(legend) && /formatWon\(c\.mortgageLoan\)/.test(legend) && /richWon\(/.test(legend));
-  tt('🔴 비율이 금액보다 조용하다 (v25.48 · v25.31 오너 지시)', (()=>{
+  /* 🔴 v25.51 재타겟 — 오너 지시로 **금액 옆 괄호**가 됐습니다(「돈 옆에 금액(%)가 맞다고 봐」).
+     잠글 사실은 그대로 — **비율만 나오지 않는다.** 한 덩어리 안에 금액이 먼저, 비율이 괄호로. */
+  tt('🔴 자금 출처 줄이 비율만 말하지 않는다 (v25.51 재타겟)',
+     /\$\{w\(val\)\}<b class="fpct">\(\$\{pct\}%\)<\/b>/.test(legend)
+     && /const w = v => formatWon\(v \* 10000\);/.test(legend));
+  tt('🔴 비율이 금액보다 조용하다 (v25.51 재타겟)', (()=>{
      const css = CSS.replace(/\/\*[\s\S]*?\*\//g,'');
-     const pct = (css.match(/\.line \.k \.fpct\{[^}]*\}/)||[''])[0];
-     const val = (css.match(/\.line \.v\{font-weight:700;color:var\(--ink-2\)\}/)||[''])[0];
-     return /--ink-4/.test(pct) && /--t7/.test(pct);
+     const pct = (css.match(/\n\.fpct\{[^}]*\}/)||[''])[0];
+     const am  = (css.match(/\.bs-am\{[^}]*\}/)||[''])[0];
+     return /--ink-4/.test(pct) && /--t7/.test(pct)
+         && /--ink\)/.test(am) && /var\(--t6\)/.test(am);   /* 금액이 한 단 크고 진합니다 */
   })());
 
   /* ② ⏹ **괄호는 미채택 — 근거는 실측입니다**(원칙 148 · 158).
