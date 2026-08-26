@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.51 · 정책 2026.08.13 -->
+<!-- BUILD v25.57 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -427,7 +427,18 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
      (원칙 157). 이 판에서 움직인 것은 **자리 관계**뿐입니다.
    ⚠ `align-self:baseline`은 워드마크에도 같이 줘야 합니다 — 플렉스에서 베이스라인 정렬은
      **양쪽이 참여할 때만** 성립합니다. 한쪽만 주면 그 하나가 위로 붙습니다. */
-.brandline{font-size:var(--t8);line-height:var(--lh-ttl);font-weight:500;margin:0 0 0 var(--gap);
+/* 🔴 v25.53 — **`--t8`(12) → `--t7`(13)**(오너 지시 — 「저 글자만 크기가 너무 작은데」).
+   ⏹ v25.43이 이 자리를 앱바 안으로 옮기며 **폭이 값을 정했습니다** — 360px에서
+     워드마크 78.1 + 틈 8 + 전문 257.7 = 343.8 > 340이라 문구를 앞 절로 줄였습니다.
+   🔴 **그 전제는 이미 없어졌습니다.** 지금 문구는 그 자리에서 **102.6px**입니다(13px 실측) —
+     78.1 + 8 + 102.6 = 188.7이고 360px에서 **151px이 남습니다**. 폭은 더 이상 제약이 아닙니다.
+     ⚠ 그래서 이 판은 「줄인 것을 되돌리는」 판이 아닙니다. 문구는 앞 절 그대로 두고
+       **크기만** 한 칸 올립니다 — v25.43이 지키려던 사실(워드마크가 두 줄로 안 깨진다)은
+       그대로이고, 검사가 5폭에서 그것을 봅니다.
+   ⏹ 12px은 이 앱에서 세 자리뿐이었고(`--t8`), 이 자리는 17px 워드마크 바로 옆이라
+     **부제가 아니라 각주처럼** 읽혔습니다. 13px은 본문 뼈대(71회 쓰임)와 같은 칸입니다.
+   ⚠ 스케일 밖으로 안 나갑니다 — `--t8` → `--t7`, 둘 다 `:root`의 값입니다. */
+.brandline{font-size:var(--t7);line-height:var(--lh-ttl);font-weight:500;margin:0 0 0 var(--gap);
   letter-spacing:0;white-space:nowrap;align-self:center}
 /* 🔴 v25.1 — 기준일 뱃지. **새 색·새 규격을 만들지 않습니다** — 면 `--fill` · 글자 `--ink-3` ·
    곡률 `--r-pill`은 「거래 활발」 뱃지(v25.0)와 같은 조합이고, 그 면 위 6.45:1로 이미 검증된 짝입니다.
@@ -643,8 +654,22 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
    ⚠ 새 색·새 값을 만들지 않았습니다 — 지운 것뿐입니다(원칙 84). */
 .ownbox .seg{margin-top:8px;background:transparent;padding:0}
 /* 값이 없을 때는 숨깁니다 — 지울 게 없는데 「지우기」가 떠 있으면 소음입니다. */
-.clearbtn{flex:none;padding:2px 0;font-size:var(--t7);font-weight:600;color:var(--ink-4);
-  letter-spacing:-.02em;line-height:1.4;transition:color .14s}
+/* 🔴 v25.52 — **손가락 면**(인수인계 0장 ③㉯ · 원칙 112 · 123).
+   ⏹ 실측 390px : **33 × 22px**. 세로만이 아니라 **가로도** 44에 못 미쳤습니다 —
+     「22px」이라고만 적혀 있던 자리이고, 재고 나서야 두 축인 것이 나왔습니다.
+   🔴 **집안 문법(`left:0;right:0` · 세로 가운데)을 그대로 못 씁니다.** 이 버튼은 화면에
+     **둘** 있고(카드 모서리 `.only-clear` · 라벨 옆 `.flabel`), 뒤엣것은 **아래 여유가 8px**입니다.
+     44px을 세로 가운데로 얹으면 투명 면이 **금액 입력칸 윗머리를 약 3px 덮습니다** —
+     칸을 누르려다 값이 지워지는 쪽은 22px보다 나쁩니다(원칙 28의 화면판 · 유리한 실수가 아니라
+     **되돌릴 수 없는** 실수를 더 무겁게 봅니다).
+   → **아래를 바닥에 못박고 위로만** 폅니다. 위쪽은 두 자리 다 넉넉합니다(실측 138px · 30px).
+     ⚠ 규격은 **하나**입니다 — 두 자리에 같은 규칙 한 줄이 붙습니다(원칙 58).
+     ⚠ `--tap` 토큰만 씁니다. 44 리터럴을 적으면 43·45가 생깁니다(원칙 84 · 기존 잠금).
+     ⚠ 보이는 크기는 **한 픽셀도 안 바뀝니다**(원칙 123 — 덩치가 아니라 누르는 면). */
+.clearbtn{position:relative;flex:none;padding:2px 0;font-size:var(--t7);font-weight:600;
+  color:var(--ink-4);letter-spacing:-.02em;line-height:1.4;transition:color .14s}
+.clearbtn::after{content:'';position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:var(--tap);height:var(--tap)}
 .clearbtn[hidden]{display:none}
 /* 🔴 v23.22 — 헬퍼 텍스트 컴포넌트. 필드에 **종속**시킵니다(마진 6px · 12.5px · 쿨 그레이).
    ⚠ 색은 --ink-4(#6B7684 · 흰 면 위 4.62:1)입니다. 한 단 밝은 #8B95A1은 3.04:1로
@@ -2086,43 +2111,18 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
    ⚠ 이 카드와 화면은 **같은 값을 두 방식으로 그리는 것이 아니라 같은 것을 두 곳에 그리는 것**입니다.
      한쪽만 고치면 저장한 그림과 보고 있던 화면이 다르게 생깁니다(원칙 91).
    ⚠ 카드 높이는 안 변합니다(769px 그대로) — 굵기도 여백도 그대로이고 곡률과 사이만 바뀝니다. */
-.report-mix .bar{display:flex;height:12px;border-radius:4px;gap:2px;background:var(--fill)}
-.report-mix .bar i{display:block;height:100%;border-radius:4px}
-.report-mix .bar .f1{background:var(--ink)}
-.report-mix .bar .f2{background:var(--green)}
-/* 🔴 v24.15 — 범례를 **막대에 딸린 두 줄**로 눌렀습니다.
-   전: 이름 왼쪽 · 금액 오른쪽 · 칸선 있는 **표**였습니다. 두 줄짜리 표는 표로 보일 만큼
-       줄이 많지 않은데 칸선과 여백만 가져갑니다 — 위 막대와 따로 노는 덩어리가 됐습니다.
-   후: 막대 바로 밑에 이름 · 비율 · 금액을 **한 줄에 이어 씁니다.** 칸선을 지웠습니다.
-       비율은 막대가 말하는 것이니 막대 옆에 붙는 게 맞고, 금액은 그 비율의 실제 값이라
-       괄호로 딸려 갑니다. 세 조각이 한 문장으로 읽힙니다.
-   ⚠ 점 색이 막대 색과 같아야 두 블록이 하나로 읽힙니다 — 잉크 / 그린 그대로 씁니다.
-   ⚠ 두 줄을 좌우로 앉히지 않습니다. 「주택담보대출 34% (5억 3,559만원)」 한 줄이
-     이미 폭의 절반을 넘습니다 — 나란히 두면 작은 폭에서 겹칩니다. */
-/* 🔴 v25.2 — **범례 두 줄을 한 줄로**(오너 지시). 아래 블록에 자리를 돌려줍니다.
-   ⚠ 바로 위 주석이 「두 줄을 좌우로 앉히지 않습니다 — 『주택담보대출 34% (5억 3,559만원)』 한 줄이
-     이미 폭의 절반을 넘습니다」라고 막아 둔 자리입니다. **그 근거는 v24.21에서 사라졌습니다** —
-     같은 판에서 **괄호 금액을 뺐기** 때문입니다(재산 역산 방지). 지금 한 줄은
-     「● 준비할 현금 68%」로 실측 133px이고, 둘을 나란히 놓으면 여백 22px을 포함해 288px —
-     본문 폭 372px 안입니다. **막던 이유가 없어졌는데 값이 남아 있었습니다**(원칙 136).
-   ⚠ `flex-wrap`을 켭니다 — 「전부 현금」 한 줄만 나오는 경우도 있고, 이름이 길어지면
-     겹치는 대신 아래로 흐릅니다. 잘리지 않는 쪽을 택합니다. */
-.report-mix .lg{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:14px}
-.report-mix .lg .r{display:flex;align-items:baseline;gap:8px;padding:5px 0;
-  font-size:var(--t6);line-height:var(--lh-body);letter-spacing:var(--ls-body)}
-.report-mix .lg .r i{align-self:center;width:8px;height:8px;border-radius:50%;flex:none}
-.report-mix .lg .r .d1{background:var(--ink)} .report-mix .lg .r .d2{background:var(--green)}
-.report-mix .lg .k{color:var(--ink-3);font-weight:var(--w-sub)}
-.report-mix .lg .v{font-weight:var(--w-key);color:var(--ink)}
-.report-mix .lg .a{font-weight:var(--w-sub);color:var(--ink-4)}
-/* 🔴 v24.21 — 「준비할 현금」이 무엇까지 담았는지 한 줄. 범례에 딸린 각주라 면을 깔지 않습니다.
-   ⚠ 440px 고정 캔버스입니다. 항목을 다 켜면 두 줄이 되는데, 잘라내지 않고 흐르게 둡니다 —
-     여기서 잘리면 「무엇이 빠졌는지」를 못 보고, 그게 이 줄을 넣은 이유 자체를 무너뜨립니다. */
+/* ⏹ v25.54 — **`.bar` · `.lg` 규칙을 통째로 지웠습니다.** 카드 몸통이 대차대조표가 되면서
+   그 마크업을 그리는 곳이 0이 됐습니다 — 죽은 CSS를 남기지 않습니다(원칙 47).
+   ⚠ 지운 것 : `.bar` 넷(막대·조각·f1·f2) · `.lg` 일곱(범례·줄·색점·d1·d2·k·v·a).
+   ⚠ 카드 몸통은 이제 **화면의 `.bs` 문법을 그대로 씁니다** — 새 클래스를 안 만들었습니다(지침 6-22).
+     한쪽만 고치면 저장한 그림과 보고 있던 화면이 다르게 생깁니다(원칙 91) — 이제 **한 규칙**입니다.
+   ⚠ 되살릴 일이 생기면 v25.53 이전 판에 원문이 있습니다. 여기 주석으로 시체를 남기지 않습니다. */
 .report-mix .nt{margin:10px 0 0;font-size:var(--t7);font-weight:var(--w-sub);
   line-height:var(--lh-body);letter-spacing:var(--ls-body);color:var(--ink-4)}
 
 /* ⏹ v24.15 — .report-line 네 줄을 **삭제했습니다.** 「매달 갚는 돈」이 빠지면서
-   #rLines가 통째로 없어졌고, 남은 두 값은 .report-mix .lg가 말합니다.
+   #rLines가 통째로 없어졌고, 남은 값들은 **대차대조표 두 쪽**이 말합니다(v25.54).
+   ⚠ v25.53까지는 `.report-mix .lg`(범례)가 말했습니다 — 그 규칙은 v25.54에서 지웠습니다.
    ⚠ 쓰는 곳이 사라진 CSS는 다음 사람에게 「아직 쓰는 것」으로 보입니다(원칙 47). */
 
 /* 🔴 v24.15 — 회색 채움 상자를 **없앴습니다.**
@@ -2276,7 +2276,7 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
            **첫 화면 전용**이라는 사실을 잇습니다(두 자리에 두지 않습니다 · 원칙 58).
          ⚠ `<h1>`을 유지합니다 — 빼면 문서에 h1이 하나도 안 남습니다.
          ⚠ 결과 화면의 `.barlabel`과 **부딪히지 않습니다** — 각인은 step 0에만, 라벨은 결과에만 뜹니다. -->
-    <h1 class="brandline" id="brand">환상 없는 진짜 예산</h1>
+    <h1 class="brandline" id="brand">환상 없는 내 집 예산</h1>
     <!-- ⏹ v25.7 — **기준일 뱃지를 통째로 지웠습니다**(오너 지시).
          ⏹ v25.1이 `.brand` 안 독립 줄로 넣었고(세로 43px), v25.6이 상단 바로 옮겼습니다(세로 0px).
            v25.7은 **자리가 아니라 존재**를 지웁니다 — 같은 사실을 결과 화면 면책이 이미
@@ -2443,6 +2443,21 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
         <div id="limits"></div>
         <div class="tip" id="limitTip"></div>
         <div class="tip" id="roomTip"></div>
+        <!-- 🔴 v25.57 — **방공제를 끄고 켤 수 있게 했습니다**(오너 지시 — 「방공제는 선택할 수 있으면 좋겠어」).
+             ⏹ 엔진에는 스위치가 **처음부터 있었습니다**(`roomDeduction`의 `ctx.mciCovered`).
+               `ctx()`가 `mciCovered:false`를 **상수로** 박아 두어 화면에서 못 켰을 뿐입니다.
+               그래서 이 판은 정책 수치를 하나도 안 건드립니다 — 지역별 기준액은
+               `POLICY.roomDeduct`에 시행령 제10조 출처·확인일과 함께 이미 있습니다.
+             🔴 **자리를 여기로 정한 이유**(오너 결정 · 후보 둘을 그림으로 비교) :
+               바로 위 `roomTip`이 「방공제 5,500만원이 빠졌어요」를 말합니다.
+               **빠진 이유를 읽은 자리에서 끄고 켭니다.** 02 화면(소득 칸 아래)에 두면
+               사용자가 방공제라는 말을 아직 본 적 없는 시점에 묻게 됩니다.
+             ⚠ 문법은 01 화면의 「주담대는 받지 않을 거예요」와 **같습니다**(`.subtoggle`) —
+               새 클래스를 안 만들었습니다(지침 6-22 · 원칙 58). 손가락 면 44px도 딸려 옵니다.
+             🔴 **기본은 「끔」입니다**(= 방공제 적용). 켜면 한도가 늘어 **결과가 유리해집니다** —
+               유리한 쪽을 기본값으로 두지 않습니다(지침 · 원칙 28). -->
+        <label class="subtoggle" id="mciRow">
+          <input type="checkbox" id="swMci"><span>MCI · MCG에 가입할 거예요</span></label>
         <div class="tip" id="limitNotes"></div>
       </div>
       <!-- 🔴 v25.11 — **조건 요약을 자금 출처 막대 아래로 한 번 더 내렸습니다**(오너 지시 4).
@@ -2490,7 +2505,13 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
                이제 **왼쪽만 범위를 이름에 답니다.** 오른쪽에 「전체 대출」을 붙이는 판은 따로입니다. -->
         <div class="payrow">
           <div class="payitem">
-            <p class="tile-k">주담대 매달 갚을 원리금</p><p class="tile-v" id="tileMonthly"></p>
+            <!-- 🔴 v25.56 — **「주담대 매달 갚을 원리금」 → 「매달 갚을 주담대 원리금」**(오너 지시).
+                 ⏹ 뜻은 그대로이고 **수식 순서만** 바꿉니다. 전에는 「주담대」가 문장 맨 앞에서
+                   「매달 갚을」을 건너뛰어 「원리금」을 꾸며서, 읽는 순서와 꾸미는 순서가 어긋났습니다.
+                 ⚠ 검사는 안 건드립니다 — v24.20 잠금이 이미 **「매달 갚을 …」(미래형·가정)**만 보고
+                   「앞에 무엇이 붙는지는 이 검사가 잴 사실이 아니다」라고 적어 두었습니다(원칙 48).
+                   표현이 아니라 의도를 잠근 덕에 이 판이 검사를 안 옮기고 지나갑니다. -->
+            <p class="tile-k">매달 갚을 주담대 원리금</p><p class="tile-v" id="tileMonthly"></p>
           </div>
           <!-- 🔴 v24.31 — **판정 뱃지를 답니다(블록 2 — 월 현금흐름).**
                지금까지 이 값의 판정은 **색 하나뿐**이었습니다(--ok 무채색 / --warn / --bad).
@@ -3990,7 +4011,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.51 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.57 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4037,7 +4058,7 @@ const PYEONG_MAX = 100;
 let SIM_RATE = null;                       /* null이면 D.rate를 씁니다 */
 const simRate = () => SIM_RATE == null ? D.rate : SIM_RATE;
 
-const S = { step:0, cash:null, income:null, noLoan:false, houseStatus:'none', ownCount:1, disposePlan:false,
+const S = { step:0, cash:null, income:null, noLoan:false, mciCovered:false, houseStatus:'none', ownCount:1, disposePlan:false,
             group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false,
             /* 🔴 v25.14 — **결과에서 조건을 고치러 왔는가.** 켜져 있으면 하단 CTA가
                「결과 다시 보기」가 되고 한 번에 결과로 돌아갑니다(위 `syncCta`·`next`).
@@ -4753,7 +4774,8 @@ const DRAFT_KEY = 'yk.draft.v1';
      오히려 되살리지 않고 다시 계산하면 그때 규칙이 깨집니다. */
 const DRAFT_KEYS = ['step','cash','income','noLoan','houseStatus','group','sido','sgg',
                     'debtMonthly','debtParts','debtOpen','debtPartsOpen',
-                    'onResult','lockedPrice','pyeong','interior','itCustom','itTouched'];
+                    'onResult','lockedPrice','pyeong','interior','itCustom','itTouched',
+                    'mciCovered'];   /* v25.57 — 켠 상태로 새로고침해도 같은 화면이어야 합니다 */
 function saveDraft(){
   try{
     /* 🔴 넣은 것이 하나도 없으면 **키를 만들지 않습니다.**
@@ -4940,7 +4962,14 @@ function ctx(){
     stressBp:computeStressBp(z!=='other', D.rateType, D.fixedYears, D.years),
     creditLoan:0, otherDebtMonthly:(S.debtMonthly||0)*10000,   /* 만원 → 원 (원칙 93) */   /* v23.3: 소득만으로 DSR을 봅니다 (면책에 명시) */
     noLoan:S.noLoan, loanChoice:'bank',
-    mciCovered:false, roomDeductAmt:man(roomDeductFromSgg(S.sgg)||2500),
+    /* 🔴 v25.57 — **상수였던 자리입니다.** `mciCovered:false`가 박혀 있어서 엔진의
+       스위치(`roomDeduction`)에 아무도 못 닿았습니다. 화면 체크박스(#swMci)와 잇습니다.
+       ⚠ `ctx()`는 **집값을 찾는 탐색 함수가 반복해서 쓰는 객체**입니다 —
+         여기 실어야 「한도가 늘면 살 수 있는 집도 커진다」가 성립합니다(오너 결정).
+       ⚠ 🔴 **이 주석에 그 탐색 함수의 이름을 적지 마십시오.** 「결과에서 두 번 부르지
+         않는다」 검사가 이름의 등장 횟수를 세고, **주석도 셉니다.** 위 v25.6 주석에
+         같은 경고가 있는데 v25.57이 그대로 밟았고, 검사가 잡았습니다. */
+    mciCovered:S.mciCovered, roomDeductAmt:man(roomDeductFromSgg(S.sgg)||2500),
     manualLoanCap:0, bankSelfCap:0, extraFunding:0,
     pyeong:S.pyeong, pyeongEntered:S.pyeong>0,
     /* 칩 단가는 「직접 입력」이 아닐 때만. -1을 평당 단가로 흘리면 음수 비용이 됩니다. */
@@ -5277,11 +5306,38 @@ function fundSplit(c){
      열 막대와 괄호 안 숫자가 **같은 출처**입니다(원칙 58 · 91).
    ⚠ 요약 문구·공유 카드도 이 함수를 씁니다 — 매체가 달라도 **같은 숫자**여야 합니다(v25.36). */
 function heroFigures(c, price){
+  /* 🔴 v25.55 — **「준비할 현금」이 입력한 값 그대로 나오게 했습니다**(오너 결정).
+     ⏹ 실기 캡쳐(2026.08.25) : 현금 **5억**을 넣었는데 화면이 **「5억 1만원」**이라고 적었습니다.
+       열 케이스 중 **아홉**에서 났습니다(15억만 우연히 안 났습니다).
+     ⏹ 원인은 버그가 아니라 **보수성이 한 칸에 모인 것**이었습니다 :
+         엔진 원값   총액 729,999,630원 · 대출 229,999,630원 · 필요현금 500,000,000원(정확)
+         T = ceil(72,999.9630) = 73,000    올림으로 +0.037만원
+         L = floor(22,999.9630) = 22,999   내림으로 −0.963만원
+         C = T − L = **50,001**            ← 두 오차를 **C가 통째로 떠안습니다**
+     🔴 그래서 이건 「고치면 다 좋아지는」 문제가 아닙니다. **다섯 값이 이미 전부
+       보수 방향**이라(T↑ P↓ E↑ L↓ C↑), 1만원을 없애려면 **어딘가에서 보수성을 포기**해야 합니다.
+     ⏹ 재 본 안 셋 :
+       ㉢ 집값을 만원 단위로 내림 → **아홉 중 넷만 해결.** 취득세·중개보수가 비율 계산이라
+         소수부가 다시 생깁니다(총액 소수부 0.0428~0.9866). 덤으로 집값이 최대 9,675원 깎입니다.
+       ㉣ 각주로 밝히기 → 오너가 각주를 늘리지 않기로 했습니다.
+       ㉡ **C를 직접 올림하고 L을 나머지로** ← **채택**
+     🔴 **㉡의 대가를 여기 적습니다. 이 앱이 스스로 정한 가장 강한 규칙을 처음으로
+       한 자리에서 접는 것입니다** — 「유리한 방향 오차를 더 무겁게 다룬다」.
+         L = T − C 는 실제 한도보다 **최대 1만원 미만 많게** 나옵니다.
+         오차 = (ceil(총액) − 총액) − (ceil(필요현금) − 필요현금) ∈ (−1, +1) 만원
+         실측 : +370원 ~ +7,020원 (열 케이스)
+       ⚠ 오너 판단 — 「만원은 대출 한도에서 극히 미미해」(2026.08.25).
+       ⚠ **허용한 것은 「1만원」이지 「반올림 아무거나」가 아닙니다.** 검사가 상한을 잠급니다.
+         C를 `ceil`이 아닌 것으로 바꾸거나 L을 따로 반올림하면 이 상한이 깨집니다.
+     ⚠ 표는 그대로 맞습니다 — `E = T − P`, `L = T − C`라 **T = P+E = C+L**이 정의상 성립합니다.
+     ⚠ `c.cashNeeded`를 씁니다. 이 값은 `calcCosts`가 `totalNeeded − totalFunding`으로 낸 것이라
+       **인테리어를 켜면 같이 늘어납니다** — 「입력한 현금」이 아니라 「필요한 현금」입니다.
+       집값을 직접 넣어 현금이 모자란 경우에도 그 모자란 값이 그대로 올라옵니다(원칙 28). */
   const T = Math.ceil(Math.max(0, c.totalNeeded || 0) / 10000);
   const P = Math.floor(Math.max(0, price || 0) / 10000);
-  const L = Math.floor(Math.max(0, c.mortgageLoan || 0) / 10000);
+  const C = Math.ceil(Math.max(0, c.cashNeeded || 0) / 10000);
   const E = Math.max(0, T - P);
-  const C = Math.max(0, T - L);
+  const L = Math.max(0, T - C);
   const pct = v => T > 0 ? Math.round(v / T * 100) : 0;
   const pPrice = pct(P), pCash = pct(C);
   return { T, P, E, L, C,
@@ -5553,10 +5609,29 @@ function renderBalance(c, price){
   /* 「가진 돈보다 더 필요해요」는 표 밖에 섭니다 — 표의 줄이 아니라 **경고**입니다.
      ⚠ 비교 대상은 **화면에 적은 현금**입니다(`f.C`). 엔진 원값으로 비교하면 화면의 두 숫자가
        1만원 갈릴 때 경고만 다른 값을 말합니다(원칙 91). */
+  /* 🔴 v25.57 — **남을 때도 말합니다.**
+     ⏹ 전에는 **모자랄 때만** 말하고 남을 때는 침묵이었습니다. 사용자는 11억을 넣고
+       「준비할 현금 10억 1,670만원」을 본 뒤, 8,330만원이 어디로 갔는지 못 물어봤습니다.
+     ⏹ 왜 남는가 — **15억 규제 절벽**입니다. 집값이 15억을 넘는 순간 대출 상한이
+       6억 → 4억으로 떨어져 **위로 갈수록 현금이 더 듭니다.** 그래서 집값이 15억에 멈추고
+       그 위를 못 사서 현금이 남습니다. 집값 탐색 함수의 「역전 구간」 주석이 말하는 자리입니다.
+       ⚠ 🔴 **그 함수 이름을 여기 적지 마십시오** — 「결과에서 두 번 부르지 않는다」 검사가
+         등장 횟수를 세고 주석도 셉니다. v25.57이 이 판에서만 **두 번** 밟았습니다.
+     ⏹ 실측(1,896케이스 = 현금 79 × 소득 4 × 지역 3 × 스위치 2) :
+         **90건(4.7%)에서 남습니다. 최대 1억 9,030만원**
+         (현금 12억 · 소득 3억 · 분당 · 방공제 적용 · 집값 15억에서 멈춤)
+     ⚠ **v25.57이 만든 게 아닙니다** — 방공제를 꺼도 납니다. 다만 켜면 한도가 늘어
+       이 구간에 닿는 사람이 늘어서 **드러났습니다.**
+     ⚠ 문구는 사실만 적습니다 — 「남아요」이지 「더 쓰세요」가 아닙니다(지침 · 말투).
+       왜 남는지(규제 구간)는 이미 「대출 한도 산출 기준」 서랍이 말합니다(원칙 43).
+     ⚠ 같은 상자(`.overnote`)를 씁니다 — 새 클래스를 안 만들었습니다. 둘은 **한 자리의 두 방향**이고,
+       동시에 뜰 수 없습니다(모자라면서 남을 수는 없습니다). */
   const over = f.C * 10000 - man(S.cash);
   const ow = $('overWrap');
-  if(ow) ow.innerHTML = over > 10000
-    ? `<div class="overnote">가진 돈보다 <b>${formatWon(over)}</b>이 더 필요해요</div>` : '';
+  if(ow) ow.innerHTML =
+      over >  10000 ? `<div class="overnote">가진 돈보다 <b>${formatWon(over)}</b>이 더 필요해요</div>`
+    : over < -10000 ? `<div class="overnote">가진 돈에서 <b>${formatWon(-over)}</b>이 남아요</div>`
+    : '';
 }
 function renderCostBox(c){
   /* 🔴 v24.17 — 채권 문장이 「대출 한도 산출 기준」에서 여기로 왔습니다(renderLimits 주석).
@@ -5609,6 +5684,25 @@ function renderCostBox(c){
     i.oninput = () => { const d=(i.value||'').replace(/[^\d]/g,'').slice(0,5);
       S.broker.v = d ? +d : 0; i.value = d ? comma(d) : ''; };
     i.onchange = () => showResult(true);
+  })();
+  /* 🔴 v25.57 — **방공제 스위치.**
+     ⚠ `S.lockedPrice = null`이 이 판의 핵심입니다. 이걸 안 지우면 집값이 퍼널에서 정해진 채
+       고정되고, 스위치를 켠 사람은 **「같은 집을 현금 덜 내고 산다」**를 보게 됩니다 —
+       그러면 v25.55가 만든 「준비할 현금 = 입력한 현금」이 깨져 현금 5억 넣은 사람 화면에
+       「준비할 현금 4억 4,500만원」이 뜹니다(실측).
+     🔴 v23.9는 「집값은 퍼널을 빠져나올 때 한 번만 정한다」를 잠갔지만, 그건 **비용**
+       (인테리어 · 이사비)이 집값을 흔드는 것을 막으려던 규칙이었습니다.
+       방공제는 비용이 아니라 **한도**입니다 — 한도가 늘면 살 수 있는 집이 커지는 것이
+       이 앱이 답하는 질문입니다(오너 결정 · 원칙 171 — 문법을 쓰기 전에 왜 그 모양인지 본다).
+       ⏹ 실측(현금 5억 · 소득 3억 · 종로 · 무주택) :
+           끔    집값 7억 1,249만원 · 현금 5억원 · 대출 2억 3,000만원
+           켬    집값 **7억 9,316만원** · 현금 5억원 · 대출 3억 1,727만원
+     ⚠ `priceOverride`는 **안 지웁니다** — 집값을 직접 넣은 사람은 그 집값을 계속 봅니다. */
+  (function(){
+    const i = $('swMci');
+    if(!i) return;
+    i.checked = !!S.mciCovered;
+    i.onchange = () => { S.mciCovered = i.checked; S.lockedPrice = null; showResult(true); };
   })();
   [['swLegal','inLegal','legal'],['swMove','inMove','move'],['swAppl','inAppl','appl']].forEach(([sw,ip,key])=>{
     const w=$(sw), i=$(ip);
@@ -5673,10 +5767,19 @@ function renderLimits(c, price){
          **각주 뒤에** 놓였습니다. 본문 → 각주 → 본문 순서였습니다.
        🔴 v24.17 — 채권 문장은 「부대비용 상세 설정」으로 옮겼습니다(renderCostBox).
          비용을 한도 옆에 두면 「한도를 깎는 무엇」으로 읽힙니다(원칙 53). */;
+  /* 🔴 v25.57 — **켰을 때도 말을 합니다.**
+     ⏹ 전에는 `roomCut>0`일 때만 떴습니다. 스위치를 켜면 `roomCut`이 0이 되어 이 줄이 사라지고,
+       바로 아래 체크박스만 **아무 설명 없이** 남았습니다 — 새 상태를 만들면 그 상태에서
+       거짓말하는 화면이 없는지 훑어야 합니다(원칙 54).
+     ⚠ 켠 문구는 **가정임을 밝힙니다.** 사용자가 고른 전제이지 이 앱이 확인한 사실이 아닙니다.
+       평가하거나 권하지 않고 사실만 적습니다(지침 · 말투). */
+  const mciOn = !!S.mciCovered;
   $('roomTip').innerHTML = c.roomCut>0
     ? `<b>방공제(최우선변제금) ${formatWon(c.roomCut)}이 빠졌어요.</b> 세입자 보호를 위해 은행이 미리 떼는 돈이라, 승인 한도보다 실제로 나오는 돈이 그만큼 줄어요.`
-    : '';
-  $('roomTip').hidden = !(c.roomCut>0);
+    : (mciOn
+      ? `<b>방공제를 빼지 않았어요.</b> MCI · MCG에 가입하면 은행이 방공제를 떼지 않아요. 가입 가능 여부와 보험료는 은행마다 달라요.`
+      : '');
+  $('roomTip').hidden = !(c.roomCut>0 || mciOn);
   /* 🔴 v25.7 — 이 카드의 **※는 전부 여기 한 자리**입니다(오너 지적).
      ⚠ 「한도가 없는 화면」(대출 없이 계산)에서는 전제도 없습니다 — 통째로 비웁니다.
        전제가 없는데 「무엇을 전제로 한 숫자인가」를 적으면 없는 숫자를 설명하는 꼴입니다(원칙 43).
@@ -6667,9 +6770,10 @@ function renderReport(v){
      ⚠ **표기는 화면 범례와 같은 축약**(`eokShort`)입니다. 카드는 한눈에 읽는 매체라
        「20억 4,900만원」이 두 줄을 만듭니다. 그리고 **화면과 같은 글자**여야 같은 값으로 읽힙니다(원칙 91).
      ⚠ 요약 문구(텍스트)는 그대로 `formatWon`입니다 — 거기는 읽는 매체라 정확한 값이 맞습니다. */
-  const mixRow = (dot, name, pct, won) =>
-    `<div class="r"><i class="${dot}"></i><span class="k">${name}</span>`
-    + `<span class="v">${eokShort(won)}(${pct}%)</span></div>`;
+  /* ⏹ v25.54 — **`mixRow`를 지웠습니다.** 카드 몸통이 대차대조표가 되면서 부르는 곳이
+     0이 됐습니다 — 죽은 코드를 남기지 않습니다(원칙 47). 하던 일은 아래 `bsIt`가 받습니다.
+     ⚠ 아래 v24.21 · v25.36 주석은 **그대로 둡니다.** 거기 적힌 것은 `mixRow`의 사용법이 아니라
+       **이 카드가 금액을 어떻게 다루는가의 근거**이고, 그 근거는 `bsIt`에도 그대로 걸립니다. */
   /* 🔴 v24.21 — 「내 돈」 → 「준비할 현금」, 그리고 **괄호 금액을 뺐습니다.**
      ⏹ 이름 — 「내 돈」은 **「내가 지금 가진 돈」으로 읽힙니다.** 실제 값은 인테리어·부대비용까지
        더한 「내야 하는 현금」이라, 이름이 값보다 작게 약속하고 있었습니다(원칙 39 · 91).
@@ -6683,15 +6787,54 @@ function renderReport(v){
        쪼갠 값 하나가 하필 사용자의 재산입니다.
      ⚠ **요약 문구(텍스트)에는 금액을 남깁니다.** 그림은 저장돼 재전달되지만, 텍스트는 보내기 전에
        본인이 문장을 눈으로 읽습니다. 매체가 다르면 판단도 갈립니다.
-     ⚠ 되돌리려면 mixRow에 won 인자를 되살리고 `<span class="a">(${formatWon(won)})</span>`를
-       붙이면 됩니다. .report-mix .lg .a 규칙은 그대로 뒀습니다. */
+     ⚠ 🔴 v25.54 — **되돌리는 길이 바뀌었습니다.** `mixRow`도 `.report-mix .lg .a` 규칙도
+       이제 없습니다(둘 다 v25.54에서 지웠습니다). 금액 표기를 바꾸려면 아래 `bsIt`의
+       `eokShort` 한 자리만 고치면 되고, 그때 검사 둘을 **같이** 옮겨야 합니다
+       (「축약 표기를 쓴다」 · 「현금·대출 금액을 찍지 않는다」). */
   const note = `<p class="nt">${cashNote(c)}</p>`;
-  $('rMix').innerHTML = c.mortgageLoan > 0
-    ? `<div class="bar"><i class="f1" style="width:${ownPct}%"></i><i class="f2" style="width:${100-ownPct}%"></i></div>`
-      + `<div class="lg">${mixRow('d1','준비할 현금', ownPct, own)}`
-      + `${mixRow('d2','주담대', fig.pLoan, fig.L * 10000)}</div>` + note
-    : `<div class="bar"><i class="f1" style="width:100%"></i></div>`
-      + `<div class="lg">${mixRow('d1','전부 현금', 100, own)}</div>` + note;
+  /* 🔴 v25.54 — **카드도 대차대조표입니다**(오너 지적 — 「이건 우리 결과에 맞춰 제대로
+     수정이 안 된 것 같고」. 실기 캡쳐 2026.08.25).
+     ⏹ v25.51이 화면을 대차대조표로 바꾸면서 **카드는 머리(「필요한 돈」)만 맞췄고 몸통은
+       v25.50에 남았습니다.** 그래서 카드가 총액을 말한 뒤 **마련하는 쪽만** 쪼갰고,
+       받는 사람은 **17억 7,222만원이 집값이라는 것을 못 봤습니다.**
+       실측(390px · 앵커) : 화면 네 값 ↔ 카드 두 값 · 카드에 막대 1 · 색점 2.
+     🔴 **막대와 색점을 뺍니다.** 화면에서 뺀 근거가 여기에도 그대로 걸립니다 —
+       비율(96·4·81·19)을 **각 줄이 이미 말합니다.** 대신 열마다 4px 막대를 둡니다.
+     ⚠ **새 클래스를 안 만들었습니다** — 화면의 `.bs` 문법을 그대로 씁니다(지침 6-22 · 원칙 58).
+       카드 폭 440 − 좌우 34 = 372px이라 두 열이 186px씩입니다(화면 390px에선 163px).
+     ⚠ 🔴 **금액 표기는 축약(`eokShort`) 그대로 뒀습니다 — 오너 결정 대기.**
+       ⏹ 폭은 더 이상 제약이 아닙니다. 실측(카드 440px · 열 177px · Range로 글자만) :
+           17억 7,222만원 129.0 · 20억 4,900만원 136.5 · 99억 9,999만원 135.8
+           3억 4,500만원 127.8 · 7,278만원 100.0     → **전부 한 줄, 40px 넘게 남습니다**
+         v25.36이 축약을 쓴 근거 중 「두 줄이 된다」는 **옛 범례 배치의 사실**이었고 만료됐습니다.
+       🔴 **그런데 근거가 하나 더 있었고, 그건 안 늙었습니다 — 개인정보입니다.**
+         「준비할 현금」은 인테리어를 안 켜면 **가진 돈과 같습니다.** v24.15에서 실물 카드에
+         「(10억원)」이 그대로 실려 나간 자리이고, 그림은 저장돼 재전달됩니다.
+         축약은 그 값을 **최대 500만원 흐립니다.**
+       ⚠ 지금 상태의 대가 : 한 열 안에서 「17.7억」과 「7,278만원」이 **섞입니다**
+         (`eokShort`는 1억 미만을 못 줄입니다). 같은 열의 두 값이 다른 규칙으로 적히는 자리입니다.
+       → **정확한 표기로 바꾸는 것은 개인정보 판단이라 오너가 정합니다.** 제가 안 정합니다.
+     ⚠ **대출이 0이면 그 줄을 안 세웁니다**(원칙 124 — 「0원(0%)」은 빈 값이 아니라 거짓입니다).
+       그때 오른쪽은 「준비할 현금」 한 줄이고, 막대도 한 조각입니다. */
+  const bsBar = (one, two, pct) => `<div class="bs-bar" aria-hidden="true">`
+    + `<i class="${one}" style="width:${pct}%"></i>`
+    + (100 - pct > 0 ? `<i class="${two}" style="width:${100 - pct}%"></i>` : '')
+    + `</div>`;
+  const bsIt = (name, won, pct) =>
+    `<div class="bs-it"><p class="bs-nm">${name}</p>`
+    + `<p class="bs-am">${eokShort(won)}<b class="fpct">(${pct}%)</b></p></div>`;
+  $('rMix').innerHTML =
+    `<div class="bs">`
+    + `<div class="bs-side"><p class="bs-cap">어디에 쓰나</p>`
+    +   bsBar('e1','e2', fig.pPrice)
+    +   bsIt('집값', fig.P * 10000, fig.pPrice)
+    +   bsIt('부대비용', fig.E * 10000, fig.pEtc)
+    + `</div>`
+    + `<div class="bs-side"><p class="bs-cap">어떻게 마련하나</p>`
+    +   bsBar('f1','f2', fig.pCash)
+    +   bsIt('준비할 현금', fig.C * 10000, fig.pCash)
+    +   (fig.L > 0 ? bsIt('주담대', fig.L * 10000, fig.pLoan) : '')
+    + `</div></div>` + note;
 
   /* ⏹ v24.15 — 「매달 갚는 돈」과 「소득 대비 부담」·「무엇이 정했나」를 **전부 뺐습니다.**
      · 소득 대비 부담 — 「매달 갚는 돈」과 같이 있으면 **연소득이 역산됩니다**(301만 × 12 ÷ 0.18 ≈ 2억)
@@ -6806,8 +6949,24 @@ function summaryText(){
      엔진 원값을 그대로 적으면 반올림이 갈려 요약 문구가 화면과 1만원 다른 값을 말할 수 있습니다 —
      받는 사람은 두 값이 같은 것인지 알 수 없습니다(v25.36이 공유 카드에서 겪은 자리). */
   const fig = heroFigures(c, LASTVIEW.price);
-  L.push(`· 준비할 현금 ${formatWon(fig.C * 10000)}`);
-  if(fig.L > 0) L.push(`· 주담대 ${formatWon(fig.L * 10000)}`);
+  /* 🔴 v25.54 — **요약 문구도 좌우 두 쪽입니다**(오너 지적 · 실기 캡쳐 2026.08.25).
+     ⏹ v25.51은 머리만 「필요한 돈」으로 맞췄고, 아래는 **마련하는 쪽 두 줄뿐**이었습니다.
+       그래서 문구가 총액을 말한 뒤 **그 돈이 어디로 가는지는 산문 한 줄**로만 넘겼고,
+       받는 사람은 **17억 7,222만원이 집값이라는 것을 못 봤습니다.** 카드와 같은 결함입니다.
+     ⚠ 머리(이름)를 **카드·화면과 같은 말**로 씁니다 — 「어디에 쓰나」 · 「어떻게 마련하나」.
+       세 매체가 같은 말을 써야 받는 사람이 같은 표로 읽습니다(원칙 91).
+     ⚠ **금액은 `formatWon`(정확)입니다** — 카드(축약)와 다릅니다. 그건 v24.21이 정한
+       매체 구분입니다 : 그림은 저장돼 재전달되지만, **텍스트는 보내기 전에 본인이 눈으로 읽습니다.**
+     ⚠ %를 같이 적습니다 — 96+4 = 81+19 = 100이라 **두 쪽이 맞는 것이 그 자리에서 보입니다.**
+       네 값 전부 `heroFigures` 한 곳에서 오므로 반올림까지 맞습니다(원칙 58).
+     ⚠ **대출이 0이면 그 줄을 안 세웁니다**(원칙 124) — 「0원(0%)」은 빈 값이 아니라 거짓입니다. */
+  L.push('어디에 쓰나');
+  L.push(`· 집값 ${formatWon(fig.P * 10000)} (${fig.pPrice}%)`);
+  L.push(`· 부대비용 ${formatWon(fig.E * 10000)} (${fig.pEtc}%)`);
+  L.push('');
+  L.push('어떻게 마련하나');
+  L.push(`· 준비할 현금 ${formatWon(fig.C * 10000)} (${fig.pCash}%)`);
+  if(fig.L > 0) L.push(`· 주담대 ${formatWon(fig.L * 10000)} (${fig.pLoan}%)`);
   /* 🔴 v24.21 — **「매달 갚을 원리금」 줄을 뺐습니다.**
      ⏹ v24.15가 이미지에서 뺀 이유가 그대로 여기에도 걸립니다: 금리·기간을 같이 달아야 해석이 되고,
        그 조건까지 붙이면 세 줄짜리 요약에 **가정이 사실보다 길어집니다.**
@@ -6920,7 +7079,7 @@ document.addEventListener('keydown', e => {
 
 function restart(){
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
-  Object.assign(S,{step:0,cash:null,income:null,noLoan:false,houseStatus:'none',disposePlan:false,
+  Object.assign(S,{step:0,cash:null,income:null,noLoan:false,mciCovered:false,houseStatus:'none',disposePlan:false,
     group:null,sido:'',sgg:'',pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
   render(); window.scrollTo(0,0);
 }
