@@ -2342,6 +2342,31 @@ HYGIENE.forEach(([name, over]) => {
   tt('현금이 남을 때도 안내한다 (v25.57)',
      /over < -10000/.test(UI) && /가진 돈에서 <b>\$\{formatWon\(-over\)\}<\/b>이 남아요/.test(UI)
      && /over >  10000/.test(UI));
+  /* 🔴 v25.64 신설 — **왜 남는지도 말합니다**(오너 결정 · 후보 셋을 렌더해서 고름).
+     ⏹ 실측(현금 8~30억 · 소득 3억 · 종로 · 390px) — 남는 돈은 **구간 경계에서만** 생깁니다 :
+         현금 10.5·11·12억 → 집값 **15억 정확히**  ·  현금 24억 → 집값 **25억 정확히**
+         나머지 열 케이스 → 남는 돈 없음
+     ⚠ 잠글 것은 **문장이 아니라 「어디서 숫자를 가져오는가」**입니다(원칙 84 · 128).
+       15억·6억·4억을 문자열에 박으면 정책이 바뀔 때 화면만 옛말이 됩니다. */
+  tt('남는 이유의 숫자를 구간표에서 가져온다 (v25.64)',
+     /policyAmount\(B\[i\]\.upTo\)/.test(UI)
+     && /policyAmount\(B\[i\]\.cap\)/.test(UI)
+     && /policyAmount\(B\[i \+ 1\]\.cap\)/.test(UI)
+     && !/집값이 15억을 넘으면/.test(UI));
+  /* 🔴 **모르는 이유를 지어내지 않습니다**(원칙 39). 구간이 실제로 걸렸고 집값이 경계에
+     앉았을 때만 뜹니다 — 수도권 밖은 구간 자체가 없어 이 갈래에 못 들어옵니다.
+     ⚠ 🔴 `c.metro`가 아니라 **계산 결과(`c.limits['구간한도']`)**로 봅니다.
+       처음에 `c.metro`로 막았다가 **한 케이스도 안 걸렸습니다** — 화면은 조용했고 검사는
+       초록이었습니다. 「엔진이 그 값을 들고 있는가」를 묻는 쪽이 정확합니다. */
+  tt('구간이 안 걸리면 남는 이유를 말하지 않는다 (v25.64)',
+     /c\.limits && isFinite\(c\.limits\['구간한도'\]\)/.test(UI)
+     && /Math\.abs\(price - b\.upTo\) < 10000/.test(UI)
+     && !/Math\.abs\(man\(price\) - b\.upTo\)/.test(UI));
+  /* 🔴 **위 줄이 답이고 이 줄은 「답이 어떻게 나왔는가」**입니다(원칙 43).
+     같은 상자 안에서 한 단 조용해져야 위계가 안 뒤집힙니다 — 새 상자를 안 만들었습니다(원칙 58). */
+  tt('남는 이유 줄이 위 줄보다 조용하다 (v25.64)',
+     /\.overnote\.sub\{[^}]*font-weight:400/.test(css2)
+     && !/\.overnote\.sub\{[^}]*background/.test(css2));
   /* 🔴 v25.57 — **양쪽 문턱이 같은 값인가.**
      ⚠ 🔴 이 잠금은 **사보타주가 찾아냈습니다.** 위 검사는 `over < -10000`이 **있는지**만 봐서,
        남는 쪽 문턱만 10배(-100000)로 바꿔도 통과했습니다. 「존재하는가」와 「같은 값인가」는
@@ -2773,9 +2798,30 @@ HYGIENE.forEach(([name, over]) => {
   tt('세그먼트 선택에 안쪽 링이 없다',
      !/\.seg button\.is-on\{[^}]*inset 0 0 0/.test(css2)
      && !/\.seg button\.is-on\{[^}]*box-shadow:0 0 0/.test(css2));
+  /* 🔴 v25.63 — **겨눔을 옮겼습니다**(원칙 175 · 128). 잠근 **사실**은 그대로입니다 —
+     「체크박스가 브라우저 기본이 아니라 직접 그려졌다」. 바뀐 것은 그 사실이 사는 선택자입니다.
+     ⏹ 전 : `.subtoggle input{` — **타입을 안 가려** 같은 줄의 텍스트 칸(`#inCap`)에도 걸렸습니다.
+       링 · 손가락 커서 · 체크표시가 글 쓰는 칸에 붙었고, v25.63이 `.capamt`에서 되돌리고 있었습니다.
+     → 선택자를 `input[type=checkbox]`로 좁혔으므로 이 검사도 같이 옮깁니다. */
   tt('체크박스가 직접 그려졌다 (appearance:none)',
-     /\.subtoggle input\{[^}]*appearance:none/.test(css2)
-     && /\.subtoggle input:checked::after/.test(css2));
+     /\.subtoggle input\[type=checkbox\]\{[^}]*appearance:none/.test(css2)
+     && /\.subtoggle input\[type=checkbox\]:checked::after/.test(css2));
+  /* 🔴 그리고 **되돌아가지 않는가**를 같이 잠급니다 — 타입을 안 가리는 선택자가 다시 생기면
+     다음에 이 줄에 들어오는 텍스트 칸이 또 체크박스 규격을 뒤집어씁니다.
+     ⚠ 값이 아니라 **규칙**을 잠급니다(원칙 149) : 「체크박스 규격은 체크박스에만 걸린다」. */
+  tt('체크박스 규격이 같은 줄의 텍스트 칸에 안 걸린다 (v25.63)',
+     !/\.subtoggle input\{/.test(css2)
+     && !/\.subtoggle input::after\{/.test(css2)
+     && !/\.subtoggle input:checked\{/.test(css2));
+  /* 🔴 v25.63 — **`<u>`의 밑줄은 한 곳에서만 끕니다**(원칙 58).
+     ⏹ 전에는 네 자리가 각자 껐고(`.cond u` · `.costrow .amt u` · `.deal .amt u` · `.subtoggle .capu`),
+       v25.62가 다섯 번째로 `<u>`를 쓰면서 **그 한 줄을 안 베껴** 「만」에만 밑줄이 그어졌습니다.
+     ⚠ 잠글 것은 값이 아니라 **개수**입니다 : 리셋이 있고, 개별 자리가 **다시 안 적는가**.
+       개별 자리에서 또 적기 시작하면 리셋이 있어도 같은 병이 돌아옵니다. */
+  tt('<u>의 밑줄을 리셋 한 곳에서 끈다 (v25.63)',
+     /(^|\n)u\{text-decoration:none\}/.test(css2)
+     && !/\bu\{[^}]*text-decoration/.test(css2.replace(/(^|\n)u\{text-decoration:none\}/, '\n'))
+     && !/\.capu\{[^}]*text-decoration/.test(css2));
   /* 🔴 v25.9 — **체크박스 줄의 손가락 면.** 줄 전체는 이미 `<label>`이지만 상자는 22px입니다
      (실측 360px). 보이는 크기는 그대로 두고 투명 면만 --tap으로 넓힙니다(원칙 123).
      ⚠ 44를 손으로 적으면 자리마다 43·45가 생깁니다 — **토큰인지까지** 잽니다(원칙 84). */
@@ -2884,7 +2930,12 @@ HYGIENE.forEach(([name, over]) => {
   tt('슬라이더가 커스텀되었다', /--fill-pct/.test(css2)
      && /::-webkit-slider-runnable-track/.test(css2));
   tt('02 링크 밑줄 없음', !/\.debtlink\{[^}]*text-decoration/.test(css2));
-  tt('영수증 대출액이 블랙', /\.line\.minus \.v\{color:var\(--ink\)/.test(css2));
+  /* 🔴 v25.65 — **겨눔을 옮겼습니다**(원칙 175). 잠근 사실은 그대로 — 「대출액이 블랙이다」.
+     ⏹ `.line.minus .v`는 영수증이 대차대조표(`.bs-*`)로 바뀌면서 **죽었습니다**(렌더 실측 0개).
+       실측 390px : 「주담대 2억 3,000만원」이 rgb(25,31,40) = --ink. 사실은 `.bs-am`이 집니다. */
+  tt('영수증 대출액이 블랙 (v25.65 재타겟)',
+     /\.bs-am\{[^}]*color:var\(--ink\)/.test(css2)
+     && !/\.bs-am\{[^}]*color:var\(--ink-[234]\)/.test(css2));
   /* 🔴 v23.22 — 선은 --line, 면은 --fill. 둘을 섞으면 팔레트를 바꿀 때 선만 따라오지 않습니다. */
   tt('면 토큰(--fill)을 선으로 쓰지 않는다',
      !/border(-top|-bottom|-left|-right)?:[^;{}]*var\(--fill\)/.test(css2));
@@ -4487,8 +4538,11 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 `.tile-k`(--ink-4)는 **흰 카드 위에서** 4.62:1로 검증된 값입니다. 히어로는 앱 배경이라
      같은 토큰이 4.19:1로 떨어집니다 — `.barlabel`과 같은 자리(원칙 97). */
   tt('히어로 안 라벨이 배경 위 대비를 지킨다',
-     /\.fund-k\{[^}]*color:var\(--ink-3\)/.test(SRC)
-     && !/\.fund-k\{[^}]*color:var\(--ink-4\)/.test(SRC));
+     /* 🔴 v25.65 — **겨눔을 옮겼습니다**(원칙 175). `.fund-k`는 v25.48이 막대를 옮기면서
+        죽었고(렌더 실측 0개), 같은 사실을 지금 `.barlabel`이 집니다 — 위 주석이 이미
+        「`.barlabel`과 같은 자리」라고 적어 뒀습니다. */
+     /\.barlabel\{[^}]*color:var\(--ink-3\)/.test(SRC)
+     && !/\.barlabel\{[^}]*color:var\(--ink-4\)/.test(SRC));
   /* ③ 블록 2 — 판정 뱃지. **색과 글자를 같은 `band`가 정해야** 합니다.
      따로 판정하면 「색은 주의인데 글자는 적정」이 납니다(원칙 91). */
   tt('부담 판정이 색과 글자를 한 값으로 낸다',
@@ -5197,7 +5251,12 @@ HYGIENE.forEach(([name, over]) => {
   tt('인테리어 접기 줄이 카드 제목 규격이다 (v25.23)', (()=>{
      const css = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
      const head = (css.match(/\.disc\.disc-head\{[^}]*\}/)||[''])[0];
-     const title = (css.match(/\.card-title\{[^}]*\}/)||[''])[0];
+     /* 🔴 v25.65 — **겨눔을 좁혔습니다.** 전에는 `/\.card-title\{/`였는데,
+        `text-wrap` 공유 선택자가 `…,.card-title,.hero-label{…}`이라 **끝이 `.hero-label{`**이어서
+        우연히 안 걸렸을 뿐이었습니다. v25.65가 죽은 `.hero-label`을 빼자 그 공유 규칙의 끝이
+        `.card-title{`이 되면서 **이 검사가 `{text-wrap:balance}`를 집어 터졌습니다.**
+        ⚠ 겨눔이 「우연히 맞고 있던」 자리였습니다 — 6085행처럼 **`{font-size`까지** 봅니다(원칙 128). */
+     const title = (css.match(/\.card-title\{font-size[^}]*\}/)||[''])[0];
      /* 🔴 **마크업이 실제로 그 클래스를 쓰는가**도 같이 봅니다(원칙 122).
         사보타주로 마크업만 `.discline`으로 되돌렸더니 **CSS가 남아 있어 초록**이었습니다 —
         「정의됐는가」가 아니라 「불려지는가」입니다. */
@@ -5814,7 +5873,9 @@ HYGIENE.forEach(([name, over]) => {
      return !/text-wrap:\s*pretty/.test(bare)
          /* ⚠ v25.40 — `.headline`이 사라져 `.brandline`이 그 자리를 받습니다.
             목록을 **늘리지 않았습니다** — 한 칸을 갈아 끼운 것입니다(원칙 128). */
-         && /h1,h2,p,\.q-title,\.brandline,\.card-title,\.hero-label\{text-wrap:balance\}/.test(bare)
+         /* ⏹ v25.65 — 목록에서 `.hero-label`을 뺐습니다(죽은 이름 · 렌더 실측 0개).
+            **한 칸을 뺀 것**이고 선언은 여전히 이 한 곳뿐입니다 — 아래 개수 검사가 그것을 셉니다. */
+         && /h1,h2,p,\.q-title,\.brandline,\.card-title\{text-wrap:balance\}/.test(bare)
          && (bare.match(/text-wrap:/g)||[]).length === 1;
   })(), (CSS.replace(/\/\*[\s\S]*?\*\//g,'').match(/[^{};]*\{[^}]*text-wrap:[^;}]*/g)||['없음']).join(' | ').slice(0,120));
   /* 🔴 실측으로 줄인 문장 다섯이 **다시 길어지지 않았는가.** 글자 수로 잠급니다 —
@@ -7069,16 +7130,44 @@ HYGIENE.forEach(([name, over]) => {
   /* ⑤ 줄바꿈 규격 — 잠글 것은 「한 줄이다」가 아니라 **「숫자가 안 갈린다」**입니다.
      한 줄인지는 폭과 금액이 정합니다(원칙 149 — 값이 아니라 규칙을 잠급니다).
      실측 근거(360px · 대출 8,000만원): 이 두 줄이 없으면 「8,000만」과 「원」이 갈립니다. */
-  const lg   = (CSS.match(/\.legend\{[^}]*\}/) || [''])[0];
-  const lgdiv= (CSS.match(/\.legend div\{[^}]*\}/) || [''])[0];
-  tt('범례는 항목 단위로 줄을 바꾼다 (v25.30)', /flex-wrap:\s*wrap/.test(lg), lg);
-  tt('🔴 범례 항목 안에서 숫자가 안 갈린다 (v25.30)', /white-space:\s*nowrap/.test(lgdiv), lgdiv);
+  /* 🔴 v25.65 — **겨눔 셋을 옮겼습니다**(원칙 175). `.legend`는 v25.54가 공유 카드를
+     대차대조표로 다시 쓰면서 **죽었습니다** — 렌더 실측(결과 + 서랍 셋 + 공유 카드 + 시트)에서
+     `.legend` **0개**이고, `#reportCard`가 쓰는 것은 `bs · bs-cap · bs-bar · bs-it · bs-nm · bs-am`입니다.
+     🔴 CSS 주석은 「공유 카드가 그대로 씁니다」라고 **보증하고 있었습니다** — 틀린 보증이
+       규칙과 잠금을 쉰 판 가까이 살려 뒀습니다(원칙 47).
 
-  /* ⑥ **새 활자 조합을 안 만들었는가** — 금액도 `<b>`라 %와 같은 규격입니다.
-     범례에 새 자식 선택자가 생기면 `audit`의 조합 가짓수가 늘어납니다(DESIGN 2장). */
-  const kids = (CSS.match(/\.legend\s+(\w+)\{/g) || [])
-    .map(s => s.trim().replace(/^\.legend\s+/, '').replace('{', '')).sort().join('·');
-  tt('범례에 새 활자 규격을 안 만들었다 (v25.30)', kids === 'b·div·span', kids);
+     ⏹ **잠근 사실 둘은 안 죽었습니다.** 다만 그것을 지는 방식이 바뀌었습니다 :
+         전  한 줄에 우겨넣고 `white-space:nowrap`으로 숫자가 갈리는 것을 막았다
+         후  `.bs-nm`(이름)과 `.bs-am`(금액)이 **각자 자기 줄을 갖는다** — 겹칠 일이 없다
+       그래서 잠글 것이 **CSS 한 속성이 아니라 「두 조각이 따로 선다」는 구조**입니다(원칙 128).
+     ⏹ 실측 360 · 390 · 430px — `.bs-am` **여덟 개 전부 1줄**(7억 1,249만원(98%) 포함). */
+  /* 🔴 **한 규칙이 아니라 그 이름을 겨누는 규칙 전부**를 봅니다.
+     ⏹ 처음에 `CSS.match(/\.bs-am\{[^}]*\}/)`로 **첫 규칙 하나만** 봤다가
+       `sabotage65 ㉢`에 **뚫렸습니다** — 상처가 뒤에 `.bs-am{width:96px}`를 **덧씌우니**
+       첫 규칙에는 폭이 없어서 검사가 초록이었습니다. CSS는 **나중 규칙이 이깁니다.**
+     🔴 「그 선택자에 그 속성이 없다」를 잠글 때는 **첫 곳이 아니라 모든 곳**을 세십시오
+       (원칙 148의 계열 — 첫 곳만 보는 것은 값이 아니라 우연을 잠그는 것입니다). */
+  const rulesFor = name =>
+    (CSS.match(new RegExp('(^|[\\s}])[^{}]*\\' + name + '[^{}]*\\{[^}]*\\}', 'g')) || [])
+      .map(r => r.trim());
+  const nmAll = rulesFor('.bs-nm'), amAll = rulesFor('.bs-am');
+  const bsnm = nmAll[0] || '', bsam = amAll[0] || '';
+  tt('자금 출처 이름과 금액이 각자 자기 줄을 갖는다 (v25.30 · v25.65 재타겟)',
+     !!bsnm && !!bsam && /margin:0/.test(bsnm) && /margin:2px 0 0/.test(bsam)
+     && !nmAll.some(r => /display:\s*inline/.test(r))
+     && !amAll.some(r => /display:\s*inline/.test(r)), bsnm + ' / ' + bsam);
+  /* 🔴 그리고 **금액 칸에 폭 제한을 걸지 않았는가.** 이 줄이 좁아지면 숫자가 다시 갈립니다 —
+     실측에서 한 줄인 근거는 「제 줄을 통째로 쓴다」이지 「글자가 짧다」가 아닙니다. */
+  tt('🔴 금액 줄에 폭 제한이 없다 — 숫자가 안 갈린다 (v25.30 · v25.65 재타겟)',
+     amAll.length > 0 && !amAll.some(r => /(^|[;{])\s*(max-)?width:/.test(r)),
+     amAll.join(' | ').slice(0, 140));
+
+  /* ⑥ **새 활자 조합을 안 만들었는가** — 자금 출처 두 줄에 자식 선택자가 늘면
+     `dupaudit`의 조합 가짓수가 늘어납니다(DESIGN 2장). */
+  const kids = (CSS.match(/\.bs-am\s+\.?(\w[\w-]*)\{/g) || [])
+    .map(s => s.trim().replace(/^\.bs-am\s+/, '').replace('{', '')).sort().join('·');
+  tt('자금 출처 금액에 새 활자 규격을 안 만들었다 (v25.30 · v25.65 재타겟)',
+     kids === '.fpct', kids || '(없음)');
 })();
 
 /* ═══ v25.31 · v25.32 — 범례 순서 · 평형 값 자리 ═════════════════ */
