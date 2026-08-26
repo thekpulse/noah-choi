@@ -92,7 +92,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.62 · 정책 2026.08.13 -->
+<!-- BUILD v25.63 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -895,14 +895,48 @@ input{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 /* 🔴 v25.62 — 금액칸. **새 상자를 안 만듭니다** — `.subtoggle` 줄 안에 흐르는 입력 하나입니다.
    ⚠ 폼 컨트롤은 **16px 이상**입니다(iOS 확대 방지 · 지침). `--t5`가 16px입니다.
    ⚠ 오른쪽 끝으로 밉니다(`margin-left:auto`) — 왼쪽 글자와 붙으면 라벨처럼 읽힙니다. */
+/* 🔴 v25.63 — **금액칸이 탭을 하나도 못 받고 있었습니다.**
+   ⏹ 바로 위 `.subtoggle::after`는 v25.9가 **체크박스의 손가락 면**으로 깐 44px 투명 면인데
+     `left:0;right:0`이라 **줄 전체**를 덮습니다. v25.62가 그 줄 안에 금액칸을 넣을 때
+     이 면이 이미 거기 있었습니다 — 실측(390px · Chromium) :
+       `document.elementFromPoint(금액칸 한가운데)` → **`capRow`**(라벨). 금액칸이 아닙니다.
+     그래서 금액칸을 누르면 **라벨이 눌리고 스위치가 꺼집니다**. `i.onclick`의
+     `stopPropagation`은 **클릭이 입력칸에 닿은 적이 없어** 한 번도 안 불렸습니다.
+     ⏹ 실측 재현 : 스위치 켬 → `loanCap=0` · 칸 열림 → **금액칸 탭** →
+       `swCap.checked=false` · `loanCap=null` · 칸 다시 잠김 → 타이핑이 아무 데도 안 들어감.
+   → **금액칸을 그 면 위로 올립니다**(`z-index:1`). 손가락 면은 그대로 44px이고
+     체크박스·글자 자리에서는 하던 일을 그대로 합니다 — 줄어드는 것이 없습니다.
+   ⚠ `.subtoggle input` 규칙(체크박스를 손으로 그리는 것)이 **이 텍스트 칸에도 걸립니다** —
+     선택자가 `input`이라 타입을 안 가립니다. 거기서 새어 든 것을 여기서 되돌립니다 :
+       `box-shadow` 1.5px 링(칸에 테두리가 하나 더 그려집니다) · `cursor:pointer`(글 쓰는
+       칸인데 손가락 커서) · `::after` 체크표시(`opacity:0`이라 지금은 안 보일 뿐입니다).
+     🔴 **선택자 자체를 `input[type=checkbox]`로 좁히는 것이 진짜 고침**인데,
+       `test.js`가 `.subtoggle input{…appearance:none`을 **문자열로 잠그고** 있습니다.
+       선택자를 좁히려면 그 검사도 같이 고쳐야 하므로 **다음 판**입니다(원칙 41 · 148). */
 .subtoggle .capamt{margin-left:auto;width:82px;text-align:right;font-size:var(--t5);
   font-weight:700;color:var(--ink);background:var(--fill);border:0;border-radius:var(--r-s);
-  padding:6px 8px;min-height:var(--tap)}
-.subtoggle .capamt:disabled{color:var(--ink-4);background:transparent}
+  padding:6px 8px;min-height:var(--tap);
+  position:relative;z-index:1;cursor:text;box-shadow:none}
+.subtoggle .capamt::after{content:none}
+.subtoggle .capamt:disabled{color:var(--ink-4);background:transparent;cursor:default}
 /* 🔴 v25.62 — **단위를 적습니다.** 없으면 「20,000」이 2억인지 2만원인지 화면이 안 말합니다
    (원칙 39 — 숫자 옆의 단위는 장식이 아니라 뜻입니다).
-   ⚠ 위 부대비용 칸들이 쓰는 `<u>만</u>`과 **같은 말**입니다(원칙 58). */
-.subtoggle .capu{margin-left:5px;font-size:var(--t6);font-weight:600;
+   ⚠ 위 부대비용 칸들이 쓰는 `<u>만</u>`과 **같은 말**입니다(원칙 58).
+   🔴 v25.63 — **「같은 말」이라고 적어 두고 규격을 새로 썼습니다.** 실측(390px) :
+
+       부대비용 단위 만   `.costrow .amt u`    13px / 400 / 밑줄 없음
+       상한   단위 만   `.subtoggle .capu`   **14px / 600 / 밑줄 있음**   ← 셋 다 다름
+
+     ⏹ 밑줄은 아무도 넣은 적이 없습니다 — **`<u>`의 브라우저 기본값**입니다.
+       이 집에서 `<u>`를 쓰는 다른 **세 자리가 전부** `text-decoration:none`을 적어
+       기본값을 끕니다(`.cond u` · `.costrow .amt u` · `.deal .amt u`).
+       v25.62가 마크업만 베끼고 **딸린 CSS를 안 베꼈습니다.**
+       그래서 이 「만」이 이 앱에서 **유일하게 밑줄 그어진 단위**였습니다.
+     ⏹ 14px/600은 `.subtoggle` 줄이 주는 값을 그대로 물려받은 것입니다(줄이 600입니다) —
+       고른 값이 아니라 **안 고른 값**입니다. 금액칸은 양쪽이 이미 16/700으로 같으므로,
+       단위도 이미 넷이 쓰는 쪽(13/400)에 맞춥니다.
+     ⚠ `font-weight:400`을 **적어야** 합니다 — 안 적으면 `.subtoggle`의 600을 물려받습니다. */
+.subtoggle .capu{margin-left:5px;text-decoration:none;font-size:var(--t7);font-weight:400;
   color:var(--ink-3);font-style:normal}
 .subtoggle .capamt:disabled + .capu{color:var(--ink-4)}
 .subtoggle::after{content:'';position:absolute;left:0;right:0;top:50%;
@@ -4070,7 +4104,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.62 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.63 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5825,7 +5859,11 @@ function renderCostBox(c){
     if(!w || !i) return;
     const on = S.loanCap != null;
     w.checked = on;
-    i.value = on ? comma(S.loanCap) : ''; i.disabled = !on;
+    /* 🔴 v25.63 — **켜자마자 「0」이 적히던 자리입니다.** `S.loanCap = 0`은
+       「켰지만 아직 안 넣음」을 뜻하는 값인데, 그걸 그대로 찍으면 화면이
+       **「주담대를 이만큼만 0만」**이라고 말합니다 — 안 넣은 것과 0원만 빌리는 것은
+       다른 사실입니다(원칙 39 · 124). 0이면 **빈 칸**입니다. */
+    i.value = (on && S.loanCap > 0) ? comma(S.loanCap) : ''; i.disabled = !on;
     w.onchange = () => {
       S.loanCap = w.checked ? 0 : null;
       S.lockedPrice = null; showResult(true);
