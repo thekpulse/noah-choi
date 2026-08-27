@@ -1079,18 +1079,79 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v23.23 — 간격의 기준이 「질문 → 입력칸」에서 「라벨 → 입력칸 → 헬퍼」로 옮겼습니다.
      락을 지우지 않고 **3단 위계의 간격 규약**으로 다시 씁니다.
      라벨 위 22px(덩어리 사이) · 라벨 아래 8px · 헬퍼 6px — 안쪽이 바깥쪽보다 좁아야 묶입니다. */
+  /* 🔴 v25.66 — **여백이 리터럴에서 토큰(`--sp-*`)으로 바뀌었습니다**(감사 6-2).
+     아래 넷은 `margin-top:12px`처럼 **숫자를 글자로** 잠그고 있어서 전부 빨간불이 났습니다.
+     ⚠ 잠근 **사실은 그대로**입니다 — 12px이 12px이 아니게 된 것이 아니라, **적는 방식**이
+       바뀐 것입니다. 그래서 잠금을 지우지 않고 **토큰을 풀어 읽게** 고칩니다(원칙 128 · 175).
+     ⚠ 🔴 이렇게 해 두면 다음에 스케일 값을 바꿀 때 **이 검사들이 그 변화를 잡습니다** —
+       리터럴만 보던 때는 토큰을 바꿔도 조용했습니다. 잠금이 오히려 촘촘해졌습니다. */
+  const SPX = Object.fromEntries((css2.match(/--sp-\d:\d+px/g)||[])
+    .map(x => [x.split(':')[0], parseInt(x.split(':')[1])]));
+  /* 값 하나를 「리터럴이든 토큰이든」 px 숫자로 돌려줍니다. 못 찾으면 null. */
+  const px = v => v == null ? null
+    : /^var\(/.test(v) ? (SPX[v.slice(4, -1)] ?? null) : parseInt(v);
+  const mtOf = sel => {
+    const m = css2.match(new RegExp(sel + '\\{[^}]*margin-top:\\s*(var\\(--sp-\\d\\)|\\d+px)'));
+    return m ? px(m[1]) : null;
+  };
+  /* 🔴 v25.66 신설 — **세로 여백은 스케일 안에서만 고른다**(감사 6-2가 연 마지막 항목).
+     ⏹ 전 : `margin-top`이 13가지 값 42곳. 크기·굵기·곡률에는 스케일이 있는데 **여백만 없어서**,
+       판마다 눈으로 골랐고 「이 자리는 왜 14이고 저기는 왜 16인가」에 답이 없었습니다.
+     ⚠ 잠글 것은 값이 아니라 **「스케일 밖 값이 없을 것」**입니다(원칙 117 · 149).
+     ⚠ 🔴 **일부러 남긴 예외 하나** : `.q + .answered`의 44px — 리듬이 아니라
+       「내용이 길 때 지키는 최소 간격」이고 `--tap`과 같은 값입니다. 예외를 **여기 적어 두어**
+       다음 사람이 「빠뜨린 것」으로 오해하지 않게 합니다(원칙 148). */
+  /* ⚠ 🔴 **주석을 떼고 셉니다.** `css2`는 주석까지 든 원본이라, 그냥 세면 이 집이
+     기록으로 남긴 옛 값들(「24 → 20px으로 줄였습니다」 같은 ⏹ 줄)까지 「스케일 밖」으로
+     잡힙니다. **기록은 규칙이 아닙니다** — 주석은 값을 자유롭게 인용할 수 있어야 합니다.
+     ⏹ v25.66이 처음에 그대로 세다가 30 · 16 · 2 · 18px을 빨간불로 냈고, 넷 다 주석이었습니다. */
+  const cssBare = css2.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+  tt('세로 여백이 스케일 안에 있다 (v25.66)', (()=>{
+     const lit = (cssBare.match(/margin-top:\s*\d+px/g) || []).map(x => parseInt(x.match(/\d+/)[0]));
+     const 예외 = [44];
+     const 밖 = lit.filter(v => !예외.includes(v));
+     return Object.keys(SPX).length === 6 && 밖.length === 0;
+  })(), (cssBare.match(/margin-top:\s*\d+px/g) || []).join(' · ') || '리터럴 없음');
+  /* 🔴 그리고 **스케일이 여섯 단 그대로인가.** 단을 늘리면 「고를 것이 없다」가 무너집니다. */
+  tt('여백 스케일이 여섯 단이다 (v25.66)',
+     SPX['--sp-1'] === 4 && SPX['--sp-2'] === 8 && SPX['--sp-3'] === 12
+     && SPX['--sp-4'] === 16 && SPX['--sp-5'] === 24 && SPX['--sp-6'] === 32,
+     JSON.stringify(SPX));
+  /* 🔴 v25.66 신설 — **활자 조합이 늘지 않는가**(감사 6-3 · 6-4 · 인수인계 ④).
+     ⏹ `tools/dupaudit.mjs`가 렌더에서 조합 가짓수를 셉니다(지금 **76**). 그런데 **재기만 하고**
+       늘어나는 것을 막는 장치가 없었습니다 — 감사가 「잠글 것은 값이 아니라 늘어나지
+       않는가」라고 적어 둔 자리가 여러 판 동안 비어 있었습니다.
+     ⚠ 🔴 **가짓수 자체는 렌더 값이라 여기서 못 셉니다.** 대신 그 가짓수를 만드는
+       **재료 셋**을 잠급니다 — 크기 · 굵기 · 여백. 재료가 안 늘면 조합도 크게 안 늡니다.
+         크기 : `--t*` 밖 리터럴 (이미 잠겨 있음 · 위 스케일 검사)
+         여백 : `--sp-*` 밖 리터럴 (v25.66 위에서 신설)
+         굵기 : **여기** — 다섯 단 밖 값이 없는가
+     ⏹ v24.15가 「800은 없앴습니다」라고 적어 두고 **17규칙에 남아 있던** 자리입니다.
+       감사 B-6이 지적했고 이후 판들이 0으로 만들었는데, **돌아오는 것을 막는 장치는 없었습니다.**
+     ⚠ 600은 「누르는 것의 라벨」이라는 **분명한 역할**이 있어 정식 등록된 값입니다(감사 6-3). */
+  tt('굵기가 다섯 단 안에 있다 (v25.66 · 감사 6-3)', (()=>{
+     const 단 = [400, 500, 600, 700, 900];
+     const w = (cssBare.match(/font-weight:\s*(\d{3})/g) || [])
+       .map(x => parseInt(x.match(/\d{3}/)[0]));
+     const 밖 = [...new Set(w.filter(v => !단.includes(v)))];
+     return w.length > 0 && 밖.length === 0;
+  })(), (()=>{ const w=(cssBare.match(/font-weight:\s*(\d{3})/g)||[]).map(x=>parseInt(x.match(/\d{3}/)[0]));
+     const c={}; w.forEach(v=>c[v]=(c[v]||0)+1);
+     return Object.entries(c).sort((a,b)=>a[0]-b[0]).map(([k,v])=>k+'×'+v).join(' · '); })());
   tt('폼 3단 위계의 간격 규약', (()=>{
-     const g = (sel,prop) => (css2.match(new RegExp(sel+'\\{[^}]*'+prop+':(\\d+)px'))||[])[1];
      /* ⚠ v24.3 — .flabel이 flex 한 줄이 되면서 margin이 규칙 앞쪽이 아닙니다. 규칙 안에서 찾습니다. */
      const fl = (css2.match(/\n\.flabel\{([^}]*)\}/)||[])[1] || '';
      const labelTop = (fl.match(/margin:(\d+)px/)||[])[1];
      const labelBot = (fl.match(/margin:\d+px 0 (\d+)px/)||[])[1];
-     const card = g('\\n\\.moneycard','margin-top');
+     const card = mtOf('\\n\\.moneycard');
      const help = (css2.match(/\.helper\{margin:(\d+)px/)||[])[1];
-     const all = css2.match(/\.moneycard[^{]*\{[^}]*margin-top:(\d+)px/g) || [];
+     const all = css2.match(/\.moneycard[^{]*\{[^}]*margin-top:\s*(var\(--sp-\d\)|\d+px)/g) || [];
+     /* ⚠ 🔴 잠글 것은 **세 값의 크기가 아니라 「안쪽이 바깥쪽보다 좁다」**입니다(원칙 149).
+        v25.66이 헬퍼를 6 → 4px(`--sp-1`)로 옮겼는데, 묶임은 **더 강해졌습니다.**
+        그래서 `help === 6`을 **관계**로 바꿉니다 — 값을 박으면 스케일을 못 씁니다. */
      return all.length === 1
-         && +labelTop >= 20 && +labelBot === 8 && +card === 8 && +help === 6
-         && +labelTop > +labelBot;
+         && +labelTop >= 20 && +labelBot === 8 && card === 8 && +help > 0
+         && +labelTop > +labelBot && +labelBot >= +help;
   })());
   /* 🔴 모든 입력 필드 앞에 라벨, 뒤에 헬퍼가 있는가 — 구조 자체를 셉니다. */
   tt('모든 입력 필드가 라벨 → 입력 → 헬퍼 순서다', (()=>{
@@ -2649,8 +2710,9 @@ HYGIENE.forEach(([name, over]) => {
      return b !== null && (b.match(/<span class="lg-l">/g)||[]).length === 2;
   })(), (()=>{ const b=legalBlock(UI);
      return b===null ? '면책 없음' : (b.match(/<span class="lg-l">/g)||[]).length+'문단'; })());
-  tt('면책 문단 사이 여백이 마지막에는 안 붙는다',
-     /\.foot \.legal \.lg-l \+ \.lg-l\{margin-top:12px\}/.test(fs.readFileSync(FILE,'utf8')));
+  tt('면책 문단 사이 여백이 마지막에는 안 붙는다 (v25.66 토큰 대응)',
+     /\.foot \.legal \.lg-l \+ \.lg-l\{margin-top:/.test(css2)
+     && mtOf('\\.foot \\.legal \\.lg-l \\+ \\.lg-l') === 12);
   /* 🔴 v24.6 — G-18이 면책까지 보고 있는지 소스에서 확인합니다(원칙 101).
      표에서 `.legal` 한 줄을 지우면 면책은 다시 아무도 안 보는 글이 됩니다. */
   /* 🔴 v24.6 — **되돌린 락입니다. 지우지 않고 방향을 뒤집어 다시 썼습니다**(지침 5층 3번).
@@ -5026,8 +5088,14 @@ HYGIENE.forEach(([name, over]) => {
      const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
      return !!m && !/^\s*·/m.test(m[1]) && !/<br>/.test(m[1]);
   })());
-  tt('곧 바뀌는 것 항목 사이가 24px이다',
-     /\.sheet-row span \.chg \+ \.chg\{margin-top:24px\}/.test(RAW));
+  tt('곧 바뀌는 것 항목 사이가 24px이다 (v25.66 토큰 대응)',
+     /\.sheet-row span \.chg \+ \.chg\{margin-top:/.test(RAW)
+     && (()=>{ const c = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+        const S = Object.fromEntries((c.match(/--sp-\d:\d+px/g)||[])
+          .map(x => [x.split(':')[0], parseInt(x.split(':')[1])]));
+        const m = c.match(/\.sheet-row span \.chg \+ \.chg\{[^}]*margin-top:\s*(var\(--sp-\d\)|\d+px)/);
+        if(!m) return false; const v = m[1];
+        return (/^var\(/.test(v) ? S[v.slice(4,-1)] : parseInt(v)) === 24; })());
   /* 🔴 마지막 항목에는 아래 여백을 안 답니다 — 달면 다음 행과의 간격만 조용히 늘어납니다(원칙 126). */
   tt('마지막 항목에 매달린 여백이 없다',
      !/\.sheet-row span \.chg\{[^}]*margin-bottom/.test(RAW));
@@ -5349,7 +5417,16 @@ HYGIENE.forEach(([name, over]) => {
      const m = SRC.match(/<div class="chips[^"]*" id="dealChips"[\s\S]*?<p class="deal-note" id="dealNote"><\/p>\s*<p class="deal-note" id="dealFoot"><\/p>/);
      return !!m;
   })());
-  tt('각주 둘 사이 간격이 좁다', /\.deal-note \+ \.deal-note\{margin-top:6px\}/.test(RAW));
+  /* ⚠ 잠글 것은 **「좁다」**이지 「6px이다」가 아닙니다(원칙 149). v25.66이 4px(`--sp-1`)로
+     옮겼고, 「좁다」는 더 참이 됐습니다. 상한을 둬서 **넓어지는 것만** 막습니다. */
+  tt('각주 둘 사이 간격이 좁다 (v25.66 토큰 대응)', (()=>{
+     const c = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
+     const S = Object.fromEntries((c.match(/--sp-\d:\d+px/g)||[])
+       .map(x => [x.split(':')[0], parseInt(x.split(':')[1])]));
+     const m = c.match(/\.deal-note \+ \.deal-note\{[^}]*margin-top:\s*(var\(--sp-\d\)|\d+px)/);
+     if(!m) return false; const v = m[1];
+     const n = /^var\(/.test(v) ? S[v.slice(4,-1)] : parseInt(v);
+     return n > 0 && n <= 8; })());
 
   /* ═══ 🆕 v25.50 — 오너 실기 지적 여덟 (화면 정돈 · 계산 0) ═════════
      ⚠ 여기 잠그는 것은 **값이 아니라 사실**입니다(원칙 149). */
