@@ -5,6 +5,22 @@
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>영끌계산기 — 내 현금으로 넘볼 수 있는 집</title>
+<!-- 🔴 v25.70 — **애드센스 소유권 확인 스니펫.**
+     ⚠ 게시자 ID(ca-pub-…)는 **아래 script 한 줄에만** 적습니다 — 주석에 한 번 더 적으면
+       계정을 바꿀 때 한쪽만 고쳐집니다(원칙 58). ads.txt의 숫자와 같아야 합니다.
+     구글이 요구하는 것은 「각 페이지의 <head> 사이에 이 조각이 있을 것」 하나입니다.
+     이 파일은 단일 페이지이므로 **여기 한 줄이 전부**입니다.
+     ⚠ **광고를 띄우는 코드가 아닙니다.** 이 조각만으로는 지면(<ins class="adsbygoogle">)이
+       없으므로 화면에 아무것도 나타나지 않습니다 — 소유권 확인·심사 신청용입니다.
+       심사 통과 뒤 「자동 광고」를 켜면 이 조각이 그때 지면을 만듭니다.
+     ⚠ `async`입니다 — 파서를 막지 않습니다. v25.8에서 세운 원칙(외부 요청이 매달려도
+       계산기는 뜬다)을 깨지 않습니다. 구글 도메인이 막힌 망에서도 본체는 그대로 돕니다.
+     ⚠ 이 조각은 **구글 광고 쿠키**를 심습니다. GA(v24.23)와 달리 자리표시자 가드가 없습니다 —
+       심사를 받는 동안에도 계속 실려 있어야 하기 때문입니다.
+     ⚠ 사용자가 입력한 금액은 여전히 **브라우저 밖으로 나가지 않습니다.** 이 조각은
+       입력값을 읽지 않습니다(전송 지점은 여전히 0곳). -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571049978270961"
+        crossorigin="anonymous"></script>
 <!-- 🔴 v24.25 — **favicon 404를 없앱니다.** 실기 콘솔에 매 접속마다 빨간 에러가 하나씩
      찍히고 있었습니다(`/favicon.ico 404`). 기능에는 영향이 없지만, **콘솔에 상시 빨간불이
      있으면 진짜 에러가 묻힙니다** — 이번에도 그 옆에서 GA4가 도는지 확인해야 했습니다.
@@ -21,7 +37,7 @@
        사용자가 넣은 금액은 **브라우저 밖으로 나가지 않습니다.** GA에도 안 보냅니다. -->
 <script>
 (function(){
-  var GA_ID = 'G-XXXXXXXXXX';
+  var GA_ID = 'G-L8Q12X6Y9V';   /* v25.71 — 실제 측정 ID를 심었습니다(스트림: 영끌계산기 · www.myhome-price.com) */
   /* 🔴 자리표시자를 **두 번 적지 않습니다.** 처음엔 위 값과 같은 문자열을 여기 한 번 더
      써서 비교했는데, 그러면 ID를 위에서만 바꾸고 여기를 안 고쳤을 때 **조용히 안 켜집니다.**
      자리표시자는 X가 이어지는 형태이므로 **모양으로** 판정합니다(원칙 58).
@@ -56,7 +72,13 @@
 <meta property="og:site_name" content="영끌계산기">
 <meta property="og:title" content="영끌계산기 — 내 현금으로 넘볼 수 있는 집">
 <meta property="og:description" content="가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 준비할 현금을 함께 봐요.">
-<meta property="og:url" content="https://noah-choi.vercel.app">
+<!-- 🔴 v25.70 — 대표 주소를 **구입한 도메인**으로 바꿨습니다(noah-choi.vercel.app → www.myhome-price.com).
+     ⚠ 애드센스에 등록한 사이트가 `myhome-price.com`입니다. 심사 로봇이 보는 주소와
+       공유 카드·요약 문구에 적히는 주소가 다르면 안 됩니다.
+     ⚠ 짝이 되는 곳은 **아래 canonical과 SERVICE_URL 한 줄**뿐입니다(검사가 잠급니다).
+     ⚠ 호스트 20자 — 카드에 그대로 찍힙니다(HOST_MAX 24). vercel 주소와 같은 길이입니다. -->
+<meta property="og:url" content="https://www.myhome-price.com">
+<link rel="canonical" href="https://www.myhome-price.com/">
 <meta name="description" content="가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 준비할 현금을 함께 봐요.">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <!-- 🔴 v25.8 — **글꼴 스타일시트를 비차단으로 바꿨습니다.**
@@ -92,7 +114,7 @@
          defer만     CSS 매달림 → **여전히 죽음** · JS 매달림 → ✅ 정상
          defer+link  CSS 매달림 → ✅ 정상        · JS 매달림 → ✅ 정상 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- BUILD v25.69 · 정책 2026.08.13 -->
+<!-- BUILD v25.71 · 정책 2026.08.13 -->
 <!-- ⚠ 이 줄의 날짜는 **신선도 검사(test.js 15장)의 앵커**입니다. 화면 문구가 아니라 주석이고,
      화면에 뜨는 날짜는 전부 `POLICY_ASOF`에서 옵니다. 둘이 같은지는 검사가 셉니다. -->
 <style>
@@ -2154,6 +2176,10 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 .copyright{margin:0;padding:0 0 24px;text-align:center;
   font-size:var(--t8);font-weight:var(--w-sub);line-height:var(--lh-body);
   letter-spacing:var(--ls-body);color:var(--ink-3)}
+/* 🔴 v25.70 — 꼬리말 안의 개인정보처리방침 링크. **새 색·새 크기를 만들지 않습니다** —
+   같은 줄의 저작권과 한 규격이고, 「눌리는 것」이라는 신호만 밑줄로 냅니다.
+   ⚠ `--ink-3`은 이 면(--bg) 위에서 6.45:1입니다(원칙 97의 자리 — `--ink-4`는 4.19:1이라 못 씁니다). */
+.copyright a{color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
 .app:not(.no-dock) .copyright{display:none}
 .app.no-dock .copyright{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 /* ⏹ .cta.ghost · .textbtn 은 v23.22에서 삭제했습니다 — 어떤 마크업도 쓰지 않는 죽은 규칙입니다.
@@ -4186,7 +4212,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v25.69 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v25.71 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -4194,7 +4220,26 @@ const PARTNER = { interior:'', moving:'' };
    ⏹ 브랜치 배포 주소(noah-choi-git-main-noahchoi… · 38자)는 버렸습니다.
      브랜치 이름이 주소에 박혀 있어 브랜치 전략이 바뀌면 죽고, 길어서 아무도 못 칩니다.
    ⚠ 주소는 **여기 한 줄에서만** 정의합니다. 카드·요약 문구가 전부 이걸 봅니다(검사가 잠급니다). */
-const SERVICE_URL = 'https://noah-choi.vercel.app';
+const SERVICE_URL = 'https://www.myhome-price.com';
+
+/* 🔴 v25.71 — **화면 흐름 계측(GA4 이벤트) 한 곳.**
+   ⏹ 왜 필요했나 : 이 도구는 주소를 바꾸지 않습니다(`pushState`·`hash`를 한 곳도 안 씁니다).
+     GA4의 기본 수집은 **세션당 page_view 한 건**뿐이라, 「몇 번째 질문에서 그만두는가」가
+     측정되지 않았습니다. 방문자 수는 보이는데 **퍼널은 안 보이는** 상태였습니다.
+   🔴 ⚠ **금액을 한 자리도 안 보냅니다.** 보내는 것은 단계 번호와 참/거짓뿐입니다 —
+     개인정보처리방침 5조(「입력한 금액은 분석 도구로 전송되지 않습니다」)가 이 함수에 걸려
+     있습니다. **`track()`에 `S.cash`·`S.income`·`price` 계열을 넘기지 마십시오.**
+   ⚠ GA_ID가 자리표시자면 `window.gtag`가 **정의되지 않습니다**(head의 가드). 그때 이 함수는
+     **조용히 아무 일도 안 합니다** — 부르는 쪽이 켜짐/꺼짐을 알 필요가 없습니다(원칙 58).
+   ⚠ `try/catch`로 감쌉니다. 광고·분석 차단 확장이 `gtag`를 반쯤 부숴 두는 경우가 있는데,
+     그때 계산기가 같이 죽으면 안 됩니다 — **본체는 계산기입니다**(v25.8과 같은 판단). */
+function track(name, params){
+  try{ if(typeof window.gtag === 'function') window.gtag('event', name, params || {}); }
+  catch(e){}
+}
+/* 🔴 같은 단계를 다시 그릴 때 이벤트가 겹치지 않도록 마지막으로 보낸 단계를 기억합니다.
+   ⚠ `render()`는 답을 고칠 때마다 돕니다 — 막지 않으면 한 사람이 01을 열 번 보냅니다. */
+let TRACKED_STEP = null;
 
 const D = { rate:5.4, years:30, rateType:'variable', fixedYears:0 };
 /* 인테리어 시공 수준 — v24.7 개편
@@ -4862,7 +4907,10 @@ function bind(){
     /* 🔴 v25.28 — **켠 자리에서 걸음 수가 바뀝니다.** 이 체크박스가 하는 일이 정확히
        「퍼널을 한 걸음 줄이는 것」인데, 그 결과가 화면에 한 화면 늦게 나타났습니다(원칙 91).
        ⚠ 여기서 `render()`를 부르면 카드가 새로 그려져 **방금 누른 체크박스가 포커스를 잃습니다.** */
-    syncSteps(); renderAnswered(); syncCta(); };
+    syncSteps(); renderAnswered(); syncCta();
+    /* 🔴 v25.71 — 퍼널이 셋에서 둘로 줄어드는 유일한 갈림길입니다. 켠 사람의 비율을
+       모르면 `funnel_step`의 `step_total`이 왜 섞여 나오는지 설명할 수 없습니다. */
+    track('no_loan_toggle', { on: !!S.noLoan }); };
   box.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{
     /* ⚠ v25.14 — `S.pick`도 같이 비웁니다. 안 비우면 직전 그룹에서 고른 「갈리는 시」의
        서랍이 새 그룹 목록에서 열린 채로 보입니다(`openPick()`이 pick으로도 찾습니다). */
@@ -5219,6 +5267,18 @@ function render(){
   /* ⚠ `syncSteps()`는 **`renderQuestion()` 뒤**입니다 — 아이브로우가 그때 생깁니다. */
   renderQuestion(); syncSteps(); renderAnswered(); syncCta();
   saveDraft();
+  /* 🔴 v25.71 — **퍼널 한 칸 진입.** 이 한 줄이 「몇 번째에서 그만두는가」의 전부입니다.
+     ⚠ `step_total`은 `visible().length`입니다 — 「대출은 받지 않을 거예요」를 켜면 셋이 둘이
+       되므로, 총 칸 수를 3으로 박으면 지표가 틀립니다(진행 막대와 **같은 값** · 원칙 58 · 91).
+     ⚠ 보내는 것은 **번호와 이름**뿐입니다. 사용자가 넣은 값은 안 실립니다. */
+  if(TRACKED_STEP !== S.step){
+    TRACKED_STEP = S.step;
+    track('funnel_step', {
+      step_index: posOf(S.step) + 1,
+      step_id   : (STEPS[S.step] || {}).id || String(S.step),
+      step_total: visible().length
+    });
+  }
 }
 
 /* ═══ 결과 ═══════════════════════════════════ */
@@ -5393,6 +5453,15 @@ function showResult(keepScroll){
      총액을 쓰므로 이 값을 읽는 곳이 0이 됐습니다(원칙 47 — 죽은 값은 「살아 있는 두 번째 정의」).
      ⚠ `isOverride`(집값을 직접 넣었는가)는 **남깁니다** — 그건 상태이고, 다른 자리가 봅니다. */
   const isOverride = S.priceOverride!=null;
+
+  /* 🔴 v25.71 — **결과 도달.** 퍼널의 전환율이 이 이벤트 대비 `funnel_step`(01)입니다.
+     ⚠ 🔴 **`keepScroll`이 참이면 안 보냅니다.** 참으로 부르는 자리는 결과 화면에서
+       부대비용·인테리어 스위치를 만질 때입니다(열두 곳). 그때도 보내면 **한 사람이
+       결과에 열 번 도달한 것처럼** 보여 전환율이 통째로 거짓이 됩니다.
+       거짓으로(또는 인자 없이) 부르는 자리는 셋뿐입니다 — 퍼널의 마지막 「다음」,
+       상단 「결과 보기」, 새로고침 복원. **그 셋이 「도달」의 정의입니다.**
+     ⚠ 금액·집값은 안 보냅니다. 갈래(대출 없음 / 집값 직접 입력)만 참·거짓으로 보냅니다. */
+  if(!keepScroll) track('result_view', { no_loan: !!S.noLoan, price_override: isOverride });
 
   /* 🔴 v25.41 — **구어체 서술을 명사형 라벨로**(오너 지시 · 두 번째 · 원칙 148).
      ⏹ 전 : 라벨 「현재 조건으로 예상되는 매수 가능 금액은」 + 꼬리 「수준이에요」
@@ -7470,6 +7539,12 @@ async function saveImage(){
     canvas.toBlob(async blob=>{
       if(!blob){ t.textContent='저장에 실패했어요. 다시 시도해 주세요'; setTimeout(()=>t.textContent=o,2400); return; }
       const file=new File([blob],'영끌계산기-리포트.png',{type:'image/png'});
+      /* 🔴 v25.71 — **이미지가 실제로 구워진 뒤**에 보냅니다. 버튼 클릭 시점에 보내면
+         실패한 시도까지 「저장」으로 세어집니다(html2canvas는 드물게 던집니다).
+         ⚠ 공유 시트(`navigator.share`)로 갈지 내려받기로 갈지는 **기기가 정합니다** —
+           두 갈래를 가른 뒤에 각각 적으면 한쪽을 고칠 때 다른 쪽이 빠집니다(원칙 58).
+           갈림길 **앞**에서 한 번만 보내고, 어느 길이었는지는 `method`로 적습니다. */
+      track('report_save', { method: (navigator.canShare && navigator.canShare({files:[file]})) ? 'share' : 'download' });
       if(navigator.canShare && navigator.canShare({files:[file]})){
         /* 🔴 v24.17 — `summaryText()` → `shareCaption()`. 위 함수 주석에 근거가 있습니다. */
         try{ await navigator.share({files:[file], text:shareCaption()}); t.textContent=o; return; }
@@ -7502,7 +7577,10 @@ function closeSheet(){
   setTimeout(()=>{ sh.hidden=true; bk.hidden=true; }, 280);
   if(SHEET_LAST && SHEET_LAST.focus) SHEET_LAST.focus({preventScroll:true});
 }
-$('trustBtn').onclick = e => { e.preventDefault(); openSheet(); };
+/* 🔴 v25.71 — 「계산 기준 보기」를 여는 비율 = **근거를 확인하고 싶어 하는 비율**입니다.
+   ⚠ `openSheet()` 안이 아니라 **이 버튼**에 답니다 — 시트는 다른 자리에서도 열릴 수 있고,
+     이 지표가 재는 것은 「시트가 열렸다」가 아니라 **「결과를 못 믿어 근거를 눌렀다」**입니다. */
+$('trustBtn').onclick = e => { e.preventDefault(); track('trust_open'); openSheet(); };
 $('sheetClose').onclick = e => { e.preventDefault(); closeSheet(); };
 $('sheetBack').onclick = () => closeSheet();
 document.addEventListener('keydown', e => {
@@ -8049,7 +8127,16 @@ $('asOfNote').textContent = `${POLICY_ASOF} 기준이에요. 정부 정책이 �
      ⚠ 「All rights reserved.」는 뗐습니다 — 베른협약 이후 **법적 효력이 없는 관용구**이고,
        지시가 「정확히 `© 2026 noahchoi`」였습니다. 문자 그대로 씁니다.
      ⚠ 연도는 **여전히 손으로 안 적습니다.** 위 문단의 근거가 그대로 유효합니다. */
-$('copyright').textContent = `© ${new Date().getFullYear()} noahchoi`;
+/* 🔴 v25.70 — **개인정보처리방침 링크를 여기에 답니다.** `textContent` → `innerHTML`.
+   ⚠ **왜 여기인가** — 구글 광고 쿠키를 심는 이상 방침 페이지는 「사이트에서 도달 가능」해야 합니다.
+     이 줄은 문서의 꼬리말이고, 방침 링크는 꼬리말의 것입니다. 결과 화면 각주(`.legal`)에
+     넣으면 5줄 상한(G-18)을 먹습니다 — 그 블록은 **면책의 것**이지 링크의 것이 아닙니다.
+   ⚠ **연도는 여전히 손으로 안 적습니다** — 위 문단의 근거가 그대로 유효합니다.
+   ⚠ `innerHTML`이지만 **변수는 연도(숫자)뿐**입니다. 사용자 입력이 이 줄에 닿는 길이 없습니다.
+   ⚠ 새 창(`target=_blank`)으로 안 엽니다 — 앱 안에서 끝나는 이동이 아니라 **문서로 나가는 길**이고,
+     계산 중이던 답변은 sessionStorage에 있어 뒤로가기로 그대로 돌아옵니다. */
+$('copyright').innerHTML = `© ${new Date().getFullYear()} noahchoi`
+  + ` <span aria-hidden="true">·</span> <a href="/privacy.html">개인정보처리방침</a>`;
 loadDraft();          /* ⚠ render() 앞이어야 합니다. 뒤면 화면을 두 번 그립니다 */
 /* 🔴 v23.27 — 결과 화면에서 밖으로 나갔다 돌아온 경우, 결과로 바로 되돌립니다.
    ⚠ render()는 S.onResult를 false로 되돌리므로 **여기서 값을 먼저 떠 둡니다.**
