@@ -2179,7 +2179,17 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 /* 🔴 v25.70 — 꼬리말 안의 개인정보처리방침 링크. **새 색·새 크기를 만들지 않습니다** —
    같은 줄의 저작권과 한 규격이고, 「눌리는 것」이라는 신호만 밑줄로 냅니다.
    ⚠ `--ink-3`은 이 면(--bg) 위에서 6.45:1입니다(원칙 97의 자리 — `--ink-4`는 4.19:1이라 못 씁니다). */
-.copyright a{color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+/* 🔴 v25.71-c — **G-22가 잡았습니다 : 「A」 14px.**
+   ⏹ v25.70이 링크만 달고 손가락 면을 안 줬습니다. 12px 글자 한 줄이라 **높이가 14px**이고,
+     G-22의 기준은 `--tap`(44px)입니다. 실기에서 **누르려다 빗나가는 링크**입니다.
+   ⚠ 🔴 이 결함은 이 세션이 만든 임시 게이트(`gate7071.mjs`)가 **못 봤습니다** — 거기에는
+     탭 면을 재는 자가 없습니다. `self50`의 G-22가 잡았습니다(원칙 179의 실례).
+   ⚠ **새 방법을 만들지 않습니다** — `.wordmark::after`와 **같은 문법**입니다(원칙 58).
+     보이는 크기는 그대로 두고 투명 면만 44px로 넓힙니다. 줄 높이가 안 바뀌므로
+     꼬리말의 세로 비용은 **0**입니다. */
+.copyright a{position:relative;color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+.copyright a::after{content:'';position:absolute;left:0;right:0;top:50%;
+  transform:translateY(-50%);height:var(--tap)}
 .app:not(.no-dock) .copyright{display:none}
 .app.no-dock .copyright{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 /* ⏹ .cta.ghost · .textbtn 은 v23.22에서 삭제했습니다 — 어떤 마크업도 쓰지 않는 죽은 규칙입니다.
