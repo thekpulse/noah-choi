@@ -2179,18 +2179,27 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
 /* 🔴 v25.70 — 꼬리말 안의 개인정보처리방침 링크. **새 색·새 크기를 만들지 않습니다** —
    같은 줄의 저작권과 한 규격이고, 「눌리는 것」이라는 신호만 밑줄로 냅니다.
    ⚠ `--ink-3`은 이 면(--bg) 위에서 6.45:1입니다(원칙 97의 자리 — `--ink-4`는 4.19:1이라 못 씁니다). */
-/* 🔴 v25.71-c — **G-22가 잡았습니다 : 「A」 14px.**
-   ⏹ v25.70이 링크만 달고 손가락 면을 안 줬습니다. 12px 글자 한 줄이라 **높이가 14px**이고,
-     G-22의 기준은 `--tap`(44px)입니다. 실기에서 **누르려다 빗나가는 링크**입니다.
-   ⚠ 🔴 이 결함은 이 세션이 만든 임시 게이트(`gate7071.mjs`)가 **못 봤습니다** — 거기에는
-     탭 면을 재는 자가 없습니다. `self50`의 G-22가 잡았습니다(원칙 179의 실례).
-   ⚠ **새 방법을 만들지 않습니다** — `.wordmark::after`와 **같은 문법**입니다(원칙 58).
-     보이는 크기는 그대로 두고 투명 면만 44px로 넓힙니다. 줄 높이가 안 바뀌므로
-     꼬리말의 세로 비용은 **0**입니다. */
-.copyright a{position:relative;color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
-.copyright a::after{content:'';position:absolute;left:0;right:0;top:50%;
+/* 🔴 v25.71-d — **개인정보처리방침 링크는 저작권과 「같은 규격 · 다른 줄」입니다.**
+   ⏹ v25.70은 저작권 줄 안에 넣었다가 `test.js`의 잠금 셋을 깼습니다(위 스크립트 주석).
+   ⚠ 크기·색·굵기를 **저작권과 한 값**으로 둡니다 — 새 규격을 만들지 않습니다(원칙 58).
+     둘의 위계는 **자리와 순서**가 냅니다(방침 → 저작권). 색으로 내지 않습니다(원칙 100).
+   ⚠ `--ink-3`은 이 면(--bg) 위에서 6.45:1입니다(`--ink-4`는 4.19:1이라 G-19에 걸립니다 · 원칙 97).
+   🔴 **G-22가 v25.71-c에서 「A」 14px으로 잡았던 자리입니다.** 12px 글자 한 줄은 높이가 14px이라
+     `--tap`(44px)에 못 미칩니다 — 실기에서 **누르려다 빗나가는 링크**였습니다.
+     `.wordmark::after`와 **같은 문법**으로 투명 면만 넓힙니다. 줄 높이는 안 바뀝니다.
+   ⚠ 도크가 있는 화면에서는 저작권과 **함께** 숨습니다 — 꼬리말은 「문서의 끝」이고,
+     3단계 중 1단계는 끝이 아닙니다(v24.29). 한 줄만 남으면 그 뜻이 깨집니다. */
+.policy{margin:0;padding:0 0 6px;text-align:center;
+  font-size:var(--t8);font-weight:var(--w-sub);line-height:var(--lh-body);
+  letter-spacing:var(--ls-body)}
+.policy a{position:relative;color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+.policy a::after{content:'';position:absolute;left:0;right:0;top:50%;
   transform:translateY(-50%);height:var(--tap)}
+/* ⚠ 🔴 **두 줄로 나눠 적습니다. 합치지 마십시오.** `test.js`가
+     `.app:not(.no-dock) .copyright{display:none}`를 **문자열 그대로** 겨눕니다 —
+     셀렉터를 쉼표로 합치는 순간 그 잠금이 빈손이 됩니다(v25.71-d에서 실제로 그랬습니다). */
 .app:not(.no-dock) .copyright{display:none}
+.app:not(.no-dock) .policy{display:none}
 .app.no-dock .copyright{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 /* ⏹ .cta.ghost · .textbtn 은 v23.22에서 삭제했습니다 — 어떤 마크업도 쓰지 않는 죽은 규칙입니다.
    죽은 CSS는 죽은 값이 아니라 「살아 있는 두 번째 정의」입니다(원칙 84 · 지침 6-6). */
@@ -3048,6 +3057,11 @@ input[type=range]::-moz-range-thumb{width:var(--thumb);height:var(--thumb);borde
          정책 기준일과 저작권 연도가 한 값을 나눠 쓰면 한쪽을 고칠 때 다른 쪽이 따라 틀립니다(원칙 91).
        ⚠ 면책(`.legal`)과 **같은 문단에 넣지 않습니다.** `.legal`은 5줄 상한(G-18)이 걸린
          법적 고지 블록이고, 저작권은 법적 고지가 아니라 **꼬리말**입니다(v24.28 「입력값 보관」과 같은 판단). -->
+  <!-- 🔴 v25.71-d — 개인정보처리방침. **저작권 앞 · 자기 줄**입니다(위 CSS 주석에 근거).
+       ⚠ 스크립트가 안 만듭니다 — 글자가 안 바뀌는 줄이라 마크업에 그대로 둡니다.
+       ⚠ `target="_blank"`를 안 씁니다. 앱 밖으로 나가는 것이 아니라 **같은 사이트의 문서**이고,
+         계산 중이던 답변은 sessionStorage에 있어 뒤로가기로 그대로 돌아옵니다. -->
+  <p class="policy"><a href="/privacy.html">개인정보처리방침</a></p>
   <p class="copyright" id="copyright"></p>
 </div>
 
@@ -4917,10 +4931,16 @@ function bind(){
     /* 🔴 v25.28 — **켠 자리에서 걸음 수가 바뀝니다.** 이 체크박스가 하는 일이 정확히
        「퍼널을 한 걸음 줄이는 것」인데, 그 결과가 화면에 한 화면 늦게 나타났습니다(원칙 91).
        ⚠ 여기서 `render()`를 부르면 카드가 새로 그려져 **방금 누른 체크박스가 포커스를 잃습니다.** */
-    syncSteps(); renderAnswered(); syncCta();
-    /* 🔴 v25.71 — 퍼널이 셋에서 둘로 줄어드는 유일한 갈림길입니다. 켠 사람의 비율을
-       모르면 `funnel_step`의 `step_total`이 왜 섞여 나오는지 설명할 수 없습니다. */
-    track('no_loan_toggle', { on: !!S.noLoan }); };
+    /* 🔴 v25.71-d — **`track()`을 `syncCta()` 앞에 둡니다.** 자리에 뜻이 있습니다.
+       ⏹ v25.71은 이 줄을 **맨 뒤**에 놓았습니다. 그러자 `test.js`가 이 처리를 잘라내는
+         앵커(`$('noLoanBox') … syncCta(); };`)가 **갈렸고**, 정규식이 다음 `syncCta(); };`까지
+         내달려 **엉뚱한 구간**을 이 처리로 알고 쟀습니다 — 그 구간에 `render(`가 있어
+         「카드를 다시 그린다」로 빨간불이 났습니다(v25.28의 포커스 잠금).
+       🔴 **검사가 틀린 게 아닙니다.** 제가 검사의 겨눔을 부순 것입니다(원칙 142 · 173).
+         `aim.mjs`가 사보타주에 대해 재는 것과 **같은 종류**인데, `test.js`의 앵커는 아무도 안 잽니다.
+       ⚠ 이 처리의 마지막 줄은 **`syncSteps(); renderAnswered(); syncCta(); };` 그대로** 두십시오. */
+    track('no_loan_toggle', { on: !!S.noLoan });
+    syncSteps(); renderAnswered(); syncCta(); };
   box.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{
     /* ⚠ v25.14 — `S.pick`도 같이 비웁니다. 안 비우면 직전 그룹에서 고른 「갈리는 시」의
        서랍이 새 그룹 목록에서 열린 채로 보입니다(`openPick()`이 pick으로도 찾습니다). */
@@ -8137,16 +8157,16 @@ $('asOfNote').textContent = `${POLICY_ASOF} 기준이에요. 정부 정책이 �
      ⚠ 「All rights reserved.」는 뗐습니다 — 베른협약 이후 **법적 효력이 없는 관용구**이고,
        지시가 「정확히 `© 2026 noahchoi`」였습니다. 문자 그대로 씁니다.
      ⚠ 연도는 **여전히 손으로 안 적습니다.** 위 문단의 근거가 그대로 유효합니다. */
-/* 🔴 v25.70 — **개인정보처리방침 링크를 여기에 답니다.** `textContent` → `innerHTML`.
-   ⚠ **왜 여기인가** — 구글 광고 쿠키를 심는 이상 방침 페이지는 「사이트에서 도달 가능」해야 합니다.
-     이 줄은 문서의 꼬리말이고, 방침 링크는 꼬리말의 것입니다. 결과 화면 각주(`.legal`)에
-     넣으면 5줄 상한(G-18)을 먹습니다 — 그 블록은 **면책의 것**이지 링크의 것이 아닙니다.
-   ⚠ **연도는 여전히 손으로 안 적습니다** — 위 문단의 근거가 그대로 유효합니다.
-   ⚠ `innerHTML`이지만 **변수는 연도(숫자)뿐**입니다. 사용자 입력이 이 줄에 닿는 길이 없습니다.
-   ⚠ 새 창(`target=_blank`)으로 안 엽니다 — 앱 안에서 끝나는 이동이 아니라 **문서로 나가는 길**이고,
-     계산 중이던 답변은 sessionStorage에 있어 뒤로가기로 그대로 돌아옵니다. */
-$('copyright').innerHTML = `© ${new Date().getFullYear()} noahchoi`
-  + ` <span aria-hidden="true">·</span> <a href="/privacy.html">개인정보처리방침</a>`;
+/* 🔴 v25.71-d — **이 줄을 v25.69 그대로 되돌렸습니다.**
+   ⏹ v25.70이 여기에 방침 링크를 붙이며 `textContent` → `innerHTML`로 바꿨습니다.
+     그러자 `test.js`의 **저작권 잠금 셋이 한꺼번에** 빨간불이 났습니다 —
+       「연도를 손으로 적지 않았다」 · 「명의가 noahchoi 하나다」 · 「서비스 이름이 안 섞인다」
+     셋 다 `$('copyright').textContent = \`© ${…} noahchoi\`` **문자열 자체**를 겨눕니다.
+   🔴 **검사를 느슨하게 하지 않습니다. 대상을 옮깁니다**(원칙 128).
+     저작권은 **꼬리말 한 줄**이라는 v24.29의 결정이 안 늙었습니다(원칙 172) —
+     늙은 것은 「링크를 저작권 줄에 얹는다」는 v25.70의 방법입니다.
+     방침 링크는 **자기 줄**(`.policy`)로 나갔습니다. 마크업에 있습니다. */
+$('copyright').textContent = `© ${new Date().getFullYear()} noahchoi`;
 loadDraft();          /* ⚠ render() 앞이어야 합니다. 뒤면 화면을 두 번 그립니다 */
 /* 🔴 v23.27 — 결과 화면에서 밖으로 나갔다 돌아온 경우, 결과로 바로 되돌립니다.
    ⚠ render()는 S.onResult를 false로 되돌리므로 **여기서 값을 먼저 떠 둡니다.**
