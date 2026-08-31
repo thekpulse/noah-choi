@@ -38,9 +38,14 @@
   --sh:0 4px 20px rgba(0,0,0,.03);
   --t1:28px; --t3:20px; --t4:17px; --t5:16px; --t6:14px; --t7:13px; --t8:12px;
   --r-l:20px; --r-m:14px;
-  --sp-2:12px; --sp-3:16px; --sp-4:20px; --sp-5:24px;
+  /* 🔴 v25.71-b — **게이트 T-1이 잡았습니다.** 처음에 여기 적은 값(12·16·20)은
+     index.html의 여백 스케일과 **갈려 있었습니다**(원본은 4·8·12·16·24·32).
+     같은 이름에 다른 값을 두는 것은 토큰을 베낀 게 아니라 **두 번째 정의를 만든 것**입니다(원칙 84).
+     ⚠ `--ls-body`도 -.01em으로 적었는데 원본은 **0**입니다 —
+       「본문에 자간을 주지 않습니다」가 이 프로젝트의 결정이었습니다(index.html 활자 주석). */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
   --w-sub:500;
-  --lh-body:1.6; --ls-body:-.01em;
+  --lh-body:1.6; --ls-body:0;
   --tap:44px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -65,13 +70,13 @@ h1{margin:8px 0 4px;font-size:var(--t1);font-weight:800;line-height:1.28;
 .asof{margin:0 0 var(--sp-4);font-size:var(--t7);color:var(--ink-4)}
 /* 요약 상자 — 이 문서에서 사람들이 실제로 궁금해하는 한 줄을 맨 위에 답합니다.
    ⚠ 초록은 **면·선**으로만 씁니다(index.html 원칙). 글자에 쓰지 않습니다. */
-.lede{margin:0 0 var(--sp-5);padding:var(--sp-3);background:var(--card);
+.lede{margin:0 0 var(--sp-5);padding:var(--sp-4);background:var(--card);
   border-radius:var(--r-m);box-shadow:var(--sh);border-left:3px solid var(--green);
   font-size:var(--t5);font-weight:600;color:var(--ink);line-height:1.55}
 section{margin:0 0 var(--sp-5);padding:var(--sp-4);background:var(--card);
   border-radius:var(--r-l);box-shadow:var(--sh)}
-h2{margin:0 0 var(--sp-2);font-size:var(--t3);font-weight:700;letter-spacing:-.02em;color:var(--ink)}
-h3{margin:var(--sp-3) 0 6px;font-size:var(--t5);font-weight:700;color:var(--ink)}
+h2{margin:0 0 var(--sp-3);font-size:var(--t3);font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+h3{margin:var(--sp-4) 0 6px;font-size:var(--t5);font-weight:700;color:var(--ink)}
 p{margin:0 0 10px}
 p:last-child{margin-bottom:0}
 ul{margin:0 0 10px;padding-left:18px}
