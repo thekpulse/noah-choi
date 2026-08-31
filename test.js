@@ -2015,13 +2015,19 @@ HYGIENE.forEach(([name, over]) => {
      const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
      /* 🔴 v25.0 — `m.land.naver.com` 추가(지역 검색 경로). **실기 확인 목록에 올라간 도메인입니다** —
         이 검사가 통과한다고 그 주소가 살아 있다는 뜻은 아닙니다(이 검사의 원래 경고 그대로). */
-     const OK = ['fin.land.naver.com','m.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com'];
+     /* 🔴 v25.71-d — **둘을 넣었습니다. 오너 결정입니다**(2026.08.30).
+          pagead2.googlesyndication.com  구글 애드센스 — 수익화를 켜기로 함(v25.70)
+          www.myhome-price.com           구입한 대표 도메인 — vercel.app을 대체(v25.70)
+        ⚠ 🔴 **이 목록을 「빨간불이 나서」 늘리지 마십시오.** 이 검사가 지키는 것은
+          「밖으로 나가는 곳이 **오너가 승인한 곳뿐**인가」입니다. 새 도메인이 생기면
+          먼저 오너에게 묻고, 승인받은 뒤 **왜 승인됐는지와 함께** 여기 적으십시오. */
+     const OK = ['fin.land.naver.com','m.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com','pagead2.googlesyndication.com','www.myhome-price.com'];
      const hosts = [...new Set([...src.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m=>m[1].toLowerCase()))]
        .filter(h => !/^(www\.)?w3\.org$/.test(h) && !/googletagmanager|google-analytics|noah-choi\.vercel\.app/.test(h));
      return hosts.every(h => OK.includes(h));
   })(), (()=>{
      const src = fs.readFileSync(FILE,'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
-     const OK = ['fin.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com'];
+     const OK = ['fin.land.naver.com','rt.molit.go.kr','ohou.se','search.naver.com','cdnjs.cloudflare.com','pagead2.googlesyndication.com','www.myhome-price.com'];
      const bad = [...new Set([...src.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m=>m[1].toLowerCase()))]
        .filter(h => !/^(www\.)?w3\.org$/.test(h) && !/googletagmanager|google-analytics|noah-choi\.vercel\.app/.test(h))
        .filter(h => !OK.includes(h));
@@ -4336,14 +4342,22 @@ HYGIENE.forEach(([name, over]) => {
      (`m[1]`이 캡처 그룹 없이 undefined라 삼항이 항상 `''`를 골랐습니다).
      가드를 지우는 사보타주가 **통과했고**, 그제서야 알았습니다.
      → 우연한 초록은 빨강보다 위험합니다. 실행한 뒤 **부수효과를 셉니다.** */
+  /* 🔴 v25.71-d — **자리표시자를 「끼워 넣어」 잽니다.**
+     ⏹ 전 : 파일에 있는 GA_ID를 그대로 실행했습니다. v25.71에서 **진짜 ID가 들어가자**
+       이 검사가 빨간불이 됐습니다 — 가드가 고장난 게 아니라 **가드가 제대로 켜진 것**입니다.
+     🔴 이 검사가 지키려던 사실은 「배포본이 꺼져 있다」가 아니라
+       **「자리표시자면 아무것도 안 부른다」**입니다. 그 사실은 지금도 지켜야 합니다.
+     → 짝인 「진짜 ID에서는 켜진다」와 **같은 문법**으로 ID를 갈아 끼웁니다(원칙 128 · 58).
+       이제 이 검사는 **배포본이 켜졌든 꺼졌든** 가드 자체를 잽니다 — 더 강해졌습니다. */
   tt('GA4가 자리표시자일 때 로드되지 않는다', (()=>{
      const m = RAW.match(/<script>(\s*\(function\(\)\{[\s\S]*?GA_ID[\s\S]*?\}\)\(\);\s*)<\/script>/);
      if(!m) return false;
+     const body = m[1].replace(/var GA_ID = '[^']*';/, "var GA_ID = 'G-XXXXXXXXXX';");
      let made = 0, appended = 0;
      const doc = { createElement: () => { made++; return {}; },
                    head: { appendChild: () => { appended++; } } };
      const win = {};
-     new Function('document','window', m[1])(doc, win);
+     new Function('document','window', body)(doc, win);
      return made === 0 && appended === 0 && !win.gtag;
   })());
   /* 🔴 그리고 **진짜 ID를 넣으면 켜져야** 합니다. 안 켜지는 것만 확인하면
@@ -4361,7 +4375,15 @@ HYGIENE.forEach(([name, over]) => {
          && /googletagmanager\.com\/gtag\/js\?id=G-AB12CD34EF/.test(src)
          && typeof win.gtag === 'function';
   })());
-  tt('GA4 측정 ID가 한 곳에만 있다', (RAW.match(/G-XXXXXXXXXX/g)||[]).length === 1);
+  /* 🔴 v25.71-d — 세는 대상을 **자리표시자 → 실제로 설정된 ID**로 옮겼습니다(원칙 128).
+     지키려던 사실은 「ID가 파일에 **한 번만** 적혀 있다」입니다 — 두 곳에 적으면
+     계정을 바꿀 때 한쪽만 고쳐지고 **조용히 어긋납니다**(v24.23이 세운 규칙 그대로).
+     ⚠ 주석에도 ID를 적지 마십시오. 이 검사가 그것까지 셉니다. */
+  tt('GA4 측정 ID가 한 곳에만 있다', (()=>{
+     const m = RAW.match(/var GA_ID = '([^']*)';/);
+     if(!m) return false;
+     return (RAW.match(new RegExp(m[1].replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'))||[]).length === 1;
+  })());
   /* 이 도구는 사용자가 넣은 금액을 밖으로 보내지 않습니다. GA에도 안 보냅니다. */
   tt('GA에 입력값을 보내지 않는다',
      !/gtag\('event'[\s\S]{0,200}(cash|income|price|S\.)/.test(RAW));
@@ -5838,7 +5860,11 @@ HYGIENE.forEach(([name, over]) => {
        「본문·라벨·헬퍼는 못 쓴다」. 각인은 브랜드 서술이지 본문이 아닙니다. */
   tt('--t8을 각주 밖이 쓰지 않는다', (()=>{
      const users = [...CSS.matchAll(/([^{};]+)\{[^}]*font-size:var\(--t8\)/g)].map(m => m[1].trim());
-     return users.length > 0 && users.every(s => /caveat|foot|copyright|brandline/.test(s));
+     /* 🔴 v25.71-d — **대상을 또 한 번 넓혔습니다**(원칙 128 · v25.40과 같은 문법).
+        개인정보처리방침 줄(`.policy`)이 꼬리말에 생겼습니다 — 저작권과 **같은 각주 단**이고,
+        크기·색·굵기를 저작권과 한 값으로 둡니다. **넓힌 것은 목록이고 규칙은 그대로입니다** —
+        「본문·라벨·헬퍼는 못 쓴다」. 방침 링크는 본문이 아니라 꼬리말입니다. */
+     return users.length > 0 && users.every(s => /caveat|foot|copyright|brandline|policy/.test(s));
   })(), (()=>{ const u=[...CSS.matchAll(/([^{};]+)\{[^}]*font-size:var\(--t8\)/g)].map(m=>m[1].trim());
      return u.join(' | ')||'없음'; })());
 
