@@ -34,7 +34,7 @@ test('v44 계산 엔진을 변경하지 않았다', () => {
 });
 
 test('모든 인라인 JavaScript의 문법이 유효하다', () => {
-  const temp = mkdtempSync(join(tmpdir(), 'yeongkkeul-v47-'));
+  const temp = mkdtempSync(join(tmpdir(), 'yeongkkeul-v48-'));
   try {
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
       .map((match) => match[1])
@@ -87,10 +87,11 @@ test('대출 없이 계산하는 경로가 소득과 금리 입력을 건너뛴�
   assert.match(html, /if\(!\(loan > 0\)\)\{ box\.setAttribute\('hidden',''\)/);
 });
 
-test('첫 화면의 대출 없음 선택 상태가 행 전체에 표시된다', () => {
-  assert.match(html, /\.crows \.main-no-loan:has\(input:checked\)\{/);
-  assert.match(html, /\.crows \.main-no-loan:has\(input:checked\)::after\{content:'선택됨'/);
-  assert.match(html, /border-color:#9aade4/);
+test('기존 대출 없음 버튼의 선택 상태가 유지되고 표시된다', () => {
+  assert.match(html, /class="debt-none \$\{S\.debtMonthly===0\?'is-on':''\}"/);
+  assert.match(html, /aria-pressed="\$\{S\.debtMonthly===0\}"/);
+  assert.match(html, /#qSheet \.debt-none\.is-on\{/);
+  assert.match(html, /#qSheet \.debt-none\.is-on::after\{content:'선택됨'/);
 });
 
 test('부대비용 및 대출 상한 입력이 결과를 다시 계산한다', () => {
