@@ -4663,10 +4663,8 @@ body .inline-money>label,body .crows .crow .k,body .crows .crow .v{font-size:16p
 body .crows .inline-money{padding-top:14px;padding-bottom:12px}
 body .inline-money-field input{font-size:30px;caret-color:var(--v-blue)}
 body .inline-money .inline-echo:empty{display:none}
-body .crows .main-no-loan{font-size:14px;min-height:48px;gap:10px;margin:4px -8px 2px;padding:10px 12px;border:1px solid transparent;border-radius:12px;transition:background-color .14s,border-color .14s,color .14s}
+body .crows .main-no-loan{font-size:14px;min-height:48px;gap:10px}
 .main-no-loan input{width:20px;height:20px;flex:0 0 20px;margin:0}
-.crows .main-no-loan:has(input:checked){background:var(--v-blue-soft);border-color:#9aade4;color:var(--v-blue-deep);font-weight:650}
-.crows .main-no-loan:has(input:checked)::after{content:'선택됨';margin-left:auto;padding:3px 7px;border-radius:999px;background:#dce5ff;color:var(--v-blue-deep);font-size:12px;font-weight:650;line-height:1.4}
 #viewAnswer .rhead .price-answer>span,#payTile .ans-k{font-size:16px}
 #viewAnswer .rhead #easyPrice{font-variant-numeric:tabular-nums;letter-spacing:-.035em}
 #viewAnswer .rhead #easyPrice .money-unit{margin-left:3px}
@@ -4731,7 +4729,9 @@ body .sw::before{transform:none!important}body .sw::after{transform:none!importa
 #qSheet .moneycard{margin:0;border:1px solid var(--v-line-strong);border-radius:12px;background:#fafbfd;padding:10px 14px}
 #qSheet .mfield input{min-height:44px;font-size:30px;font-variant-numeric:tabular-nums}
 #qSheet .mfield>span{font-size:14px;color:var(--v-muted)}
-#qSheet .debt-none{min-height:44px;margin-top:12px;border:1px solid var(--v-line);border-radius:10px;background:white;font-size:14px;color:var(--v-sub);padding:8px 14px}
+#qSheet .debt-none{min-height:46px;margin-top:12px;border:1px solid var(--v-line-strong);border-radius:10px;background:white;font-size:14px;color:var(--v-sub);padding:8px 14px;transition:background-color .14s,border-color .14s,color .14s}
+#qSheet .debt-none.is-on{background:var(--v-blue-soft);border-color:#6884d6;color:var(--v-blue-deep);font-weight:650}
+#qSheet .debt-none.is-on::after{content:'선택됨';float:right;padding:2px 7px;border-radius:999px;background:#dce5ff;color:var(--v-blue-deep);font-size:12px;font-weight:650;line-height:1.5}
 #qSheet #debtPartsToggle{margin-top:12px;min-height:48px;padding-inline:0;font-size:15px;border-top:1px solid var(--v-line)}
 #qSheet #debtParts.open{display:block;padding:0;margin:0}
 #qSheet #debtParts .costrow{display:grid;grid-template-columns:1fr 130px;gap:12px;padding:12px 0;align-items:center;border:0}
@@ -6584,7 +6584,7 @@ function renderQuestion(){
         <input id="inDebt" inputmode="numeric" pattern="[0-9]*" placeholder="0"
           value="${S.debtMonthly==null?'':comma(S.debtMonthly)}" aria-label="기존 대출 매달 갚을 돈(만원)"><span>만원</span>
       </div></div><p class="fielderr" role="alert"></p><p class="readout" id="debtEcho"></p>
-      <button class="debt-none" id="debtNone">기존 대출 없음</button>
+      <button class="debt-none ${S.debtMonthly===0?'is-on':''}" id="debtNone" aria-pressed="${S.debtMonthly===0}">기존 대출 없음</button>
       <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts"><span>대출별로 나눠 입력</span><span class="caret"></span></button>
       <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts">
         <div class="costrow"><div class="nm">신용대출</div><div class="amt"><input id="inDebtCredit" inputmode="numeric" value="${S.debtParts.credit||''}" aria-label="신용대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
