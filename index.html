@@ -4663,8 +4663,10 @@ body .inline-money>label,body .crows .crow .k,body .crows .crow .v{font-size:16p
 body .crows .inline-money{padding-top:14px;padding-bottom:12px}
 body .inline-money-field input{font-size:30px;caret-color:var(--v-blue)}
 body .inline-money .inline-echo:empty{display:none}
-body .crows .main-no-loan{font-size:14px;min-height:48px;gap:10px}
+body .crows .main-no-loan{font-size:14px;min-height:48px;gap:10px;margin:4px -8px 2px;padding:10px 12px;border:1px solid transparent;border-radius:12px;transition:background-color .14s,border-color .14s,color .14s}
 .main-no-loan input{width:20px;height:20px;flex:0 0 20px;margin:0}
+.crows .main-no-loan:has(input:checked){background:var(--v-blue-soft);border-color:#9aade4;color:var(--v-blue-deep);font-weight:650}
+.crows .main-no-loan:has(input:checked)::after{content:'선택됨';margin-left:auto;padding:3px 7px;border-radius:999px;background:#dce5ff;color:var(--v-blue-deep);font-size:12px;font-weight:650;line-height:1.4}
 #viewAnswer .rhead .price-answer>span,#payTile .ans-k{font-size:16px}
 #viewAnswer .rhead #easyPrice{font-variant-numeric:tabular-nums;letter-spacing:-.035em}
 #viewAnswer .rhead #easyPrice .money-unit{margin-left:3px}
