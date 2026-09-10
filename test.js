@@ -529,8 +529,14 @@ HYGIENE.forEach(([name, over]) => {
      🔴 이 도구는 연소득과 현금을 받는데, **어디로 가느냐를 화면이 한 번도 답한 적이 없었습니다.**
      ⚠ 문구가 있는지만 세면 안 됩니다 — **그 주장이 사실인지**를 같은 자리에서 잠급니다.
        사실이 아닌 안심 문구는 없는 것보다 나쁩니다(원칙 39 · 28). */
-  tt('안내 시트가 입력값 보관을 말한다',
-     /<b>입력값 보관<\/b>/.test(html) && /서버로 보내지 않아요/.test(html));
+  /* 🔴 v37 겨눔 이동 — 제목이 「입력값 보관」 → 「넣은 값은 어디에 남나요」가 됐습니다
+     (V10-SIAN 2장 · 한자어 명사구를 문장으로). 잠그는 것은 **그 약속이 시트에 있는가**이지
+     제목의 글자가 아닙니다. 뒤 조건(「서버로 보내지 않아요」)이 그 약속입니다. */
+  /* 🔴 v38.5 겨눔 이동 — 정책 시트가 없어지면서 이 고지가 **면책 덩어리로 내려왔습니다**
+     (오너 결정 — 열두 줄 중 남긴 둘 가운데 하나). 어미도 그 덩어리에 맞춰 ~니다체입니다.
+     잠글 사실은 한 자도 안 바뀝니다 — **화면이 넣은 값의 행방을 말한다.** */
+  tt('면책이 넣은 값의 행방을 말한다',
+     /넣은 값은 이 브라우저 안에서만 계산하고 서버로 보내지 않습니다/.test(html));
   tt('그 주장이 사실이다 — 밖으로 나가는 요청에 금액이 없다', (()=>{
      /* 실제 fetch 호출을 전부 세고, 쿼리에 지역 코드·연월 말고 다른 값이 붙었는지 봅니다. */
      const calls = [...noComment.matchAll(/fetch\(\s*[`'"]([^`'"]+)/g)].map(m => m[1]);
@@ -2173,20 +2179,27 @@ HYGIENE.forEach(([name, over]) => {
   tt('공유 카드 금액이 잉크다', /\.report-amount\{[^}]*color:var\(--ink\)/.test(css2));
   /* 🔴 그린 면 위에서 읽히는 글자는 --ink(7.64:1)와 --ink-2(5.07:1) 둘뿐입니다.
      --ink-3(3.28) · --ink-4(2.13) · 흰색(2.17)은 AA 미달입니다. 실제 대비를 계산해서 봅니다. */
-  tt('그린 면 위 글자가 전부 4.5:1 이상', (()=>{
-     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'');
-     const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
-       return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
-     const CR=(a,b)=>(Math.max(L(a),L(b))+.05)/(Math.min(L(a),L(b))+.05);
-     const green=g('green'); if(!green) return false;
-     /* ⚠ 상속된 규칙(.report-amount .u)까지 포함해야 합니다 — 실제로 여기서 한 건 놓쳤습니다. */
-     const rules = css2.match(/\.report-(brand|cond|label|amount)[^{]*\{[^}]*\}/g)||[];
-     const used = rules.map(r => (r.match(/color:var\((--[a-z0-9-]+)\)/)||[])[1]).filter(Boolean);
-     return used.length >= 5 && used.every(tok => {
-       const hex = g(tok.slice(2));
-       return hex && CR(hex, green) >= 4.5;
-     });
-  })());
+/* 🔴 v38.1 폐기 — 「그린 면 위 글자가 전부 4.5:1 이상」
+   그린 면이 화면에 0곳입니다. 재는 대상이 없습니다.
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('그린 면 위 글자가 전부 4.5:1 이상', (()=>{
+//      const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'');
+//      const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
+//        return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+//      const CR=(a,b)=>(Math.max(L(a),L(b))+.05)/(Math.min(L(a),L(b))+.05);
+//      const green=g('green'); if(!green) return false;
+//      /* ⚠ 상속된 규칙(.report-amount .u)까지 포함해야 합니다 — 실제로 여기서 한 건 놓쳤습니다. */
+//      const rules = css2.match(/\.report-(brand|cond|label|amount)[^{]*\{[^}]*\}/g)||[];
+//      const used = rules.map(r => (r.match(/color:var\((--[a-z0-9-]+)\)/)||[])[1]).filter(Boolean);
+//      return used.length >= 5 && used.every(tok => {
+//        const hex = g(tok.slice(2));
+//        return hex && CR(hex, green) >= 4.5;
+//      });
+//   })());
+
   /* 그린 위 그린은 안 보입니다 — 브랜드 막대는 잉크로 뒤집혀야 합니다. */
   tt('그린 면 위에 그린을 얹지 않는다',
      /\.report-brand::before\{[^}]*background:var\(--ink\)/.test(css2)
@@ -2671,10 +2684,17 @@ HYGIENE.forEach(([name, over]) => {
   tt('결과에서 플로팅 바를 숨긴다', /\$\('dock'\)\.hidden=true/.test(UI));
   tt('2-Track — 조건 수정 버튼이 있다', /id="reeditBtn"/.test(UI));
   /* v23.18 — 배경이 --fill이면 앱 배경(--bg)과 같은 값이라 글자만 떠 있는 것처럼 보였습니다. */
-  tt('되돌아가기가 버튼 덩어리다 (흰 면 + 헤어라인 + 그림자)',
-     /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
-     && /\.reedit-cta\{[^}]*border:1px solid var\(--line\)/.test(css2)
-     && /\.reedit-cta\{[^}]*box-shadow:var\(--sh\)/.test(css2));
+/* 🔴 v38.1 폐기 — 「되돌아가기가 버튼 덩어리다 (흰 면 + 헤어라인 + 그림자)」
+   `.reedit-cta` · `.restartrow`를 겨눕니다. 마크업에서 사라진 지 오래고 CSS만 남아 있었습니다.
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('되돌아가기가 버튼 덩어리다 (흰 면 + 헤어라인 + 그림자)',
+//      /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
+//      && /\.reedit-cta\{[^}]*border:1px solid var\(--line\)/.test(css2)
+//      && /\.reedit-cta\{[^}]*box-shadow:var\(--sh\)/.test(css2));
+
   /* 🔴 v23.23 — 화살표(←)를 뺐습니다. 버튼 안의 아이콘은 **위치가 이미 말하는 것**을 반복합니다.
      v23.21에 「방향 표시가 있는가」로 잠갔던 락을 **반대 방향으로** 다시 씁니다(지침 5층 3번). */
   /* 🔴 v25.31 — **이 검사가 주석을 보고 있었습니다**(원칙 152).
@@ -2813,9 +2833,16 @@ HYGIENE.forEach(([name, over]) => {
   tt('되돌아가기 · 재계산이 가로 2분할이다',
      /\.restartrow\{display:flex/.test(css2)
      && /class="restartrow"/.test(UI));
-  tt('가로 2분할 비율이 35 : 65다',
-     /\.restartrow \.reedit-cta\{flex:35 1 0\}/.test(css2)
-     && /\.restartrow \.restart-cta\{flex:65 1 0\}/.test(css2));
+/* 🔴 v38.1 폐기 — 「가로 2분할 비율이 35 : 65다」
+   같은 자리(`.mgrid`의 두 칸 비율).
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('가로 2분할 비율이 35 : 65다',
+//      /\.restartrow \.reedit-cta\{flex:35 1 0\}/.test(css2)
+//      && /\.restartrow \.restart-cta\{flex:65 1 0\}/.test(css2));
+
   tt('두 버튼 높이가 같다', /\.restartrow > button\{height:var\(--h-cta\)/.test(css2));
   /* 🔴 v23.26 — 같은 줄의 두 버튼은 글자 크기·굵기가 같아야 합니다. 위계는 「면」이 만듭니다. */
   tt('두 버튼 글자 크기는 같고 굵기로 갈린다', (()=>{
@@ -2835,14 +2862,21 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v24.31 — 둘 다 흰 면입니다. 그렇다면 **서로 구별되는지**를 대신 잠급니다 —
      ① 폭 35 : 65(아래 별도 검사) ② 글자 잉크 한 단 ③ 그림자 한 단.
      ⚠ 셋 중 하나라도 같아지면 「같은 버튼 둘」이 되고, 그때 사람은 파괴적 행동을 잘못 누릅니다. */
-  tt('재계산 행 두 버튼이 흰 면 위에서 구별된다', (()=>{
-     const ink = sel => (css2.match(new RegExp(sel+'\\{[^}]*color:var\\((--[a-z0-9-]+)\\)'))||[])[1];
-     const sh  = sel => (css2.match(new RegExp(sel+'\\{[^}]*box-shadow:var\\((--[a-z0-9-]+)\\)'))||[])[1];
-     return /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
-         && /\.restart-cta\{[^}]*background:var\(--card\)/.test(css2)
-         && ink('\\.reedit-cta') !== ink('\\.restart-cta')
-         && sh('\\.reedit-cta')  !== sh('\\.restart-cta');
-  })());
+/* 🔴 v38.1 폐기 — 「재계산 행 두 버튼이 흰 면 위에서 구별된다」
+   같은 자리(`.restartrow .reedit-cta`).
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('재계산 행 두 버튼이 흰 면 위에서 구별된다', (()=>{
+//      const ink = sel => (css2.match(new RegExp(sel+'\\{[^}]*color:var\\((--[a-z0-9-]+)\\)'))||[])[1];
+//      const sh  = sel => (css2.match(new RegExp(sel+'\\{[^}]*box-shadow:var\\((--[a-z0-9-]+)\\)'))||[])[1];
+//      return /\.reedit-cta\{[^}]*background:var\(--card\)/.test(css2)
+//          && /\.restart-cta\{[^}]*background:var\(--card\)/.test(css2)
+//          && ink('\\.reedit-cta') !== ink('\\.restart-cta')
+//          && sh('\\.reedit-cta')  !== sh('\\.restart-cta');
+//   })());
+
   /* ⚠ 세컨더리 면을 --fill로 내리면 앱 배경(--bg)과 1.02:1이라 통째로 사라집니다(원칙 97). */
   tt('세컨더리 면이 앱 배경과 다른 값',
      !/\.reedit-cta\{[^}]*background:var\(--fill\)/.test(css2));
@@ -2859,10 +2893,17 @@ HYGIENE.forEach(([name, over]) => {
      /\.restart-cta\{[^}]*border:1px solid var\(--line\)/.test(css2)
      && /\.restart-cta\{[^}]*box-shadow:var\(--sh-lift\)/.test(css2));
   /* ⚠ 그림자 단으로 갈립니다 — 「이전 단계」는 `--sh`, 재계산은 `--sh-lift`. */
-  tt('두 버튼의 그림자 단이 서로 다르다', (()=>{
-     const g = s2 => (css2.match(new RegExp(s2+'\\{[^}]*box-shadow:var\\((--[a-z0-9-]+)\\)'))||[])[1];
-     return g('\\.reedit-cta') && g('\\.restart-cta') && g('\\.reedit-cta') !== g('\\.restart-cta');
-  })());
+/* 🔴 v38.1 폐기 — 「두 버튼의 그림자 단이 서로 다르다」
+   같은 자리(`.reedit-cta`).
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('두 버튼의 그림자 단이 서로 다르다', (()=>{
+//      const g = s2 => (css2.match(new RegExp(s2+'\\{[^}]*box-shadow:var\\((--[a-z0-9-]+)\\)'))||[])[1];
+//      return g('\\.reedit-cta') && g('\\.restart-cta') && g('\\.reedit-cta') !== g('\\.restart-cta');
+//   })());
+
   /* ⚠ **면은 그대로 흰 면입니다.** 파괴적 행동을 프라이머리 자리로 올리지 않습니다(원칙 130).
      G-26이 결과 화면 그린 솔리드 0개를 재지만, 그것은 그린만 봅니다 — 여기서 면을 잠급니다. */
   tt('재계산 버튼이 솔리드가 아니다',
@@ -2930,9 +2971,12 @@ HYGIENE.forEach(([name, over]) => {
      (UI.match(/<span class="legal">/g)||[]).length + '개');
   /* 🔴 v25.1 — 짝. 안쪽 문단이 **둘**이어야 합니다 —
      하나면 「문단을 안 갈랐다」이고, 셋이면 면책이 한 문장 늘어난 것입니다(G-18이 먼저 물어야 합니다). */
-  tt('면책이 문단 둘로 갈려 있다', (()=>{
+  /* 🔴 v38.5 겨눔 이동 — 개인정보 고지가 내려와 **문단이 셋**이 됐습니다.
+     잠글 사실은 「문단이 갈려 있다」이지 그 수가 둘인가가 아닙니다(4장 ⑧).
+     ⚠ 상한은 개수가 아니라 **줄 수**가 잡습니다 — G-18(5줄)이 렌더에서 봅니다. */
+  tt('면책이 문단으로 갈려 있다', (()=>{
      const b = legalBlock(UI);
-     return b !== null && (b.match(/<span class="lg-l">/g)||[]).length === 2;
+     return b !== null && (b.match(/<span class="lg-l">/g)||[]).length >= 2;
   })(), (()=>{ const b=legalBlock(UI);
      return b===null ? '면책 없음' : (b.match(/<span class="lg-l">/g)||[]).length+'문단'; })());
   tt('면책 문단 사이 여백이 마지막에는 안 붙는다 (v25.66 토큰 대응)',
@@ -3178,13 +3222,20 @@ HYGIENE.forEach(([name, over]) => {
      화사한 --green 면 + --espresso 글자 = 7.64:1 (이전 흰 글자 조합은 5.48:1). */
   tt('CTA가 화사한 그린 배경 + 잉크 글자',
      /\.cta\{[^}]*background:var\(--green\);color:var\(--espresso\)/.test(css2));
-  tt('CTA 대비 ≥ 4.5:1', (()=>{
-     const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
-     const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
-       return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
-     const a=L(g('green')), b=L(g('espresso'));
-     return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
-  })());
+/* 🔴 v38.1 폐기 — 「CTA 대비 ≥ 4.5:1」
+   `--green` ↔ `--espresso`를 재고 있었는데 둘 다 먹으로 모였습니다. **CTA의 진짜 대비**는 먹 배경 ↔ 흰 글자이고 그건 다른 자가 봅니다. 이 짝은 v23.22의 그린 CTA 시절 것입니다.
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('CTA 대비 ≥ 4.5:1', (()=>{
+//      const g=n=>((css2.match(new RegExp('--'+n+':\\s*(#[0-9A-Fa-f]{6})'))||[])[1]||'#000');
+//      const L=h=>{h=h.slice(1);const c=[0,2,4].map(i=>{let v=parseInt(h.substr(i,2),16)/255;
+//        return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+//      const a=L(g('green')), b=L(g('espresso'));
+//      return (Math.max(a,b)+.05)/(Math.min(a,b)+.05) >= 4.5;
+//   })());
+
   /* 🔴 v23.22 — 「더 짙은 그린」이 존재하지 않으므로 호버에서 색을 바꾸지 않습니다.
      밝기·그림자로만 반응합니다. 잉크 글자가 그대로라 7.64:1이 유지됩니다. */
   tt('CTA 호버가 색을 바꾸지 않는다',
@@ -3274,8 +3325,15 @@ HYGIENE.forEach(([name, over]) => {
   /* 2. 컴포넌트 3계층 — 높이·글자 크기를 토큰으로 고정 */
   tt('3계층 높이 토큰이 정의돼 있다',
      /--h-cta:54px/.test(css2) && /--h-opt:46px/.test(css2) && /--h-chip:35px/.test(css2));
-  tt('메인 CTA 3종이 같은 높이 토큰을 쓴다', ['\\.cta','\\.restart-cta','\\.reedit-cta']
-     .every(x => new RegExp(x+'\\{[^}]*height:var\\(--h-cta\\)').test(css2)));
+/* 🔴 v38.1 폐기 — 「메인 CTA 3종이 같은 높이 토큰을 쓴다」
+   `.reedit-cta`가 셋 중 하나였는데 v38.1에서 지웠습니다(마크업에 0곳 · `tools/dead.mjs`).
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('메인 CTA 3종이 같은 높이 토큰을 쓴다', ['\\.cta','\\.restart-cta','\\.reedit-cta']
+//      .every(x => new RegExp(x+'\\{[^}]*height:var\\(--h-cta\\)').test(css2)));
+
   /* 🔴 v24.32 — 계층 1은 **`.cta` 하나뿐**입니다(입력 화면의 「다음」).
      재계산은 세컨더리라 굵기 700이고, 결과 화면에는 계층 1이 없습니다. */
   tt('메인 CTA가 16px SemiBold다', ['\\.cta'].every(x=>{
@@ -3398,26 +3456,42 @@ HYGIENE.forEach(([name, over]) => {
   /* 3. 점진적 정보 공개 — ⓘ + 바텀시트 */
   /* 🔴 v24.7 — 「버튼이 있다」와 「버튼이 눌린다」는 다른 검사입니다(원칙 153).
      아래 셋은 마크업만 보고 있어 onclick을 지워도 전부 초록이었습니다. */
-  tt('결과 ⓘ가 실제로 시트를 연다', /\$\('trustBtn'\)\.onclick[\s\S]{0,80}openSheet\(\)/.test(UI));
+  /* 🔴 v38.5 폐기 — **오너가 규격을 뒤집었습니다**(2026.09.08 — 「어떤 정책을 넣었나요도
+     필요없고」). 정책 시트와 그 문(`#trustBtn`)이 화면에서 없어졌습니다.
+     이 검사가 잠그던 사실은 **더 이상 존재하지 않습니다** — 겨눌 자리가 없습니다.
+     ⚠ 지운 것이 아니라 **폐기**입니다(원칙 141 · 168). 되살리려면 시트를 되살리는 판입니다.
+     ⏹ 시트가 담던 열두 줄 중 **열은 용어 사전**이었고 그 말들은 시트 밖에서 안 쓰였습니다.
+       살아 남은 둘은 자리를 옮겼고, 각자 검사가 따로 있습니다 :
+         개인정보 고지 → 「면책이 넣은 값의 행방을 말한다」
+         신용대출 1억  → 「그 줄이 「계산에 안 들어갔다」고 밝힌다」 */
+  /* 폐기 : 결과 ⓘ가 실제로 시트를 연다 */
   tt('워드마크가 실제로 홈으로 간다', /\$\('homeBtn'\)\.onclick\s*=\s*goHome/.test(UI));
   tt('하단 CTA·이전 버튼에 핸들러가 있다',
      /\$\('ctaBtn'\)\.onclick/.test(UI) && /\$\('prevBtn'\)\.onclick/.test(UI));
   /* 🔴 v25.38 — 이름에서 `ⓘ`를 뺐습니다. **기호가 아니라 버튼 하나로** 접혔다는 것이
      잠근 사실이고, `ⓘ`(U+24D8)는 Pretendard에 없어 v25.38에서 뗐습니다.
      ⚠ 검사 내용은 v23.24 그대로입니다 — 버튼이 있고 · 레이블이 살아 있고 · 옛 긴 줄이 없다. */
-  tt('계산 기준이 버튼 하나로 접혔다',
-     /id="trustBtn"/.test(fs.readFileSync(FILE,'utf8'))
-     && /계산 기준 보기/.test(fs.readFileSync(FILE,'utf8'))
-     && !/스트레스 DSR · 취득세 · 지방교육세 · 중개보수 상한요율 기준 반영/.test(UI));
-  tt('바텀시트가 대화상자로 선언돼 있다',
-     /id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"/.test(fs.readFileSync(FILE,'utf8')));
+  /* 폐기(v38.5) : 계산 기준이 버튼 하나로 접혔다 — 그 버튼이 없어졌습니다. 위 폐기 사유와 같습니다. */
+  /* 🔴 v38.5 겨눔 이동 — 정책 시트가 없어졌습니다. 잠글 사실은 그대로입니다 :
+     **남아 있는 시트는 전부 대화상자로 선언돼 있다.** 시트 하나를 지웠다고 접근성 규격이
+     죽는 게 아니라, 재는 대상이 줄어든 것입니다(원칙 128). */
+  tt('바텀시트가 대화상자로 선언돼 있다', (()=>{
+     const src = fs.readFileSync(FILE,'utf8');
+     /* ⚠ `class="sheet-back"`이 아니라 **시트 자신**만 셉니다 — `sheet[^"]*`로 잡으면
+        뒷면 셋이 같이 걸려 「role이 없다」로 빨간불이 납니다(첫 판에 실제로 났습니다). */
+     const sheets = src.match(/<div class="sheet(?: [a-z-]+)?" id="[^"]+"[^>]*>/g) || [];
+     return sheets.length >= 2 && sheets.every(t =>
+       /role="dialog"/.test(t) && /aria-modal="true"/.test(t) && /aria-labelledby="/.test(t));
+  })());
   /* ⚠ .app{overflow-x:clip}은 자손 fixed 요소를 가둡니다. 시트는 .app 밖에 있어야 합니다. */
   /* 🔴 v24.7 — indexOf -1 함정. dock 문자열이 안 잡히면 -1이라 **무엇이든 통과**했습니다.
      속성 순서만 바꿔도(class↔id) 시트를 .app 안에 넣는 사고가 그대로 지나갑니다. */
   tt('시트가 .app 밖에 있다', (()=>{
+     /* 🔴 v38.5 겨눔 이동 — `id="sheet"` → `id="whySheet"`. 같은 사실입니다
+        (`.app{overflow-x:clip}`이 자손 fixed를 가둡니다). -1 통과 금지도 그대로입니다. */
      const src = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
-     const a = src.indexOf('id="sheet"'), b = src.search(/<div[^>]*class="dock"/);
-     return a >= 0 && b >= 0 && a > b;      /* 둘 다 존재해야 합니다 — -1 통과 금지 */
+     const a = src.indexOf('id="whySheet"'), b = src.search(/<div[^>]*class="dock"/);
+     return a >= 0 && b >= 0 && a > b;
   })());
   tt('시트를 닫는 길이 셋이다 (닫기 · 배경 · ESC)',
      /sheetClose'\)\.onclick/.test(UI) && /sheetBack'\)\.onclick/.test(UI)
@@ -3466,15 +3540,29 @@ HYGIENE.forEach(([name, over]) => {
   })());
 
   /* v23.15: 라임 → 핀테크 그린. 면·테두리와 글자 색을 나눕니다. */
-  tt('핀테크 그린 복귀', /--green:#00CA71/.test(css2));
+/* 🔴 v38.1 폐기 — 「핀테크 그린 복귀」
+   v26.6이 그린을 화면에서 뺐습니다(오너 결정). 이 검사는 `--green:#00CA71`이 **파일에 있는가**를 잠갔고, 덮여서 안 쓰이는 리터럴 덕에 계속 초록불이었습니다(원칙 142).
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('핀테크 그린 복귀', /--green:#00CA71/.test(css2));
+
   /* 🔴 v23.22 — 원칙 102의 답을 「두 값」에서 「글자로는 안 쓴다」로 바꿨습니다.
      짙은 녹색(--green-ink)을 정의부터 지웠고, 그린은 면·선(선택·활성)에만 씁니다.
      락을 지우지 않고 **반대 방향으로** 다시 씁니다(지침 5층 3번). */
   /* ⚠ 주석에는 「--green-ink를 지웠다」는 기록을 남깁니다. 검사는 **정의와 사용**만 봅니다. */
-  tt('그린 토큰이 단 하나다',
-     /--green:#00CA71/.test(css2)
-     && !/--green-ink\s*:/.test(css2)
-     && !/var\(--green-ink\)/.test(fs.readFileSync(FILE,'utf8')));
+/* 🔴 v38.1 폐기 — 「그린 토큰이 단 하나다」
+   같은 자리. 그린이 없으므로 「하나인가」를 잴 대상이 0개입니다(4장 ③).
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('그린 토큰이 단 하나다',
+//      /--green:#00CA71/.test(css2)
+//      && !/--green-ink\s*:/.test(css2)
+//      && !/var\(--green-ink\)/.test(fs.readFileSync(FILE,'utf8')));
+
   /* ⚠ 원칙 99 — `color:var(--green)`은 `border-color:var(--green)`도 잡습니다.
      경계를 안 붙이면 이 검사가 정반대로 헛돕니다. 실제로 처음에 그렇게 걸렸습니다. */
   tt('그린을 글자색으로 쓰지 않는다',
@@ -3595,9 +3683,10 @@ HYGIENE.forEach(([name, over]) => {
      const markup=raw.replace(/<!--[\s\S]*?-->/g,'').replace(/<script[\s\S]*?<\/script>/g,'');
      const i=markup.indexOf(asof);
      return i<0 ? asof+' 마크업에 없음' : '「'+markup.slice(Math.max(0,i-30), i+15)+'」'; })());
-  tt('시트의 정책 확인일이 상수에서 온다',
-     /<b>정책 확인일<\/b><span id="asOfNote"><\/span>/.test(fs.readFileSync(FILE,'utf8'))
-     && /\$\('asOfNote'\)\.textContent = `\$\{POLICY_ASOF\}/.test(UI));
+  /* 폐기(v38.5) : 시트의 정책 확인일이 상수에서 온다 — 시트가 없어졌습니다.
+     ⚠ 잠그던 사실(「기준일은 `POLICY_ASOF` 한 곳에서 온다」)은 죽지 않았습니다.
+       이제 화면에서 그 값을 말하는 곳이 **면책 한 줄뿐**이고, 아래
+       「기준일이 한 자리에서만 말해진다」가 그것을 잠급니다(원칙 128). */
   /* 🆕 면책 첫 문장이 **언제 기준의 계산인지** 말한다. 없으면 반년 뒤의 오차와 오늘의 오차가 구별되지 않습니다. */
   /* 🔴 v25.1 — 문단이 갈리면서 `class="legal">※` 붙어 있기가 깨졌습니다.
      잠글 사실은 **「첫 문장이 기준일로 시작한다」**이지 두 문자열이 붙어 있는가가 아닙니다. */
@@ -3609,8 +3698,12 @@ HYGIENE.forEach(([name, over]) => {
      return /^※ 대출 규제 · 세법 기준일 \$\{POLICY_ASOF\}\./.test(t)
          && !/\d{4}\.\d{2}\.\d{2}/.test(t.split('.')[0] + t.slice(0, 60));
   })(), (legalText(UI)||'없음').trim().slice(0, 60));
-  tt('면책이 여전히 두 문장이다',            /* 세 번째가 붙으면 G-18(5줄)이 먼저 물어야 합니다 */
-     ((legalText(UI)||'').match(/※/g)||[]).length === 2);
+  /* 🔴 v38.5 겨눔 이동 — 셋이 됐습니다(개인정보 고지). 위 주석이 「세 번째가 붙으면
+     G-18이 먼저 물어야 한다」고 적어 뒀고, **실제로 G-18이 재고 통과했습니다**.
+     그러니 여기서 개수를 박아 두는 대신 **상한**만 둡니다(4장 ⑧). */
+  tt('면책이 세 문장을 안 넘는다',
+     ((legalText(UI)||'').match(/※/g)||[]).length <= 3
+     && ((legalText(UI)||'').match(/※/g)||[]).length >= 2);
   tt('정책 확인일은 주석에 남아 있다', /<!-- BUILD[^>]*2026\.08\.13/.test(css2));
   /* 🔴 v25.0 — 사보타주가 잡았습니다 — `POLICY_ASOF`만 되돌려도 위 검사는 초록이었습니다.
      **두 곳에 같은 날짜가 있으면 갈립니다**(원칙 91). 위는 마크업, 아래는 상수 —
@@ -4509,12 +4602,14 @@ HYGIENE.forEach(([name, over]) => {
 
   /* ── 금소법 면책 ─────────────────────────────── */
   tt('금소법 면책 문구가 있다',
-     /금융상품 판매 대리·중개업자가 아닙니다/.test(BARE)
+     /* 🔴 v38.5 겨눔 이동 — 어순을 고치며 「아닙니다」가 「아니며,」가 됐습니다(문장을 끊었습니다).
+        **절은 하나도 안 뺐습니다** — 잠글 사실은 두 절이 화면에 있는가입니다(원칙 128). */
+     /금융상품 판매 대리·중개업자가 아니/.test(BARE)
      && /실제 대출 가능 여부는 금융기관 심사에 따릅니다/.test(BARE));
   /* 🔴 위계가 가장 낮은 자리(.legal) 안이어야 합니다. 밖으로 나오면 본문처럼 읽힙니다. */
   tt('면책이 .legal 안에 있다', (()=>{
      const b = legalBlock(BARE);
-     return b !== null && /금융상품 판매 대리·중개업자가 아닙니다/.test(b);
+     return b !== null && /금융상품 판매 대리·중개업자가 아니/.test(b);
   })());
 
   /* ── 금리 시뮬레이터 ──────────────────────────
@@ -4531,8 +4626,13 @@ HYGIENE.forEach(([name, over]) => {
   tt('결과를 다시 계산하면 기준 금리로 되돌아간다',
      /SIM_RATE = null;\s*\n\s*renderBento\(c\);/.test(BARE));
   /* 대출이 없으면 숨깁니다 — 갚을 것이 없는데 금리를 물을 이유가 없습니다. */
+  /* 🔴 v38.4 겨눔 이동 — 금리 조절기가 근거 시트에서 답 화면의 **접기 줄**로 나왔습니다.
+     그래서 대출이 0일 때 숨길 것이 **둘**(서랍 + 여는 줄)이 됐고, 이 검사는 옛 한 줄을
+     글자 그대로 찾고 있었습니다. 잠글 사실은 그대로입니다 —
+     **갚을 것이 없으면 금리를 안 묻는다**(원칙 124 · 128). */
   tt('대출이 없으면 시뮬레이터를 숨긴다',
-     /if\(!\(loan > 0\)\)\{ box\.setAttribute\('hidden',''\); return; \}/.test(BARE));
+     /if\(!\(loan > 0\)\)\{ box\.setAttribute\('hidden',''\);[^\n]*return; \}/.test(BARE)
+     && /tog\.hidden = true/.test(BARE));
   /* 🔴 금리 값에 판정색을 쓰지 않습니다 — 금리는 좋고 나쁨이 아니라 조건입니다(지침 6-3). */
   tt('금리 값에 판정색을 쓰지 않는다', (()=>{
      const r = (M.match(/\.ratesim-v\{[^}]*\}/)||[''])[0];
@@ -4922,19 +5022,37 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.51 재타겟 — `.disc.discline`이 사라졌습니다. 같은 사실을 지키는 자리는
      이제 **부대비용 이름 버튼**입니다 — 이름과 꺾쇠 사이는 `gap` 하나로만 정해지고,
      그 값이 열 폭에 섞이지 않습니다(꺾쇠가 이름 옆에 있어 비우는 열 자체가 없습니다). */
-  tt('부대비용 꺾쇠가 이름 옆에 붙는다 (v25.51 재타겟)',
-     /\.bs-toggle\{[^}]*display:inline-flex/.test(SRC)
-     && /\.bs-toggle\{[^}]*gap:6px/.test(SRC));
+/* 🔴 v38.1 폐기 — 「부대비용 꺾쇠가 이름 옆에 붙는다 (v25.51 재타겟)」
+   같은 v25.51 묶음. 겨누던 마크업이 없습니다.
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('부대비용 꺾쇠가 이름 옆에 붙는다 (v25.51 재타겟)',
+//      /\.bs-toggle\{[^}]*display:inline-flex/.test(SRC)
+//      && /\.bs-toggle\{[^}]*gap:6px/.test(SRC));
+
   /* 🔴 여기가 이 판의 선입니다 — 대출과 준비할 현금은 **서랍 밖**입니다.
      서랍 안으로 들어가면 첫 화면의 약속(「실제로 드는 돈이 나와요」)이 접힌 채로 시작합니다. */
   /* 🔴 v25.51 재타겟 — 두 줄이 대차대조표 오른쪽 열입니다. **여기가 이 판의 선**입니다:
      대출과 준비할 현금은 서랍 밖에 있어야 합니다(첫 화면의 약속이 접힌 채로 시작하면 안 됩니다). */
+  /* 🔴 v38.4 겨눔 이동 — **두 군데가 늙었습니다.**
+       ① 서랍의 끝을 `#limitToggle`로 잡았는데 그 서랍이 답 화면으로 나갔습니다(③과 같은 병).
+       ② 🔴 그리고 이 검사가 보던 `#bsCash`·`#bsLoan`은 v38.4에서 **화면이 아니라 값이
+          지나가는 자리**가 됐습니다(`#bsheet[hidden]`). 화면에서 두 줄을 실제로 말하는 것은
+          답 화면의 `#easyCash`·`#easyLoan`입니다.
+     잠글 사실은 v25.51 그대로입니다 — **대출과 준비할 현금은 접히는 서랍 밖이다.**
+     첫 화면의 약속(「실제로 드는 돈이 나와요」)이 접힌 채로 시작하면 안 됩니다.
+     👉 겨눔을 **화면이 실제로 쓰는 두 줄**로 옮깁니다(원칙 128 · 151). */
   tt('대출 · 준비할 현금이 접히는 서랍 밖이다 (v25.51 재타겟)', (()=>{
-     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="limitToggle"');
+     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="itToggle"');
      const box = SRC.slice(a, b);
+     const lim = SRC.indexOf('id="limitBox"'), limEnd = SRC.indexOf('id="rateToggle"');
+     const drawer = lim > 0 && limEnd > lim ? SRC.slice(lim, limEnd) : '';
      return a > 0 && b > a
-         && SRC.indexOf('id="bsCash"') < a && SRC.indexOf('id="bsLoan"') < a
-         && !/id="bsCash"|id="bsLoan"/.test(box)
+         && SRC.indexOf('id="easyCash"') > 0 && SRC.indexOf('id="easyLoan"') > 0
+         && !/id="easyCash"|id="easyLoan"/.test(box)
+         && !/id="easyCash"|id="easyLoan"/.test(drawer)
          && /put\('bsCash'/.test(UI) && /put\('bsLoan'/.test(UI);
   })());
   /* 소계는 화면에 적힌 것들의 합입니다. 켠 항목의 **금액을 서랍 안에 두 번 적지 않습니다** —
@@ -4992,8 +5110,10 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 지시서는 줄마다 「(공급 약 OO평형)」을 요구했습니다 — 390px에서 **97px 넘칩니다.**
      지적(「무엇의 평인지 안 밝힌다」)은 맞으므로 **목록 아래에서 한 번** 말합니다. */
   /* ⚠ 같은 이유(원칙 48). 「공급면적」과 「추정」 **두 낱말이 함께** 있으면 뜻이 섭니다. */
+  /* 🔴 v38.5 겨눔 이동 — 「평은 공급면적 기준 추정」이 한자어를 푼 문장이 됐습니다
+     (「공급면적으로 어림했고」 · RULES 어순 절). 잠글 사실은 **평의 근거를 밝히는가**입니다. */
   tt('평이 무엇의 평인지 화면이 말한다',
-     /평[^.]{0,10}공급면적[^.]{0,10}추정/.test(UI));
+     /평[^.]{0,10}공급면적[^.]{0,12}(추정|어림)/.test(UI));
   tt('면적 표기가 줄마다 길어지지 않았다',
      !/공급 약/.test(SRC.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,''))
      || /foot\.textContent/.test(UI));
@@ -5042,14 +5162,10 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 v25.1 — 다섯 항목이 `.chg` 문단으로 갈리면서 비탐욕 식이 **첫 항목에서 멈췄습니다.**
      안쪽 `</span>`이 생긴 것이지 안내가 사라진 게 아닙니다 — 여는 태그부터
      `</span></div>`까지를 봅니다(원칙 128 — 세는 방법만 넓힙니다). */
-  tt('시행 전 정책을 안내로만 말한다', (()=>{
-     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
-     if(!m) return false;
-     const box = m[1];
-     return /2026년 8월 31일/.test(box) && /2027년 1월/.test(box)
-         && /법률 개정이 필요/.test(box)            /* 청년미래보금자리론 */
-         && /시행세칙|내규|가이드라인|행정지도/.test(box);
-  })());
+  /* 폐기(v38.5) — 정책 시트가 오너 결정으로 없어졌습니다(2026.09.08). 이 검사가 잠그던
+     사실이 화면에 더 이상 없습니다. 지운 것이 아니라 폐기이고, 되살리려면 시트를 되살리는
+     판입니다(원칙 141 · 168). 폐기 : 시행 전 정책을 안내로만 말한다 (아직 시행 전인 다섯을 화면에서 뺐습니다) */
+
   /* ③ 거래 활발 뱃지 — **임의 임계를 안 씁니다.** 「같은 단지가 두 번 이상」이 유일한 기준입니다. */
   tt('거래 활발이 임의 임계를 쓰지 않는다',
      /const hotOf = x => \(seen\.get\(hotKey\(x\)\)\|\|0\) >= 2;/.test(UI)
@@ -5250,9 +5366,14 @@ HYGIENE.forEach(([name, over]) => {
      !/POLICY_ASOF_BADGE/.test(SRC));
   /* 🔴 뱃지가 사라져도 **기준일 자체는 화면에 남아야 합니다.** 지운 것은 중복이지 사실이 아닙니다.
      남은 두 자리 — 결과 면책 첫 줄 · 안내 시트의 「정책 확인일」. 둘 다 상수에서 옵니다. */
-  tt('기준일이 여전히 두 자리에서 말해진다',
-     /※ 대출 규제 · 세법 기준일 \$\{POLICY_ASOF\}/.test(SRC)
-     && /\$\('asOfNote'\)\.textContent = `\$\{POLICY_ASOF\}/.test(SRC));
+  /* 🔴 v38.5 겨눔 이동 — 정책 시트가 없어져 **자리가 둘에서 하나**가 됐습니다.
+     ⏹ 이 검사가 지키던 것은 「두 자리」라는 개수가 아니라 **「손으로 적은 날짜가 없다」**입니다
+       (개수는 사실이 아니라 그때의 숫자입니다 · 4장 ⑧). 그쪽으로 옮깁니다. */
+  tt('기준일이 한 자리에서만 말해진다', (()=>{
+     const body = SRC.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
+     return /※ 대출 규제 · 세법 기준일 \$\{POLICY_ASOF\}/.test(SRC)
+         && !/기준일 2026\.\d\d\.\d\d/.test(body);   /* 손으로 적은 날짜 0곳 */
+  })());
   /* 🔴 v25.1이 뱃지 문구를 「세법」이 아니라 「정책」으로 고른 근거는 **「대출 규제가 더 크다」**였습니다.
      v25.7은 그 둘을 **다 적는 쪽**으로 갔습니다 — 근거를 되돌린 게 아니라 한 단 더 정확해진 것입니다.
      ⚠ 「세법 기준」만 적는 꼴로는 못 돌아갑니다(8.13 금융대책을 안 봤다는 뜻이 됩니다). */
@@ -5335,18 +5456,16 @@ HYGIENE.forEach(([name, over]) => {
   tt('채권 문장이 부대비용 패널에 그대로 있다', /국민주택채권 매입비/.test(SRC));
 
   /* ── ③ 「곧 바뀌는 것」 구조 ──────────────────── */
-  tt('곧 바뀌는 것이 다섯 문단으로 갈려 있다', (()=>{
-     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
-     return !!m && (m[1].match(/<span class="chg">/g)||[]).length === 5;
-  })(), (()=>{
-     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
-     return m ? (m[1].match(/<span class="chg">/g)||[]).length+'문단' : '못 찾음'; })());
+  /* 폐기(v38.5) — 정책 시트가 오너 결정으로 없어졌습니다(2026.09.08). 이 검사가 잠그던
+     사실이 화면에 더 이상 없습니다. 지운 것이 아니라 폐기이고, 되살리려면 시트를 되살리는
+     판입니다(원칙 141 · 168). 폐기 : 곧 바뀌는 것이 다섯 문단으로 갈려 있다 */
+
   /* 🔴 줄머리 가운뎃점은 뗐습니다 — 같은 기호를 부속 줄에서 **한 줄 안의 구분자**로 쓰고 있어
      한 기호가 두 뜻을 겸했습니다(원칙 91). 항목 구분은 기호가 아니라 여백이 냅니다. */
-  tt('곧 바뀌는 것에 줄머리 가운뎃점이 없다', (()=>{
-     const m = SRC.match(/곧 바뀌는 것 \(아직 계산에 없음\)<\/b><span>([\s\S]*?)<\/span><\/div>/);
-     return !!m && !/^\s*·/m.test(m[1]) && !/<br>/.test(m[1]);
-  })());
+  /* 폐기(v38.5) — 정책 시트가 오너 결정으로 없어졌습니다(2026.09.08). 이 검사가 잠그던
+     사실이 화면에 더 이상 없습니다. 지운 것이 아니라 폐기이고, 되살리려면 시트를 되살리는
+     판입니다(원칙 141 · 168). 폐기 : 곧 바뀌는 것에 줄머리 가운뎃점이 없다 */
+
   tt('곧 바뀌는 것 항목 사이가 24px이다 (v25.66 토큰 대응)',
      /\.sheet-row span \.chg \+ \.chg\{margin-top:/.test(RAW)
      && (()=>{ const c = RAW.replace(/\/\*[\s\S]*?\*\//g,'');
@@ -5404,8 +5523,8 @@ HYGIENE.forEach(([name, over]) => {
      문장 모양까지 잠그면 문구를 못 고칩니다(원칙 48 · 134). */
   tt('거래 활발 기준 문구가 코드의 값에서 온다',
      /note\.textContent = shownRows\.some\(hotOf\)/.test(SRC)
-     && /※ 거래 활발[^`]*\$\{DEAL\.months\}개월/.test(SRC)
-     && !/※ 거래 활발[^`]*[0-9]개월/.test(SRC));
+     && /※ 「거래 활발」[^`]*\$\{DEAL\.months\}개월/.test(SRC)
+     && !/※ 「거래 활발」[^`]*[0-9]개월/.test(SRC));
   /* 🔴 뱃지가 하나도 없으면 기준도 안 뜹니다 — 안 보이는 것을 설명하지 않습니다(원칙 43). */
   tt('뱃지가 없으면 기준 문구도 없다',
      /shownRows\.some\(hotOf\)\s*\?[\s\S]{0,140}: '';/.test(SRC)
@@ -5415,7 +5534,7 @@ HYGIENE.forEach(([name, over]) => {
      ⚠ 문장이 아니라 **숫자**를 봅니다. 「두 번」이든 「2건」이든 2이면 참입니다. */
   tt('기준 문구의 횟수와 판정의 횟수가 같다', (()=>{
      const n = (SRC.match(/const hotOf = x => \(seen\.get\(hotKey\(x\)\)\|\|0\) >= (\d+);/)||[])[1];
-     const t = (SRC.match(/※ 거래 활발[^`]*/)||[''])[0];
+     const t = (SRC.match(/※ 「거래 활발」[^`]*/)||[''])[0];
      const said = /두 번|2건|2회/.test(t) ? 2 : (t.match(/([0-9])\s*(건|번|회)/)||[])[1];
      return !!n && String(said) === n;
   })());
@@ -5675,13 +5794,18 @@ HYGIENE.forEach(([name, over]) => {
      /* 한도 서랍의 ※ 셋 — `<br>`로 이어 붙인 각 줄이 전부 ※로 시작해야 합니다. */
      /* ⚠ 소스 조각이라 앞에 `? \`` · `+ \`<br>` 같은 문법이 섞입니다. 그 부스러기를 지우지 않고
         **「※ 앞에 글자가 거의 없다」**로 봅니다 — 자르는 규칙을 만들면 그 규칙이 또 뚫립니다(6-24). */
+     /* 🔴 v38.4 겨눔 이동 — 한도 각주가 `<br>` 이어 붙이기에서 **덩어리 넷**이 됐습니다
+        (`<span class="chg">`). 430px에서 끝줄이 13%로 남는 고아를 V38 6장 ②로 푼 결과이고,
+        **넷이 된 것은 두 문장짜리 한 줄을 문장에서 가른 것**입니다.
+        잠글 사실은 v25.12 그대로입니다 — **각주가 전부 ※로 시작하고 ※가 섞이지 않는다.**
+        ⚠ 개수를 3으로 박아 두지 않습니다. 그건 사실이 아니라 그때의 숫자였습니다(4장 ⑧). */
      const lim = (SRC.match(/notes\.innerHTML = hasLimit([\s\S]*?): '';/)||[])[1] || '';
-     const limLines = lim.split('<br>').filter(s => /\S/.test(s));
+     const limLines = lim.split(/<\/span>/).filter(s => /※/.test(s));
      return notes.every(t => t.trim().startsWith('※'))
-         && (legal.match(/※/g)||[]).length === 2
-         && limLines.length === 3
-         && (lim.match(/※/g)||[]).length === 3
-         && limLines.every(t => /^[^※]{0,14}※/.test(t));
+         && (legal.match(/※/g)||[]).length >= 2   /* v38.5 — 개인정보 고지가 내려와 셋입니다(4장 ⑧) */
+         && limLines.length >= 3
+         && limLines.length === (lim.match(/※/g)||[]).length
+         && limLines.every(t => /※/.test(t.slice(t.lastIndexOf('>')+1, t.lastIndexOf('>')+16)));
   })(), (()=>{
      const g = re => { const m = SRC.match(re); return m ? (m[1]||'').slice(0,10) : '못 찾음'; };
      return [g(/note\.textContent = shownRows\.some\(hotOf\)\s*\?\s*`([^`]*)`/),
@@ -5785,12 +5909,18 @@ HYGIENE.forEach(([name, over]) => {
   /* 🔴 「N년 원리금균등」이 한 화면에 **한 번**인가(원칙 43). 원리금 타일의 부속 줄이
      말하므로 한도 각주는 자기만 할 수 있는 말(「시중은행」)만 합니다.
      ⚠ 둘은 **함께 뜨고 함께 사라집니다**(대출 0원이면 타일도 각주도 없음 · 실측). */
-  tt('원리금균등 가정을 한 곳에서만 말한다 (v25.50)', (()=>{
+  /* 🔴 v37 겨눔 이동 — 화면에서 「원리금균등」을 뺐습니다. 정책 시트가 같은 개념을 이미
+     「매달 같은 금액을 갚는 방식」으로 풀어 놓고 있어 **한 앱이 한 개념을 두 말로** 부르던
+     자리였습니다(원칙 58 · V10-SIAN 2장 「원리금 → 매달 갚는 돈」).
+     ⚠ 잠그는 것은 낱말이 아니라 **상환 가정을 한 곳에서만 말하는가**입니다.
+       그래서 겨눔을 새 문장(「N년 동안 매달 같은 금액을 갚는」)으로 옮깁니다 —
+       정책 시트의 낱말 풀이(「매달 같은 금액을 갚는 방식」)는 가정이 아니라 정의라 안 셉니다. */
+  tt('원리금균등 가정을 한 곳에서만 말한다 (v25.50 · v37 재타겟)', (()=>{
      const bare = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
-     return (bare.match(/년 원리금균등/g)||[]).length === 1
-         && /tileMonthlySub'\)\.textContent = m>0 \? `[^`]*년 원리금균등/.test(bare);
+     return (bare.match(/년 동안 매달 같은 금액을 갚는/g)||[]).length === 1
+         && /tileMonthlySub'\)\.textContent = m>0 \? `[^`]*년 동안 매달 같은 금액을 갚는/.test(bare);
   })(), (RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'')
-        .match(/년 원리금균등/g)||[]).length + '곳');
+        .match(/년 동안 매달 같은 금액을 갚는/g)||[]).length + '곳');
 
   /* 🔴 부대비용 줄에 「집값」이 **한 번**인가. 「집값 외 부대비용 · 집값의 4.1%」로 두 번이었습니다.
      ⚠ 기준은 바로 왼쪽 이름이 말하므로 알약은 `+N%`면 충분합니다(원칙 43). */
@@ -5903,8 +6033,12 @@ HYGIENE.forEach(([name, over]) => {
      /<div class="costrow"><div class="nm">중개보수/.test(SRC)
      && !/row\('중개보수/.test(SRC));
   /* 🔴 결과 화면 쪽에 둡니다 — 01~03단계에 넣으면 입력 피로가 늘어납니다(오너 지시). */
+  /* 🔴 v38.4 겨눔 이동 — 서랍의 끝을 `#limitToggle`로 잡고 있었는데, 한도 서랍이
+     **답 화면으로 나가면서** 마크업에서 `#costBox`보다 앞에 섰습니다(잘린 구간이 빈 문자열).
+     잠글 사실은 그대로 — **중개보수 줄이 부대비용 서랍 안**입니다. 끝을 그 서랍의
+     다음 형제(`#itToggle` · 인테리어)로 옮깁니다(원칙 128). */
   tt('중개보수 줄이 부대비용 서랍 안이다 (v25.51 재타겟)', (()=>{
-     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="limitToggle"');
+     const a = SRC.indexOf('id="costBox"'), b = SRC.indexOf('id="itToggle"');
      return a > 0 && b > a && SRC.slice(a,b).indexOf('id="swBroker"') > 0;
   })());
 
@@ -5949,8 +6083,11 @@ HYGIENE.forEach(([name, over]) => {
        한도가 안 는다」)은 **바로 아래 DSR 줄이 이미** 말합니다(원칙 43).
      ⚠ 잠그는 것은 문장이 아니라 **「어느 항목도 세 문장을 안 넘는다」**입니다(원칙 149).
        ⚠ 약어 풀이(「주택담보대출(주담대).」)는 한 문장으로 세어집니다 — 그 줄만 셋입니다. */
-  tt('안내 시트 항목이 세 문장을 안 넘는다 (v25.43)', (()=>{
-     const rows = [...SRC.matchAll(/<div class="sheet-row">.*?<span>([\s\S]*?)<\/span>/g)]
+  /* 🔴 v38.5 겨눔 이동 — `.sheet-row`가 정책 시트와 함께 없어졌습니다. 잠글 사실은
+     v25.43 그대로입니다 — **각주 한 덩어리가 세 문장을 안 넘는다.** 그 덩어리는 이제
+     한도 서랍의 `.chg` 넷입니다(원칙 128). */
+  tt('각주 한 덩어리가 세 문장을 안 넘는다 (v25.43)', (()=>{
+     const rows = [...SRC.matchAll(/<span class="chg">※([^<]*)<\/span>/g)]
        .map(m => m[1].replace(/<[^>]*>/g,'').trim());
      if(!rows.length) return false;
      const over = rows.filter(r => (r.match(/[.?!]\s|[다요]\.\s*$|\.\s/g)||[]).length > 3
@@ -6345,7 +6482,9 @@ HYGIENE.forEach(([name, over]) => {
         머리글은 오르는 쪽만 말하면 안 됩니다. min을 올려 고치는 길도 열어 둡니다. */
   tt('금리 슬라이더 이름이 범위와 맞는다', (()=>{
      const m = SRC.match(/id="rateRange"[^>]*min="(\d+)"/);
-     const hd = SRC.match(/class="ratesim-hd"><p class="tile-k">([^<]*)</);
+     /* 🔴 v38.4 겨눔 이동 — 머리글이 `.ratesim-hd` 안에서 **접기 줄의 이름**(`#rateToggle`의
+        `.k`)으로 옮겨 갔습니다. 잠글 사실은 한 자도 안 바뀝니다 — **범위와 이름의 관계**입니다. */
+     const hd = SRC.match(/id="rateToggle"[\s\S]{0,200}?<span class="k">([^<]*)</);
      if(!m || !hd) return false;
      const goesDown = (+m[1])/10 < 5.4;         /* D.rate 아래로 내려가는가 */
      return !goesDown || !/오르면|올라가|상승/.test(hd[1]);
@@ -6636,7 +6775,11 @@ HYGIENE.forEach(([name, over]) => {
   })());
   tt('한도 막대 금액이 값에서 온다 (v25.20)', (()=>{
      const f = (BARE.match(/function renderLimits\([\s\S]*?\n\}/)||[''])[0];
-     return !!f && /formatWon\(L\[k\]\)/.test(f) && !/[0-9]억원|[0-9]만원/.test(f);
+     /* 🔴 v38.5 겨눔 이동 — v38.5가 신용대출 각주(「1억원」)를 이 함수 안으로 옮기면서
+        「손으로 적은 금액 0곳」이 걸렸습니다. 잠글 사실은 **막대 금액**이 값에서 오는가이지
+        함수 안에 숫자가 한 자도 없는가가 아닙니다 — 각주 문자열은 빼고 셉니다(원칙 128). */
+     const bars = f.replace(/notes\.innerHTML[\s\S]*?: '';/, '');
+     return !!f && /formatWon\(L\[k\]\)/.test(f) && !/[0-9]억원|[0-9]만원/.test(bars);
   })());
 
   /* ── ⑥ 스트레스 금리 주석 ──────────────────────────────────────
@@ -7024,12 +7167,21 @@ HYGIENE.forEach(([name, over]) => {
      return ((raw.match(/<div class="tile" id="payTile">[\s\S]*?<div class="payrow">/)||[''])[0]
        .match(/<h2 class="card-title">([^<]*)<\/h2>/)||['','없음'])[1]; })());
   /* ── v25.41 ② 동선 버튼은 **각주 뒤 · 저작권 앞**(오너 지시 · 지시서 4번) ── */
-  tt('동선 버튼이 화면 맨 아래에 있다 (v25.41)', (()=>{
+  /* 🔴 v37.7 겨눔 이동(원칙 128) — **「맨 아래」의 뜻이 바뀌었습니다.**
+     오너 지시(2026-09-07) 「이런 유의는 밑으로 빼야 하는 거 아냐?」로 v37.6이 면책을
+     화면 끝으로 내렸고, 그때 `#restartWrap`이 **면책 아래**에 남았습니다.
+     ⇒ 조작이 법적 고지 밑에 서는 모양입니다. 화면의 마지막은 고지입니다(V10-SIAN 3-8).
+     👉 잠글 사실 : **동선 버튼은 나가는 문 아래 · 법적 고지 위**. */
+  tt('동선 버튼이 나가는 문 아래 · 고지 위에 있다 (v37.7 재타겟)', (()=>{
      const raw = fs.readFileSync(FILE,'utf8').replace(/<!--[\s\S]*?-->/g,'');
-     const foot = raw.indexOf('<p class="foot" id="footNote">');
+     const link = raw.indexOf('id="outNaverT"');
      const restart = raw.indexOf('<div id="restartWrap">');
+     const card = raw.indexOf('<div class="easy-next-card">');
+     const foot = raw.indexOf('<p class="foot" id="footNote">');
      const copy = raw.indexOf('<p class="copyright"');
-     return foot > 0 && restart > foot && copy > restart;
+     /* 🔴 면책 네 줄(.easy-next-card 둘 + #footNote 둘)은 **한 덩어리**입니다(v37.6).
+        버튼이 그 사이에 들어가면 덩어리가 갈립니다 — 그래서 셋 다 버튼 뒤에 와야 합니다. */
+     return link > 0 && restart > link && card > restart && foot > card && copy > foot;
   })());
 
   /* 🔴 v25.50 — **대상을 옮겼습니다**(원칙 128 · 오너 지적 「붙은 게 너무 못생겼어」).
@@ -7049,14 +7201,21 @@ HYGIENE.forEach(([name, over]) => {
        `flex:1`로도, 오히려 더 잘 지켜집니다 — 칸 폭을 **카드가** 정하기 때문입니다
        (일곱 폭 × 세 자릿수 실측 · 두 칸 언제나 같은 폭 · 「9999억 9,999만원」 넘침 0).
      ⚠ 잠글 것은 「126px이다」가 아니라 **「두 칸이 같은 폭이고, 폭이 값에 안 딸린다」**입니다. */
-  tt('억·만 칸이 두 상자이고 양옆을 꽉 채운다 (v25.51 재타겟)',
-     /\.mgrid\{[^}]*background:transparent/.test(CSSB)              /* 면은 칸이 든다 */
-     && /\.mgrid\{[^}]*gap:8px/.test(CSSB)                          /* 두 상자 사이 */
-     && /\.mgrid \.mfield\{[^}]*background:var\(--fill\)/.test(CSSB)
-     && /\.mgrid \.mfield\{[^}]*flex:1 1 0/.test(CSSB)              /* 두 칸이 같은 폭 */
-     && !/\.mgrid \.mfield\{[^}]*width:126px/.test(CSSB)            /* 값에 안 딸린다 */
-     && /\.mgrid \.mfield\{[^}]*padding-right:12px/.test(CSSB)      /* 단위 글자가 안 잘린다 */
-     && !/\.mgrid \.mfield[^{]*\{[^}]*box-shadow:inset/.test(CSSB));
+/* 🔴 v38.1 폐기 — 「억·만 칸이 두 상자이고 양옆을 꽉 채운다 (v25.51 재타겟)」
+   `.mgrid`(억·만 두 상자)를 겨눕니다. v37이 「돈은 만원 한 칸」으로 바꿨고(오너 결정 · 1장) 마크업은 그때 사라졌습니다. CSS만 남아 통과하고 있었습니다.
+   ⚠ **겨눔을 옮길 자리가 없습니다** — 겨누던 것이 화면에서 사라졌기 때문입니다.
+     옮길 수 있으면 옮기고, 없으면 근거를 적고 폐기합니다(⓪-0 ② · 원칙 141 · 168).
+   ⏹ 이 검사는 **죽은 CSS/리터럴만 보고 통과**하고 있었습니다. v38.1이 그걸 걷어내자
+     드러났습니다 — 179개 판정의 첫 묶음입니다. */
+//   tt('억·만 칸이 두 상자이고 양옆을 꽉 채운다 (v25.51 재타겟)',
+//      /\.mgrid\{[^}]*background:transparent/.test(CSSB)              /* 면은 칸이 든다 */
+//      && /\.mgrid\{[^}]*gap:8px/.test(CSSB)                          /* 두 상자 사이 */
+//      && /\.mgrid \.mfield\{[^}]*background:var\(--fill\)/.test(CSSB)
+//      && /\.mgrid \.mfield\{[^}]*flex:1 1 0/.test(CSSB)              /* 두 칸이 같은 폭 */
+//      && !/\.mgrid \.mfield\{[^}]*width:126px/.test(CSSB)            /* 값에 안 딸린다 */
+//      && /\.mgrid \.mfield\{[^}]*padding-right:12px/.test(CSSB)      /* 단위 글자가 안 잘린다 */
+//      && !/\.mgrid \.mfield[^{]*\{[^}]*box-shadow:inset/.test(CSSB));
+
 
   /* 🔴 v25.51 신설 — **보이는 크기를 줄이면서 누르는 면까지 줄이지 않았는가**(원칙 112 · 123).
      한도 줄을 「부수 설명」으로 낮추자(오너 지시) 줄 높이가 54 → 32px이 됐고 G-22가 바로 물었습니다.
@@ -7190,10 +7349,15 @@ HYGIENE.forEach(([name, over]) => {
   const RAW  = fs.readFileSync(FILE,'utf8');
   const BARE = RAW.replace(/\/\*[\s\S]*?\*\//g,'').replace(/<!--[\s\S]*?-->/g,'');
   const f = (BARE.match(/const policyPriceMax[\s\S]*?notes\.hidden/)||[''])[0];
-  tt('정책대출 각주가 조건부다 (v25.22)',
-     !!f && /policyPossible \?/.test(f), f ? '조건부 ✅' : '🔴 못 찾음');
-  tt('정책 집값 상한을 POLICY에서 뽑는다 (v25.22)',
-     !!f && /POLICY\.policyLoan/.test(f) && !/[0-9]00000000/.test(f));
+  /* 폐기(v38.5) — **오너 결정으로 정책대출 각주를 화면에서 걷었습니다**(2026.09.08 —
+     「디딤돌 보금자리론 내용은 다 빼자. 서울은 받는다고 한도가 꼭 늘어나는 것도 아니고」).
+     ⏹ v25.22는 그 각주를 **집값 상한으로 걸러** 「대상일 때만」 보이게 고친 판이었습니다.
+       그런데 상한 안이라고 한도가 느는 것이 아닙니다 — 소득 · 자산 · 세대 요건이 따로 있고
+       이 앱은 그걸 하나도 안 묻습니다. 방향이 **유리한 쪽**이라 문장째 뺐습니다(원칙 28).
+     ⚠ 엔진의 `POLICY.policyLoan`은 그대로 있습니다(도달 불가 · v25.74 결정).
+       화면에서 걷은 것이지 값을 지운 것이 아닙니다.
+     폐기 : 정책대출 각주가 조건부다 · 정책 집값 상한을 POLICY에서 뽑는다 */
+
   /* 🔴 **값 검사** — 위 둘은 표기를 봅니다. 이건 실제로 갈리는지를 봅니다.
      ⚠ 「상한 이하면 보이고, 넘으면 안 보인다」 둘 다 확인합니다 — 한쪽만 보면
        늘 보이거나 늘 안 보이는 코드도 통과합니다(원칙 127의 계열). */
@@ -7255,8 +7419,11 @@ HYGIENE.forEach(([name, over]) => {
   const RAW = fs.readFileSync(FILE,'utf8');
   tt('신용대출 1억 초과 제한을 화면이 말한다 (v25.24)',
      /신용대출 1억원 초과/.test(RAW) && /규제지역 주택을 살 수 없어요/.test(RAW));
+  /* 🔴 v38.5 겨눔 이동 — 이 줄이 정책 시트에서 **한도 서랍의 ※**로 옮겨 왔습니다
+     (오너 결정 — 남긴 둘 가운데 하나). 자리가 바뀌며 조사 하나가 빠졌습니다(「계산에는」 → 「계산에」).
+     잠글 사실은 그대로 — **이 앱이 판정 못 하는 규제를 판정하는 척하지 않고 밝힌다.** */
   tt('그 줄이 「계산에 안 들어갔다」고 밝힌다',
-     /이 계산에는 안 들어간 규제예요/.test(RAW));
+     /이 계산에는? 안 들어간 규제예요/.test(RAW));
   /* ⚠ 그 규제를 **판정하는 척하지 않습니다** — 이 앱은 신용대출 잔액을 안 받습니다. */
   tt('신용대출 잔액을 안 받는다는 전제가 그대로다',
      /creditLoan:\s*0/.test(RAW.replace(/\/\*[\s\S]*?\*\//g,'')));
