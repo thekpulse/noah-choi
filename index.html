@@ -4962,6 +4962,79 @@ body .app.bar-sort .appbar{height:auto;min-height:64px;gap:0;padding-top:env(saf
 body .app.bar-sort .barrow1{min-height:64px;width:100%}
 @media(min-width:760px){body .app.bar-sort .barrow1{min-height:76px}}
 
+/* v53: mobile screenshot corrections */
+#viewAnswer>#easyMarket.plot{padding-bottom:20px;height:auto;max-height:none}
+#easyMarket .plot-detail{margin:16px 0 0;padding:16px;border:1px solid var(--v-line);border-radius:12px}
+#easyMarket .plot-detail .nm{flex-wrap:wrap;gap:6px 12px;margin:0}
+#easyMarket .plot-detail .nm span{white-space:normal;overflow:visible;word-break:keep-all}
+#easyMarket .plot-detail .mt{margin:8px 0 0;line-height:1.65;word-break:keep-all}
+#qSheet .debtbox .moneycard{min-height:0;height:auto;padding:12px 16px}
+#qSheet .debtbox .mfield{min-height:48px;height:auto;margin:0;padding:0;border:0}
+#qSheet .debtbox .mfield input{min-height:48px;height:48px;border:0;box-shadow:none;background:transparent;font-size:28px}
+#limitBox .subtoggle input[type=checkbox]:checked::after{border-color:#fff}
+.report .bs{gap:12px}.report .bs-side+.bs-side{padding-top:12px}
+.report .fpct{display:none}.report .report-total{margin-bottom:8px}
+.report .report-monthly{margin-top:12px;padding:12px 0}
+.report .bs-it{padding:5px 0}.report .report-title{margin:10px 0 12px}
+
+/* v54 — a consistent reading order and a restrained control hierarchy. */
+:root{--product-radius:16px;--product-space:20px}
+body .funnel{padding-top:20px}
+body .funnel .cond-lead{font-size:32px;line-height:1.32;letter-spacing:-.04em}
+.funnel .entry-sub{margin:12px 0 24px;font-size:15px;line-height:1.6;color:var(--v-sub)}
+.funnel .crows{padding:0 20px 8px;border-radius:var(--product-radius);box-shadow:none}
+body .crows .crow{min-height:58px;padding:14px 0}
+body .crows .inline-money{padding:18px 0 12px}
+.inline-money .inline-money-field{margin-top:10px;padding:8px 12px;border-radius:10px;background:#f8f9fc}
+body .inline-money-field input{font-size:30px;line-height:1.4}
+body .inline-money .inline-help{font-size:13px!important;line-height:1.6;margin-top:8px}
+body .cond-legal{font-size:13px;line-height:1.6;margin-top:16px}
+.appbar #toCondBtn{padding:8px 12px;min-height:40px;border:1px solid var(--v-line-strong);border-radius:9px;background:#fff;color:var(--v-sub);font-size:13px}
+#viewAnswer .budget-overview>.rhead{padding:28px 22px 20px}
+#viewAnswer .rhead .price-answer{gap:12px}
+#viewAnswer .budget-summary{padding-bottom:0}
+#viewAnswer .budget-summary .budget-total{padding:16px 0 20px}
+#viewAnswer .budget-overview>#easyBalance{padding-top:0}
+#easyBalance>.ratio{margin:0;padding:0;border:0;min-height:0}
+#easyBalance .rlab{gap:16px;margin-top:14px}
+#easyBalance .rlab .t{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:baseline;line-height:1.5}
+#easyBalance .rlab em{margin-left:0;font-size:12px!important}
+#easyBalance .cash-remainder{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--v-line);font-size:14px}
+#easyBalance .cash-remainder strong{font-size:18px;line-height:1.5;white-space:nowrap}
+#viewAnswer #overWrap .overnote{padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.7}
+#viewAnswer>#payTile,#viewAnswer>#easyMarket.plot{border-radius:var(--product-radius)}
+#payTile .ans-row{flex-wrap:wrap;gap:10px 16px}
+#payTile .ans-pct{max-width:100%;text-align:left;justify-content:flex-start}
+#easyMarket .plot-lede{line-height:1.65;word-break:keep-all}
+#easyMarket .market-open{min-height:48px;margin-top:16px;padding:0 12px;border:1px solid #c7d4f4;border-radius:10px;background:var(--v-blue-soft);color:var(--v-blue-deep)}
+#result .external-links{padding:8px 0 16px;margin-bottom:8px;border-bottom:0}
+#result .external-links summary{font-size:14px;min-height:48px}
+#result .restart-cta{background:transparent!important;color:var(--v-sub)!important;border:1px solid var(--v-line-strong);min-height:48px;border-radius:10px}
+#result .restartrow{margin-top:16px}
+#viewDeals #dealCard{padding-inline:0}
+#viewDeals #dealList{padding:0 18px;border-radius:var(--product-radius)}
+#viewDeals .dealwrap{border-color:var(--v-line)}
+#viewDeals .deal{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px 12px;padding:20px 0}
+#viewDeals .deal .nm{grid-column:1/-1;font-size:16px;font-weight:550;line-height:1.5;white-space:normal;overflow:visible;text-overflow:clip}
+#viewDeals .deal .amt{grid-row:2;grid-column:1/-1;font-size:22px;font-weight:650;line-height:1.4;text-align:left;white-space:normal;overflow-wrap:break-word}
+#viewDeals .deal .amt u{font-size:13px;font-weight:400;line-height:1.5}
+#viewDeals .deal-meta{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:2px;color:var(--v-muted);font-size:13px;font-weight:400;line-height:1.6}
+#viewDeals .deal-area{display:inline-block;white-space:nowrap}
+#viewDeals .deal-meta b{font-weight:500}
+#viewDeals .deal-meta .hotrow{flex-basis:100%;margin-top:2px}
+#viewDeals .deal-meta .hot{display:inline-block;padding:1px 8px;border-radius:5px;background:#f0f5f3;color:#42685e;font-size:12px}
+#viewDeals .deal-expand{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:6px;color:var(--v-blue-deep);font-size:13px;line-height:1.5;font-weight:500}
+#viewDeals .deal-expand .caret{position:static;display:inline-block;width:6px;height:6px;margin:0;border:0;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+#viewDeals .deal[aria-expanded=true] .deal-expand .caret{transform:rotate(225deg)}
+#viewDeals .deal[aria-expanded=true] .deal-expand{color:var(--v-sub)}
+#viewDeals #sortSeg{gap:4px;padding:4px;border:1px solid var(--v-line);border-radius:11px;background:#edf0f5}
+#viewDeals #sortSeg button{flex:1;min-height:40px;padding:8px 6px;font-size:14px}
+#viewDeals #sortSeg button.is-on{background:#fff;color:var(--v-blue-deep);border:1px solid var(--v-line-strong)}
+#qSheet .sheet-close{margin-top:20px;min-height:52px}
+button:active:not(:disabled){filter:brightness(.96)}
+@media(min-width:760px){body .funnel{padding-top:36px}.funnel .cond-lead{font-size:38px!important}#viewDeals .deal .nm{grid-column:1;grid-row:1}#viewDeals .deal .amt{grid-column:2;grid-row:1;text-align:right}#viewDeals .deal-meta{grid-column:1/-1}.funnel .crows{padding-inline:24px}}
+@media(max-width:370px){body .funnel{padding-inline:16px}body .funnel .cond-lead{font-size:29px}.funnel .crows{padding-inline:16px}#viewAnswer .budget-overview>.rhead{padding-inline:18px}#viewAnswer .budget-summary .budget-total{flex-wrap:wrap}#viewDeals #dealList{padding-inline:14px}#viewDeals .deal .amt{font-size:21px}#easyBalance .rlab{grid-template-columns:1fr}#easyBalance .rlab>div+div{padding-left:0}}
+
 </style>
 </head>
 <body>
@@ -4999,7 +5072,7 @@ body .app.bar-sort .barrow1{min-height:64px;width:100%}
     
     
     
-    <h1 class="cond-lead">내 예산으로<br>살 수 있는 집은?</h1><p class="entry-sub">부대비용과 월 상환액까지 계산합니다.</p>
+    <h1 class="cond-lead">내 예산으로<br>살 수 있는 집은?</h1><p class="entry-sub">집값부터 부대비용, 매달 갚을 돈까지.</p>
     
     
     <div class="crows" id="crows"></div>
@@ -6769,7 +6842,7 @@ function renderQuestion(){
   }
   box.innerHTML=h; bind();
   if($('debtNone')) $('debtNone').onclick=()=>{
-    S.debtMonthly=0; S.debtParts={credit:null,etc:null};
+    S.debtMonthly=0; S.debtParts={credit:null,etc:null}; S.debtPartsOpen=false;
     renderQuestion(); syncCta(); $('debtNone').focus();
   };
 }
@@ -7233,6 +7306,7 @@ function bind(){
     const paint = () => {
       const dc = box.querySelector('.debtbox .clearbtn');
       if(dc) dc.hidden = !S.debtMonthly;
+      const none=$('debtNone'); if(none){none.classList.toggle('is-on',S.debtMonthly===0);none.setAttribute('aria-pressed',String(S.debtMonthly===0));}
       const el=$('debtEcho'); if(!el) return;
       el.textContent = S.debtMonthly
         ? '1년이면 ' + formatWon(S.debtMonthly*12*10000) + '을 갚고 있어요. 이 금액을 대출 한도 계산에 반영합니다.'
@@ -8640,7 +8714,7 @@ function renderBalance(c, price){
   })();
   if(ow) ow.innerHTML =
       over >  10000 ? `<div class="overnote">입력한 현금보다 <b>${formatWon(over)}</b>이 더 필요해요</div>`
-    : over < -10000 ? `<div class="overnote">가진 돈에서 <b>${formatWon(-over)}</b>이 남아요</div>` + cliff
+    : over < -10000 ? cliff
     : '';
 }
 function renderCostBox(c, price){
@@ -9523,8 +9597,8 @@ function dealLine(x, priceMan, hot, i){
        네 자리에서 **뒤 두 자만** 떼므로 규칙이 하나입니다(원칙 115). */
   /* 🔴 v25.16 — 연식이 여기서 빠졌습니다. 근거와 실측은 위 `yearFull` 주석에 있습니다.
      이 줄이 짧아진 폭(−61.6px)에서 꺾쇠 열(18px)이 나옵니다. */
-  const sub = [where ? esc(where) : '', area]
-    .filter(Boolean).join(' · ')
+  const sub = [where ? `<span class="deal-place">${esc(where)}</span>` : '', area ? `<span class="deal-area">${area}</span>` : '']
+    .filter(Boolean).join('')
     /* 🔴 v25.0 — 뱃지는 **부속 줄 안**입니다. 단지 이름 옆(`.nm` 본문)은 한 줄 말줄임이라
        거기 붙이면 이름이 밀려 잘립니다. 부속 줄은 v24.31에서 두 줄로 흐르게 풀어 뒀습니다.
        ⚠ 이모지를 안 씁니다. 점 하나 + 굵기 + 연한 무채색 면으로만 냅니다(원칙 62 · 채널 유지).
@@ -9540,9 +9614,9 @@ function dealLine(x, priceMan, hot, i){
      ⚠ `aria-controls`·`aria-expanded`는 접기 셋(`.disc`)과 같은 짝입니다. */
   return `<div class="dealwrap">`
        + `<button type="button" class="deal" data-deal="${i}" aria-expanded="false" aria-controls="dealBox${i}">`
-       + `<span class="nm">${esc(x.name)}<small>${sub}</small></span>`
+       + `<span class="nm">${esc(x.name)}</span>`
        + `<span class="amt">${formatWon(x.amountMan*10000)}${gap}</span>`
-       + `<span class="caret" aria-hidden="true"></span></button>`
+       + `<span class="deal-meta">${sub}</span><span class="deal-expand">거래 상세 <span class="caret" aria-hidden="true"></span></span></button>`
        + dealBox(x, i) + `</div>`;
 }
 
@@ -9972,7 +10046,7 @@ function renderReport(v){
   /* 🔴 v24.15 — **조건 줄에서 현금을 뺐습니다.**
      카톡 이미지는 단톡방에서 재전달됩니다. 「현금 10억원」은 **입력한 재산 그 자체**입니다.
      지역·보유 상태만으로도 카드의 맥락은 충분합니다. */
-  $('rCond').textContent = `${regionLabel()} · ${HOUSE[S.houseStatus]}${S.income ? ` · 연 소득 ${formatWon(man(S.income))}` : ''}`;
+  $('rCond').textContent = `${regionLabel()} · ${HOUSE[S.houseStatus]}`;
   /* 🔴 v25.51 — **카드 머리도 「예산 내역」입니다**(오너 지시 · 화면과 같은 말).
      ⏹ 전 : 「현재 조건으로 예상되는 매수 가능 금액」 + 집값. 화면 머리가 총액으로 바뀐 뒤로는
        **내보내는 그림만 다른 것을 머리로 말하고** 있었습니다 — 받는 사람은 두 값이 같은 것인지
@@ -10075,12 +10149,11 @@ function renderReport(v){
   $('rMix').innerHTML =
     `<div class="bs">`
     + `<div class="bs-side"><p class="bs-cap">총 필요 금액</p><p class="report-total">${formatWon(fig.T * 10000)}</p>`
-    +   bsBar('e1','e2', fig.pPrice)
-    +   bsIt('집값', snap(fig.P), fig.pPrice)
+
     +   bsIt('취득세 · 중개보수 등', Tg - snap(fig.P), fig.pEtc)
     + `</div>`
     + `<div class="bs-side"><p class="bs-cap">마련할 방법</p>`
-    +   bsBar('f1','f2', fig.pCash)
+
     +   bsIt('사용할 현금', snap(fig.C), fig.pCash)
     +   (fig.L > 0 ? bsIt('주택담보대출', Tg - snap(fig.C), fig.pLoan) : '')
     + `</div></div>` + note;
@@ -10154,11 +10227,11 @@ function paintReportDeals(priceMan){
     if(!old || when(x) > when(old)) seen.set(k, x);
   });
   const rows = [...seen.values()]
-    .sort((a,b) => (when(b) - when(a)) || (b.amountMan - a.amountMan)).slice(0, 3);
+    .sort((a,b) => (when(b) - when(a)) || (b.amountMan - a.amountMan)).slice(0, 1);
   /* 한 줄만 있으면 「이게 전부인가」로 읽힙니다. 두 줄부터 목록으로 보입니다. */
-  if(rows.length < 2){ box.hidden = true; return; }
+  if(!rows.length){ box.hidden = true; return; }
   box.hidden = false;
-  box.innerHTML = `<p class="h">최근 3개월 이 가격대 실거래</p>`
+  box.innerHTML = `<p class="h">이 예산대의 최근 실거래 예시</p>`
     + rows.map(x => {
         /* 🔴 v24.16 — **선택한 구가 아니면 구 이름을 답니다.** 화면(dealLine)과 같은 규칙입니다.
            v24.15에는 이 줄이 `x.dong`만 봤습니다. 거래가 모자라면 인근 구까지 넓히는데
@@ -10184,18 +10257,18 @@ function paintReportDeals(priceMan){
 function summaryText(){
   if(!LASTVIEW) return '';
   const {c,price}=LASTVIEW, f=heroFigures(c,price), rows=[
-    '내 집 마련, 얼마까지?', '영끌계산기 · 나의 계산 결과', '',
+    '내 집 마련, 얼마까지?', '영끌계산기 · 참고용 예상 결과', '',
     '살 수 있는 집값 '+formatWon(f.P*10000)+' (예상)',
     '부대비용 '+formatWon(f.E*10000), '총 필요 금액 '+formatWon(f.T*10000), '',
     '사용할 현금 '+formatWon(f.C*10000), '주택담보대출 '+formatWon(f.L*10000)+' (예상)'];
   if(f.L>0) rows.push('주택담보대출 월 상환액 '+formatWon(monthlyPaymentCalc(f.L*10000,D.rate,D.years)), '연 '+D.rate+'% · '+D.years+'년 · 원리금균등상환');
   rows.push('', '계산 기준: '+regionLabel()+' · '+HOUSE[S.houseStatus]);
   if(DEAL.compareCodes.length) rows.push('실거래 비교: '+dealScopeLabel());
-  rows.push('', '입력 조건에 따른 참고용 예상치입니다. 실제 대출 가능 금액은 금융기관 심사에 따라 달라집니다.',
-    '대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.', '', '내 조건으로 계산하기', SERVICE_URL);
+  rows.push('', '참고용 예상치이며, 실제 대출 한도는 금융기관 심사에 따라 달라집니다.',
+    '대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.', '', SERVICE_URL);
   return rows.join('\n');
 }
-function shareCaption(){ return ['내 집 마련, 얼마까지?', '영끌계산기 · 입력 조건에 따른 참고용 예상치', SERVICE_URL].join('\n'); }
+function shareCaption(){ return ['내 집 마련, 얼마까지?', '영끌계산기 · 참고용 예상 결과', SERVICE_URL].join('\n'); }
 
 async function copySummary(){
   const btn=$('outCopy'), t=btn.querySelector('b'), o=t.textContent, txt=summaryText();
@@ -11402,7 +11475,7 @@ if(RESUME_RESULT) showResult(false);
     const loanText = text('bsLoan');
     if (!priceText || priceText === '—') return;
 
-    byId('easyPrice').innerHTML = safe(priceText).replace(/([\d,]+\s*)(억|만원|원)/g, '<span class="money-part">$1<span class="money-unit">$2</span></span>');
+    byId('easyPrice').innerHTML = safe(priceText).replace(/([\d,]+\s*)(억\s*원|억|만원|원)/g, '<span class="money-part">$1<span class="money-unit">$2</span></span>');
     byId('easyCost').textContent = costText || '—';
     byId('easyCash').textContent = cashText || '—';
     byId('easyLoan').textContent = loanText || '없어요';
@@ -11464,7 +11537,7 @@ if(RESUME_RESULT) showResult(false);
       const old = seen.get(k);
       if (!old || when(x) > when(old)) seen.set(k, x);
     });
-    return [...seen.values()].sort((a, b) => a.amountMan - b.amountMan).slice(0, PLOT.max);
+    return [...seen.values()].sort((a, b) => a.amountMan - b.amountMan);
   }
 
   /* 축의 양 끝. **5,000만원 격자에 맞춰** 바깥으로 벌립니다 —
@@ -11519,11 +11592,13 @@ if(RESUME_RESULT) showResult(false);
        어느 범위를 봤는지는 바로 아랫줄이 정확히 말합니다(원칙 43 · 91). */
     byId('easyMarketTitle').textContent = '내 예산과 실거래 비교';
     /* 목록 화면의 머리와 **같은 문법**입니다(원칙 58) — 지역 · 기간 · 곳. */
-    byId('easyMarketLead').textContent = (place ? place + ' · ' : '') + `최근 ${months}개월 · ${deals.length}곳`;
+    byId('easyMarketLead').textContent = (place ? place + ' · ' : '') + `최근 ${months}개월 · 단지·면적별 ${deals.length}건` + (deals.length > PLOT.max ? ` · 그래프는 최근 ${PLOT.max}건` : '');
 
     /* 막대. 자리가 겹치면(17px 안) 위로 한 칸 쌓습니다. */
     const lefts = [];
-    const cells = deals.map((x) => {
+    const dateKey = x => (x.y||0)*10000+(x.m||0)*100+(x.d||0);
+    const displayed = [...deals].sort((a,b)=>dateKey(b)-dateKey(a)||b.amountMan-a.amountMan).slice(0,PLOT.max);
+    const cells = displayed.map((x) => {
       const left = at(x.amountMan);
       const px = left / 100 * (chart.clientWidth || 340);
       let level = 0;
@@ -11559,17 +11634,19 @@ if(RESUME_RESULT) showResult(false);
     chart.onclick = (ev) => {
       const box = chart.getBoundingClientRect();
       if (!box.width || !marks.length) return;
-      const x = (ev.clientX - box.left) / box.width * 100;
+      const x = ev.clientX - box.left;
+      const y = box.bottom - ev.clientY;
+      const distance = m => Math.hypot(m.cell.left/100*box.width-x, PLOT.floor+m.cell.level*step+unitH/2-y);
       let best = marks[0];
       marks.forEach((m) => {
-        if (Math.abs(m.cell.left - x) < Math.abs(best.cell.left - x)) best = m;
+        if (distance(m) < distance(best)) best = m;
       });
       marks.forEach((m) => m.el.classList.toggle('on', m === best));
       const d = best.cell.deal;
       const area = (typeof areaText === 'function') ? areaText(d.areaM2) : '';
       const date = (typeof dealDate === 'function') ? dealDate(d) : '';
       byId('plotDnm').textContent = d.name;
-      byId('plotDmt').textContent = [d.dong, area, date].filter(Boolean).join(' · ');
+      byId('plotDmt').textContent = [typeof dealGu === 'function' ? dealGu(d.lawd) : '', d.dong, area, date].filter(Boolean).join(' · ');
       byId('plotDamt').textContent = money(d.amountMan);
       byId('plotDetail').hidden = false;
     };
@@ -11591,8 +11668,8 @@ if(RESUME_RESULT) showResult(false);
 
     const inside = deals.filter((x) => x.amountMan <= mine).length;
     byId('easyMarketNote').innerHTML = inside === deals.length
-      ? `<b>${deals.length}곳 모두</b> 예산 범위에서 거래됐어요.`
-      : `<b>${deals.length}곳 가운데 ${inside}곳</b>이 예산 범위에서 거래됐어요.`;
+      ? `<b>조회된 ${deals.length}건 모두</b> 예산 범위에서 거래됐어요.`
+      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예산 범위에서 거래됐어요.`;
     byId('plotDetail').hidden = true;
     card.hidden = false;
   }
