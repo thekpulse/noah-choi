@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "node source/build.mjs",
+    "test": "node test.mjs && node test-v51.mjs"
+  }
+}
