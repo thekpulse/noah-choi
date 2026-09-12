@@ -34,7 +34,7 @@ test('v44 계산 엔진을 변경하지 않았다', () => {
 });
 
 test('모든 인라인 JavaScript의 문법이 유효하다', () => {
-  const temp = mkdtempSync(join(tmpdir(), 'yeongkkeul-v48-'));
+  const temp = mkdtempSync(join(tmpdir(), 'yeongkkeul-v50-'));
   try {
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
       .map((match) => match[1])
@@ -65,6 +65,31 @@ test('결과의 핵심 금액과 비용 수정 진입점이 존재한다', () =>
   }
   assert.match(html, /id="easyCostOpen"[^>]+aria-label="부대비용 항목과 금액 조정"/);
   assert.match(html, /<i class="math-sign"[^>]*>\+<\/i>부대비용/);
+});
+
+test('총 필요 금액과 마련 방법이 같은 결과 카드에 묶여 있다', () => {
+  const start = html.indexOf('<section class="budget-overview"');
+  const overview = html.slice(start, html.indexOf('</section>', start) + 10);
+  assert.match(overview, /id="heroAmount"/);
+  assert.match(overview, /id="easyBalance"/);
+  assert.ok(overview.indexOf('id="heroAmount"') < overview.indexOf('id="easyBalance"'));
+  assert.equal((html.match(/>자금 구성<\/h2>/g) || []).length, 0);
+  assert.match(html, /입력한 현금을 전액 사용하는 계산입니다\. 생활비와 비상금은 남겨 두고 입력하세요\./);
+});
+
+test('주택담보대출 한도와 조건이 마련 방법 아래의 펼침 버튼으로 이동한다', () => {
+  assert.match(html, /\$\('easyBalance'\)\.appendChild\(\$\('reasonCard'\)\)/);
+  assert.match(html, /주택담보대출 한도·조건/);
+  assert.match(html, /#easyBalance>#reasonCard/);
+});
+
+test('실거래 비교 지역은 기본 지역 포함 최대 세 곳이다', () => {
+  assert.match(html, /id="dealRegions"/);
+  assert.match(html, /compareCodes:\[\]/);
+  assert.match(html, /DEAL\.compareCodes\.length<2/);
+  assert.match(html, /data-deal-region/);
+  assert.match(html, /renderDeals\(price\)/);
+  assert.match(html, /dealScopeLabel\(\)/);
 });
 
 test('주택담보대출 월 상환액과 세전 소득 비율을 구분한다', () => {
