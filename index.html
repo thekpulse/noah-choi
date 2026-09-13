@@ -5131,6 +5131,48 @@ body .inline-money .inline-help{margin-top:5px}
 #reportCard .report-foot{margin-top:10px;padding:0}
 #reportCard .report-foot .nt{margin:0;font-size:11px;color:#667384;line-height:1.55;text-align:left}
 
+/* v57: header remains visible while the editable content scrolls. */
+#qSheet .q-sheet-header{position:sticky;top:-18px;z-index:8;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--v-line);margin:-18px -22px 16px;padding:14px 22px}
+#qSheet #qSheetTitle{flex:1;margin:0;font-size:22px;line-height:1.35;letter-spacing:-.04em}
+#qSheet .q-dismiss{flex:none;width:44px;height:44px;border:1px solid var(--v-line);border-radius:50%;background:#f5f7fa;color:var(--v-ink);font-size:28px;line-height:1}
+#qSheet:has(#inDebt) .preset-help{margin:0 0 16px;font-size:14px;line-height:1.6}
+#qSheet:has(#inDebt) .debtbox{padding-top:0;margin-top:0;border-top:0}
+#qSheet:has(#inDebt) .moneycard{padding:10px 14px;min-height:72px}
+#qSheet:has(#inDebt) .costrow{padding:12px 0;min-height:72px}
+#qSheet:has(#inDebt) .costrow .amt{min-height:48px;height:48px}
+#qSheet:has(#inDebt) .debt-parts-help{font-size:13px;line-height:1.6;color:var(--v-muted);margin:12px 0 4px}
+#qSheet .debt-none.is-on::after{content:'✓ 선택됨'}
+#qSheet:has(#inDebt) #debtEcho:empty{display:none}
+#qSheet .sheet-close:disabled{background:#e2e7ef!important;color:#687588!important}
+.market-method{margin:8px 0 18px;font-size:13px;color:var(--v-muted);line-height:1.6}
+.market-method summary{cursor:pointer;min-height:32px;color:var(--v-blue-deep)}
+.market-method p{margin:6px 0 0}
+#viewDeals #dealCard>.card-title{display:none}
+.report-monthly p{font-size:15px!important}
+
+/* Reserve room for the fixed action bar, even with large system fonts. */
+body .app.no-dock.has-rdock .result,body .app.has-rdock .result{padding-bottom:calc(max(var(--result-dock-height,100px),100px) + 32px)!important}
+#viewDeals #dealNote,#viewDeals #dealFoot{height:auto!important;max-height:none!important;overflow:visible!important;white-space:normal!important;word-break:keep-all;overflow-wrap:anywhere;line-height:1.7!important}
+#viewDeals #dealFoot{margin-bottom:24px!important}
+.market-ratio{margin:20px 0 12px}
+.ratio-label{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--v-sub);margin-bottom:8px}
+.ratio-label strong{color:#116557;font-variant-numeric:tabular-nums}
+.ratio-track{height:8px;border-radius:8px;background:#e7ebf2;overflow:hidden}
+.ratio-track span{display:block;height:100%;background:#208876;border-radius:8px}
+
+.entry-eyebrow{display:flex;align-items:center;gap:7px;width:fit-content;margin:0 0 12px;padding:6px 10px;background:#edf5f3;color:#176b5b;border-radius:9px;font-size:12px;font-weight:600;line-height:1.4}
+.entry-eyebrow span{font-size:16px}
+.section-symbol{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#e9f5f1;color:#176b5b;margin-right:8px;font-size:17px;vertical-align:middle}
+#easyMarketTitle::before{content:'⌖';display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-right:8px;border-radius:8px;background:#edf1ff;color:#3157be;font-size:20px;vertical-align:middle}
+
+.limit-notes-fold{margin-top:16px;border-top:1px solid var(--v-line);padding:12px 0 0}
+.limit-notes-fold summary{cursor:pointer;font-size:14px;color:var(--v-sub);min-height:36px;line-height:1.6}
+.limit-notes-fold #limitNotes{border:0!important;padding-top:4px!important;margin-top:0!important}
+#capTip:not([hidden]){padding:10px 12px;border-radius:10px;background:#f0f4fb;color:#445773;font-size:13px;line-height:1.6}
+#viewDeals #dealRangeNote{order:3;margin:8px 0 12px;padding:10px 12px;background:#edf5f3;border-radius:10px;color:#176b5b;font-size:13px;line-height:1.6}
+.guide-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin:14px 0;line-height:1.6;font-size:13px}
+.guide-nav a{padding:8px 0;color:#425b84;text-decoration:underline;text-underline-offset:4px}
+
 </style>
 </head>
 <body>
@@ -5168,7 +5210,7 @@ body .inline-money .inline-help{margin-top:5px}
     
     
     
-    <h1 class="cond-lead">내 예산으로<br>살 수 있는 집은?</h1><p class="entry-sub">집값부터 부대비용, 매달 갚을 돈까지.</p>
+    <p class="entry-eyebrow"><span aria-hidden="true">🏡</span> 내 집 마련 예산</p><h1 class="cond-lead">내 예산으로<br>살 수 있는 집은?</h1><p class="entry-sub">집값부터 부대비용, 매달 갚을 돈까지.</p>
     
     
     <div class="crows" id="crows"></div>
@@ -5184,8 +5226,7 @@ body .inline-money .inline-help{margin-top:5px}
 
   <div class="sheet-back" id="qBack" hidden></div>
   <div class="sheet qsheet" id="qSheet" role="dialog" aria-modal="true" aria-labelledby="qSheetTitle" hidden>
-    <div class="sheet-grip"></div>
-    <h2 class="sr-only" id="qSheetTitle">조건 수정</h2>
+    <header class="q-sheet-header"><h2 id="qSheetTitle">조건 수정</h2><button type="button" class="q-dismiss" aria-label="입력창 닫기" onclick="closeSheet('q')">×</button></header>
     <div class="q" id="qBox"></div>
     <button class="cta sheet-close" id="qClose">완료</button>
   </div>
@@ -5254,7 +5295,7 @@ body .inline-money .inline-help{margin-top:5px}
 
 
     <div class="paywrap" id="payTile">
-      <p class="ans-k">주택담보대출 월 상환액</p>
+      <p class="ans-k"><span class="section-symbol" aria-hidden="true">▤</span>주택담보대출 월 상환액</p>
       <div class="ans-row">
         <p class="ans-v" id="tileMonthly"></p>
         <p class="ans-pct"><span class="tile-k" id="burdenLabel">소득 대비</span><span id="tileBurden"></span><span class="verdict" id="burdenVerdict" hidden></span></p>
@@ -5310,7 +5351,7 @@ body .inline-money .inline-help{margin-top:5px}
         <label class="subtoggle" id="capRow"><input type="checkbox" id="swCap" aria-label="대출 한도 직접 입력"><span>대출 한도 직접 입력</span><input id="inCap" class="capamt" inputmode="numeric" pattern="[0-9]*" value="" disabled aria-label="주택담보대출 상한(만원)"><u class="capu">만원</u></label>
         <div class="tip" id="capTip"></div>
         
-        <div class="tip" id="limitNotes"></div>
+        <details class="limit-notes-fold"><summary>계산 기준과 유의사항</summary><div class="tip" id="limitNotes"></div></details>
       </div>
       
     </div>
@@ -5422,7 +5463,7 @@ body .inline-money .inline-help{margin-top:5px}
 </section>
   
   
-  <p class="policy"><a href="/privacy.html">개인정보처리방침</a></p>
+  <nav class="guide-nav" aria-label="서비스 안내"><a href="./guide.html">계산 방법과 결과 읽기 <span aria-hidden="true">↗</span></a><a href="/privacy.html">개인정보처리방침</a></nav>
   <p class="copyright" id="copyright"></p>
 </div>
 
@@ -6931,7 +6972,7 @@ function renderQuestion(){
       </div></div><p class="fielderr" role="alert"></p><p class="readout" id="debtEcho"></p>
       <button class="debt-none ${S.debtMonthly===0?'is-on':''}" id="debtNone" aria-pressed="${S.debtMonthly===0}">기존 대출 없음</button>
       <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts"><span>대출별로 나눠 입력</span><span class="caret"></span></button>
-      <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts">
+      <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts"><p class="debt-parts-help">각 대출의 월 상환액을 입력하면 위에 합산됩니다.</p>
         <div class="costrow"><div class="nm">신용대출</div><div class="amt"><input id="inDebtCredit" inputmode="numeric" value="${S.debtParts.credit||''}" aria-label="신용대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
         <div class="costrow"><div class="nm">기타 대출</div><div class="amt"><input id="inDebtEtc" inputmode="numeric" value="${S.debtParts.etc||''}" aria-label="기타 대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
       </div></div>`;
@@ -6939,7 +6980,7 @@ function renderQuestion(){
   box.innerHTML=h; bind();
   if($('debtNone')) $('debtNone').onclick=()=>{
     S.debtMonthly=0; S.debtParts={credit:null,etc:null}; S.debtPartsOpen=false;
-    renderQuestion(); syncCta(); $('debtNone').focus();
+    renderQuestion(); syncCta(); $('debtNone').focus({preventScroll:true});
   };
 }
 /* 🔴 v25.0 — **「1주택 이상」을 고르면 몇 채인지 한 번 더 묻습니다.**
@@ -7320,7 +7361,7 @@ function openQ(step, mode){
 }
 function syncQSheet(){
   const b=$('qClose'); if(!b) return;
-  b.textContent=QMODE==='region' && S.sgg ? (1+DEAL.compareCodes.length)+'개 지역 선택 완료' : '적용'; b.disabled=!ready();
+  b.textContent=QMODE==='region' && S.sgg ? (1+DEAL.compareCodes.length)+'개 지역 선택 완료' : (QMODE==='debt' && S.debtMonthly===0?'대출 없음 적용':'적용'); b.disabled=!ready();
   b.onclick=()=>{
     if(!ready()) return;
     closeSheet('q');
@@ -7438,7 +7479,7 @@ function bind(){
       const sumParts = () => {
         const t=(S.debtParts.credit||0)+(S.debtParts.etc||0);
         S.debtMonthly = (cr.value!=='' || et.value!=='') ? t : null;
-        dbt.value = S.debtMonthly?comma(S.debtMonthly):'';
+        dbt.value = S.debtMonthly==null?'':comma(S.debtMonthly);
         paint(); syncCta();
       };
       [[cr,'credit'],[et,'etc']].forEach(([el,k])=>{ if(!el) return;
@@ -7723,7 +7764,11 @@ function syncCta(){
       .concat(S.noLoan ? [] : [!!S.income, S.debtMonthly != null]);
     const left = need.filter(v => !v).length;
     t.hidden = left === 0;
-    if(left) t.textContent = `${left}개 항목을 입력해 주세요`;
+    if(left){
+      const missing=[[!!S.cash,'집에 쓸 현금'],[!!S.sgg,'매수 지역'],[!!S.houseStatus,'주택 보유 여부']]
+        .concat(S.noLoan?[]:[[!!S.income,'연 소득'],[S.debtMonthly!=null,'기존 대출 여부']]).filter(x=>!x[0]);
+      t.textContent=missing[0][1]+' 확인이 필요해요'+(missing.length>1?' · 남은 항목 '+missing.length+'개':'');
+    }
   })();
   /* 🔴 v25.15 — **주 버튼을 원래대로 되돌렸습니다. v25.14가 낸 회귀입니다.**
      ⏹ v25.14: 결과에서 조건칩으로 들어오면 이 버튼이 **「결과 다시 보기」로 덮였습니다.**
@@ -8918,6 +8963,7 @@ function renderCostBox(c, price){
     w.onchange = () => {
       S.loanCap = w.checked ? 0 : null;
       S.lockedPrice = null; showResult(true);
+      if(S.loanCap!==null) $('inCap').focus({preventScroll:true});
     };
     /* ⚠ 금액칸을 눌렀을 때 라벨이 스위치를 토글하지 않게 막습니다 —
        숫자를 고치려다 기능이 꺼지면 사용자는 무슨 일인지 모릅니다. */
@@ -9067,7 +9113,8 @@ function renderLimits(c, price){
      ⚠ 평가하지 않습니다 — 「적절해요」도 「부족해요」도 안 씁니다(지침 · 말투). */
   (function(){
     const t = $('capTip'); if(!t) return;
-    if(S.loanCap == null || !(S.loanCap > 0)){ t.innerHTML=''; t.hidden = true; return; }
+    if(S.loanCap == null){t.textContent='';t.hidden=true;return;}
+    if(!(S.loanCap > 0)){t.textContent='금액 입력 후 입력칸 밖을 누르면 반영됩니다. 현재는 직접 한도를 적용하지 않았습니다.';t.hidden=false;return;}
     t.innerHTML = c.binding === 'manual'
       ? `<b>직접 정한 금액을 적용했어요.</b> ${formatWon(man(S.loanCap))}을 상한으로 계산했어요.`
       : `<b>직접 정한 금액보다 다른 한도가 낮아요.</b> 주택담보대출은 ${formatWon(c.mortgageLoan)}으로 계산했어요.`;
@@ -10262,7 +10309,7 @@ function renderReport(v){
        ⚠ 요약 문구(텍스트)에는 남겨 뒀습니다 — 거기는 읽는 매체라 밀도를 견딥니다.
          둘을 맞추고 싶으면 summaryText의 해당 줄 하나만 지우면 됩니다.
      ⏹ 이걸 빼면서 #rLines가 통째로 없어졌습니다 — 남은 두 값은 위 막대 줄이 이미 말합니다. */
-  const monthly=$('rMonthly'); monthly.hidden=!(fig.L>0); monthly.innerHTML=fig.L>0 ? '<p>매달 갚을 주택담보대출</p><strong>'+formatWon(monthlyPaymentCalc(fig.L*10000,D.rate,D.years))+'</strong><p>연 '+D.rate+'% · '+D.years+'년 · 원리금균등상환</p>' : '';
+  const monthly=$('rMonthly'); monthly.hidden=!(fig.L>0); monthly.innerHTML=fig.L>0 ? '<p>주택담보대출 월 상환액</p><strong>'+formatWon(monthlyPaymentCalc(fig.L*10000,D.rate,D.years))+'</strong><p>연 '+D.rate+'% · '+D.years+'년 · 원리금균등상환</p>' : '';
   $('rWm').textContent = '영끌계산기';
   /* 🔴 v24.18 — 전: 「단순 시뮬레이션 추정치입니다」. 세 자리에 같은 말이 있는데
      **어미가 둘로 갈려 있었습니다**(카드·요약은 「~입니다」, 캡션은 명사형).
@@ -11258,7 +11305,9 @@ $('viewAnswer').appendChild($('viewNext'));
 $('easyBalance').appendChild($('reasonCard'));
 $('dealCard').insertBefore($('sortSeg'),$('dealList'));
 const filterPanel=$('dealFilterBox');
-if(filterPanel){const fold=document.createElement('details');fold.className='deal-filter-fold';fold.innerHTML='<summary>면적·준공연도 필터 <span aria-hidden="true">＋</span></summary>';filterPanel.parentNode.insertBefore(fold,filterPanel);fold.appendChild(filterPanel);}
+if(filterPanel){const fold=document.createElement('details');fold.className='deal-filter-fold';fold.innerHTML='<summary>가격·면적·준공연도 필터 <span aria-hidden="true">＋</span></summary>';filterPanel.parentNode.insertBefore(fold,filterPanel);fold.appendChild(filterPanel);
+const range=$('dealRangeNote');if(range)fold.before(range);
+}
 $('sortSeg').setAttribute('role','group');
 $('sortSeg').setAttribute('aria-label','실거래 정렬');
 $('limitToggle').querySelector('.k').textContent='주택담보대출 한도·조건';
@@ -11694,7 +11743,10 @@ if(RESUME_RESULT) showResult(false);
        어느 범위를 봤는지는 바로 아랫줄이 정확히 말합니다(원칙 43 · 91). */
     byId('easyMarketTitle').textContent = '내 예산과 실거래 비교';
     /* 목록 화면의 머리와 **같은 문법**입니다(원칙 58) — 지역 · 기간 · 곳. */
-    byId('easyMarketLead').textContent = (place ? place + ' · ' : '') + `최근 ${months}개월 · 단지·면적별 ${deals.length}건` + ` · 그래프: ${money(axis.lo)}~${money(axis.hi)} 중 최근 ${Math.min(nearby.length,PLOT.max)}건` + (deals.length>nearby.length ? ` · 범위 밖 ${deals.length-nearby.length}건` : '');
+    byId('easyMarketLead').textContent = (place ? place + ' · ' : '') + `최근 ${months}개월`;
+    let info=byId('marketMethod');
+    if(!info){info=document.createElement('details');info.id='marketMethod';info.className='market-method';byId('easyMarketLead').after(info);}
+    info.innerHTML='<summary>그래프 집계 기준</summary><p>'+`단지·면적별 ${deals.length}건 중 ${money(axis.lo)}~${money(axis.hi)} 범위의 최근 ${Math.min(nearby.length,PLOT.max)}건을 표시합니다.`+(deals.length>nearby.length?` 표시 범위 밖 ${deals.length-nearby.length}건도 예산 비교 집계에 포함됩니다.`:'')+'</p>';
 
     /* 막대. 자리가 겹치면(17px 안) 위로 한 칸 쌓습니다. */
     const lefts = [];
@@ -11769,6 +11821,11 @@ if(RESUME_RESULT) showResult(false);
     byId('plotHi').textContent = money(axis.hi);
 
     const inside = deals.filter((x) => x.amountMan <= mine).length;
+    let ratio=byId('marketRatio');
+    if(!ratio){ratio=document.createElement('div');ratio.id='marketRatio';ratio.className='market-ratio';byId('easyMarketNote').before(ratio);}
+    const percent=deals.length?Math.round(inside/deals.length*100):0;
+    ratio.innerHTML='<div class="ratio-label"><span>예산 이하 거래 비율</span><strong>'+percent+'%</strong></div><div class="ratio-track" aria-hidden="true"><span style="width:'+percent+'%"></span></div>';
+    ratio.hidden=!deals.length;
     byId('easyMarketNote').innerHTML = inside === deals.length
       ? `<b>조회된 ${deals.length}건 모두</b> 예산 범위에서 거래됐어요.`
       : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예산 범위에서 거래됐어요.`;
@@ -11779,7 +11836,7 @@ if(RESUME_RESULT) showResult(false);
   function syncLabels() {
     const dealTitle = document.querySelector('#dealCard .card-title');
     if (dealTitle && typeof regionLabel === 'function' && regionLabel()) {
-      dealTitle.textContent = '예산에 맞는 실거래';
+      dealTitle.textContent = '거래 내역';
     }
   }
 
@@ -11787,7 +11844,7 @@ if(RESUME_RESULT) showResult(false);
   if(dealTitle){
     const budget = document.createElement('div');
     budget.className = 'deal-budget';
-    budget.innerHTML = '<div><span>예상 집값</span><strong id="dealBudget">—</strong></div><p>실제 계약 가격이며, 현재 매물 가격과 다를 수 있습니다.</p>';
+    budget.innerHTML = '<div><span>예상 집값</span><strong id="dealBudget">—</strong></div><p>아래 실거래와 비교할 내 예산입니다.</p>';
     dealTitle.after(budget);
   }
 
@@ -11829,5 +11886,11 @@ if(RESUME_RESULT) showResult(false);
 })();
 
 </script>
-</body>
+<script>
+// Match the actual dock height, including safe area and enlarged text.
+(()=>{const dock=document.getElementById('rdock');if(!dock)return;
+const measure=()=>document.documentElement.style.setProperty('--result-dock-height',Math.ceil(dock.getBoundingClientRect().height)+'px');
+if(typeof ResizeObserver==='function')new ResizeObserver(measure).observe(dock);
+window.addEventListener('resize',measure);measure();})();
+</script></body>
 </html>
