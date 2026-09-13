@@ -5487,6 +5487,64 @@ body .funnel .cond-lead{font-size:30px;line-height:1.22;max-width:17ch}
 @media(max-width:370px){#viewAnswer .budget-overview>#payTile{padding-inline:18px}}
 @media(min-width:960px){#viewAnswer>#easyMarket{grid-column:2;grid-row:1;align-self:start}}
 
+/* v78: paired filters and quieter separators, based on supplied mobile captures. */
+#viewDeals #dealFilterBox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
+#viewDeals #dealChips .chip,
+#viewDeals #dealUnitFilter .unit-options button{
+ width:100%;min-width:0;min-height:44px;margin:0;padding:10px 8px;
+ border:1px solid #d3dce7;border-radius:10px;background:#fff;color:#526174;
+ font-family:inherit;font-size:14px;font-weight:550;line-height:1.45;
+ letter-spacing:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
+ box-shadow:none;box-sizing:border-box;text-align:center;
+}
+#viewDeals #dealChips .chip.is-on,
+#viewDeals #dealUnitFilter .unit-options button[aria-pressed=true]{background:#eef3ff;color:#294bae;border-color:#6c85c8;font-weight:650}
+#viewDeals #dealUnitNote,#viewDeals #dealResetFilters{grid-column:1/-1}
+#viewDeals #dealResetFilters{justify-self:end;min-height:44px;margin:0}
+#viewDeals #dealRangeNote{margin:0 0 12px;font-size:12px;line-height:1.65;color:#667386}
+#viewDeals #dealLead{margin:8px 0 4px;font-size:13px;line-height:1.6}
+#viewDeals .deal-filter-fold{margin:4px 0 10px}
+#viewDeals .deal-filter-fold>summary{min-height:44px}
+#viewAnswer .budget-summary .budget-total{border-top:0;padding-top:8px}
+#easyBalance>#reasonCard>#limitToggle{border-top:0;margin-top:8px}
+#viewAnswer .budget-overview>#payTile{border-bottom:0}
+#viewDeals .deal:last-of-type{border-bottom:0}
+body .app:not(.no-dock) .funnel{padding-bottom:8px!important}
+body .app:not(.no-dock) .guide-nav,
+body .app.has-rdock .guide-nav{padding-top:0;padding-bottom:calc(16px + env(safe-area-inset-bottom));gap:4px 16px}
+@media(hover:hover){
+ #viewDeals #dealChips .chip:hover,#viewDeals #dealUnitFilter .unit-options button:hover{border-color:#91a8d4}
+}
+
+/* v79: separate purchase funding from monthly outgoings. */
+#viewAnswer>#payTile{min-width:0;margin:0;padding:20px 22px 0;background:#fff;border:1px solid #d6dfea;border-radius:18px;box-shadow:none}
+#viewAnswer>#payTile>#rateSim{display:none;padding:4px 0 16px}
+#viewAnswer>#payTile>#rateSim.open{display:block}
+#viewAnswer>#payTile #gauge,#viewAnswer>#payTile .gauge-scale{display:none}
+#viewAnswer>#payTile #rateToggle{margin-top:12px;min-height:48px}
+.plot-legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 0 12px;color:#667386;font-size:12px;line-height:1.6;letter-spacing:0}
+.plot-legend>span{display:inline-flex;align-items:center;gap:5px}
+.plot-legend i{display:inline-block;width:10px;height:6px;border-radius:3px;background:#c8d3e4}
+.plot-legend i.in{background:#3457d5}
+#viewDeals .deal>.budget-gap{display:block;grid-column:1/-1;margin:0;font-size:12px;font-weight:400;line-height:1.6;letter-spacing:0;color:#667386;white-space:normal;overflow-wrap:anywhere}
+#viewDeals .deal>.deal-meta{margin-top:2px}
+#viewDeals .deal-more{display:block;width:100%;min-height:48px;margin:4px 0 12px;padding:12px;border:1px solid #cfd9e9;border-radius:10px;background:#f5f8fd;color:#36568f;font:inherit;font-size:14px;font-weight:600;line-height:1.5;cursor:pointer}
+body .funnel .crows .crow{min-height:52px;padding:12px 0}
+body .funnel .crows .inline-money{padding:12px 0 8px}
+body .funnel .crows .main-no-loan{margin-top:16px}
+@media(max-width:370px){#viewAnswer>#payTile{padding-inline:18px}}
+@media(min-width:960px){
+ #viewAnswer .budget-overview{grid-column:1;grid-row:1}
+ #viewAnswer>#payTile{grid-column:1;grid-row:2;align-self:start}
+ #viewAnswer>#easyMarket{grid-column:2;grid-row:1/span 2;align-self:start}
+}
+/* Final pass: long amounts and keyboard focus must stay inside their cards. */
+#viewDeals .deal>.nm,#viewDeals .deal>.amt{min-width:0;max-width:100%;overflow-wrap:anywhere}
+#viewDeals .deal:focus-visible{outline:3px solid #4269ce;outline-offset:-3px;border-radius:8px}
+#viewDeals .deal-more:focus-visible{outline:3px solid #4269ce;outline-offset:3px}
+#viewAnswer>#payTile .ans-v{max-width:100%;overflow-wrap:anywhere}
+@media(min-width:760px){#viewDeals .deal{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}}
+
 /* Shared text roles. Loaded after the visual layer; never target report/export amounts.
    Existing inline and legacy !important rules require explicit role-level precedence. */
 :root{--text-label:14px;--text-body:14px;--text-support:13px;--text-leading:1.6;--text-tracking:0em;--text-gap:8px;--paragraph-gap:12px}
@@ -5660,7 +5718,7 @@ body #result #footNote:empty{display:none}
       <div class="cash-remainder"><span id="cashRemainderLabel">비용을 낸 뒤 남는 현금</span><strong id="cashRemainder">—</strong></div>
       
 <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 남겨 두고 입력하세요.</p>
-    </section><div class="paywrap" id="payTile">
+    </section></section><div class="paywrap" id="payTile">
       <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
       <div class="ans-row">
         <p class="ans-v" id="tileMonthly"></p>
@@ -5677,7 +5735,7 @@ body #result #footNote:empty{display:none}
                     <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
           <div class="range-ends" aria-hidden="true"><span>연 3.0%</span><span>연 10.0%</span></div><p class="tile-s" id="rateSimNote"></p>
         </div>
-    </div></section>
+    </div>
 
     
 
@@ -5692,7 +5750,7 @@ body #result #footNote:empty{display:none}
 <section class="plot" id="easyMarket" aria-labelledby="easyMarketTitle" hidden>
       <h2 id="easyMarketTitle">내 예산이 어디쯤인가요</h2>
       <p class="plot-lede" id="easyMarketLead"></p>
-      <p class="budget-caption" id="plotLab"></p><div class="chart" id="easyMarketRows">
+      <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예산 이하</span><span><i aria-hidden="true"></i>예산 초과</span></p><div class="chart" id="easyMarketRows">
         <div class="budget" id="plotLine"></div>
         
         <div class="axis"><span id="plotLo"></span><span id="plotHi"></span></div>
@@ -7235,7 +7293,7 @@ function renderQuestion(){
            뒷문장이 코드가 됩니다. 같은 판이 그것도 밟았습니다. */
     h = eye + `<h2 class="q-title">모아둔 현금</h2>
       ${singleMoneyCard(S.cash, '모아둔 현금', '주택담보대출을 제외하고 지금 쓸 수 있는 돈을 입력하세요.')}
-      <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>주택담보대출 없이 계산</label>`;
+      <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>현금만으로 계산</label>`;
   }
   if(st.id==='income'){
     /* 🔴 v24.19 — 전: 헬퍼가 「소득 대비 대출 규제(DSR)에 쓰여요. 세전 · 부부 합산.」
@@ -7686,7 +7744,7 @@ function renderAnswered(){
     return `<button class="crow${v?'':' empty'}" data-goto="${r.step}" data-mode="${r.mode}">
       <span class="k">${names[r.mode] || r.k}</span><span class="v">${v || '선택'} ›</span></button>`;
   });
-  box.innerHTML=rows.join('')+`<label class="main-no-loan"><input id="mainNoLoan" type="checkbox" ${S.noLoan?'checked':''}>주택담보대출 없이 계산</label>`;
+  box.innerHTML=rows.join('')+`<label class="main-no-loan"><input id="mainNoLoan" type="checkbox" ${S.noLoan?'checked':''}>현금만으로 계산</label>`;
   box.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>openQ(+b.dataset.goto,b.dataset.mode));
   box.querySelectorAll('[data-money]').forEach(input=>{
     const key=input.dataset.money;
@@ -10139,8 +10197,8 @@ function dealLine(x, priceMan, hot, i){
   return `<div class="dealwrap">`
        + `<button type="button" class="deal" data-deal="${i}" aria-expanded="false" aria-controls="dealBox${i}">`
        + `<span class="nm">${esc(x.name)}</span>`
-       + `<span class="amt">${formatWon(x.amountMan*10000)}${gap}</span>`
-       + `<span class="deal-meta">${sub}</span><span class="deal-expand">거래 상세 <span class="caret" aria-hidden="true"></span></span></button>`
+       + `<span class="amt">${formatWon(x.amountMan*10000)}</span>`
+       + `<span class="deal-meta">${sub}</span>${gap}<span class="deal-expand">거래 상세 <span class="caret" aria-hidden="true"></span></span></button>`
        + dealBox(x, i) + `</div>`;
 }
 
@@ -10292,6 +10350,16 @@ function bindDealRows(list){
 }
 const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+function dealReadingRows(under,over){
+  if(!DEAL.over)return under;
+  const keep=Math.min(2,over.length), first=Math.max(0,DEAL.rows-keep);
+  return under.slice(0,first).concat(over.slice(0,keep),under.slice(first),over.slice(keep));
+}
+function dealReadingLimit(priceMan){
+  const key=JSON.stringify([priceMan,DEAL.req,DEAL.sort,DEAL.onlyNew,DEAL.only59,DEAL.only84,DEAL.over,DEAL.minUnits]);
+  if(DEAL.readingKey!==key){DEAL.readingKey=key;DEAL.readingLimit=DEAL.rows;}
+  return DEAL.readingLimit;
+}
 function paintDeals(priceMan){
   DEAL.lastPrice = priceMan;
   syncUnitFilter();
@@ -10310,8 +10378,8 @@ function paintDeals(priceMan){
   /* 🔴 v24.14 — 「+10%까지」를 켜면 초과분에 **자리를 비워 줍니다.**
      그냥 뒤에 잇기만 하면 5행 상한에서 잘려 **켜도 화면이 안 바뀝니다**(고장으로 보입니다).
      ⚠ 총 행 수는 그대로 5입니다 — 칩을 켠다고 목록이 길어지지 않습니다. */
-  const keep = DEAL.over ? Math.min(2, over.length) : 0;
-  const rows = keep ? under.slice(0, DEAL.rows - keep).concat(over.slice(0, keep)) : under;
+  const rows = dealReadingRows(under,over);
+  const readingLimit = dealReadingLimit(priceMan);
   const total = under.length + (DEAL.over ? over.length : 0);
   /* 🔴 v24.15 — 칩이 넷이 되면서 「예산대 거래가 없어요」가 **거짓말이 될 수 있습니다.**
      84㎡만 켜서 0건인 것을, 그 예산에 거래가 아예 없다는 뜻으로 읽으면 안 됩니다.
@@ -10344,13 +10412,23 @@ function paintDeals(priceMan){
     const k = hotKey(x); seen.set(k, (seen.get(k)||0) + 1);
   });
   const hotOf = x => (seen.get(hotKey(x))||0) >= 2;
-  const shownRows = rows.slice(0, DEAL.rows);
+  const shownRows = rows.slice(0, readingLimit);
   /* 🔴 v25.35 — **보이는 줄로 판정합니다.** 거른 전체가 아니라 화면에 선 줄입니다 —
      사용자가 「비어 보인다」고 느끼는 대상이 그 줄들이기 때문입니다(뱃지와 세는 범위가
      일부러 다릅니다 · 뱃지는 원칙 99대로 거른 전체를 셉니다). */
   DEAL.units = aptUnitsOn(shownRows);
   list.innerHTML = shownRows.map((x, i) => dealLine(x, priceMan, hotOf(x), i)).join('');
-  bindDealRows(list);        /* 🔴 v25.16 — 다시 그릴 때마다 다시 겁니다(칩을 켜면 줄이 바뀝니다) */
+  bindDealRows(list);
+  if(shownRows.length<rows.length){
+    const more=document.createElement('button');more.type='button';more.id='dealMore';more.className='deal-more';
+    more.textContent='단지 더 보기 · '+(rows.length-shownRows.length)+'곳 남음';
+    more.onclick=()=>{
+      const firstNew=shownRows.length;
+      DEAL.readingLimit+=DEAL.rows;paintDeals(priceMan);
+      list.querySelector('[data-deal="'+firstNew+'"]')?.focus({preventScroll:true});
+    };
+    list.appendChild(more);
+  }        /* 🔴 v25.16 — 다시 그릴 때마다 다시 겁니다(칩을 켜면 줄이 바뀝니다) */
   /* 🔴 v25.1 — 뱃지의 기준을 목록 아래에서 한 번 말합니다(지시서 4).
      ⚠ 🔴 **지시서 문구를 그대로 못 씁니다.** 지시서는 「최근 6개월 내 동일 평형 거래 3건 이상」이었는데
        세 값이 다 코드와 다릅니다 — 받아 오는 것은 **3개월치**(`DEAL.months`)라 6개월은 볼 수가
@@ -10371,7 +10449,7 @@ function paintDeals(priceMan){
      실물에서 헤더가 「147건」이라고 하고 목록은 다섯 줄이었습니다 — 3.4%입니다.
      사용자는 147건을 다 본 줄 알거나, 목록이 고장 난 줄 압니다. 둘 다 사실이 아닙니다.
      ⚠ 잘린 게 없으면 「중 N곳」을 붙이지 않습니다 — 「5건 중 5곳」은 잉여입니다(원칙 43). */
-  const shown = Math.min(rows.length, DEAL.rows);
+  const shown = shownRows.length;
   /* 🔴 v25.18 — **「건」 → 「곳」.** 감사 C-5가 여섯 판째 열려 있던 자리입니다.
      ⏹ 「8건 중 5곳」은 한 줄에 단위가 둘이었습니다. 고칠 수 없었던 이유는 문구가 아니라
        **`total`이 무엇을 세는지 자신도 애매했기 때문**입니다 — 접는 축이 면적이라
@@ -10380,7 +10458,7 @@ function paintDeals(priceMan){
        원칙 134 그대로 — **적을 수 없던 문장은 계산이 다른 것이었습니다.**
      ⚠ 이제 머리(「N곳」)와 펴진 상자(「이 단지 N건」)가 **단위로 갈립니다.** 주어에 더해
        단위가 하나 더 갈라 주므로, 두 숫자가 같아도 서로를 반박하지 않습니다(원칙 91). */
-  lead.textContent = dealScopeLabel() + ` · 최근 3개월 · ${total}곳` + (total > shown ? ` 중 ${shown}곳` : '');
+  lead.textContent = `최근 ${DEAL.months}개월 · ${total}곳` + (total > shown ? ` 중 ${shown}곳` : '');
   /* 🔴 v24.31 — **「평」이 무엇의 평인지 여기서 한 번 말합니다.**
      지시서 요구는 줄마다 「전용 OO㎡ (공급 약 OO평형)」이었습니다. 실측하면 **못 씁니다** —
      390px에서 부속 줄이 쓸 수 있는 폭은 198px인데 그 포맷은 **97px 넘칩니다**(현행도 이미 37px
@@ -10463,7 +10541,7 @@ function renderDeals(price){
   $('dealRangeNote').textContent = '';
   syncUnitFilter();
   document.dispatchEvent(new CustomEvent('deals:ready'));
-  $('dealLead').textContent = dealScopeLabel() + ' · 최근 3개월';
+  $('dealLead').textContent = `최근 ${DEAL.months}개월 거래를 확인하고 있어요`;
   $('dealList').innerHTML = '<p class="deal-msg">실거래를 불러오는 중…</p>';
   $('dealFoot').textContent = '';
   $('dealNote').textContent = '';
@@ -11701,13 +11779,14 @@ $('easyBalance').appendChild($('reasonCard'));
 $('dealCard').insertBefore($('sortSeg'),$('dealList'));
 const filterPanel=$('dealFilterBox');
 if(filterPanel){const fold=document.createElement('details');fold.className='deal-filter-fold';fold.innerHTML='<summary>가격·면적·단지 필터 <small id="dealUnitSummary" hidden></small><span aria-hidden="true">＋</span></summary>';filterPanel.parentNode.insertBefore(fold,filterPanel);fold.appendChild(filterPanel);
-const range=$('dealRangeNote');if(range)fold.before(range);
+const range=$('dealRangeNote');if(range)fold.insertBefore(range,filterPanel);
 }
 const unitFilter=document.createElement('section');
 unitFilter.id='dealUnitFilter';
 unitFilter.setAttribute('aria-label','단지 세대수 필터');
 unitFilter.innerHTML='<div class="unit-filter-heading">단지 규모</div><div class="unit-options" role="group" aria-label="최소 세대수"><button type="button" data-min-units="0" aria-pressed="true">전체</button><button type="button" data-min-units="500" aria-pressed="false">500세대 이상</button><button type="button" data-min-units="1000" aria-pressed="false">1,000세대 이상</button></div><p id="dealUnitNote" hidden>세대수가 확인된 단지만 표시합니다.</p>';
 $('dealFilterBox').appendChild(unitFilter);
+$('dealNew').after($('dealOver'));
 const resetFilters=document.createElement('button');
 resetFilters.id='dealResetFilters';resetFilters.type='button';resetFilters.className='filter-reset';
 resetFilters.textContent='필터 초기화';resetFilters.disabled=true;
