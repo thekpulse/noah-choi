@@ -5369,7 +5369,16 @@ body .cond-legal{font-size:12px;line-height:1.7;color:#677487;margin-top:14px}
 @media(max-width:370px){#viewDeals .deal-budget strong{font-size:22px}#whySheet .cost-impact strong{font-size:22px}}
 
 /* v64: unit count belongs with the other narrowing filters. */
-#viewDeals .deal-filter-fold #dealUnitFilter{margin:14px 0 0;padding-top:14px;border-top:1px solid #e0e6ee}
+#viewDeals .deal-filter-fold #dealUnitFilter{display:contents}
+#viewDeals #dealUnitFilter .unit-filter-heading,#viewDeals #dealUnitFilter [data-min-units="0"]{display:none}
+#viewDeals #dealUnitFilter .unit-options{display:contents}
+#viewDeals #dealFilterBox{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#viewDeals #dealFilterBox #dealChips{display:contents}
+#viewDeals #dealUnitFilter .unit-options button{flex:0 1 auto;min-height:44px;padding:10px 12px;font:inherit;font-size:14px;line-height:1.4;background:#fff;border:1px solid #cfd7e2}
+#viewDeals #dealUnitFilter .unit-options button[aria-pressed=true]{background:#eef3ff;border-color:#6c85c8;color:#294bae;font-weight:650}
+#viewDeals #dealUnitNote{flex-basis:100%;margin:4px 0 0;font-size:12px;line-height:1.6}
+#viewDeals #dealResetFilters{margin:4px 0 0 auto}
+#viewDeals #dealResetFilters:disabled{display:none}
 #viewDeals .deal-filter-fold>summary{flex-wrap:wrap;gap:6px 10px}
 #dealUnitSummary{margin-left:auto;font-size:12px;font-weight:500;line-height:1.5;color:#3457bd}
 #viewDeals .deal-filter-fold>summary>span{flex:none;margin-left:auto}
@@ -5385,10 +5394,10 @@ body .cond-legal{font-size:12px;line-height:1.7;color:#677487;margin-top:14px}
 #viewDeals .filter-reset:disabled{color:#8490a1;background:#f8fafc;border-color:#e3e8ef;cursor:default}
 
 /* v67: keep the input action next to its content instead of across a viewport gap. */
-body .app:not(.no-dock) #dock{position:static;inset:auto;transform:none;width:100%;max-width:560px;margin:0 auto;padding:0 22px 12px;box-sizing:border-box}
+body .app:not(.no-dock) #dock{position:static;inset:auto;transform:none;width:100%;max-width:none;margin:20px auto 0;padding:0 0 12px;box-sizing:border-box}
 body .app:not(.no-dock) .funnel{padding-bottom:20px!important}
 body .app:not(.no-dock) .guide-nav{margin:0 auto;padding:4px 22px calc(24px + env(safe-area-inset-bottom));max-width:560px;align-items:center;color:#425b84}
-@media(max-width:370px){body .app:not(.no-dock) #dock{padding-inline:16px}}
+@media(max-width:370px){body .app:not(.no-dock) #dock{padding-inline:0}}
 /* The result and transaction pages use the same content-following action layout. */
 body .app.has-rdock #rdock{position:static;inset:auto;transform:none;width:100%;max-width:none;margin:20px 0 0;padding:0;box-sizing:border-box}
 body .app.no-dock.has-rdock .result,body .app.has-rdock .result{padding-bottom:20px!important}
@@ -5471,7 +5480,9 @@ body .funnel .cond-lead{font-size:30px;line-height:1.22;max-width:17ch}
 #viewAnswer .budget-overview>#payTile>.ans-k{font-size:14px}
 #viewAnswer .budget-overview>#payTile>.ans-row{margin-top:10px}
 #viewAnswer .budget-overview>#payTile>#rateToggle{min-height:48px;margin-top:12px;border-top:1px solid #e0e6ee}
-#viewAnswer .budget-overview>#payTile>#rateSim{padding:4px 0 16px}
+#viewAnswer .budget-overview>#payTile>#rateSim{display:none;padding:4px 0 16px}
+#viewAnswer .budget-overview>#payTile>#rateSim.open{display:block}
+#viewAnswer .budget-overview>#payTile>#rateSim[hidden]{display:none}
 #viewDeals .deal .amt .budget-gap{display:block;margin-top:6px;font-size:13px;font-weight:400;line-height:1.6;letter-spacing:0;color:#526174;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
 @media(max-width:370px){#viewAnswer .budget-overview>#payTile{padding-inline:18px}}
 @media(min-width:960px){#viewAnswer>#easyMarket{grid-column:2;grid-row:1;align-self:start}}
@@ -5622,24 +5633,7 @@ body #result #footNote:empty{display:none}
       
       
       
-    </header>    <div class="paywrap" id="payTile">
-      <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
-      <div class="ans-row">
-        <p class="ans-v" id="tileMonthly"></p>
-        <p class="ans-pct"><span class="tile-k" id="burdenLabel">소득 대비</span><span id="tileBurden"></span><span class="verdict" id="burdenVerdict" hidden></span></p>
-      </div>
-      <p id="burdenDetail" class="burden-detail" hidden></p><div class="gauge" id="gauge" aria-hidden="true"></div>
-      <div class="gauge-scale" aria-hidden="true"><span>0%</span><span>100%</span></div>
-      <p class="tile-s" id="tileMonthlySub"></p>
-      
-<button class="disc disc-head" id="rateToggle" aria-expanded="false" aria-controls="rateSim">
-        <span class="k">금리가 달라지면</span><span class="v" id="rateSimV"></span><span class="caret" aria-hidden="true"></span></button>
-    <div class="ratesim" id="rateSim" hidden>
-          
-                    <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
-          <div class="range-ends" aria-hidden="true"><span>연 3.0%</span><span>연 10.0%</span></div><p class="tile-s" id="rateSimNote"></p>
-        </div>
-    </div><div class="budget-summary"><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span><i class="math-sign" aria-hidden="true">+</i>부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true">›</b></button><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
+    </header>    <div class="budget-summary"><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span><i class="math-sign" aria-hidden="true">+</i>부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true">›</b></button><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
       <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p></div>        </div><section class="easy-card easy-balance" id="easyBalance" aria-labelledby="easyUseTitle">
       
       
@@ -5666,7 +5660,24 @@ body #result #footNote:empty{display:none}
       <div class="cash-remainder"><span id="cashRemainderLabel">비용을 낸 뒤 남는 현금</span><strong id="cashRemainder">—</strong></div>
       
 <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 남겨 두고 입력하세요.</p>
-    </section></section>
+    </section><div class="paywrap" id="payTile">
+      <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
+      <div class="ans-row">
+        <p class="ans-v" id="tileMonthly"></p>
+        <p class="ans-pct"><span class="tile-k" id="burdenLabel">소득 대비</span><span id="tileBurden"></span><span class="verdict" id="burdenVerdict" hidden></span></p>
+      </div>
+      <p id="burdenDetail" class="burden-detail" hidden></p><div class="gauge" id="gauge" aria-hidden="true"></div>
+      <div class="gauge-scale" aria-hidden="true"><span>0%</span><span>100%</span></div>
+      <p class="tile-s" id="tileMonthlySub"></p>
+      
+<button class="disc disc-head" id="rateToggle" aria-expanded="false" aria-controls="rateSim">
+        <span class="k">금리가 달라지면</span><span class="v" id="rateSimV"></span><span class="caret" aria-hidden="true"></span></button>
+    <div class="ratesim" id="rateSim" hidden>
+          
+                    <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
+          <div class="range-ends" aria-hidden="true"><span>연 3.0%</span><span>연 10.0%</span></div><p class="tile-s" id="rateSimNote"></p>
+        </div>
+    </div></section>
 
     
 
@@ -5726,7 +5737,7 @@ body #result #footNote:empty{display:none}
       
       
       <h2 class="card-title">이 지역의 실거래</h2>
-      <p class="helper" id="dealLead"></p>
+      <p class="helper" id="dealLead" role="status" aria-live="polite" aria-atomic="true"></p>
       <details class="deal-regions" id="dealRegions">
         <summary><span>선택한 지역</span><strong id="dealRegionSummary"></strong><span class="region-edit">지역 변경 <span aria-hidden="true">⌄</span></span></summary>
         <p>계산 기준 지역을 포함해 최대 3곳의 실거래를 비교합니다.</p>
@@ -10294,7 +10305,7 @@ function paintDeals(priceMan){
      ⚠ 켠 게 없으면 **비웁니다**(원칙 124). 「없음」·「전체」를 안 적습니다. */
   /* 🔴 v25.50 — **접힘 라벨이 없어졌습니다.** 칩이 늘 보이므로 켠 조건은 칩 자신이 말합니다
      (원칙 43 — 같은 말을 두 곳에 두지 않습니다). 원칙 91은 그대로 지켜집니다. */
-  $('dealFilterBox').hidden = !(DEAL.items && DEAL.items.length);
+  $('dealFilterBox').hidden = !(DEAL.items?.length || DEAL.onlyNew || DEAL.only59 || DEAL.only84 || DEAL.over || DEAL.minUnits);
   chips.hidden = false;
   /* 🔴 v24.14 — 「+10%까지」를 켜면 초과분에 **자리를 비워 줍니다.**
      그냥 뒤에 잇기만 하면 5행 상한에서 잘려 **켜도 화면이 안 바뀝니다**(고장으로 보입니다).
@@ -10446,23 +10457,29 @@ function renderDeals(price){
   const my = ++DEAL.req;                    /* 늦게 온 응답이 새 결과를 덮지 않게 */
   card.hidden = false;
   DEAL.status = 'loading';
+  $('dealList').setAttribute('aria-busy','true');
+  DEAL.lastPrice = null;
   DEAL.items = [];
+  $('dealRangeNote').textContent = '';
+  syncUnitFilter();
   document.dispatchEvent(new CustomEvent('deals:ready'));
   $('dealLead').textContent = dealScopeLabel() + ' · 최근 3개월';
   $('dealList').innerHTML = '<p class="deal-msg">실거래를 불러오는 중…</p>';
   $('dealFoot').textContent = '';
   $('dealNote').textContent = '';
-  $('dealFilterBox').hidden = true;   /* 🔴 v25.50 — 감추는 대상이 접기 줄 → 다시 칩 묶음 */
+  $('dealFilterBox').hidden = !(DEAL.onlyNew || DEAL.only59 || DEAL.only84 || DEAL.over || DEAL.minUnits);   /* 🔴 v25.50 — 감추는 대상이 접기 줄 → 다시 칩 묶음 */
   fetchDeals(lawd, priceMan).then(items => {
     if(my !== DEAL.req) return;
     DEAL.items = items;
     DEAL.status = items.length ? 'ready' : 'empty';
+    $('dealList').setAttribute('aria-busy','false');
     /* 🔴 v38.2 — **답 화면의 예산선에게 알립니다.** 그래프는 이 배열에서 바로 그리는데,
        이 응답은 답 화면이 이미 선 뒤에 옵니다 — 알리지 않으면 그래프가 영영 안 뜹니다.
        ⚠ 값을 여기서 그리지 않습니다. 그리는 곳은 `syncMarket()` 한 곳입니다(원칙 58). */
     document.dispatchEvent(new CustomEvent('deals:ready'));
     /* 못 받았든 0건이든 **카드를 지웁니다.** 빈 카드도, 남의 사이트로 보내는 링크도 두지 않습니다. */
     if(!items.length){
+      $('dealLead').textContent = dealScopeLabel() + ` · 최근 ${DEAL.months}개월 · 0곳`;
       $('dealList').innerHTML = '<p class="deal-msg">최근 3개월 동안 조회된 거래가 없어요.</p>';
       $('dealFoot').textContent = '다른 지역을 선택해 확인해 보세요.';
       return;
@@ -10471,6 +10488,8 @@ function renderDeals(price){
   }).catch(() => {
     if(my !== DEAL.req) return;
     DEAL.status = 'error';
+    $('dealList').setAttribute('aria-busy','false');
+    $('dealLead').textContent = dealScopeLabel() + ' · 조회 실패';
     $('dealList').innerHTML = '<p class="deal-msg">실거래 정보를 불러오지 못했어요.</p><button class="cta" id="retryDeals" type="button">다시 불러오기</button>';
     $('dealFoot').textContent = '계산 결과는 그대로 유지됩니다.';
     $('retryDeals').onclick = () => renderDeals(price);
@@ -11696,7 +11715,8 @@ resetFilters.onclick=resetDealFilters;
 $('dealFilterBox').appendChild(resetFilters);
 $('sortSeg').after($('dealSortNote'));
 unitFilter.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
-  DEAL.minUnits=Number(btn.dataset.minUnits);
+  const requested=Number(btn.dataset.minUnits);
+  DEAL.minUnits=DEAL.minUnits===requested?0:requested;
   DEAL.open=null;
   if(DEAL.lastPrice!=null) paintDeals(DEAL.lastPrice);
   else syncUnitFilter();
