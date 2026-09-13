@@ -4621,7 +4621,7 @@ body .result,.app.no-dock .result,.app.no-dock.has-rdock .result{padding:12px 20
 #viewAnswer>#payTile>#rateSim{display:none;padding:4px 0 20px;margin:0;border:0}#viewAnswer>#payTile>#rateSim.open{display:block}#rateSimNote{margin-top:12px;font-size:14px!important;line-height:1.6;color:var(--v-muted)}
 #viewAnswer .budget-overview>#easyBalance{margin:0;padding:18px 22px 22px;border:0;border-top:1px solid #cbd5e3;border-radius:0;background:#fff;box-shadow:none}
 #easyBalance>.easy-money-rows,#easyBalance>.easy-stack{display:none}#easyBalance>h2:not(.sr-only){margin:0 0 14px;font-size:15px;font-weight:550;color:var(--v-sub)}
-#easyBalance .rbar{display:flex;height:6px!important;gap:2px;margin:0!important;overflow:hidden;border-radius:4px;background:transparent}#easyBalance .rbar>i{background:#54677d!important}#easyBalance .rbar>s{background:#b5c7eb!important}
+#easyBalance .rbar{display:flex;height:6px!important;gap:2px;margin:0!important;overflow:hidden;border-radius:4px;background:transparent}#easyBalance .rbar>i{background:var(--design-cash,#247f72)}#easyBalance .rbar>s{background:var(--design-loan,#627dcc)}
 #easyBalance .rlab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:14px 0 0}#easyBalance .rlab>div{min-width:0;text-align:left}#easyBalance .rlab>div+div{padding-left:16px;border-left:1px solid var(--v-line)}
 #easyBalance .rlab .t{font-size:14px!important;color:var(--v-muted)}#easyBalance .rlab em{margin-left:6px;font-size:13px!important;font-weight:400;color:var(--v-muted)}
 #easyBalance .rlab .n{margin:6px 0 0;font-size:21px!important;line-height:1.4;letter-spacing:-.04em;color:var(--v-ink);overflow-wrap:anywhere}#easyBalance .rlab .n strong{font-size:inherit;color:inherit}
@@ -5367,6 +5367,22 @@ body .cond-legal{font-size:12px;line-height:1.7;color:#677487;margin-top:14px}
 #whySheet .cost-basis #costLead{font-size:13px;line-height:1.75;color:#667386}
 #qSheet .sheet-actions,#whySheet .sheet-actions{border-top-color:#d5dee9;background:#fff}
 @media(max-width:370px){#viewDeals .deal-budget strong{font-size:22px}#whySheet .cost-impact strong{font-size:22px}}
+
+/* v64: unit count belongs with the other narrowing filters. */
+#viewDeals .deal-filter-fold #dealUnitFilter{margin:14px 0 0;padding-top:14px;border-top:1px solid #e0e6ee}
+#viewDeals .deal-filter-fold>summary{flex-wrap:wrap;gap:6px 10px}
+#dealUnitSummary{margin-left:auto;font-size:12px;font-weight:500;line-height:1.5;color:#3457bd}
+#viewDeals .deal-filter-fold>summary>span{flex:none;margin-left:auto}
+#viewDeals .deal-filter-fold>summary:has(#dealUnitSummary:not([hidden]))>span{margin-left:0}
+
+/* v65: every active filter remains readable when the panel is collapsed. */
+#viewDeals .deal-filter-fold>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:10px 0}
+#viewDeals .deal-filter-fold>summary>span{grid-column:2;grid-row:1;margin-left:0}
+#viewDeals #dealUnitSummary{grid-column:1/-1;grid-row:2;min-width:0;margin-left:0;font-size:12px;line-height:1.7;white-space:normal;overflow-wrap:anywhere;word-break:keep-all}
+
+/* v66: one reset for all listing filters, without resetting the budget. */
+#viewDeals .filter-reset{display:block;min-height:44px;margin:12px 0 0 auto;padding:8px 12px;border:1px solid var(--design-line);border-radius:10px;background:#fff;color:#435572;font:inherit;font-size:13px;line-height:1.5;cursor:pointer}
+#viewDeals .filter-reset:disabled{color:#8490a1;background:#f8fafc;border-color:#e3e8ef;cursor:default}
 
 </style>
 </head>
@@ -10142,6 +10158,7 @@ function paintDeals(priceMan){
      ⚠ 「+10%까지」는 넓히는 칩이라 여기 안 셉니다 — 켜도 0건이면 그건 정말 거래가 없는 것입니다. */
   const narrowed = DEAL.onlyNew || DEAL.only59 || DEAL.only84 || DEAL.minUnits>0;
   if(!rows.length){
+    lead.textContent=dealScopeLabel()+` · 최근 ${DEAL.months}개월 · 0곳`;
     list.innerHTML = `<p class="deal-msg">${narrowed
       ? '최근 3개월 안에 <b>이 조건에 맞는 거래가 없어요.</b>'
       : '최근 3개월 안에 <b>이 가격대 거래가 없어요.</b>'}</p>`;
@@ -11513,14 +11530,19 @@ $('viewAnswer').appendChild($('viewNext'));
 $('easyBalance').appendChild($('reasonCard'));
 $('dealCard').insertBefore($('sortSeg'),$('dealList'));
 const filterPanel=$('dealFilterBox');
-if(filterPanel){const fold=document.createElement('details');fold.className='deal-filter-fold';fold.innerHTML='<summary>가격·면적·준공연도 필터 <span aria-hidden="true">＋</span></summary>';filterPanel.parentNode.insertBefore(fold,filterPanel);fold.appendChild(filterPanel);
+if(filterPanel){const fold=document.createElement('details');fold.className='deal-filter-fold';fold.innerHTML='<summary>가격·면적·단지 필터 <small id="dealUnitSummary" hidden></small><span aria-hidden="true">＋</span></summary>';filterPanel.parentNode.insertBefore(fold,filterPanel);fold.appendChild(filterPanel);
 const range=$('dealRangeNote');if(range)fold.before(range);
 }
 const unitFilter=document.createElement('section');
 unitFilter.id='dealUnitFilter';
 unitFilter.setAttribute('aria-label','단지 세대수 필터');
 unitFilter.innerHTML='<div class="unit-filter-heading">단지 규모</div><div class="unit-options" role="group" aria-label="최소 세대수"><button type="button" data-min-units="0" aria-pressed="true">전체</button><button type="button" data-min-units="500" aria-pressed="false">500세대 이상</button><button type="button" data-min-units="1000" aria-pressed="false">1,000세대 이상</button></div><p id="dealUnitNote" hidden>세대수가 확인된 단지만 표시합니다.</p>';
-$('sortSeg').before(unitFilter);
+$('dealFilterBox').appendChild(unitFilter);
+const resetFilters=document.createElement('button');
+resetFilters.id='dealResetFilters';resetFilters.type='button';resetFilters.className='filter-reset';
+resetFilters.textContent='필터 초기화';resetFilters.disabled=true;
+resetFilters.onclick=resetDealFilters;
+$('dealFilterBox').appendChild(resetFilters);
 $('sortSeg').after($('dealSortNote'));
 unitFilter.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   DEAL.minUnits=Number(btn.dataset.minUnits);
@@ -11528,6 +11550,14 @@ unitFilter.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   if(DEAL.lastPrice!=null) paintDeals(DEAL.lastPrice);
   else syncUnitFilter();
 });
+function resetDealFilters(){
+  Object.assign(DEAL,{onlyNew:false,only59:false,only84:false,over:false,minUnits:0,open:null});
+  for(const id of ['dealNew','deal59','deal84','dealOver']){
+    const btn=$(id);if(btn){btn.classList.remove('is-on');btn.setAttribute('aria-pressed','false');}
+  }
+  if(DEAL.lastPrice!=null) paintDeals(DEAL.lastPrice);
+  else syncUnitFilter();
+}
 function syncUnitFilter(){
   const box=$('dealUnitFilter');if(!box)return;
   box.querySelectorAll('[data-min-units]').forEach(btn=>{
@@ -11535,6 +11565,16 @@ function syncUnitFilter(){
     btn.setAttribute('aria-pressed',String(selected));
   });
   $('dealUnitNote').hidden=!DEAL.minUnits;
+  const reset=$('dealResetFilters');
+  if(reset) reset.disabled=!(DEAL.onlyNew||DEAL.only59||DEAL.only84||DEAL.over||DEAL.minUnits);
+  const summary=$('dealUnitSummary');
+  if(summary){
+    const labels=[['onlyNew','dealNew'],['only59','deal59'],['only84','deal84'],['over','dealOver']]
+      .filter(([key])=>DEAL[key]).map(([,id])=>$(id)?.textContent.trim()).filter(Boolean);
+    if(DEAL.minUnits) labels.push(DEAL.minUnits.toLocaleString('ko-KR')+'세대 이상');
+    summary.textContent=labels.join(' · ');
+    summary.hidden=labels.length===0;
+  }
 }
 $('sortSeg').setAttribute('role','group');
 $('sortSeg').setAttribute('aria-label','실거래 정렬');
