@@ -5173,6 +5173,27 @@ body .app.no-dock.has-rdock .result,body .app.has-rdock .result{padding-bottom:c
 .guide-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin:14px 0;line-height:1.6;font-size:13px}
 .guide-nav a{padding:8px 0;color:#425b84;text-decoration:underline;text-underline-offset:4px}
 
+/* v59: keep the verified debt sheet intact. */
+#easyBalance.cash-only>.ratio>.rbar,#easyBalance.cash-only .rlab>div:last-child,#easyBalance.cash-only #easyCashPct{display:none!important}
+#easyBalance.cash-only .rlab{display:block;margin-top:4px}
+#easyBalance.cash-only .rlab>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#easyBalance.cash-only .rlab .t,#easyBalance.cash-only .rlab .n{margin:0}
+#easyBalance.cash-only #reasonCard{display:none!important}
+body .funnel{padding-bottom:28px!important}
+body .app:not(.no-dock) .guide-nav{margin:12px auto 0;padding:0 18px calc(100px + env(safe-area-inset-bottom));max-width:560px}
+body .app.no-dock.has-rdock .result,body .app.has-rdock .result{padding-bottom:calc(var(--result-dock-height,100px) + 16px)!important}
+.entry-eyebrow{padding:4px 8px;margin-bottom:8px;font-size:11px}
+.entry-eyebrow span{font-size:14px}
+.section-symbol svg{width:18px;height:18px;display:block}
+#easyMarketTitle::before{content:none!important;display:none!important}
+.location-symbol{background:#edf1ff;color:#3157be}
+.market-ratio{padding:14px;background:#f5f8f7;border:1px solid #e2ebe6;border-radius:12px;margin:18px 0}
+.market-ratio #easyMarketNote{margin:10px 0 0;padding:0;font-size:13px!important;line-height:1.6}
+#viewDeals #dealRangeNote{white-space:normal!important;overflow-wrap:anywhere;line-height:1.7}
+
+#viewDeals #sortSeg{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+#viewDeals #sortSeg button{min-width:0;padding-inline:4px;font-size:13px;min-height:44px}
+
 </style>
 </head>
 <body>
@@ -5198,7 +5219,7 @@ body .app.no-dock.has-rdock .result,body .app.has-rdock .result{padding-bottom:c
     <div class="sortseg" id="sortSeg" hidden>
       <button data-sort="price">가격순</button>
       <button data-sort="recent">최근순</button>
-      <button data-sort="area">평형순</button>
+      <button data-sort="area">평형순</button><button data-sort="units" title="세대수 많은 순, 미확인 단지는 뒤에 표시">세대수순</button>
     </div>
   </div>
   
@@ -5295,7 +5316,7 @@ body .app.no-dock.has-rdock .result,body .app.has-rdock .result{padding-bottom:c
 
 
     <div class="paywrap" id="payTile">
-      <p class="ans-k"><span class="section-symbol" aria-hidden="true">▤</span>주택담보대출 월 상환액</p>
+      <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
       <div class="ans-row">
         <p class="ans-v" id="tileMonthly"></p>
         <p class="ans-pct"><span class="tile-k" id="burdenLabel">소득 대비</span><span id="tileBurden"></span><span class="verdict" id="burdenVerdict" hidden></span></p>
@@ -7765,7 +7786,7 @@ function syncCta(){
     const left = need.filter(v => !v).length;
     t.hidden = left === 0;
     if(left){
-      const missing=[[!!S.cash,'집에 쓸 현금'],[!!S.sgg,'매수 지역'],[!!S.houseStatus,'주택 보유 여부']]
+      const missing=[[!!S.sgg,'매수 지역'],[!!S.houseStatus,'주택 보유 여부'],[!!S.cash,'집에 쓸 현금']]
         .concat(S.noLoan?[]:[[!!S.income,'연 소득'],[S.debtMonthly!=null,'기존 대출 여부']]).filter(x=>!x[0]);
       t.textContent=missing[0][1]+' 확인이 필요해요'+(missing.length>1?' · 남은 항목 '+missing.length+'개':'');
     }
@@ -9618,7 +9639,9 @@ function splitDeals(items, priceMan){
        ⏹ 전에는 늘 최신순이었습니다. 시안이 켜 둔 기본은 **가격순**입니다.
        ⚠ 두 번째 축은 그대로 둡니다 — 같은 값이 나올 때 순서가 흔들리면 목록이 매번 다릅니다.
        ⚠ 평형(`areaM2`)이 없는 줄은 **뒤로** 보냅니다. 0으로 치면 「제일 작은 집」이 됩니다(원칙 39). */
+    const unitRank=x=>{const n=unitsOf(x.lawd,x.name,x.dong);return Number.isFinite(n)&&n>0?n:-1;};
     const 축 = {
+      units:(a,b)=>(unitRank(b)-unitRank(a))||(when(b)-when(a))||(b.amountMan-a.amountMan),
       price : (a,b) => (b.amountMan - a.amountMan) || (when(b) - when(a)),
       recent: (a,b) => (when(b) - when(a)) || (b.amountMan - a.amountMan),
       area  : (a,b) => ((b.areaM2 ?? -1) - (a.areaM2 ?? -1)) || (when(b) - when(a)),
@@ -9728,7 +9751,9 @@ function dealLine(x, priceMan, hot, i){
   const a = areaParts(x.areaM2);
   const area = a ? esc(a.m2) + (a.py ? ` · <b>${esc(a.py)}</b>` : '') : '';
   const gu = dealGu(x.lawd);
-  const where = gu ? gu + ' ' + (x.dong||'') : (x.dong||'');
+  const unitCount=unitsOf(x.lawd,x.name,x.dong);
+  const unitLabel=DEAL.sort==='units' ? (unitCount>0?' · '+comma(unitCount)+'세대':' · 세대수 미확인') : '';
+  const where = (gu ? gu + ' ' + (x.dong||'') : (x.dong||''))+unitLabel;
   /* 🔴 v25.5 — 「2017년」 → **「17년식」**(오너 지시, 두 번째 요청).
      ⏹ v24.29가 「2018년 → 18년」을 **미채택**했습니다. 근거는 같은 카드 안에 「신축 (10년)」
        칩이 있어 **「N년」이 「연도」와 「기간」 두 뜻**이 된다는 것이었습니다 —
@@ -11652,6 +11677,10 @@ if(RESUME_RESULT) showResult(false);
       put(idA, n + '%'); put(idB, (100 - n) + '%');
     };
     pair(cash, loan, 'easyCashPct', 'easyLoanPct');
+    const cashOnly=!!S.noLoan;
+    byId('easyBalance').classList.toggle('cash-only',cashOnly);
+    byId('easyBalance').querySelector('.rlab .t').firstChild.textContent=cashOnly?'현금으로 마련해요':'사용할 현금';
+    byId('reasonCard').hidden=cashOnly;
     pair(price, cost, 'easyPricePct', 'easyCostPct');
 
     const heroNote = document.querySelector('.rhead-note');
@@ -11741,7 +11770,7 @@ if(RESUME_RESULT) showResult(false);
     const months = (typeof DEAL === 'object' && DEAL && DEAL.months) || 3;
     /* ⚠ 제목에 지역을 안 넣습니다. 인근 구까지 봤을 때 「종로구에서」가 **거짓말**이 되고,
        어느 범위를 봤는지는 바로 아랫줄이 정확히 말합니다(원칙 43 · 91). */
-    byId('easyMarketTitle').textContent = '내 예산과 실거래 비교';
+    byId('easyMarketTitle').innerHTML = '<span class="section-symbol location-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>내 예산과 실거래 비교';
     /* 목록 화면의 머리와 **같은 문법**입니다(원칙 58) — 지역 · 기간 · 곳. */
     byId('easyMarketLead').textContent = (place ? place + ' · ' : '') + `최근 ${months}개월`;
     let info=byId('marketMethod');
@@ -11830,6 +11859,7 @@ if(RESUME_RESULT) showResult(false);
       ? `<b>조회된 ${deals.length}건 모두</b> 예산 범위에서 거래됐어요.`
       : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예산 범위에서 거래됐어요.`;
     byId('plotDetail').hidden = true;
+    byId('marketRatio')?.appendChild(byId('easyMarketNote'));
     card.hidden = false;
   }
 
