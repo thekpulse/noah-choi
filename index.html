@@ -5,7 +5,7 @@
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<meta name="kakao-map-appkey" content="">
+<meta name="naver-map-keyid" content="">
 <title>영끌계산기 — 내 조건으로 살 수 있는 집값</title>
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571049978270961"
@@ -4621,7 +4621,12 @@ body .result,.app.no-dock .result,.app.no-dock.has-rdock .result{padding:12px 20
 #payTile #tileMonthlySub{margin:10px 0 0;color:var(--v-muted);font-size:13px!important;line-height:1.5!important;text-wrap:pretty}
 #viewAnswer>#payTile>#rateToggle{padding:0;min-height:50px;margin-top:16px;border-top:1px solid var(--v-line);color:var(--v-sub)}
 #rateToggle .k,#rateToggle .v{font-size:14px!important;font-weight:500!important}#rateToggle .v{color:var(--v-muted)}
-#viewAnswer>#payTile>#rateSim{display:none;padding:4px 0 20px;margin:0;border:0}#viewAnswer>#payTile>#rateSim.open{display:block}#rateSimNote{margin-top:12px;font-size:14px!important;line-height:1.6;color:var(--v-muted)}
+#viewAnswer>#payTile>#rateSim{display:none;padding:4px 0 20px;margin:0;border:0}#viewAnswer>#payTile>#rateSim.open{display:block}
+/* 🔴 v86 — 대출 조절기. **금리 조절기와 같은 규칙**입니다(닫힘이 기본 · `.open`이 펴고 · `[hidden]`이 이깁니다).
+   ⚠ `[hidden]` 규칙을 `.open` **뒤에** 둡니다 — 특이도가 같아서 순서가 이깁니다.
+     남는 현금이 없을 때 조절기가 펴진 채로 남는 것을 이 한 줄이 막습니다. */
+#loanCutBox{display:none;padding:4px 0 16px;margin:0;border:0}#loanCutBox.open{display:block}#loanCutBox[hidden]{display:none}
+#loanCutNote{margin-top:12px;font-size:14px!important;line-height:1.6;color:var(--v-muted)}#rateSimNote{margin-top:12px;font-size:14px!important;line-height:1.6;color:var(--v-muted)}
 #viewAnswer .budget-overview>#easyBalance{margin:0;padding:18px 22px 22px;border:0;border-top:1px solid #cbd5e3;border-radius:0;background:#fff;box-shadow:none}
 #easyBalance>.easy-money-rows,#easyBalance>.easy-stack{display:none}#easyBalance>h2:not(.sr-only){margin:0 0 14px;font-size:15px;font-weight:550;color:var(--v-sub)}
 #easyBalance .rbar{display:flex;height:6px!important;gap:2px;margin:0!important;overflow:hidden;border-radius:4px;background:transparent}#easyBalance .rbar>i{background:var(--design-cash,#247f72)}#easyBalance .rbar>s{background:var(--design-loan,#627dcc)}
@@ -5726,6 +5731,13 @@ body #result #footNote:empty{display:none}
         </div>
       </div>
       <div class="cash-remainder"><span id="cashRemainderLabel">비용을 낸 뒤 남는 현금</span><strong id="cashRemainder">—</strong></div>
+      
+      <button class="disc disc-head" id="loanCutToggle" aria-expanded="false" aria-controls="loanCutBox" hidden>
+        <span class="k">대출을 줄여 보기</span><span class="v" id="loanCutV"></span><span class="caret" aria-hidden="true"></span></button>
+      <div class="ratesim" id="loanCutBox" hidden>
+        <input type="range" id="loanCutRange" min="0" max="0" step="100" value="0" aria-label="줄일 대출 금액">
+        <p class="tile-s" id="loanCutNote"></p>
+      </div>
       
 <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 남겨 두고 입력하세요.</p>
     </section></section><div class="paywrap" id="payTile">
@@ -7056,7 +7068,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v83.0 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v87.0 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -7165,7 +7177,7 @@ const simRate = () => SIM_RATE == null ? D.rate : SIM_RATE;
 const LEGAL_AUTO_MAN = 65;
 
 const S = { step:0, cash:null, income:null, noLoan:false, mciCovered:false, loanCap:null, houseStatus:null, ownCount:1, disposePlan:false,
-            group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, onResult:false,
+            group:null, sido:'', sgg:'', pick:'', pyeong:0, interior:150, itCustom:null, itTouched:false, debtMonthly:null, debtOpen:false, debtParts:{credit:null,etc:null}, debtPartsOpen:false, priceOverride:null, lockedPrice:null, loanCut:0, loanCutOpen:false, onResult:false,
             /* 🔴 v25.14 — **결과에서 조건을 고치러 왔는가.** 켜져 있으면 하단 CTA가
                「결과 다시 보기」가 되고 한 번에 결과로 돌아갑니다(위 `syncCta`·`next`).
                🔴 v25.67 — **이 주석이 실물과 갈려 있었습니다.** v25.14가 「초안에 저장하지
@@ -8260,7 +8272,7 @@ function next(){
      ⚠ 라벨과 동작을 **같은 조건**으로 씁니다 — 갈리면 「보이는 것과 되는 것」이 어긋납니다(원칙 91). */
   if(S.fromResult){ backToResult(); return; }
   /* 🔴 v26.11 — 조건이 한 화면이므로 **다음 걸음이 없습니다.** 누르면 곧장 답입니다. */
-  S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; showResult();
+  S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; S.loanCut=0; showResult();
 }
 /* ⏹ v26.11 — v25.15가 여기 두었던 순차 이동(`S.step=V[i+1]`)이 없어졌습니다.
    걸음이 없으므로 「다음 걸음으로」라는 동작 자체가 없습니다. */
@@ -8309,7 +8321,7 @@ function syncToResultBtn(onResult){
 }
 function backToResult(){
   if(!allReady()) return;
-  S.fromResult=false; S.priceOverride=null; S.lockedPrice=null;
+  S.fromResult=false; S.priceOverride=null; S.lockedPrice=null; S.loanCut=0;
   showResult(); window.scrollTo(0,0);
 }
 function goHome(){ restart(); }
@@ -8678,6 +8690,7 @@ function showResult(keepScroll){
   renderBento(c); renderBalance(c, price); renderLimits(c, price); renderDiscs();
   renderCostBox(c, price); renderPkg(); renderOutlinks(price); renderDeals(price);
   bindRateSim();
+  bindLoanCut();
   LASTVIEW = {c, price, isOverride};   /* ⏹ v25.20 — `short`는 알약과 함께 지웠습니다(renderReport가 안 씁니다 · 원칙 47) */
   renderReport(LASTVIEW);
 
@@ -8788,6 +8801,8 @@ function renderDiscs(){
    /* 🆕 v38.4 — 금리 조절기가 근거 시트에서 답 화면으로 나오면서 **접기 줄**이 됐습니다.
       새 부품이 아니라 이 목록의 세 번째 칸입니다(원칙 58). */
    ['rateToggle','rateSim','rateOpen'],
+   /* 🆕 v86 — 대출 금액 조절기. 이 목록의 네 번째 칸일 뿐, 새 부품이 아닙니다(원칙 58). */
+   ['loanCutToggle','loanCutBox','loanCutOpen'],
    /* ⏹ v25.50 — 실거래 필터가 **접기를 그만뒀습니다**(오너 지적). 접기 자리는 다시 다섯입니다. */
   ].forEach(([t,b,k,store])=>{
     const tog=$(t), box=$(b), st=store||S;
@@ -8857,6 +8872,24 @@ function fundSplit(c){
    ⚠ 비율도 **여기서** 나옵니다. 화면에 적힌 금액에서 만들므로 96+4 = 81+19 = 100이고,
      열 막대와 괄호 안 숫자가 **같은 출처**입니다(원칙 58 · 91).
    ⚠ 요약 문구·공유 카드도 이 함수를 씁니다 — 매체가 달라도 **같은 숫자**여야 합니다(v25.36). */
+/* 🔴 v86 — **대출을 줄일 수 있는 폭을 여기 한 곳에서 정합니다**(원칙 58).
+   대차대조표 · 월 상환액 · 공유 카드 · 요약 문구가 **전부 이 값을 거칩니다.**
+   두 곳에서 따로 자르면 표의 좌우가 안 맞습니다 — v25.48이 자금 구성으로 이미 겪은 자리입니다.
+
+   ⚠ 줄일 수 있는 최대치는 **남는 현금**입니다. 그보다 더 줄이면 낼 돈이 모자랍니다.
+     그래서 조절기는 「현금이 남는 계산」에서만 의미가 있고, 실제로 그때만 화면에 섭니다.
+   ⚠ 대출보다 더 줄일 수도 없습니다(`T − C0`). 음수 대출은 없습니다.
+   ⚠ 단위는 **만원**입니다. `S.cash`도 만원이라 그대로 뺍니다.
+   ⚠ **한도(`c.mortgageLoan`)는 안 건드립니다** — 「빌릴 수 있는 돈」과 「빌리는 돈」은
+     다른 값입니다. 한도 서랍은 계속 한도를 말합니다(원칙 39). */
+function loanCutOf(c){
+  const T  = Math.ceil(Math.max(0, c.totalNeeded || 0) / 10000);
+  const C0 = Math.ceil(Math.max(0, c.cashNeeded  || 0) / 10000);
+  const room = Math.max(0, Math.min((S.cash || 0) - C0, T - C0));
+  const cut  = Math.max(0, Math.min(Number(S.loanCut) || 0, room));
+  return { T, C0, room, cut };
+}
+
 function heroFigures(c, price){
   /* 🔴 v25.55 — **「사용할 현금」이 입력한 값 그대로 나오게 했습니다**(오너 결정).
      ⏹ 실기 캡쳐(2026.08.25) : 현금 **5억**을 넣었는데 화면이 **「5억 1만원」**이라고 적었습니다.
@@ -8887,7 +8920,10 @@ function heroFigures(c, price){
        집값을 직접 넣어 현금이 모자란 경우에도 그 모자란 값이 그대로 올라옵니다(원칙 28). */
   const T = Math.ceil(Math.max(0, c.totalNeeded || 0) / 10000);
   const P = Math.floor(Math.max(0, price || 0) / 10000);
-  const C = Math.ceil(Math.max(0, c.cashNeeded || 0) / 10000);
+  /* 🔴 v86 — 조절기로 대출을 줄였으면 **그만큼 현금을 더 씁니다.**
+     T 는 안 바뀝니다 — 같은 집을 같은 값에 사고, **그 돈이 어디서 나오는가**만 옮깁니다.
+     그래서 `T = C + L` 도, 좌우 합이 같다는 표의 형식도 그대로 성립합니다. */
+  const C = Math.ceil(Math.max(0, c.cashNeeded || 0) / 10000) + loanCutOf(c).cut;
   const E = Math.max(0, T - P);
   const L = Math.max(0, T - C);
   const pct = v => T > 0 ? Math.round(v / T * 100) : 0;
@@ -8898,7 +8934,11 @@ function heroFigures(c, price){
 }
 
 function renderBento(c){
-  const {total, loan, own, ownPct} = fundSplit(c);
+  const {total, loan: loanLimit, own, ownPct} = fundSplit(c);
+  /* 🔴 v86 — **월 상환액은 「빌리는 돈」으로 셉니다.** 조절기로 줄인 만큼 같이 줍니다.
+     ⚠ `fundSplit`이 주는 것은 한도 전액입니다. 이름을 `loanLimit`으로 바꿔 둘을 갈랐습니다 —
+       같은 이름으로 두면 다음 사람이 어느 쪽인지 못 봅니다(원칙 39). */
+  const loan = Math.max(0, loanLimit - loanCutOf(c).cut * 10000);
   /* 🔴 v25.6 — **0%짜리 조각은 안 그립니다.** 조각 사이가 `gap:2px`이 되면서, 폭 0인 조각도
      제 앞의 2px을 차지합니다 — 「전부 현금」인 사람의 막대 오른쪽 끝에 **이유 없는 홈**이 생깁니다.
      ⚠ `loan > 0`이 아니라 `100 - ownPct > 0`으로 봅니다. 반올림 때문에 대출이 있어도
@@ -9146,6 +9186,51 @@ function bindRateSim(){
   r.oninput = () => { SIM_RATE = +r.value / 10; renderBento(LASTVIEW.c); };
 }
 
+/* 🔴 v86 — **대출 조절기를 그립니다.** 값은 전부 `loanCutOf`·`heroFigures`에서 옵니다 —
+   여기서 다시 세지 않습니다(원칙 58).
+   ⚠ 남는 현금이 없으면 **줄 자체를 숨깁니다**(원칙 124). 그 판단은 `room`이 합니다 —
+     「집값이 구간 경계에서 멈췄나」 같은 조건을 여기서 다시 세면 두 번째 정의가 됩니다(원칙 84).
+   ⚠ 두 상태의 문구를 **둘 다 한 줄**로 둡니다 — 끄는 도중에 상자 높이가 뛰면
+     손가락 밑에서 화면이 출렁입니다(금리 조절기가 v25.8에서 정한 규칙). */
+function paintLoanCut(c, price){
+  const tog = $('loanCutToggle'), box = $('loanCutBox'), r = $('loanCutRange');
+  const note = $('loanCutNote'), val = $('loanCutV');
+  if(!tog || !box || !r) return;
+  const { room, cut } = loanCutOf(c);
+  if(!(room > 0)){ tog.hidden = true; box.setAttribute('hidden',''); return; }
+  tog.hidden = false; box.removeAttribute('hidden');
+  /* 눈금은 100만원입니다. 남는 돈이 1,000만원도 안 되면 10만원으로 잘게 썹니다 —
+     눈금이 범위보다 크면 슬라이더가 두 칸짜리가 됩니다. */
+  r.max = String(room); r.step = String(room >= 1000 ? 100 : 10); r.value = String(cut);
+  r.style.setProperty('--fill-pct', (room > 0 ? cut / room * 100 : 0) + '%');
+  if(val) val.textContent = formatWon(heroFigures(c, price).L * 10000);
+  const rate = simRate();
+  const diff = Math.round(monthlyPaymentCalc(Math.max(0, c.mortgageLoan), rate, D.years)
+                        - monthlyPaymentCalc(Math.max(0, c.mortgageLoan - cut * 10000), rate, D.years));
+  if(note) note.textContent = cut > 0
+    ? `대출을 ${formatWon(cut * 10000)} 줄이면 매달 ${formatWon(diff)} 적게 갚아요.`
+    : `빌릴 수 있는 만큼 빌린 기준이에요. 현금은 ${formatWon(room * 10000)}이 남아요.`;
+}
+
+/* ⚠ 슬라이더를 움직이면 **세 곳이 같이** 바뀝니다 — 대차대조표 · 월 상환액 · 공유 카드.
+   한 곳만 다시 그리면 화면 안에서 숫자가 갈립니다(원칙 91). */
+function bindLoanCut(){
+  const r = $('loanCutRange'); if(!r) return;
+  r.oninput = () => {
+    if(!LASTVIEW) return;
+    /* 🔴 눈금이 100만원이라 **끝까지 끌어도 남는 돈을 다 못 씁니다** — 범위가 눈금의 배수가
+       아니면 마지막 칸이 max 에 못 닿습니다(실측: 1억 6,330만원 중 30만원이 남았습니다).
+       끝 칸에서는 **남는 현금 전액**으로 맞춥니다. 사용자가 「끝까지」라고 한 것은 전액입니다. */
+    const { room } = loanCutOf(LASTVIEW.c);
+    const v = +r.value || 0;
+    const step = Number(r.step) || 1;
+    S.loanCut = (room - v > 0 && room - v < step) ? room : v;
+    renderBento(LASTVIEW.c);
+    renderBalance(LASTVIEW.c, LASTVIEW.price);
+    renderReport(LASTVIEW);
+  };
+}
+
 /* 🔴 v25.51 — **영수증이 대차대조표가 됐습니다**(오너 지시 · `#bsheet` 마크업 주석).
    왼쪽 두 줄이 「그럼 이 돈은 어디로 갈까요」, 오른쪽 두 줄이 「그 돈은 어디서 나올까요」이고
    두 쪽의 합은 같습니다(이름은 v26.0에서 질문형이 됐습니다).
@@ -9316,6 +9401,7 @@ function renderBalance(c, price){
       over >  10000 ? `<div class="overnote">입력한 현금보다 <b>${formatWon(over)}</b>이 더 필요해요</div>`
     : over < -10000 ? cliff
     : '';
+  paintLoanCut(c, price);
 }
 function renderCostBox(c, price){
   /* 🔴 v24.17 — 채권 문장이 「대출 한도 산출 기준」에서 여기로 왔습니다(renderLimits 주석).
@@ -9361,16 +9447,27 @@ function renderCostBox(c, price){
      채워 넣습니다(`S.broker.v === null`이 「자동」입니다).
      ⚠ 사용자가 고친 뒤에는 **집값이 바뀌어도 그 값 그대로**입니다. 그게 「고쳤다」의 뜻입니다.
        자동으로 되돌리고 싶으면 스위치를 껐다 켭니다(`v`가 null로 돌아갑니다).
-     ⚠ 표시값은 **만원 단위 반올림**입니다. 영수증 소계도 같은 자리에서 반올림하므로
-       사람이 눈으로 더해 맞습니다(v25.51부터 바깥 표는 `heroFigures`가 맞춥니다). */
+     🔴 v87 — **표시값을 반올림에서 내림으로 바꿨습니다**(오너 결정 2026-09-15).
+       ⏹ 오너 지적 : 「1,751만원이 더 필요하다는데 아래에는 1,750만원」.
+         재 보니 **이 줄이었습니다** — 칸은 `Math.round`로 **올려** 적는데, 이 스위치를 끄면
+         실제로 줄어드는 금액은 **만원 아래가 잘린 값**입니다(`C = ceil(필요현금)`의 뒷면).
+         실측 : 중개보수 1,216.5만원 → 칸 **1,217만원** · 끄면 남는 현금 **1,216만원**.
+         516케이스 중 **210건(40.7%)** 에서 갈립니다.
+       → 칸을 **내림**으로 적습니다. 이제 「적힌 값 = 끄면 줄어드는 값」입니다.
+       ⚠ **계산은 안 바꿨습니다**(오너 결정). 엔진은 여전히 상한요율 원값을 씁니다 —
+         바뀐 것은 이 칸의 표기 하나입니다.
+       ⚠ 그래서 이 칸은 실제 중개보수보다 **최대 9,999원 작게** 적힙니다. 원칙 28의 반대
+         방향이지만, 오너가 「끄면 줄어드는 값과 맞는 쪽」을 골랐습니다 — 사람이 이 칸을
+         **끄고 켜면서 읽기 때문**입니다.
+       ⚠ 사용자가 이 칸을 **고치면** 그때부터는 그 값이 그대로 계산에 들어갑니다(아래 `S.broker.v`).
+         고치지 않으면 계산은 원값입니다. */
   (()=>{
     const w=$('swBroker'), i=$('inBroker');
     if(!w || !i) return;
     /* ⚠ `brokerFee`가 아니라 **`brokerFull`**(상한요율 원값)입니다. 껐을 때 `brokerFee`는 0이라,
        그걸 쓰면 끈 줄에 「0만」만 남아 **무엇을 뺐는지 화면이 못 말합니다**(원칙 39).
        다른 세 줄도 껐을 때 제 값을 그대로 들고 있습니다 — 같은 문법입니다. */
-    const auto = Math.round(c.brokerFull/10000);
-    $('brokerMode').textContent = S.broker.v == null ? '부가세 포함 · 상한요율' : '직접 입력한 금액';
+    const auto = Math.floor(c.brokerFull/10000);
     w.classList.toggle('on', S.broker.on); w.setAttribute('aria-checked', String(S.broker.on));
     i.value = comma(S.broker.v != null ? S.broker.v : auto);
     i.disabled = !S.broker.on;
@@ -11197,7 +11294,7 @@ function restart(){
   resetDealFilters();
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
   Object.assign(S,{step:0,cash:null,income:null,noLoan:false,mciCovered:false,loanCap:null,houseStatus:null,disposePlan:false,
-    group:null,sido:'',sgg:'',compareCodes:[],pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
+    group:null,sido:'',sgg:'',compareCodes:[],pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,loanCut:0,loanCutOpen:false,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
   render(); window.scrollTo(0,0);
 }
 
@@ -11933,12 +12030,21 @@ render();
 if(RESUME_RESULT) showResult(false);
 </script>
 <script >
-/* v29.0 — 실거래 데이터의 목록/지도 이중 보기. 확인된 실제 좌표만 표시합니다. */
+/* v85.0 — 실거래 데이터의 목록/지도 이중 보기. 확인된 실제 좌표만 표시합니다.
+   🔴 v85 — 카카오 → **네이버 지도(Maps JS v3)**. 좌표를 얻는 방법이 함께 바뀌었습니다.
+     · 카카오: 단지명 키워드 검색(`places.keywordSearch`) — **이름으로 추정**
+     · 네이버: **지번 주소 지오코딩**(`naver.maps.Service.geocode`) — **주소로 확정**
+     네이버 JS API 에는 키워드(장소명) 검색이 **없습니다.** `naver.maps.Service` 는
+     geocode · reverseGeocode · fromAddrToCoord · fromCoordToAddr 넷뿐입니다
+     (출처: navermaps.github.io/maps.js.ncp/docs/naver.maps.Service.html · 확인 2026-09-14).
+   🔴 그래서 `/api/apt-price` 가 **`jibun`(지번)을 실어야 합니다.** 안 실리면 이 지도는
+     오류 없이 **단지 0곳**으로 뜹니다(「확인된 단지 위치가 없어요」). 깨지지는 않습니다.
+   ⚠ 키(`ncpKeyId`)가 비어 있으면 v29 와 똑같이 **전환 바 자체가 안 나옵니다.** */
 (function () {
   'use strict';
 
   const byId = (id) => document.getElementById(id);
-  const key = (document.querySelector('meta[name="kakao-map-appkey"]')?.content || '').trim();
+  const key = (document.querySelector('meta[name="naver-map-keyid"]')?.content || '').trim();
   const bar = byId('dealViewBar');
   const list = byId('dealList');
   const panel = byId('dealMapPanel');
@@ -11951,16 +12057,11 @@ if(RESUME_RESULT) showResult(false);
 
   let sdkReady = false;
   let map = null;
-  let places = null;
-  let geocoder = null;
   let mode = 'list';
   let paintToken = 0;
   let overlays = [];
   let activeLabel = null;
   const placeCache = new Map();
-
-  const normalize = (value) => String(value || '')
-    .toLowerCase().replace(/아파트|apt|단지|제|\s|[-_.·]/g, '');
 
   function compactPrice(man) {
     const amount = Number(man) || 0;
@@ -11983,52 +12084,67 @@ if(RESUME_RESULT) showResult(false);
     return (DEAL.over ? divided.under.concat(divided.over) : divided.under).slice(0, 24);
   }
 
-  function directCoordinate(deal) {
-    const lat = Number(deal.latitude ?? deal.lat);
-    const lng = Number(deal.longitude ?? deal.lng);
-    return Number.isFinite(lat) && Number.isFinite(lng) && lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132
+  /* 🔴 좌표가 한반도 안인지 **한 곳에서** 봅니다(원칙 58). 두 갈래가 이것을 씁니다 —
+     서버가 실어 준 좌표와, 지오코딩이 돌려준 좌표.
+     ⚠ `Number('')` 은 **0** 입니다. 거르지 않으면 빈 응답이 위도 0·경도 0 —
+       **기니만 한가운데**에 단지를 찍습니다. 오류는 하나도 안 납니다. */
+  function validCoordinate(lat, lng) {
+    return Number.isFinite(lat) && Number.isFinite(lng)
+      && lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132
       ? { lat, lng }
       : null;
   }
 
-  function keywordCoordinate(deal) {
-    const direct = directCoordinate(deal);
-    if (direct) return Promise.resolve(direct);
-    const region = deal && deal.lawd ? shortSido(sidoOfCode(deal.lawd))+' '+sggName(deal.lawd) : (typeof regionLabel === 'function' ? regionLabel() : '');
-    const query = [region, deal.dong, deal.name, '아파트'].filter(Boolean).join(' ');
-    if (!query || !places) return Promise.resolve(null);
-    if (placeCache.has(query)) return placeCache.get(query);
+  function directCoordinate(deal) {
+    return validCoordinate(Number(deal.latitude ?? deal.lat), Number(deal.longitude ?? deal.lng));
+  }
 
+  /* 지오코딩에 넣을 **지번 주소**를 만듭니다 — 「서울특별시 광진구 자양동 680-63」.
+     ⚠ 시도는 **줄임말이 아니라 정식 명칭**을 씁니다. 화면 문구(`regionLabel`)는 「서울 광진구」로
+       줄이지만, 그 줄임말을 주소로 넣으면 지오코딩이 못 찾습니다 — 묻는 것이 다릅니다.
+     ⚠ 거래는 인근 구에서도 옵니다(`DEAL.wide`). 그래서 **고른 지역이 아니라 그 거래의 `lawd`**
+       로 시도·시군구를 만듭니다. 고른 지역으로 만들면 인근 구 단지가 엉뚱한 곳에 찍힙니다. */
+  function dealAddress(deal) {
+    if (deal.address) return String(deal.address).trim();
+    const jibun = String(deal.jibun || '').trim();
+    if (!jibun) return '';
+    const sido = typeof sidoOfCode === 'function' ? sidoOfCode(deal.lawd) : '';
+    const sgg = typeof sggName === 'function' ? sggName(deal.lawd) : '';
+    const dong = String(deal.dong || '').trim();
+    if (!sido || !sgg || !dong) return '';
+    return `${sido} ${sgg} ${dong} ${jibun}`;
+  }
+
+  /* 주소 한 줄 → 좌표. 같은 주소는 한 번만 묻습니다(캐시는 프라미스째 담습니다). */
+  function geocode(query) {
+    if (!query) return Promise.resolve(null);
+    if (placeCache.has(query)) return placeCache.get(query);
     const promise = new Promise((resolve) => {
-      places.keywordSearch(query, (rows, code) => {
-        if (code !== kakao.maps.services.Status.OK || !Array.isArray(rows)) return resolve(null);
-        const targetName = normalize(deal.name);
-        const targetDong = normalize(deal.dong);
-        const found = rows.find((row) => {
-          const placeName = normalize(row.place_name);
-          const address = normalize(`${row.address_name || ''} ${row.road_address_name || ''}`);
-          const nameMatches = targetName.length >= 2 && (placeName.includes(targetName) || targetName.includes(placeName));
-          const dongMatches = !targetDong || address.includes(targetDong);
-          return nameMatches && dongMatches;
-        });
-        if (!found) return resolve(null);
-        const lat = Number(found.y), lng = Number(found.x);
-        resolve(Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null);
-      }, { size: 5 });
+      if (!window.naver?.maps?.Service) return resolve(null);
+      naver.maps.Service.geocode({ query }, (code, response) => {
+        if (code !== naver.maps.Service.Status.OK) return resolve(null);
+        const rows = response?.v2?.addresses;
+        if (!Array.isArray(rows) || !rows.length) return resolve(null);
+        /* 🔴 `x` 가 **경도**, `y` 가 **위도**입니다(문자열로 옵니다). 뒤집으면 바다에 찍힙니다. */
+        resolve(validCoordinate(Number(rows[0].y), Number(rows[0].x)));
+      });
     });
     placeCache.set(query, promise);
     return promise;
   }
 
+  function dealCoordinate(deal) {
+    const direct = directCoordinate(deal);
+    if (direct) return Promise.resolve(direct);
+    return geocode(dealAddress(deal));
+  }
+
   function regionCoordinate() {
-    const region = typeof regionLabel === 'function' ? regionLabel() : '';
-    if (!region || !geocoder) return Promise.resolve(null);
-    return new Promise((resolve) => {
-      geocoder.addressSearch(region, (rows, code) => {
-        if (code !== kakao.maps.services.Status.OK || !rows?.length) return resolve(null);
-        resolve({ lat:Number(rows[0].y), lng:Number(rows[0].x) });
-      });
-    });
+    if (typeof S === 'undefined' || !S.sgg) return Promise.resolve(null);
+    const sido = typeof sidoOfCode === 'function' ? sidoOfCode(S.sgg) : '';
+    const sgg = typeof sggName === 'function' ? sggName(S.sgg) : '';
+    if (!sido || !sgg) return Promise.resolve(null);
+    return geocode(`${sido} ${sgg}`);
   }
 
   function clearOverlays() {
@@ -12056,9 +12172,9 @@ if(RESUME_RESULT) showResult(false);
     detail.hidden = false;
   }
 
-  function addOverlay(deal, coordinate, bounds) {
-    const position = new kakao.maps.LatLng(coordinate.lat, coordinate.lng);
-    bounds.extend(position);
+  function addOverlay(deal, coordinate, positions) {
+    const position = new naver.maps.LatLng(coordinate.lat, coordinate.lng);
+    positions.push(position);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `yk-map-label${deal.amountMan > DEAL.lastPrice ? ' is-over' : ''}`;
@@ -12068,26 +12184,34 @@ if(RESUME_RESULT) showResult(false);
     const price = document.createElement('strong');
     price.textContent = compactPrice(deal.amountMan);
     button.append(area, price);
+    const open = () => { showDetail(deal, button); map.panTo(position); };
     button.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      showDetail(deal, button);
-      map.panTo(position);
+      open();
     });
-    const overlay = new kakao.maps.CustomOverlay({ position, content:button, xAnchor:.5, yAnchor:1.1, zIndex:2 });
-    overlay.setMap(map);
-    overlays.push(overlay);
+    /* 🔴 라벨은 **진짜 `<button>` 요소**를 그대로 넘깁니다(HtmlIcon.content 는 문자열과 요소를 다 받습니다).
+       문자열로 넘기면 위 리스너가 사라져 **키보드로 못 엽니다.**
+       ⚠ 그래도 마커 쪽에 한 번 더 겁니다 — 지도가 요소를 복제해 넣는 경우를 대비한 것입니다.
+         둘 다 불려도 `open()` 은 토글이 아니라 열기라서 결과가 같습니다. */
+    const marker = new naver.maps.Marker({
+      position, map,
+      icon: { content:button, anchor:naver.maps.Position.BOTTOM_CENTER },
+      zIndex: 2
+    });
+    naver.maps.Event.addListener(marker, 'click', open);
+    overlays.push(marker);
   }
 
   async function initMap() {
     if (map) return true;
     const center = await regionCoordinate();
     if (!center) return false;
-    map = new kakao.maps.Map(mapNode, {
-      center:new kakao.maps.LatLng(center.lat, center.lng), level:6
+    /* 줌 14 는 카카오 level 6(축척 500m)과 거의 같은 넓이입니다. 정책 수치가 아니라 보기 값입니다. */
+    map = new naver.maps.Map(mapNode, {
+      center:new naver.maps.LatLng(center.lat, center.lng), zoom:14
     });
-    map.setZoomable(true);
-    kakao.maps.event.addListener(map, 'click', () => {
+    naver.maps.Event.addListener(map, 'click', () => {
       if (activeLabel) activeLabel.classList.remove('is-active');
       activeLabel = null;
       if (detail) detail.hidden = true;
@@ -12117,19 +12241,19 @@ if(RESUME_RESULT) showResult(false);
     const workers = Array.from({ length:Math.min(4, deals.length) }, async () => {
       while (cursor < deals.length && token === paintToken && mode === 'map') {
         const index = cursor++;
-        const coordinate = await keywordCoordinate(deals[index]);
+        const coordinate = await dealCoordinate(deals[index]);
         if (coordinate) located.push({ deal:deals[index], coordinate });
       }
     });
     await Promise.all(workers);
     if (token !== paintToken || mode !== 'map') return;
 
-    const bounds = new kakao.maps.LatLngBounds();
-    located.forEach(({ deal, coordinate }) => addOverlay(deal, coordinate, bounds));
-    if (located.length > 1) map.setBounds(bounds, 52, 52, 52, 52);
-    else if (located.length === 1) {
-      map.setCenter(new kakao.maps.LatLng(located[0].coordinate.lat, located[0].coordinate.lng));
-      map.setLevel(5);
+    const positions = [];
+    located.forEach(({ deal, coordinate }) => addOverlay(deal, coordinate, positions));
+    if (positions.length > 1) map.fitBounds(positions, { top:52, right:52, bottom:52, left:52 });
+    else if (positions.length === 1) {
+      map.setCenter(positions[0]);
+      map.setZoom(15);
     }
     if (status) status.textContent = located.length ? `단지 ${located.length}곳` : '확인된 단지 위치가 없어요';
   }
@@ -12143,7 +12267,8 @@ if(RESUME_RESULT) showResult(false);
     mapTab.setAttribute('aria-selected', String(onMap));
     if (onMap) {
       requestAnimationFrame(() => {
-        if (map) map.relayout();
+        /* 숨어 있던 상자를 펴면 지도가 제 크기를 모릅니다 — 카카오의 `relayout()` 자리입니다. */
+        if (map) map.refresh();
         paintMap();
       });
     } else {
@@ -12153,18 +12278,21 @@ if(RESUME_RESULT) showResult(false);
   }
 
   function loadSdk() {
-    const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&autoload=false&libraries=services`;
-    script.async = true;
-    script.onload = () => {
-      if (!window.kakao?.maps) return;
-      kakao.maps.load(() => {
-        sdkReady = true;
-        places = new kakao.maps.services.Places();
-        geocoder = new kakao.maps.services.Geocoder();
-        bar.hidden = false;
-      });
+    /* 🔴 인증 파라미터는 **`ncpKeyId`** 입니다. 옛 `ncpClientId`·`govClientId`·`finClientId` 는
+       더 이상 쓰지 않습니다(출처: navermaps.github.io/maps.js.ncp Getting Started · 확인 2026-09-14).
+       ⚠ `submodules=geocoder` 가 빠지면 `naver.maps.Service` 가 **없습니다** — 좌표를 하나도 못 찾습니다.
+       ⚠ NCP 콘솔에 **웹 서비스 URL 을 등록**해야 합니다. 안 하면 인증 실패 화면만 뜹니다. */
+    const ready = () => {
+      if (sdkReady || !window.naver?.maps?.Service) return;
+      sdkReady = true;
+      bar.hidden = false;
     };
+    window.__ykNaverMapsReady = ready;
+    const script = document.createElement('script');
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(key)}`
+      + '&submodules=geocoder&callback=__ykNaverMapsReady';
+    script.async = true;
+    script.onload = ready;   /* 콜백이 안 불린 경우의 대비 — `ready` 는 두 번 불려도 한 번만 듣습니다 */
     document.head.appendChild(script);
   }
 
