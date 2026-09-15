@@ -1,6 +1,16 @@
 /* ===================================================================
-   국토교통부 아파트 매매 실거래가 프록시  —  v24.1 (Production)
+   국토교통부 아파트 매매 실거래가 프록시  —  v25.0 (Production)
    Vercel Serverless Function.  GET /api/apt-price?lawd=11110&ymd=202608
+
+   🔴 v25.0 (2026-09-15) — **지번을 한 필드 더 실어 보냅니다.**
+     화면의 지도가 카카오(단지명 검색)에서 **네이버**로 바뀌었는데, 네이버 JS API 에는
+     단지명 검색이 없고 **주소↔좌표 변환만** 있습니다. 그래서 좌표를 「시도 + 시군구 +
+     법정동 + 지번」으로 찾습니다. 지번은 국토부 원본에 **이미 들어 있는 값**이고,
+     지금까지 이 파일이 버리고 있었습니다. 만들거나 계산하는 값이 아닙니다.
+   ⚠ 값이 없으면 **빈 문자열**입니다. 화면은 빈 값을 「없음」으로 보고 그 단지를 조용히
+     건너뜁니다(짐작한 주소로 묻지 않습니다).
+   ⚠ 필드 이름이 바뀌었을 때를 대비해 `jibun` → `지번` 순으로 봅니다. 둘 다 없으면 빈 값이고,
+     그때 화면은 「확인된 단지 위치가 없어요」로 섭니다 — 깨지지 않습니다.
    =================================================================== */
 
 const BASE = 'http://apis.data.go.kr/1613000/RTMSDataSvcAptTrade'
@@ -41,6 +51,9 @@ function parseItems(xml){
     return {
       name:   tag(b, 'aptNm'),
       dong:   tag(b, 'umdNm'),
+      /* 🔴 v25.0 — 지도가 좌표를 찾는 데 쓰는 값. 가공하지 않고 그대로 옮깁니다
+         (「680-63」 · 「17」 · 「산 12-3」). tag() 가 이미 앞뒤 공백을 뗍니다. */
+      jibun:  tag(b, 'jibun') || tag(b, '지번'),
       areaM2: Number.isFinite(area) ? Math.round(area * 10) / 10 : null,
       floor:  parseInt(tag(b, 'floor'), 10) || null,
       buildYear: Number.isFinite(year) ? year : null,
@@ -65,7 +78,11 @@ module.exports = async function handler(req, res){
   if(lawd.length !== 5 || ymd.length !== 6)
     return res.status(200).json({ ok:false, reason:'bad-param', items:[] });
 
-  const key = lawd + ':' + ymd;
+  /* 🔴 v25.0 — 캐시 키에 **판 번호**를 넣습니다. 안 넣으면 배포 직후에도 옛 응답(지번 없음)이
+     최대 24시간 그대로 나갑니다 — 「고쳤는데 지도가 여전히 비어 있다」로 보입니다.
+     ⚠ 이 인스턴스 메모리 캐시는 배포하면 비워지지만, **살아 있는 인스턴스가 남아 있으면**
+       그쪽은 옛 값을 계속 들고 있습니다. 판 번호가 그 경우를 막습니다. */
+  const key = 'v25:' + lawd + ':' + ymd;
   const hit = cacheGet(key);
   if(hit) return res.status(200).json({ ok:true, cached:true, items:hit });
 
