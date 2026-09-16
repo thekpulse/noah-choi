@@ -6238,9 +6238,12 @@ body .app:not(.no-dock){padding-bottom:0}
         </div>
       </div>
       <div class="deal-map-panel" id="dealMapPanel" hidden>
+        <div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
-        <div class="deal-map-detail" id="dealMapDetail" hidden></div>
-        <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약의 금액은 지도에 표시된 거래가의 중앙값입니다. 알약을 누르면 확대됩니다.</p>
+        <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
+        <p class="yk-legend" id="dealMapLegend" hidden><span><i class="fit"></i>내 예상 집값 이하</span><span><i class="near"></i><b data-near></b></span><span><i class="over"></i>그보다 높음</span></p>
+        <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약 금액은 그 지역 최근 거래가의 중앙값이에요(면적이 섞여 있어요). 색은 내 예상 집값과 비교한 것이에요.</p>
+        <p class="deal-map-miss" id="dealMapMiss" hidden></p>
       </div>
       
       
@@ -7461,7 +7464,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v109 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v110 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10676,6 +10679,7 @@ function splitDeals(items, priceMan){
         || (DEAL.only84 && inBand(x.areaM2, DEAL.a84));
   };
   const pass = x => fresh(x) && sized(x) && passesUnitFilter(x);
+  DEAL.pass = pass;   /* v110 B — 지도 동네 시세가 목록과 같은 필터로 셉니다(원칙 58) */
   /* 🔴 v25.1 — **거르기 전 줄도 같이 돌려줍니다.**
      `dedupe`는 `단지명|전용면적`을 한 줄로 접고 **가장 최근 거래만** 남깁니다 — 목록에는 그게 맞습니다.
      그런데 v25.0의 「거래 활발」이 그 **접힌 목록**을 세고 있었습니다. 그래서 실제로 재던 것은
@@ -10964,6 +10968,7 @@ function dealBox(x, i){
            return `<div class="dealrow"><span class="k">${esc(k)}</span>`
                 + `<span class="v">${formatWon(n.amountMan*10000)}</span></div>`;
          }).join('')
+       + (typeof i === 'number' && typeof window !== 'undefined' && window.__ykMap && window.__ykMap.isReady() ? `<button type="button" class="deal-onmap" data-key="${esc(key)}">지도에서 보기</button>` : '')   /* v110 A */
        + `</div>`;
 }
 
@@ -12561,7 +12566,8 @@ if(RESUME_RESULT) showResult(false);
     if (typeof DEAL === 'undefined' || !Array.isArray(DEAL.items) || !(DEAL.lastPrice > 0)) return [];
     if (typeof splitDeals !== 'function') return [];
     const divided = splitDeals(DEAL.items, DEAL.lastPrice);
-    return (DEAL.over ? divided.under.concat(divided.over) : divided.under).slice(0, 24);
+    /* v110 A — 목록과 **같은 줄**(dealReadingRows · 같은 필터·정렬). 상한은 paintMap 의 MAP_MAX(넘으면 지도 밑에 말함). */
+    return typeof dealReadingRows === 'function' ? dealReadingRows(divided.under, divided.over) : (DEAL.over ? divided.under.concat(divided.over) : divided.under);
   }
 
   /* 🔴 좌표가 한반도 안인지 **한 곳에서** 봅니다(원칙 58). 두 갈래가 이것을 씁니다 —
@@ -12630,6 +12636,20 @@ if(RESUME_RESULT) showResult(false);
     return geocode(`${sido} ${sgg}`);
   }
 
+  /* ═══ v110 — 실거래 큰 지도 세 가지 (오너 「지도에는 목록보다 단지가 최소화돼서 나오고, 호갱노노·KB 처럼 기능은 없고」 2026-09-16 → A·B·C 모두 선택)
+     A 목록 = 지도 한 벌 — 지도 단지 = 목록과 **같은 줄**(dealReadingRows · 같은 필터·정렬 · 「더 보기」 전 전부 · 상한 paintMap 의 MAP_MAX 60)
+       · 겹친 말풍선은 점으로 줄이지 않고 **앞 말풍선에 「+N」**으로 모음(누르면 그 묶음으로 확대) · 목록 거래 상세에서 「지도에서 보기」
+     B 동네 시세 — 알약 금액 = 그 구·동 **최근 N개월 전체 거래**(필터 적용 · 가격 무관) 중앙값 · 색 = 내 예상 집값과 비교 3단
+       (예산 이하 · DEAL.overBand 이내 초과 · 그 이상). 예산 범위 거래가 없는 동도 섬 → 「어디가 닿고 어디가 안 닿는지」.
+       ⚠ v102.8 의 알약(「지도에 찍힌 거래」 = 이미 예산 범위로 거른 거래)의 중앙값은 **정의상 거의 늘 예산 안**이라 색을 입힐 뜻이 없었음.
+     C 단지 상세 시트 — 말풍선을 누르면 지도 위 아래쪽 시트: 선택 거래 · 면적별 건수·최저~최고 · 이 단지 최근 거래 표(목록 상자와 같은 dealBox). */
+  let layer = 'deal';
+  let pendingFocus = null;
+  let statsToken = 0;
+  const layerBox = byId('dealMapLayer');
+  const legend = byId('dealMapLegend');
+  const miss = byId('dealMapMiss');
+
   function clearOverlays() {
     overlays.forEach((overlay) => overlay.setMap(null));
     overlays = [];
@@ -12638,32 +12658,99 @@ if(RESUME_RESULT) showResult(false);
     placed = [];
     levelNow = 'deal';
     pendingFloor = null; floor = null;
+    statsToken++;
     if (mapNode) mapNode.removeAttribute('data-level');
     const note = byId('dealMapNote'); if (note) note.hidden = true;
+    if (legend) legend.hidden = true;
+    if (miss) miss.hidden = true;
     activeLabel = null;
-    if (detail) detail.hidden = true;
+    closeSheet(false);
   }
 
+  /* ─── C 시트 ─── */
+  const nb = (t) => String(t).replace(/ /g, ' ');
+  function sheetShell(title, onBack) {
+    detail.replaceChildren();
+    const head = document.createElement('div'); head.className = 'yk-sheet-head';
+    const h = document.createElement('h3'); h.textContent = title; h.tabIndex = -1;
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'yk-sheet-close'; x.setAttribute('aria-label', '닫기');
+    x.addEventListener('click', () => closeSheet(true));
+    head.append(h, x);
+    detail.append(head);
+    detail.hidden = false;
+    detail.setAttribute('role', 'region');
+    detail.setAttribute('aria-label', title + ' 상세');
+    return h;
+  }
+  function closeSheet(returnFocus) {
+    if (!detail) return;
+    const back = activeLabel;
+    if (!detail.hidden && returnFocus && back && back.isConnected) back.focus({ preventScroll: true });
+    if (activeLabel && returnFocus) { activeLabel.classList.remove('is-active'); activeLabel = null; setTimeout(declutter, 0); }
+    detail.hidden = true;
+  }
+  function areaSummary(all) {
+    const by = new Map();
+    all.forEach((n) => { const a = n.areaM2 == null ? null : Number(n.areaM2); if (a == null) return; if (!by.has(a)) by.set(a, []); by.get(a).push(Number(n.amountMan)); });
+    if (!by.size) return null;
+    const ul = document.createElement('ul'); ul.className = 'yk-area';
+    [...by.entries()].sort((p, q) => q[0] - p[0]).forEach(([a, v]) => {
+      const lo = Math.min(...v), hi = Math.max(...v);
+      const li = document.createElement('li');
+      const k = document.createElement('span'); k.textContent = areaText(a);
+      const val = document.createElement('b');
+      val.textContent = v.length + '건 · ' + (lo === hi ? nb(fullPrice(lo)) : nb(fullPrice(lo)) + ' ~ ' + nb(fullPrice(hi)));
+      li.append(k, val); ul.append(li);
+    });
+    return ul;
+  }
   function showDetail(deal, button) {
-    if (activeLabel) activeLabel.classList.remove('is-active');
+    if (activeLabel && activeLabel !== button) activeLabel.classList.remove('is-active');
     activeLabel = button;
     button.classList.add('is-active');
     setTimeout(declutter, 0);
+    const h = sheetShell(deal.name || '단지');
     const parts = typeof areaParts === 'function' ? areaParts(Number(deal.areaM2).toFixed(1).replace(/\.0$/, '')) : null;
-    /* v102.8 — 상세 카드는 전용㎡ 와 평형을 **둘 다** 적습니다(지도 말풍선이 평형만 적게 되어 원값을 여기서 봅니다). */
+    /* v102.8 — 선택 거래는 전용㎡ 와 평형을 **둘 다** 적습니다(말풍선이 평형만 적어 원값을 여기서 봅니다). */
     const area = parts ? [parts.m2, parts.py].filter(Boolean).join(' · ') : '';
     const date = typeof dealDate === 'function' ? dealDate(deal) : '';
-    const place = [deal.dong, area, date].filter(Boolean).join(' · ');
-    detail.replaceChildren();
-    const title = document.createElement('h3');
-    title.textContent = deal.name || '단지';
-    const price = document.createElement('strong');
-    price.textContent = fullPrice(deal.amountMan);
-    const meta = document.createElement('p');
-    meta.textContent = place;
-    detail.append(title, price, meta);
-    detail.hidden = false;
+    const pick = document.createElement('div'); pick.className = 'yk-pick';
+    const price = document.createElement('strong'); price.textContent = fullPrice(deal.amountMan);
+    const meta = document.createElement('p'); meta.textContent = [deal.dong, area, date].filter(Boolean).join(' · ');
+    pick.append(price, meta);
+    detail.append(pick);
+    const key = typeof dealSameKey === 'function' ? dealSameKey(deal) : '';
+    const all = (DEAL.items || []).filter((n) => dealSameKey(n) === key);
+    const sum = areaSummary(all); if (sum) detail.append(sum);
+    if (typeof dealBox === 'function') {
+      const wrap = document.createElement('div');
+      /* 목록 상자와 **같은 함수**(원칙 58) — 면적별 줄은 위 요약이 말하므로 상자의 같은 면적 한 줄은 뺍니다. */
+      wrap.innerHTML = dealBox(deal, 'Map').replace('class="costbox dealbox"', 'class="costbox dealbox open"').replace(/<p class="deal-range">[\s\S]*?<\/p>/, '');
+      detail.append(...wrap.childNodes);
+    }
+    h.focus({ preventScroll: true });
   }
+  function showAreaSheet(group) {
+    const h = sheetShell(group.name);
+    const pick = document.createElement('div'); pick.className = 'yk-pick';
+    const price = document.createElement('strong'); price.textContent = '거래가 중앙값 ' + fullPrice(group.price);
+    const meta = document.createElement('p');
+    const gap = Math.abs(group.price - DEAL.lastPrice);
+    meta.textContent = `최근 ${DEAL.months}개월 거래 ${group.count}건 · ` + (group.price <= DEAL.lastPrice ? `내 예상 집값보다 ${fullPrice(gap)} 낮아요` : `내 예상 집값보다 ${fullPrice(gap)} 높아요`);
+    pick.append(price, meta); detail.append(pick);
+    const inBudget = document.createElement('p'); inBudget.className = 'yk-area-fit';
+    inBudget.textContent = group.items.length ? `예산 범위에서 거래된 단지 ${group.items.length}곳` : '예산 범위에서 거래된 단지가 없어요';
+    detail.append(inBudget);
+    if (group.items.length) {
+      const go = document.createElement('button'); go.type = 'button'; go.className = 'yk-sheet-go';
+      go.textContent = '이 지역 단지 보기';
+      go.addEventListener('click', () => { setLayer('deal'); pendingFloor = 'deal'; floor = null; closeSheet(false); zoomTo(group); renderLevel(); });
+      detail.append(go);
+    }
+    h.focus({ preventScroll: true });
+  }
+  if (layerBox) layerBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-layer]'); if (b) setLayer(b.dataset.layer); });
+  if (detail) detail.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeSheet(true); } });
 
   function addOverlay(deal, coordinate, positions, overlayRank) {
     const position = new naver.maps.LatLng(coordinate.lat, coordinate.lng);
@@ -12671,34 +12758,36 @@ if(RESUME_RESULT) showResult(false);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `yk-map-label${deal.amountMan > DEAL.lastPrice ? ' is-over' : ''}`;
-    button.setAttribute('aria-label', `${deal.name || '단지'}, ${fullPrice(deal.amountMan)}`);
+    const baseLabel = `${deal.name || '단지'}, ${fullPrice(deal.amountMan)}`;
+    button.setAttribute('aria-label', baseLabel);
+    button.__ykBaseLabel = baseLabel;
     const area = document.createElement('span');
-    /* v101 — 말풍선이 한 줄이 되며 「전용」은 뺐습니다(누르면 상세 카드에 「전용 59.9㎡」). 면적이 없으면 비웁니다. */
-    /* v102.8 — 오너 「지도에는 전용면적 말고 공급평형으로」(2026-09-15). 목록과 **같은 함수**(areaParts · POLICY.area.pyeongToM2)의 평형.
-       평형은 공급면적 **추정치**라는 각주가 지도 바로 아래(#dealNote)에 있습니다(원칙 39). 평형을 못 셈하면 전용㎡ 로 둡니다. */
+    /* v102.8 — 오너 「지도에는 전용면적 말고 공급평형으로」(2026-09-15). 목록과 **같은 함수**(areaParts · POLICY.area.pyeongToM2)의 평형. */
     const pp = typeof areaParts === 'function' ? areaParts(deal.areaM2) : null;
     area.textContent = pp && pp.py ? pp.py : (Number(deal.areaM2) > 0 ? `${Math.round(Number(deal.areaM2))}㎡` : '');
     const price = document.createElement('strong');
     price.textContent = compactPrice(deal.amountMan);
     button.append(area, price);
-    const open = () => { showDetail(deal, button); map.panTo(position); };
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      open();
-    });
-    /* 🔴 라벨은 **진짜 `<button>` 요소**를 그대로 넘깁니다(HtmlIcon.content 는 문자열과 요소를 다 받습니다).
-       문자열로 넘기면 위 리스너가 사라져 **키보드로 못 엽니다.**
-       ⚠ 그래도 마커 쪽에 한 번 더 겁니다 — 지도가 요소를 복제해 넣는 경우를 대비한 것입니다.
-         둘 다 불려도 `open()` 은 토글이 아니라 열기라서 결과가 같습니다. */
+    /* v110 A — 겹친 말풍선이 있으면(「+N」) 누르면 그 묶음이 보이게 확대. 더 벌어지지 않는 자리(같은 좌표 · 줌 18 이상)면 상세. */
+    const open = () => {
+      const members = button.__ykMembers || [];
+      const z = map.getZoom ? map.getZoom() : 0;
+      const pts = [position].concat(members.map((m) => m.position));
+      const same = pts.every((q) => q.lat() === pts[0].lat() && q.lng() === pts[0].lng());
+      if (members.length && !same && z < 18) { map.fitBounds(pts, { top:72, right:72, bottom:72, left:72 }); return; }
+      showDetail(deal, button); map.panTo(position);
+    };
+    let lastOpen = 0;
+    const once = () => { const now = Date.now(); if (now - lastOpen < 300) return; lastOpen = now; open(); };
+    button.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); once(); });
     const marker = new naver.maps.Marker({
       position, map,
       icon: { content:button, anchor:naver.maps.Position.BOTTOM_CENTER },
-      /* v101 — 겹칠 때 **앞 순서(예산 이하 · 비싼 순)** 가 위에 섭니다. 점으로 접힌 것이 말풍선을 덮지 않게. */
+      /* v101 — 겹칠 때 **앞 순서(예산 이하 · 비싼 순)** 가 위에 섭니다. */
       zIndex: 10 + (overlayRank || 0)
     });
-    naver.maps.Event.addListener(marker, 'click', open);
-    marker.__ykLabel = button; button.__ykDeal = deal;
+    naver.maps.Event.addListener(marker, 'click', once);
+    marker.__ykLabel = button; button.__ykDeal = deal; button.__ykPosition = position;
     button.dataset.lawd = String(deal.lawd || ''); button.dataset.dong = String(deal.dong || ''); button.dataset.man = String(Number(deal.amountMan) || 0);
     overlays.push(marker);
     placed.push({ deal, position, button });
@@ -12731,7 +12820,9 @@ if(RESUME_RESULT) showResult(false);
       return;
     }
     clearOverlays();
-    const deals = mapDeals();
+    const all = mapDeals();
+    const MAP_MAX = 60;   /* v110 A — 지오코딩 한도·속도 보기 값(v101 은 24). 넘으면 지도 밑에 말합니다. */
+    const deals = all.slice(0, MAP_MAX);
     if (!deals.length) {
       if (status) status.textContent = '표시할 거래가 없어요';
       return;
@@ -12751,7 +12842,7 @@ if(RESUME_RESULT) showResult(false);
     if (token !== paintToken || mode !== 'map') return;
 
     const positions = [];
-    /* v101 — 말풍선 우선순위: 예산 이하 먼저 · 그 안에서 비싼 순(= 예산에 가까운 순 · 목록 기본 정렬과 같은 방향). */
+    /* v101 — 말풍선 우선순위: 예산 이하 먼저 · 그 안에서 비싼 순. */
     located.sort((a, b) => labelOrder(a.deal, b.deal));
     located.forEach(({ deal, coordinate }, i) => addOverlay(deal, coordinate, positions, located.length - i));
     if (positions.length > 1) map.fitBounds(positions, { top:52, right:52, bottom:52, left:52 });
@@ -12760,20 +12851,26 @@ if(RESUME_RESULT) showResult(false);
       map.setZoom(15);
     }
     if (status) status.textContent = located.length ? `단지 ${located.length}곳` : '확인된 단지 위치가 없어요';
-    buildGroups();
+    /* v110 A — 목록과 지도 곳 수가 다르면 **왜 다른지** 지도 밑에 한 줄(목록 머리 「N곳」과 지도 「단지 M곳」을 사람이 비교합니다). */
+    if (miss) {
+      const lost = deals.length - located.length, cut = all.length - deals.length;
+      const t = [cut > 0 ? `목록 ${all.length}곳 중 가격순 앞 ${deals.length}곳만 지도에 표시해요.` : '',
+        lost > 0 ? `${lost}곳은 주소로 위치를 찾지 못해 지도에 없어요.` : ''].filter(Boolean).join(' ');
+      miss.textContent = t; miss.hidden = !t;
+    }
+    await buildGroups(token);
+    if (token !== paintToken || mode !== 'map') return;
+    if (pendingFocus) { const k = pendingFocus; pendingFocus = null; focusKey(k); }
     setTimeout(renderLevel, 0);
   }
 
-  /* ─── v102.8 — 확대 단계: 구 → 동 → 단지 ─────────────────────────────────────────────
-     멀리서는 말풍선 24개가 한 덩어리가 됩니다(오너 실기 캡처 2026-09-15 · 종로·용산·성동: 서울 전체 줌에서 말풍선 4 · 나머지 점).
-     부동산 지도 앱의 일반 문법대로 **멀면 구 · 중간이면 동 · 가까우면 단지**로 묶습니다. 고유 외형(색·아이콘)은 안 가져옵니다.
-     · 알약 = 「이름 | 거래가 중앙값」(오너 결정). **지도에 찍힌 거래**(= 목록과 같은 셈 mapDeals · 좌표를 찾은 것)의 가운데 값.
-       평균이 아니라 중앙값인 이유: 면적이 섞여 비싼 한 건에 크게 흔들립니다. 짝수면 가운데 둘의 평균.
-     · 단계 고르기: 지도가 멈출 때마다(`idle`) **투영 좌표**(`map.getProjection().fromCoordToOffset` · 공식 Map/MapSystemProjection)로
-       말풍선·알약이 몇 개나 안 겹치고 서는지 셉니다. 단지 말풍선 60% 이상 → 단지 · 동 알약 70% 이상(또는 구가 하나) → 동 · 아니면 구.
-       단지가 3곳 이하면 늘 단지. 투영이 없으면(구형 SDK · 검사용 가짜) 단지로 둡니다 — v101 모양 그대로.
-     · 알약을 누르면 그 묶음 단지들이 다 보이게 확대합니다(fitBounds). 한 자리에 모여 있으면 두 단계 확대. */
-  const LEVEL_BOX = { deal: { w: 68, h: 46 }, dong: { w: 132, h: 32 }, gu: { w: 120, h: 32 } };   /* v102.9 — 단지 말풍선이 두 줄 표가 되어 65×43 실측(390px · 「67평 16.7억」) + 여유 */
+  /* ─── v102.8 확대 단계(구 → 동 → 단지) + v110 B 동네 시세 ─────────────────────────────────
+     · 단계 고르기(투영 좌표로 겹침을 셈)는 v102.8 그대로. 「단지」 보기에서 단지 3곳 이하면 늘 단지.
+     · 알약 금액 = **그 구·동 최근 거래 전체**(목록 필터 DEAL.pass 적용 · 가격 무관)의 중앙값 — 평균이 아닌 이유: 면적이 섞여 한 건에 크게 흔들림.
+     · 알약 색 = 중앙값 ÷ 내 예상 집값: 이하 is-fit(파랑) · DEAL.overBand 이내 is-near(연한 파랑) · 그 이상 is-over(회청).
+     · 자리 = 그 동에 찍힌 단지 좌표 평균, 없으면 「시도 시군구 동」 지오코딩 한 번(캐시). 못 찾으면 그 알약은 안 섬(짐작 좌표 없음).
+     · 누르면: 「단지」 보기이고 찍힌 단지가 있으면 확대(바닥 단계) · 아니면 시트(중앙값 · 거래 건수 · 예산과의 차 · 「이 지역 단지 보기」). */
+  const LEVEL_BOX = { deal: { w: 68, h: 46 }, dong: { w: 132, h: 32 }, gu: { w: 120, h: 32 } };   /* v102.9 — 두 줄 말풍선 65×43 실측 + 여유 */
   function median(values) {
     const v = values.filter(Number.isFinite).sort((a, b) => a - b);
     if (!v.length) return 0;
@@ -12785,23 +12882,44 @@ if(RESUME_RESULT) showResult(false);
     const m = /(\S+[구군])$/.exec(full);
     return m ? m[1] : full;
   }
+  function tierOf(price) {
+    const b = DEAL.lastPrice || 0;
+    if (!(b > 0)) return 'fit';
+    return price <= b ? 'fit' : price <= Math.round(b * DEAL.overBand) ? 'near' : 'over';
+  }
+  const TIER_TEXT = { fit: '내 예상 집값 이하', near: '내 예상 집값을 조금 넘음', over: '내 예상 집값보다 높음' };
   function groupsOf(level) {
+    const pass = typeof DEAL.pass === 'function' ? DEAL.pass : () => true;
+    const keyOf = (d) => level === 'gu' ? String(d.lawd || '') : `${d.lawd || ''}|${d.dong || ''}`;
     const buckets = new Map();
-    placed.forEach((p) => {
-      const k = level === 'gu' ? String(p.deal.lawd || '') : `${p.deal.lawd || ''}|${p.deal.dong || ''}`;
-      if (!buckets.has(k)) buckets.set(k, []);
-      buckets.get(k).push(p);
+    (DEAL.items || []).filter((d) => Number(d.amountMan) > 0 && pass(d)).forEach((d) => {
+      const k = keyOf(d);
+      if (!buckets.has(k)) buckets.set(k, { deals: [], items: [] });
+      buckets.get(k).deals.push(d);
     });
-    return [...buckets.values()].map((items) => {
-      const d = items[0].deal;
-      const lat = items.reduce((t, p) => t + p.position.lat(), 0) / items.length;
-      const lng = items.reduce((t, p) => t + p.position.lng(), 0) / items.length;
-      return { level, items, name: level === 'gu' ? guName(d.lawd) : (d.dong || guName(d.lawd)),
-        price: median(items.map((p) => Number(p.deal.amountMan))), center: new naver.maps.LatLng(lat, lng) };
+    placed.forEach((p) => { const b = buckets.get(keyOf(p.deal)); if (b) b.items.push(p); });
+    return [...buckets.values()].map(({ deals, items }) => {
+      const d = deals[0];
+      const price = median(deals.map((x) => Number(x.amountMan)));
+      return { level, items, deals, count: deals.length, lawd: d.lawd, dong: d.dong,
+        name: level === 'gu' ? guName(d.lawd) : (d.dong || guName(d.lawd)), price, tier: tierOf(price), center: null };
     });
+  }
+  async function centerOf(group) {
+    if (group.items.length) {
+      const lat = group.items.reduce((t, p) => t + p.position.lat(), 0) / group.items.length;
+      const lng = group.items.reduce((t, p) => t + p.position.lng(), 0) / group.items.length;
+      return new naver.maps.LatLng(lat, lng);
+    }
+    const sido = typeof sidoOfCode === 'function' ? sidoOfCode(group.lawd) : '';
+    const sgg = typeof sggName === 'function' ? sggName(group.lawd) : '';
+    if (!sido || !sgg) return null;
+    const c = await geocode(group.level === 'gu' ? `${sido} ${sgg}` : (group.dong ? `${sido} ${sgg} ${group.dong}` : ''));
+    return c ? new naver.maps.LatLng(c.lat, c.lng) : null;
   }
   function zoomTo(group) {
     const pts = group.items.map((p) => p.position);
+    if (!pts.length) { if (group.center) { map.setCenter(group.center); map.setZoom(Math.max((map.getZoom ? map.getZoom() : 14) + 2, 15)); } return; }
     const same = pts.every((q) => q.lat() === pts[0].lat() && q.lng() === pts[0].lng());
     if (pts.length > 1 && !same) map.fitBounds(pts, { top: 60, right: 60, bottom: 60, left: 60 });
     else { map.setCenter(pts[0]); map.setZoom(Math.max((map.getZoom ? map.getZoom() : 14) + 2, 16)); }
@@ -12809,32 +12927,39 @@ if(RESUME_RESULT) showResult(false);
   function addGroupOverlay(group) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `yk-map-group${group.price > DEAL.lastPrice ? ' is-over' : ''}`;
+    button.className = `yk-map-group is-${group.tier}${group.tier === 'over' ? ' is-over' : ''}`;
     button.hidden = true;
     button.dataset.level = group.level;
-    button.dataset.count = String(group.items.length);
+    button.dataset.count = String(group.count);
+    button.dataset.places = String(group.items.length);
     button.dataset.median = String(group.price);
-    button.setAttribute('aria-label', `${group.name}, 거래 ${group.items.length}곳, 거래가 중앙값 ${fullPrice(group.price)}, 누르면 확대`);
+    button.dataset.tier = group.tier;
     const name = document.createElement('span');
     name.textContent = group.name;
     const price = document.createElement('strong');
     price.textContent = compactPrice(group.price);
     button.append(name, price);
-    /* 버튼과 마커에 둘 다 걸려(단지 말풍선과 같은 이유) 한 번 누름에 두 번 불릴 수 있습니다 — 확대가 두 번 겹치지 않게 300ms 안의 두 번째는 버립니다. */
+    const label = () => `${group.name}, 최근 ${DEAL.months}개월 거래 ${group.count}건, 거래가 중앙값 ${fullPrice(group.price)}, ${TIER_TEXT[group.tier]}, `
+      + (layer === 'deal' && group.items.length ? '누르면 확대' : '누르면 상세');
+    button.setAttribute('aria-label', label());
+    button.__ykLabelFn = label;
     let lastOpen = 0;
     const open = () => { const now = Date.now(); if (now - lastOpen < 300) return; lastOpen = now;
-      pendingFloor = group.level === 'gu' ? 'dong' : 'deal'; floor = null; zoomTo(group); };
+      if (layer === 'deal' && group.items.length) { closeSheet(false); pendingFloor = group.level === 'gu' ? 'dong' : 'deal'; floor = null; zoomTo(group); }
+      else showAreaSheet(group); };
     button.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); open(); });
     const marker = new naver.maps.Marker({ position: group.center, map,
-      icon: { content: button, anchor: naver.maps.Position.CENTER }, zIndex: 100 + group.items.length });
+      icon: { content: button, anchor: naver.maps.Position.CENTER }, zIndex: 100 + group.count });
     naver.maps.Event.addListener(marker, 'click', open);
     groupMarkers.push({ marker, button, group });
   }
-  function buildGroups() {
-    if (placed.length <= 3) return;
+  async function buildGroups(token) {
+    const my = statsToken;
     const gu = groupsOf('gu'), dong = groupsOf('dong');
-    if (gu.length > 1) gu.forEach(addGroupOverlay);
-    dong.forEach(addGroupOverlay);
+    const list = (gu.length > 1 ? gu : []).concat(dong);
+    await Promise.all(list.map(async (g) => { g.center = await centerOf(g); }));
+    if (my !== statsToken || (token != null && token !== paintToken)) return;
+    list.filter((g) => g.center).forEach(addGroupOverlay);
   }
   function standingShare(points, box) {
     if (!points.length) return 1;
@@ -12846,15 +12971,17 @@ if(RESUME_RESULT) showResult(false);
     return kept.length / points.length;
   }
   function pickLevel() {
-    if (placed.length <= 3 || !groupMarkers.length) return 'deal';
     const proj = map && typeof map.getProjection === 'function' ? map.getProjection() : null;
-    if (!proj || typeof proj.fromCoordToOffset !== 'function') return 'deal';
+    const canProject = !!(proj && typeof proj.fromCoordToOffset === 'function');
     const off = (ll) => proj.fromCoordToOffset(ll);
-    if (standingShare(placed.map((p) => off(p.position)), LEVEL_BOX.deal) >= 0.6) return 'deal';
     const dongs = groupMarkers.filter((g) => g.group.level === 'dong');
     const hasGu = groupMarkers.some((g) => g.group.level === 'gu');
-    if (!hasGu || standingShare(dongs.map((g) => off(g.group.center)), LEVEL_BOX.dong) >= 0.7) return 'dong';
-    return 'gu';
+    const dongOrGu = () => (!hasGu || !canProject || standingShare(dongs.map((g) => off(g.group.center)), LEVEL_BOX.dong) >= 0.7) ? 'dong' : 'gu';
+    if (layer === 'area') return groupMarkers.length ? dongOrGu() : 'deal';
+    if (placed.length <= 3 || !groupMarkers.length) return 'deal';
+    if (!canProject) return 'deal';
+    if (standingShare(placed.map((p) => off(p.position)), LEVEL_BOX.deal) >= 0.6) return 'deal';
+    return dongOrGu();
   }
   function renderLevel() {
     if (!map) return;
@@ -12863,40 +12990,63 @@ if(RESUME_RESULT) showResult(false);
     if (pendingFloor) { floor = { level: pendingFloor, zoom: z }; pendingFloor = null; }
     if (floor && z < floor.zoom) floor = null;
     let level = pickLevel();
-    if (floor && RANK[floor.level] > RANK[level]) level = floor.level;
+    if (layer === 'deal' && floor && RANK[floor.level] > RANK[level]) level = floor.level;
     if (level === 'gu' && !groupMarkers.some((g) => g.group.level === 'gu')) level = 'dong';
     if (level !== 'deal' && !groupMarkers.length) level = 'deal';
     levelNow = level;
-    if (mapNode) mapNode.dataset.level = level;
+    if (mapNode) { mapNode.dataset.level = level; mapNode.dataset.layer = layer; }
     placed.forEach((p) => { p.button.hidden = level !== 'deal'; });
-    groupMarkers.forEach((g) => { g.button.hidden = g.group.level !== level; });
+    groupMarkers.forEach((g) => { g.button.hidden = g.group.level !== level; g.button.setAttribute('aria-label', g.button.__ykLabelFn()); });
     const note = byId('dealMapNote'); if (note) note.hidden = level === 'deal';
-    if (level !== 'deal' && detail && !detail.hidden) { if (activeLabel) activeLabel.classList.remove('is-active'); activeLabel = null; detail.hidden = true; }
+    if (legend) legend.hidden = level === 'deal';
+    if (level !== 'deal' && activeLabel) { activeLabel.classList.remove('is-active'); activeLabel = null; if (detail) detail.hidden = true; }
     if (level === 'deal') declutter();
   }
+  function setLayer(next) {
+    layer = next === 'area' ? 'area' : 'deal';
+    if (layerBox) layerBox.querySelectorAll('button[data-layer]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layer === layer)));
+    floor = null; pendingFloor = null;
+    if (detail && !detail.hidden && layer === 'area' && activeLabel) closeSheet(false);
+    renderLevel();
+  }
 
-  /* ─── v101 — 말풍선 겹침 정리 (오너 실기 캡처 2026-09-15: 성동·중구·용산 36곳이 한 덩어리로 겹쳐 못 읽음) ───
-     지도가 멈출 때마다(`idle` · 공식 Map 이벤트 · 확인 2026-09-15) 화면에 그려진 말풍선의 **실제 상자**를 재서,
-     앞 순서 말풍선과 겹치는 것은 **작은 점**으로 접습니다. 확대하면 자리가 벌어져 다시 말풍선이 됩니다.
-     ⚠ 좌표 계산(투영)을 쓰지 않고 DOM 상자를 잽니다 — SDK 내부 값에 기대지 않습니다.
-     ⚠ 점도 버튼입니다 — 누르면 상세가 뜨고, 고른 것은 늘 말풍선으로 섭니다. */
+  /* ─── v101 말풍선 우선순위 · v110 A 겹침 정리 「+N」 ───
+     지도가 멈출 때마다 그려진 말풍선의 **실제 상자**를 재서, 앞 순서 말풍선과 겹치는 것은 숨기고 앞 말풍선에 「+N」을 붙입니다.
+     ⏹ v101 은 겹친 것을 12px 점으로 줄였습니다 — 오너 실기: 「지도에는 목록보다 단지가 최소화돼서 나온다」. 점은 몇 곳이 거기 있는지 말하지 않습니다.
+     ⚠ 고른 말풍선(activeLabel)은 늘 섭니다. 「+N」 말풍선을 누르면 그 묶음이 보이게 확대됩니다(addOverlay). */
   function labelOrder(a, b) {
     const budget = (typeof DEAL === 'object' && DEAL && DEAL.lastPrice) || Infinity;
     return ((a.amountMan > budget) - (b.amountMan > budget)) || (b.amountMan - a.amountMan);
   }
   function declutter() {
     const labels = overlays.map((m) => m.__ykLabel).filter((b) => b && b.isConnected);
-    labels.forEach((b) => b.classList.remove('is-dot'));
+    labels.forEach((b) => { b.classList.remove('is-dot', 'is-hid', 'has-more'); b.querySelector('.yk-more')?.remove(); b.__ykMembers = []; if (b.__ykBaseLabel) b.setAttribute('aria-label', b.__ykBaseLabel); });
     const boxes = labels.map((b) => ({ b, r: b.getBoundingClientRect() }))
       .sort((x, y) => (x.b === activeLabel ? -1 : y.b === activeLabel ? 1 : labelOrder(x.b.__ykDeal, y.b.__ykDeal)));
     const kept = [];
     const PAD = 2;
     boxes.forEach(({ b, r }) => {
       if (!r.width) return;
-      const hit = kept.some((k) => r.left < k.right + PAD && r.right > k.left - PAD && r.top < k.bottom + PAD && r.bottom > k.top - PAD);
-      if (hit && b !== activeLabel) b.classList.add('is-dot');
-      else kept.push(r);
+      const host = kept.find((k) => r.left < k.r.right + PAD && r.right > k.r.left - PAD && r.top < k.r.bottom + PAD && r.bottom > k.r.top - PAD);
+      if (host && b !== activeLabel) { b.classList.add('is-hid'); host.b.__ykMembers.push({ deal: b.__ykDeal, position: b.__ykPosition }); }
+      else kept.push({ b, r });
     });
+    kept.forEach(({ b }) => {
+      const n = b.__ykMembers.length; if (!n) return;
+      const more = document.createElement('em'); more.className = 'yk-more'; more.setAttribute('aria-hidden', 'true'); more.textContent = '+' + n;
+      b.append(more); b.classList.add('has-more');
+      b.setAttribute('aria-label', `${b.__ykBaseLabel}, 주변 단지 ${n}곳 더, 누르면 확대`);
+    });
+  }
+
+  /* v110 A — 목록 거래 상세 「지도에서 보기」 → 지도로 바꾸고 그 단지에 맞춰 시트를 엶. 못 찾은 단지면 지도 밑 한 줄. */
+  function focusKey(key) {
+    const p = placed.find((q) => dealSameKey(q.deal) === key);
+    if (!p) { if (miss) { miss.textContent = '이 단지는 주소로 위치를 찾지 못해 지도에 없어요.'; miss.hidden = false; } return; }
+    setLayer('deal');
+    map.setCenter(p.position); map.setZoom(Math.max(map.getZoom ? map.getZoom() : 0, 17));
+    pendingFloor = 'deal'; renderLevel();
+    showDetail(p.deal, p.button);
   }
 
   function setMode(next) {
@@ -12961,12 +13111,15 @@ if(RESUME_RESULT) showResult(false);
   }
 
   listTab.addEventListener('click', () => setMode('list'));
+  /* v110 A — 목록 거래 상세 「지도에서 보기」 */
+  list.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.deal-onmap'); if (!b) return; e.preventDefault(); e.stopPropagation(); pendingFocus = b.dataset.key; setMode('map'); bar.scrollIntoView({ block: 'nearest' }); });
+  { const near = legend && legend.querySelector('[data-near]'); if (near) near.textContent = `${Math.round((DEAL.overBand - 1) * 100)}% 이내로 높음`; }
   mapTab.addEventListener('click', () => setMode('map'));
   new MutationObserver(() => {
     if (mode === 'map') paintMap();
   }).observe(list, { childList:true, subtree:true });
 
-  window.__ykMap = { isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map };
+  window.__ykMap = { isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map, setLayer, layer: () => layer, focusKey };
   window.navermap_authFailure = function () {
     window.__ykMapFailed = true;
     if (status) status.textContent = '지도를 열 수 없어요';
@@ -13609,6 +13762,47 @@ body #viewNext .minigrid .external-links[open]>summary::after{content:'';transfo
 body #viewNext .minigrid .external-links[open]{padding-bottom:12px}
 body #viewNext .minigrid .external-links .mini{margin:0 0 8px}
 body #viewNext .minigrid .external-links>summary:focus-visible{outline:2px solid #8FAEFF;outline-offset:2px;border-radius:12px}
+</style>
+<style>/* v110 — 실거래 큰 지도 A·B·C */
+body #viewDeals .deal-map-panel{height:auto;min-height:0;overflow:visible;background:#fff}
+body #viewDeals .yk-map-stage{position:relative;height:min(62svh,610px);min-height:430px;overflow:hidden;border-radius:15px;background:#E7E7E3}
+body #viewDeals .yk-layer{position:absolute;top:10px;left:10px;z-index:300;display:flex;padding:3px;border-radius:999px;background:#fff;box-shadow:0 2px 8px -2px rgba(15,23,42,.35)}
+body #viewDeals .yk-layer button{position:relative;min-height:34px;margin:0;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#465262;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+body #viewDeals .yk-layer button::before{content:"";position:absolute;inset:-5px 0}
+body #viewDeals .yk-layer button[aria-pressed="true"]{background:#192332;color:#fff}
+body #viewDeals .yk-layer button:focus-visible{outline:3px solid #8FAEFF;outline-offset:1px}
+body #viewDeals .yk-map-label.is-hid{display:none}
+body #viewDeals .yk-map-label .yk-more{position:absolute;top:-8px;right:-10px;min-width:22px;height:20px;padding:0 5px;box-sizing:border-box;border:2px solid #fff;border-radius:999px;background:#192332;color:#fff;font-size:11px;font-style:normal;font-weight:700;line-height:16px;text-align:center;font-variant-numeric:tabular-nums}
+body #viewDeals .yk-map-group.is-fit strong{background:#1F5BFF;color:#fff}
+body #viewDeals .yk-map-group.is-near strong{background:#DCE6FF;color:#1848D6}
+body #viewDeals .yk-map-group.is-over strong{background:#5f6b7d;color:#fff}
+body #viewDeals .yk-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:var(--sp-2) var(--sp-3) 0;font-size:12px;line-height:1.5;color:#465262}
+body #viewDeals .yk-legend[hidden],body #viewDeals .deal-map-miss[hidden]{display:none}
+body #viewDeals .yk-legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+body #viewDeals .yk-legend i{width:10px;height:10px;border-radius:3px;background:#1F5BFF}
+body #viewDeals .yk-legend i.near{background:#DCE6FF;box-shadow:inset 0 0 0 1px #5C85FF}
+body #viewDeals .yk-legend i.over{background:#5f6b7d}
+body #viewDeals .yk-legend b{font-weight:400}
+body #viewDeals .deal-map-miss{margin:var(--sp-2) var(--sp-3) var(--sp-3);font-size:13px;line-height:1.5;color:#5f6b7d;word-break:keep-all}
+body #viewDeals .deal-map-detail{position:absolute;left:8px;right:8px;bottom:8px;top:auto;z-index:400;max-height:72%;overflow:auto;overscroll-behavior:contain;margin:0;padding:4px 16px 16px;border:1px solid #e1e5eb;border-radius:16px;background:#fff;box-shadow:0 8px 24px -8px rgba(15,23,42,.35)}
+body #viewDeals .deal-map-detail[hidden]{display:none}
+body #viewDeals .yk-sheet-head{position:sticky;top:-4px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 -16px;padding:4px 4px 0 16px;background:#fff}
+body #viewDeals .yk-sheet-head h3{margin:0;min-width:0;color:#192332;font-size:17px;font-weight:700;line-height:1.35;word-break:keep-all;outline:0}
+body #viewDeals .yk-sheet-close{position:relative;flex:none;width:44px;height:44px;margin:0;padding:0;border:0;background:transparent;cursor:pointer}
+body #viewDeals .yk-sheet-close::before,body #viewDeals .yk-sheet-close::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:2px;margin:-1px 0 0 -7px;border-radius:1px;background:#5f6b7d;transform:rotate(45deg)}
+body #viewDeals .yk-sheet-close::after{transform:rotate(-45deg)}
+body #viewDeals .yk-sheet-close:focus-visible{outline:3px solid #8FAEFF;outline-offset:-4px;border-radius:12px}
+body #viewDeals .yk-pick{margin:0 0 10px}
+body #viewDeals .yk-pick strong{display:block;color:#192332;font-size:20px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums}
+body #viewDeals .yk-pick p{margin:2px 0 0;color:#5f6b7d;font-size:13px;line-height:1.5;word-break:keep-all}
+body #viewDeals .yk-area{list-style:none;margin:0 0 10px;padding:0;border-top:1px solid #e1e5eb}
+body #viewDeals .yk-area li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;padding:8px 0;border-bottom:1px solid #e1e5eb;font-size:13px;line-height:1.5}
+body #viewDeals .yk-area span{color:#465262}
+body #viewDeals .yk-area b{color:#192332;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;margin-left:auto}
+body #viewDeals .deal-map-detail .costbox.dealbox{margin:0;padding:12px;border-radius:12px;background:#f6f7f9}
+body #viewDeals .yk-area-fit{margin:0 0 10px;color:#465262;font-size:14px;line-height:1.5}
+body #viewDeals .yk-sheet-go,body #viewDeals .deal-onmap{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:8px 0 0;padding:0 12px;border:1px solid #CFDCFF;border-radius:12px;background:#F2F5FF;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+body #viewDeals .yk-sheet-go:focus-visible,body #viewDeals .deal-onmap:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
 </style>
 </body>
 </html>
