@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v111 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v112 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10857,6 +10857,33 @@ const aptNorm = s => String(s||'').normalize('NFKC')
   .replace(/\([^)]*\)/g,'').replace(/[\s·・.\-_]/g,'')
   .replace(/아파트$/,'').replace(/단지$/,'').toLowerCase()
   .replace(/^이편한세상/,'e편한세상');
+/* v112 — 세대수 이름 맞추기 개선 (오너 「세대수는 왜 빠져있지? 많은 단지에서」 2026-09-16).
+   운영 실거래 이름 536곳(성동·노원·마포·강서·강남 2026-07)을 옛 규칙으로 재 보니 58%만 붙었습니다.
+   못 붙은 이름의 모양(국토부 aptNm ↔ 단지표):
+     · 동 이름 접두      「건영3」 ↔ 「중계건영3차」 · 「대림(1차)」 ↔ 「응봉대림1차」
+     · 괄호 안 차수 버림 aptNorm 이 괄호째 지워 「대림(1차)」 → 「대림」(1차가 사라짐)
+     · 「차」·「단지」    「하계1청구」 ↔ 「하계1차청구」 · 「중계그린1단지」 ↔ 「중계그린」
+     · 가운데 「아파트」  「청솔아파트9」 · 끝 동 번호 「푸른마을아파트101동~111동」
+     · 영문/한글         「SKVIEW」 ↔ 「sk뷰」 · 「I-PARK」 ↔ 「아이파크」 · 「에스케이뷰」
+   ⚠ **틀리게 붙는 것이 안 붙는 것보다 나쁩니다.** 후보가 여럿이고 값이 갈리면 버리는 옛 규칙(one)을 모든 단계에 그대로 둡니다.
+   ⚠ 표(APT_UNITS)는 안 고칩니다 — 이름 표기만 양쪽을 같은 모양으로 접어서 비교합니다. 옛 단계(L1~L5)가 먼저이고, 새 단계는 옛 단계가 못 찾을 때만. */
+const aptFold = (s, dong) => {
+  let v = String(s || '').normalize('NFKC').toLowerCase();
+  /* 괄호 안: 차수·단지·시영N 같은 「이름의 일부」는 살리고, 번지·동 목록은 버림 */
+  v = v.replace(/\(([^)]*)\)/g, (m, inner) => /^\s*\d+\s*(차|단지)\s*$/.test(inner) ? inner : (/^[가-힣a-z]+\d*$/.test(inner.replace(/\s/g, '')) && !/동$/.test(inner) ? inner : ''));
+  v = v.replace(/[\s·・.\-_,~:]/g, '');
+  v = v.replace(/에스케이|skview/g, 'sk뷰').replace(/ipark/g, '아이파크').replace(/^이편한세상|이편한세상/g, 'e편한세상').replace(/엘에이치/g, 'lh');
+  v = v.replace(/(\d+동)+$/g, '').replace(/[a-z]동$/g, '').replace(/\d+동\d+동$/g, '');
+  v = v.replace(/아파트|apt$/g, '').replace(/주상복합/g, '');
+  v = v.replace(/iii$/, '3').replace(/ii$/, '2');   /* 「리베뉴Ⅱ」(NFKC → ii) ↔ 「리베뉴2」 */
+  v = v.replace(/(\d+)(차|단지)/g, '$1');
+  /* 동 이름 접두는 **떼는 법이 둘**이라 둘 다 후보로 둡니다: 「등촌동아이파크」 = 「등촌동」+「아이파크」 · 「염창동아3차」 = 「염창」+「동아3」 */
+  const full = String(dong || '').replace(/\s/g, '').toLowerCase();
+  const base = full.replace(/\d*가$/, '').replace(/동$/, '').replace(/\d+$/, '');
+  const out = new Set([v]);
+  for (const pre of [full, base]) if (pre && v.startsWith(pre) && v.length > pre.length + 1) out.add(v.slice(pre.length));
+  return [...out].filter(x => x.length >= 2);
+};
 function unitsOf(lawd, name, dong){
   const rows = APT_UNITS[lawd]; if(!rows) return null;
   const n = aptNorm(name); if(!n) return null;
@@ -10870,6 +10897,18 @@ function unitsOf(lawd, name, dong){
   if((v = one(rows.filter(r => r[1] === n))) != null) return v;                                   /* L3 구+정확 */
   if((v = one(rows.filter(r => r[1] !== n && r[1].endsWith(n)))) != null) return v;               /* L4 구+접미 */
   if((v = one(rows.filter(r => inD(r) && r[1] !== n && r[1].startsWith(n)))) != null) return v;   /* L5 동+접두 */
+  /* v112 — 접은 이름으로 한 번 더(같은 동 먼저 · 구 전체는 정확히 같을 때만) */
+  const fs = aptFold(name, dong); if(!fs.length) return null;
+  const fr = r => aptFold(r[1], r[0]);
+  if((v = one(rows.filter(r => inD(r) && fr(r).some(t => fs.includes(t))))) != null) return v;   /* F1 동+접은 이름(후보 중 하나) 같음 */
+  /* F2 — 한쪽이 다른 쪽 끝에 붙음. ⚠ 남는 앞부분에 숫자가 있으면 **다른 차수**(「상계2차중앙하이츠」 ↔ 「상계중앙하이츠」 · 「등촌7,8단지」 ↔ 「등촌8단지」)라 안 붙임 */
+  const tail = (a, b) => a.endsWith(b) && !/\d/.test(a.slice(0, a.length - b.length));
+  const near = (t, f) => t.length >= 3 && f.length >= 3 && (tail(t, f) || tail(f, t));
+  if((v = one(rows.filter(r => inD(r) && fr(r).some(t => fs.some(f => near(t, f)))))) != null) return v;   /* F2 동+접은 이름 앞뒤 붙음 */
+  /* F3 — 숫자 자리만 다름: 「대림1」 ↔ 「망원1차대림」(접으면 「1대림」). 글자와 숫자 묶음이 **둘 다** 같을 때만. */
+  const sig = t => t.replace(/\d+/g, '') + '#' + (t.match(/\d+/g) || []).sort().join(',');
+  if((v = one(rows.filter(r => inD(r) && fr(r).some(t => /\d/.test(t) && fs.some(f => sig(f) === sig(t) && f.replace(/\d+/g, '').length >= 2))))) != null) return v;
+  /* ⏹ 구 전체(다른 동)에서 접은 이름으로 찾기는 **안 함** — 「가양1차보람더하임」이 염창동 「염창1차보람더하임」에 붙었음(표본 실측). */
   return null;
 }
 /* 🔴 **카드 단위로 켭니다 — 줄 단위가 아닙니다**(오너 결정 2026.08.20).
