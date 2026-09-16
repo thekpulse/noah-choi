@@ -2802,7 +2802,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .cond-kicker,.nx-kicker{
   margin:0 0 11px;font-size:12px;font-weight:600;line-height:1.4;letter-spacing:.075em;color:var(--v-muted)
 }
-.cond-lead{margin:0;padding:0;font-size:31px;font-weight:650;line-height:1.25;letter-spacing:-.045em;color:var(--v-ink)}
+.cond-lead{margin:0;padding:0;font-size:31px;font-weight:700;line-height:1.25;letter-spacing:-.045em;color:var(--v-ink)}
 .cond-intro{
   max-width:340px;margin:12px 0 0;font-size:15px;font-weight:400;line-height:1.62;
   letter-spacing:-.012em;color:var(--v-sub)
@@ -2814,8 +2814,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 }
 .crow:last-child{border-bottom:1px solid var(--v-line-strong) !important}
 .crow .k,.crow .v{display:inline-flex;align-items:center;min-height:24px;line-height:1.35;transform:none}
-.crow .k{font-size:15px;font-weight:450;color:var(--v-sub)}
-.crow .v{font-size:15px;font-weight:650;color:var(--v-ink);text-align:right}
+.crow .k{font-size:15px;font-weight:400;color:var(--v-sub)}
+.crow .v{font-size:15px;font-weight:700;color:var(--v-ink);text-align:right}
 .crow.empty .v{color:var(--v-faint);font-weight:500}
 .crow.empty .v::after{color:var(--v-blue)}
 /* 질문 시트 — 시트 자체가 유일한 면입니다. */
@@ -2825,7 +2825,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .qsheet .sheet-grip{width:32px;height:3px;margin-bottom:22px;background:#BDBAB2}
 .qsheet .q{padding:0;background:transparent;box-shadow:none}
 .q-title{
-  margin:0;font-size:25px !important;font-weight:650 !important;line-height:1.36 !important;
+  margin:0;font-size:25px !important;font-weight:700 !important;line-height:1.36 !important;
   letter-spacing:-.04em !important;color:var(--v-ink) !important
 }
 .preset-help,.qsheet .helper{font-size:13px;line-height:1.65;color:var(--v-muted)}
@@ -2846,13 +2846,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .single-money-field span{
   flex:none;color:var(--v-sub);font-size:15px;font-weight:500;line-height:1.2;transform:none
 }
-.money-echo{min-height:22px;margin:9px 1px 0;color:var(--v-sub);font-size:14px;font-weight:550}
+.money-echo{min-height:22px;margin:9px 1px 0;color:var(--v-sub);font-size:14px;font-weight:600}
 .single-money .helper{margin:6px 1px 0}
 .single-money .fielderr{margin-left:1px;margin-right:1px}
 .preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
 .preset,.qsheet .zonecard,.qsheet .seg button,.qsheet .chip{
   min-height:50px;padding:8px 10px;border:1px solid var(--v-line);border-radius:10px;
-  background:transparent;color:var(--v-sub);box-shadow:none;font-size:14px;font-weight:550
+  background:transparent;color:var(--v-sub);box-shadow:none;font-size:14px;font-weight:600
 }
 /* 🔴 v37.7 — 이 블록의 초록(#087454)을 걷었습니다. 아래 v37 블록이 이미 먹으로 덮고
    있었지만, **덮인 초록이 파일에 남아 있으면 다음 세션이 그걸 규격으로 읽습니다**(3-7). */
@@ -2871,7 +2871,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 }
 .qsheet .subtoggle,.qsheet .debtlink{
   min-height:50px;margin-top:16px;padding:0 14px;border:1px solid var(--v-line);border-radius:10px;
-  background:transparent;color:var(--v-sub);font-size:14px;font-weight:550
+  background:transparent;color:var(--v-sub);font-size:14px;font-weight:600
 }
 .qsheet .subtoggle{display:flex;align-items:center;gap:10px}
 .qsheet input[type=checkbox]{accent-color:var(--v-ink)}
@@ -2885,12 +2885,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .qsheet .debtbox .preset-grid{margin-top:14px}
 .qsheet .debtbox .direct-entry .moneycard{background:transparent}
 .qsheet .zonegrid,.qsheet .seg{gap:8px}
-.qsheet .blockhead{margin-top:28px;font-size:14px;font-weight:650;color:var(--v-ink)}
+.qsheet .blockhead{margin-top:28px;font-size:14px;font-weight:700;color:var(--v-ink)}
 .qsheet .tip,.qsheet .pane-note{color:var(--v-sub)}
 .qsheet .zonegrid{margin-top:22px}
 .qsheet .pane{margin-top:24px}
 .qsheet .pane-title,.qsheet .drawer-t,.qsheet .tweak-label{
-  color:var(--v-muted);font-size:12px;font-weight:650;letter-spacing:.025em
+  color:var(--v-muted);font-size:12px;font-weight:700;letter-spacing:.025em
 }
 .qsheet .debtlink{
   display:flex;justify-content:space-between;width:100%;height:52px;margin-top:24px;padding:0;
@@ -2907,20 +2907,20 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 
 /* 버튼 뒤에 열리는 시트도 앞 화면과 같은 제품 언어를 사용합니다. */
 .sheet{box-shadow:0 -18px 48px -28px rgba(20,46,37,.42)}
-.sheet-title{margin:2px 0 18px;color:var(--v-ink);font-size:22px;font-weight:650;line-height:1.35}
+.sheet-title{margin:2px 0 18px;color:var(--v-ink);font-size:22px;font-weight:700;line-height:1.35}
 .sheet-row{padding:17px 0;border-bottom:1px solid var(--v-line)}
-.sheet-row b{color:var(--v-ink);font-size:15px;font-weight:650}
+.sheet-row b{color:var(--v-ink);font-size:15px;font-weight:700}
 .sheet-row span{margin-top:5px;color:var(--v-sub);font-size:14px;line-height:1.62}
 #whySheet .bs{grid-template-columns:1fr;gap:24px;margin-top:0}
 #whySheet .bs-side{padding:14px 0 0;border-top:1px solid var(--v-line-strong)}
-#whySheet .bs-cap{margin-bottom:3px;color:var(--v-muted);font-size:12px;font-weight:650;letter-spacing:.03em}
+#whySheet .bs-cap{margin-bottom:3px;color:var(--v-muted);font-size:12px;font-weight:700;letter-spacing:.03em}
 #whySheet .bs-bar{display:none}
 #whySheet .bs-it{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid var(--v-line)}
-#whySheet .bs-nm{color:var(--v-sub);font-size:14px;font-weight:450}
-#whySheet .bs-am{margin:0;color:var(--v-ink);font-size:15px;font-weight:650;text-align:right}
+#whySheet .bs-nm{color:var(--v-sub);font-size:14px;font-weight:400}
+#whySheet .bs-am{margin:0;color:var(--v-ink);font-size:15px;font-weight:700;text-align:right}
 #whySheet .costbox{margin-top:0;padding:18px 0 0;border-top:0}
 #whySheet .costrow{min-height:58px;padding:8px 0}
-#whySheet .costrow .nm{font-size:14px;font-weight:550}
+#whySheet .costrow .nm{font-size:14px;font-weight:600}
 #whySheet .costrow .amt{background:#F4F7F6;border-radius:9px}
 #whySheet .disc.quiet,#whySheet .disc-head{
   min-height:58px;margin-top:22px;padding:0;border-top:1px solid var(--v-line-strong);
@@ -2940,12 +2940,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 }
 .rhead{position:relative;margin:10px 0 22px;padding:25px 22px 27px;border:1px solid #CFDCFF;border-radius:18px;background:#F2F5FF;box-shadow:none;overflow:hidden}
 .rhead::before{position:absolute;top:0;bottom:0;left:0;width:4px;background:var(--v-blue);content:""}
-.rhead-label{font-size:15px;font-weight:550;line-height:1.45;letter-spacing:-.02em;color:var(--v-sub)}
+.rhead-label{font-size:15px;font-weight:600;line-height:1.45;letter-spacing:-.02em;color:var(--v-sub)}
 .rhead-amount{
   display:block;margin:12px 0 0;color:var(--v-ink);font-size:clamp(42px,12vw,51px);
-  font-weight:650;line-height:1.05;letter-spacing:-.055em;font-variant-numeric:tabular-nums
+  font-weight:700;line-height:1.05;letter-spacing:-.055em;font-variant-numeric:tabular-nums
 }
-.rhead-amount .ue{color:var(--v-ink);font-size:.76em;font-weight:520}
+.rhead-amount .ue{color:var(--v-ink);font-size:.76em;font-weight:500}
 .rhead-amount .um{color:var(--v-muted);font-size:.36em;font-weight:500;letter-spacing:-.02em}
 .rhead-amount.long{font-size:clamp(36px,10.5vw,46px)}
 .rhead-note{max-width:320px;margin:13px 0 0;color:var(--v-sub);font-size:13px;line-height:1.6}
@@ -2992,7 +2992,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .easy-market-row.mine .easy-market-track i{background:var(--v-blue)}
 .paywrap{padding:28px 0 30px}
 .ans-row{margin-top:9px;align-items:flex-end}
-.ans-v{color:var(--v-ink);font-size:31px;font-weight:560}
+.ans-v{color:var(--v-ink);font-size:31px;font-weight:600}
 .ans-pct{color:var(--v-muted);font-size:14px;font-weight:500}
 .ans-pct #tileBurden,.ans-pct #tileBurden.ok,.ans-pct #tileBurden.mid,.ans-pct #tileBurden.bad{color:var(--v-muted)}
 #gauge{height:4px;margin-top:18px;overflow:visible;border-radius:0;background:#DCD9D2}
@@ -3008,7 +3008,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #dealCard > .card-title{order:1}#dealCard > #dealLead{order:2}#dealCard > #dealViewBar{order:3}
 #dealCard > #dealFilterBox{order:4}#dealCard > #dealList{order:5}#dealCard > #dealMapPanel{order:6}
 #dealCard > #dealNote{order:7}#dealCard > #dealFoot{order:8}
-#viewDeals .card-title{margin:0 0 6px;color:var(--v-ink);font-size:25px;font-weight:560;letter-spacing:-.04em}
+#viewDeals .card-title{margin:0 0 6px;color:var(--v-ink);font-size:25px;font-weight:600;letter-spacing:-.04em}
 #viewDeals .helper{color:var(--v-muted);font-size:13px;line-height:1.65}
 .deal-viewbar{
   display:flex;align-items:flex-end;justify-content:space-between;gap:14px;min-height:42px;
@@ -3017,7 +3017,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .deal-switch{display:flex;align-self:stretch;gap:22px}
 .deal-switch button{
   position:relative;padding:0 0 10px;border:0;background:transparent;color:var(--v-muted);
-  font-size:14px;font-weight:550
+  font-size:14px;font-weight:600
 }
 .deal-switch button[aria-selected="true"]{color:var(--v-ink)}
 .deal-switch button[aria-selected="true"]::after{
@@ -3034,13 +3034,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #viewDeals .chips.oneline::-webkit-scrollbar{display:none}
 #viewDeals .chip.sm{
   flex:none;min-height:34px;padding:0 11px;border:1px solid var(--v-line);border-radius:999px;
-  background:transparent;color:var(--v-sub);font-size:12px;font-weight:550
+  background:transparent;color:var(--v-sub);font-size:12px;font-weight:600
 }
 #viewDeals .chip.sm.is-on{border-color:var(--v-ink);background:var(--v-ink);color:#FFF}
 #viewDeals .dealwrap{border-color:var(--v-line)}
 #viewDeals .deal{min-height:78px;padding:18px 0;border-radius:0;background:transparent}
 #viewDeals .deal .nm,#viewDeals .deal .amt{color:var(--v-ink);font-size:15px}
-#viewDeals .deal .nm{font-weight:550}
+#viewDeals .deal .nm{font-weight:600}
 #viewDeals .deal .nm small{color:var(--v-muted);font-size:12px;line-height:1.5}
 #viewDeals .deal .amt{font-weight:600;font-variant-numeric:tabular-nums}
 #viewDeals .costbox.dealbox{margin:0;padding:16px;border:0;border-radius:0;background:#E9E7E1}
@@ -3055,7 +3055,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   border:1px solid rgba(23,26,30,.12);border-radius:14px;background:rgba(250,249,246,.96);
   box-shadow:var(--v-shadow-float);
 }
-.deal-map-detail h3{margin:0;color:var(--v-ink);font-size:16px;font-weight:650;letter-spacing:-.025em}
+.deal-map-detail h3{margin:0;color:var(--v-ink);font-size:16px;font-weight:700;letter-spacing:-.025em}
 .deal-map-detail strong{
   display:block;margin-top:4px;color:var(--v-ink);font-size:21px;font-weight:600;
   letter-spacing:-.035em;font-variant-numeric:tabular-nums
@@ -3068,14 +3068,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   /* 🔴 v37.7 — 죽은 유리 한 줄 제거 */
 }
 .yk-map-label span{display:block;color:rgba(255,255,255,.72);font-size:10px;font-weight:500;line-height:1.1}
-.yk-map-label strong{display:block;margin-top:3px;color:#FFF;font-size:13px;font-weight:650;line-height:1.15}
+.yk-map-label strong{display:block;margin-top:3px;color:#FFF;font-size:13px;font-weight:700;line-height:1.15}
 .yk-map-label.is-over{background:rgba(110,64,52,.92)}
 .yk-map-label.is-active{background:var(--v-blue);transform:translateY(-2px)}
 
 /* 마지막 확인 화면도 링크 카드 대신 간결한 목록으로 둡니다. */
 .easy-next-card{padding:31px 0 26px;border-top:0}
 .easy-next-card .nx-kicker{margin:0 0 8px}
-.nx-lead{margin:0;color:var(--v-ink);font-size:20px;font-weight:560;line-height:1.48;letter-spacing:-.035em}
+.nx-lead{margin:0;color:var(--v-ink);font-size:20px;font-weight:600;line-height:1.48;letter-spacing:-.035em}
 .nx-body{margin-top:8px;color:var(--v-muted);font-size:13px;line-height:1.68}
 #viewNext > .card{padding:0;border-top:1px solid var(--v-line-strong)}
 #viewNext .minigrid{display:block}
@@ -3088,7 +3088,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #viewNext .restartrow{margin-top:18px}
 #viewNext .restart-cta{
   width:100%;height:48px;border:1px solid var(--v-line-strong);border-radius:8px;
-  background:transparent;box-shadow:none;color:var(--v-sub);font-size:14px;font-weight:550
+  background:transparent;box-shadow:none;color:var(--v-sub);font-size:14px;font-weight:600
 }
 
 /* 주요 조작은 잉크 한 덩어리, 비활성은 종이보다 한 톤 어둡게. */
@@ -3106,7 +3106,7 @@ input[type=range]::-moz-range-progress{background:var(--v-ink)}
 .dock::before{display:none}.dockrow{gap:5px}
 .dockrow .cta{min-height:54px;height:54px;border-radius:13px;box-shadow:none;font-size:15px;font-weight:600}
 .dockrow .cta.back{padding:0 17px;border-color:transparent;background:transparent;color:var(--v-sub)}
-.sheet-title{color:var(--v-ink);font-size:23px;font-weight:560}
+.sheet-title{color:var(--v-ink);font-size:23px;font-weight:600}
 .sheet .bs-side,.sheet .costbox{
   padding:18px 0;border:0;border-top:1px solid var(--v-line);border-radius:0;background:transparent
 }
@@ -3540,8 +3540,8 @@ body,.app{background:var(--v-paper)}
 }
 .crow:last-child{border-bottom:1px solid var(--v-line-strong) !important}
 .crow:active{background:var(--v-bg)}
-.crow .k{font-size:15px;font-weight:450;color:var(--v-sub);letter-spacing:-.01em}
-.crow .v{font-size:15px;font-weight:650;color:var(--v-ink)}
+.crow .k{font-size:15px;font-weight:400;color:var(--v-sub);letter-spacing:-.01em}
+.crow .v{font-size:15px;font-weight:700;color:var(--v-ink)}
 .crow.empty .v{color:var(--v-muted);font-weight:500}
 .crow.empty .v::after{color:var(--v-faint)}
 /* 입력면 — 밑선 하나. 초점은 먹으로 굵어집니다. */
@@ -3552,7 +3552,7 @@ body,.app{background:var(--v-paper)}
   border-color:var(--v-ink);box-shadow:none
 }
 .inline-money-field input,.single-money-field input{
-  color:var(--v-ink);font-weight:650;font-variant-numeric:tabular-nums
+  color:var(--v-ink);font-weight:700;font-variant-numeric:tabular-nums
 }
 .inline-money-field input::placeholder,.single-money-field input::placeholder{
   color:var(--v-faint);font-weight:400
@@ -3568,7 +3568,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .preset.is-on,.qsheet .zonecard.is-on,.qsheet .seg button.is-on,.qsheet .chip.is-on,
 #interiorChips button.is-on,#viewDeals .chip.sm.is-on{
   border-color:var(--v-ink);background:var(--v-blue-soft);color:var(--v-ink);
-  box-shadow:inset 0 0 0 1px var(--v-ink);font-weight:650
+  box-shadow:inset 0 0 0 1px var(--v-ink);font-weight:700
 }
 .preset.is-on *,.qsheet .zonecard.is-on *,.qsheet .seg button.is-on *,
 .qsheet .chip.is-on *{color:var(--v-ink) !important}
@@ -3587,7 +3587,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .sheet .sheet-grip,.qsheet .sheet-grip{background:var(--v-line-strong)}
 .sheet-title,.q-title{color:var(--v-ink);font-weight:700;letter-spacing:-.035em}
 .sheet-row{border-bottom:1px solid var(--v-line)}
-.sheet-row b{color:var(--v-ink);font-weight:650}
+.sheet-row b{color:var(--v-ink);font-weight:700}
 .sheet-row span,.qsheet .helper,.preset-help,.qsheet .tip,.qsheet .pane-note{color:var(--v-muted)}
 .sheet-actions{background:var(--v-paper);border-top:1px solid var(--v-line)}
 .qsheet .ownbox,#viewDeals .costbox.dealbox,#whySheet .costrow .amt{
@@ -3613,7 +3613,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .dockrow{gap:8px}
 .dockrow .cta{min-height:54px;height:54px;border-radius:10px;font-size:16px}
 .dockrow .cta.back{
-  padding:0 18px;background:transparent;color:var(--v-sub);font-weight:550;
+  padding:0 18px;background:transparent;color:var(--v-sub);font-weight:600;
   box-shadow:inset 0 0 0 1px var(--v-line-strong)
 }
 .sheet-actions .sheet-close{border-radius:10px}
@@ -3661,10 +3661,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   min-height:52px;padding:13px 0;border-bottom:1px solid var(--v-line);gap:16px
 }
 #easyBalance .easy-money-row:last-child{border-bottom:0}
-#easyBalance .easy-money-row span{font-size:15px;font-weight:450;color:var(--v-sub);letter-spacing:-.01em}
+#easyBalance .easy-money-row span{font-size:15px;font-weight:400;color:var(--v-sub);letter-spacing:-.01em}
 #easyBalance .easy-money-row span small{margin-top:3px;font-size:12px;color:var(--v-muted);font-weight:500}
 #easyBalance .easy-money-row strong{
-  font-size:19px;font-weight:650;color:var(--v-ink);letter-spacing:-.025em;text-align:right
+  font-size:19px;font-weight:700;color:var(--v-ink);letter-spacing:-.025em;text-align:right
 }
 .easy-row-arrow{color:var(--v-faint)}
 
@@ -3689,7 +3689,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   margin-top:0;padding:13px 0 0;border-top:1px solid var(--v-line);align-items:baseline
 }
 #easyBalance .cash-remainder span{font-size:15px;color:var(--v-sub)}
-#easyBalance .cash-remainder strong{font-size:19px;font-weight:650;color:var(--v-ink)}
+#easyBalance .cash-remainder strong{font-size:19px;font-weight:700;color:var(--v-ink)}
 
 /* 더 볼 것은 줄로 — 밑줄이 아니라 괘선입니다 */
 .result-help{display:block;gap:0;margin-top:28px;border-top:1px solid var(--v-line)}
@@ -3715,7 +3715,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #viewNext .mini .arw{color:var(--v-faint)}
 #viewNext .restart-cta{
   height:52px;border:1px solid var(--v-line-strong);border-radius:8px;
-  background:transparent;color:var(--v-sub);font-size:14px;font-weight:550
+  background:transparent;color:var(--v-sub);font-size:14px;font-weight:600
 }
 
 /* ── 실거래 ──────────────────────────────────────────────────────────── */
@@ -3723,9 +3723,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .deal-budget{border-top:1px solid var(--v-line);border-bottom:1px solid var(--v-line)}
 .deal-budget strong{font-weight:700;color:var(--v-ink)}
 #viewDeals .deal{border-bottom:1px solid var(--v-line);background:transparent}
-#viewDeals .deal .nm{font-weight:650;color:var(--v-ink)}
+#viewDeals .deal .nm{font-weight:700;color:var(--v-ink)}
 #viewDeals .deal .amt{font-weight:700;color:var(--v-ink)}
-#easyMarket h2,#viewDeals .card-title{font-weight:650;color:var(--v-ink);letter-spacing:-.03em}
+#easyMarket h2,#viewDeals .card-title{font-weight:700;color:var(--v-ink);letter-spacing:-.03em}
 .deal-map-detail{background:var(--v-paper);border:1px solid var(--v-line-strong)}
 .yk-map-label.is-active{background:var(--v-ink)}
 .yk-map-label.is-over{background:var(--v-coral)}
@@ -3773,7 +3773,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
    여기서 또 잡으면 **두 번 잡는 것**이고, 그 합이 유령 스크롤이었습니다(실측 891 ↔ 뷰포트 844).
    ⚠ 자리를 두 곳에서 정하지 않기(4장 ⑨)의 여백판입니다. 독 몫은 `.app` 한 곳에서만 잡습니다. */
 .cond-lead{
-  margin:0;font-size:20px;font-weight:650;line-height:1.5;letter-spacing:-.028em;color:var(--v-ink)
+  margin:0;font-size:20px;font-weight:700;line-height:1.5;letter-spacing:-.028em;color:var(--v-ink)
 }
 .crows{margin-top:26px}
 
@@ -3802,7 +3802,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 }
 .mfield:focus-within{border-bottom-width:2px;border-bottom-color:var(--v-ink)}
 .mfield input{
-  color:var(--v-ink);font-weight:650;font-variant-numeric:tabular-nums
+  color:var(--v-ink);font-weight:700;font-variant-numeric:tabular-nums
 }
 .mfield input:focus-visible{outline:none}
 .mfield input::placeholder{color:var(--v-faint);font-weight:400}
@@ -3902,13 +3902,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   min-height:52px;padding:13px 0;border-bottom:1px solid var(--v-line)
 }
 #easyBalance .price-answer > span{
-  flex:1;min-width:0;font-size:15px;font-weight:450;color:var(--v-sub);letter-spacing:-.01em
+  flex:1;min-width:0;font-size:15px;font-weight:400;color:var(--v-sub);letter-spacing:-.01em
 }
 #easyBalance #easyPrice{
-  display:inline;margin:0;font-size:19px;font-weight:650;line-height:1.35;
+  display:inline;margin:0;font-size:19px;font-weight:700;line-height:1.35;
   letter-spacing:-.025em;color:var(--v-ink);text-align:right;white-space:nowrap
 }
-#easyBalance #easyPrice .money-unit{font-size:1em;font-weight:650;letter-spacing:-.025em;color:inherit}
+#easyBalance #easyPrice .money-unit{font-size:1em;font-weight:700;letter-spacing:-.025em;color:inherit}
 
 /* ⚠ 자금 구성 막대(`.easy-stack`)는 v25.51에서 화면 언어에서 빠진 부품입니다.
    비어 있는 채로 세로만 먹고 있어 접습니다 — 지운 게 아니라 이 화면에서 안 세웁니다. */
@@ -3949,7 +3949,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #whySheet .costrow .amt:focus-within{
   border-bottom-color:var(--v-ink);outline:none;box-shadow:none
 }
-#whySheet .costrow .amt input{color:var(--v-ink);font-weight:650;font-variant-numeric:tabular-nums}
+#whySheet .costrow .amt input{color:var(--v-ink);font-weight:700;font-variant-numeric:tabular-nums}
 #costImpactRow[hidden]{display:none !important}
 
 /* 🔴 v37.5 — 실거래 「거래 없음」 안내가 **이 앱에 하나 남은 회색 카드**였습니다.
@@ -3963,7 +3963,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
    스위치를 꺼도 금액이 먹 650으로 남아 「이것도 계산에 들어갔나」가 눈으로 안 갈립니다.
    ⏹ 금액 자체는 **지우지 않습니다** — 무엇을 뺐는지 화면이 말해야 합니다(원칙 39 · 중개보수 주석과 같은 판단).
    👉 값은 두고 **잉크와 밑선만 한 단 내립니다.** */
-#whySheet .costrow .amt input:disabled{color:var(--v-faint);font-weight:550}
+#whySheet .costrow .amt input:disabled{color:var(--v-faint);font-weight:600}
 #whySheet .costrow .amt:has(input:disabled){border-bottom-color:var(--v-line)}
 #whySheet .costrow .amt:has(input:disabled) u{color:var(--v-faint)}
 
@@ -3975,7 +3975,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   border-bottom:1px solid var(--v-line);border-radius:0;background:transparent;
   color:var(--v-sub);text-align:left
 }
-#viewDeals .deal-msg b{color:var(--v-ink);font-weight:650}
+#viewDeals .deal-msg b{color:var(--v-ink);font-weight:700}
 
 /* ══════════════════════════════════════════════════════════════════════════
    v37.6 — **면책을 한 덩어리로 · 맨 아래로** (오너 지적)
@@ -4040,7 +4040,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
    🔴 `.q-title`은 25/650인데 `#whySheet .sheet-title`·`#sheet .sheet-title`은 26/400이었습니다.
      같은 자리(시트의 답)를 두 규격으로 쓰고 있었고, 26/400은 v29~v36의 「얇게」 습관입니다. */
 #whySheet .sheet-title,#sheet .sheet-title,.q-title{
-  font-size:25px;font-weight:650;line-height:1.36;letter-spacing:-.04em;color:var(--v-ink)
+  font-size:25px;font-weight:700;line-height:1.36;letter-spacing:-.04em;color:var(--v-ink)
 }
 #whySheet .sheet-title,#sheet .sheet-title{margin:2px 0 24px}
 
@@ -4057,7 +4057,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
    🔴 시트로 여는 셋(`.crow .k`)은 450, 그 자리에서 넣는 둘(`.inline-money>label`)은 400.
      한 화면의 한 목록인데 굵기가 갈렸습니다. **묻는 말은 한 층입니다.** */
 .funnel .inline-money>label,.funnel label.flabel{
-  font-size:15px;font-weight:450;color:var(--v-sub);letter-spacing:0
+  font-size:15px;font-weight:400;color:var(--v-sub);letter-spacing:0
 }
 
 /* ── ⑫⑬ 작은 글자의 자간 — 음수도, 양수도 안 씁니다 ────────────────────
@@ -4138,13 +4138,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   margin:16px 0 0;padding:6px 4px 4px;border:0;border-radius:0;background:transparent
 }
 #viewAnswer > .rhead::before{display:none}
-#viewAnswer .rhead-label{font-size:13px;font-weight:450;color:var(--v-muted)}
+#viewAnswer .rhead-label{font-size:13px;font-weight:400;color:var(--v-muted)}
 #viewAnswer .rhead-amount,#viewAnswer .rhead-amount.long{
   margin-top:12px;font-size:clamp(44px,15.6vw,60px);font-weight:800;line-height:.98;
   letter-spacing:-.065em;white-space:nowrap
 }
 #viewAnswer .rhead-amount .ue{font-size:.47em;font-weight:700;letter-spacing:-.03em}
-#viewAnswer .rhead-amount .um{font-size:.34em;font-weight:650;letter-spacing:-.02em;color:var(--v-muted)}
+#viewAnswer .rhead-amount .um{font-size:.34em;font-weight:700;letter-spacing:-.02em;color:var(--v-muted)}
 #viewAnswer .easy-explain#easyIncluded{margin-top:14px;font-size:14px;color:var(--v-muted)}
 
 /* ── 예산선 : 화면의 주인공. **판은 늘 어둡습니다** ────────────────── */
@@ -4152,7 +4152,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   margin:22px 0 0;padding:24px 20px 20px;border:0;border-radius:28px;
   background:var(--v-plot);color:var(--v-on-plot);box-shadow:none
 }
-#easyMarket.plot h2{margin:0;color:var(--v-on-plot);font-size:17px;font-weight:650;line-height:1.4;letter-spacing:-.04em}
+#easyMarket.plot h2{margin:0;color:var(--v-on-plot);font-size:17px;font-weight:700;line-height:1.4;letter-spacing:-.04em}
 .plot-lede{margin:7px 0 0;color:var(--v-plot-dim);font-size:12px;letter-spacing:0}
 .chart{position:relative;height:172px;margin:24px 0 0;touch-action:manipulation}
 /* 막대 : 가로 자리는 실제 금액, 높이 한 칸은 거래 한 건입니다(JS 주석 참조). */
@@ -4169,13 +4169,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   position:absolute;top:0;margin:0;max-width:132px;color:var(--v-on-plot);font-size:11px;font-weight:600;
   line-height:1.45;letter-spacing:0;white-space:nowrap
 }
-.chart .blab s{display:block;color:var(--v-plot-dim);font-weight:450;text-decoration:none}
+.chart .blab s{display:block;color:var(--v-plot-dim);font-weight:400;text-decoration:none}
 .chart .axis{
   position:absolute;right:0;bottom:0;left:0;display:flex;justify-content:space-between;
   color:var(--v-plot-dim);font-size:11px;letter-spacing:0
 }
 .plot .axis-note{margin:18px 0 0;color:var(--v-plot-dim);font-size:14px;line-height:1.6;letter-spacing:0}
-.plot .axis-note b{color:var(--v-on-plot);font-weight:650}
+.plot .axis-note b{color:var(--v-on-plot);font-weight:700}
 .plot-detail{margin:16px -20px 0;padding:16px 20px 0;border-top:1px solid var(--v-plot-2)}
 .plot-detail .nm{
   display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0;
@@ -4197,7 +4197,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .ratio .rlab .t em{font-style:normal;margin-left:5px;color:var(--v-ink);font-weight:600}
 .ratio .rlab .n{margin:6px 0 0}
 .ratio .rlab .n strong{
-  color:var(--v-ink);font-size:19px;font-weight:650;letter-spacing:-.04em;white-space:nowrap;
+  color:var(--v-ink);font-size:19px;font-weight:700;letter-spacing:-.04em;white-space:nowrap;
   font-variant-numeric:tabular-nums
 }
 
@@ -4207,26 +4207,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 }
 #viewAnswer .easy-money-rows{margin-top:0;border-top:0}
 #viewAnswer .easy-money-row{min-height:56px;padding:8px 0;border-bottom:0}
-#viewAnswer .easy-money-row span{color:var(--v-sub);font-size:15px;font-weight:450}
+#viewAnswer .easy-money-row span{color:var(--v-sub);font-size:15px;font-weight:400}
 #viewAnswer .easy-money-row strong{
-  font-size:21px;font-weight:650;letter-spacing:-.04em;white-space:nowrap
+  font-size:21px;font-weight:700;letter-spacing:-.04em;white-space:nowrap
 }
-#viewAnswer #easyPrice{font-size:21px;font-weight:650;line-height:1.3;letter-spacing:-.04em;margin:0}
-#viewAnswer #easyPrice .money-unit{font-size:1em;font-weight:650;letter-spacing:-.04em}
+#viewAnswer #easyPrice{font-size:21px;font-weight:700;line-height:1.3;letter-spacing:-.04em;margin:0}
+#viewAnswer #easyPrice .money-unit{font-size:1em;font-weight:700;letter-spacing:-.04em}
 #viewAnswer .easy-divider{margin:16px 0 2px;background:var(--v-line)}
 #viewAnswer .cash-remainder{
   margin-top:14px;padding-top:14px;border-top:1px solid var(--v-line);font-size:14px
 }
-#viewAnswer .cash-remainder strong{font-size:17px;font-weight:650;letter-spacing:-.03em}
+#viewAnswer .cash-remainder strong{font-size:17px;font-weight:700;letter-spacing:-.03em}
 #viewAnswer #cashRemainderNote{margin-top:10px;font-size:12px;line-height:1.7;letter-spacing:0}
 
 /* ── 매달 갚는 돈 ─────────────────────────────────────────────────── */
 #viewAnswer > #payTile{margin-top:14px;padding:20px 18px 22px;border-top:0}
-#payTile .ans-k{margin:0 0 0;color:var(--v-sub);font-size:13px;font-weight:450;letter-spacing:0}
+#payTile .ans-k{margin:0 0 0;color:var(--v-sub);font-size:13px;font-weight:400;letter-spacing:0}
 #payTile .ans-row{margin-top:10px}
 #payTile .ans-v{font-size:40px;font-weight:700;line-height:1;letter-spacing:-.06em}
 #payTile .ans-pct{font-size:12px;color:var(--v-muted)}
-#payTile .ans-pct #tileBurden{margin-left:6px;color:var(--v-ink);font-size:19px;font-weight:650;letter-spacing:-.03em}
+#payTile .ans-pct #tileBurden{margin-left:6px;color:var(--v-ink);font-size:19px;font-weight:700;letter-spacing:-.03em}
 #payTile #gauge{height:10px;margin-top:20px;border-radius:100px;background:var(--v-line-strong)}
 #payTile #gauge > i{height:10px;border-radius:100px;background:var(--v-ink)}
 /* 🔴 v38.6 — **눈금과 채움이 같은 검정이었습니다**(오너 지적 2026.09.08).
@@ -4259,7 +4259,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 
 /* ── 조작은 알약입니다 ────────────────────────────────────────────── */
 .dockrow .cta,.qsheet .sheet-close,.sheet-actions .sheet-close{
-  min-height:56px;height:56px;border-radius:100px;font-size:16px;font-weight:650;letter-spacing:-.025em
+  min-height:56px;height:56px;border-radius:100px;font-size:16px;font-weight:700;letter-spacing:-.025em
 }
 .dockrow .cta.back{border:1px solid var(--v-line-strong);background:var(--v-paper);color:var(--v-sub);font-weight:500}
 /* 줄 오른쪽 끝의 비율. 금액과 같은 `pct()`에서 옵니다(원칙 58). */
@@ -4417,7 +4417,7 @@ body,.app{background:var(--v-bg)}
   font-size:15px;font-weight:500;color:var(--v-ink)
 }
 #viewAnswer > #reasonCard > .disc .v,#viewAnswer > #payTile > .disc .v{
-  margin-left:auto;color:var(--v-muted);font-size:15px;font-weight:450
+  margin-left:auto;color:var(--v-muted);font-size:15px;font-weight:400
 }
 #viewAnswer > #reasonCard > .costbox{padding:2px 0 14px}
 /* 🔴 v38.5 — **금리 조절기가 게이지 바 밑으로 왔습니다**(오너 지적). 선택자를 그 자리로 옮깁니다.
@@ -4479,13 +4479,13 @@ body,.app{background:var(--v-bg)}
   font-size:12px;font-weight:600;line-height:1.5;letter-spacing:.04em
 }
 #whySheet .bs-it{min-height:56px;padding:8px 0}
-#whySheet .bs-nm{color:var(--v-sub);font-size:15px;font-weight:450}
+#whySheet .bs-nm{color:var(--v-sub);font-size:15px;font-weight:400}
 #whySheet .bs-am{
-  color:var(--v-ink);font-size:21px;font-weight:650;letter-spacing:-.04em;
+  color:var(--v-ink);font-size:21px;font-weight:700;letter-spacing:-.04em;
   white-space:nowrap;font-variant-numeric:tabular-nums
 }
 #whySheet .disc.quiet .k,#whySheet .disc-head .k{font-size:15px;font-weight:600}
-#whySheet .costrow .nm{font-size:15px;font-weight:450;color:var(--v-sub)}
+#whySheet .costrow .nm{font-size:15px;font-weight:400;color:var(--v-sub)}
 /* 넣는 칸의 홈 — 흰 카드 위에서는 바탕색이 홈이 됩니다.
    🔴 v37의 리터럴 `#F4F7F6`(초록기 도는 흰색)을 걷습니다. 다크의 전제이기도 합니다. */
 #whySheet .costrow .amt{background:var(--v-bg);border-radius:10px;border-bottom:0}
@@ -4493,7 +4493,7 @@ body,.app{background:var(--v-bg)}
    「여긴 고칠 수 있는 칸」을 말했는데, 이제 홈(면)이 같은 말을 합니다(원칙 43).
    ⏹ 초점은 `:focus-within` 윤곽선이, 꺼짐은 스위치와 옅어진 숫자가 이미 말합니다. */
 .cost-impact>div{padding:4px 0;font-size:14px}
-.cost-impact strong{font-size:21px;font-weight:650;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.cost-impact strong{font-size:21px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 
 /* ── ⑤ 정책 시트 : 열두 줄이 **한 장의 카드**가 됩니다 ───────────────
    ⚠ 열두 줄은 전부 「정책 용어 하나 + 설명」이라 **한 묶음**입니다. 답 화면이
@@ -4509,10 +4509,10 @@ body,.app{background:var(--v-bg)}
 #sheet > .sheet-row:first-of-type{padding-top:22px;border-radius:24px 24px 0 0}
 #sheet > .sheet-row:last-of-type{padding-bottom:22px;border-radius:0 0 24px 24px}
 #sheet > .sheet-row > b{
-  color:var(--v-ink);font-size:16px;font-weight:650;letter-spacing:-.03em;line-height:1.4
+  color:var(--v-ink);font-size:16px;font-weight:700;letter-spacing:-.03em;line-height:1.4
 }
 #sheet > .sheet-row span{
-  margin-top:5px;color:var(--v-muted);font-size:14px;font-weight:450;line-height:1.65
+  margin-top:5px;color:var(--v-muted);font-size:14px;font-weight:400;line-height:1.65
 }
 #sheet > .sheet-row span b{color:var(--v-ink);font-weight:600}
 
@@ -4574,7 +4574,7 @@ body{background:var(--v-bg);color:var(--v-ink)}
 input[type=checkbox],input[type=range]{accent-color:var(--v-blue)}
 body .app{width:100%;max-width:1024px;min-height:100svh;margin:auto;background:var(--v-bg);box-shadow:none;overflow:visible}
 .app .appbar,.app.hero-on .appbar{padding:0 22px;background:var(--v-bg);backdrop-filter:none;-webkit-backdrop-filter:none;border:0;box-shadow:none}
-.appbar .barrow1{min-height:64px}.appbar .wordmark{font-size:19px!important;font-weight:750!important;letter-spacing:-.055em!important;color:var(--v-ink)!important}.wordmark::before{display:none}
+.appbar .barrow1{min-height:64px}.appbar .wordmark{font-size:19px!important;font-weight:700!important;letter-spacing:-.055em!important;color:var(--v-ink)!important}.wordmark::before{display:none}
 .appbar .barlabel{font-size:14px!important;color:var(--v-sub)!important;line-height:1.5}.appbar .trust{font-size:14px;color:var(--v-blue);font-weight:600;min-height:44px}.barback{min-width:44px;min-height:44px}
 /* Input: contextual selectors and two unmistakable money fields. */
 body .funnel{max-width:560px;padding:20px 22px 110px;display:block;margin:auto;min-height:0}
@@ -4584,7 +4584,7 @@ body .funnel{max-width:560px;padding:20px 22px 110px;display:block;margin:auto;m
 .crows .crow{padding:12px 0;min-height:54px;gap:12px;background:transparent}.crows .crow+.crow{border-top:1px solid var(--v-line)}
 .crow .k,.crow .v{font-size:15px!important;line-height:1.5}.crow .k{color:var(--v-sub)}.crow .v{color:var(--v-ink);font-weight:600}.crow.empty .v{color:var(--v-blue)}
 .crows .inline-money{display:grid;grid-template-columns:minmax(0,1fr);gap:0;padding:16px 0 10px;min-width:0}
-.inline-money>label{font-size:15px;font-weight:550;color:var(--v-sub)}
+.inline-money>label{font-size:15px;font-weight:600;color:var(--v-sub)}
 .inline-money .inline-money-field{grid-column:1;margin:8px 0 0;padding:5px 12px;border:1px solid var(--v-line-strong);border-radius:10px;background:#f8fafc;box-shadow:none}
 .inline-money-field input{width:100%;min-width:0;min-height:42px;font-size:29px;font-weight:600;line-height:1.3;color:var(--v-ink);font-variant-numeric:tabular-nums}
 .inline-money-field>span{font-size:14px;color:var(--v-muted)}.inline-money-field:focus-within{background:#fff;border-color:var(--v-blue);box-shadow:0 0 0 3px #1F5BFF14}
@@ -4606,15 +4606,15 @@ body .result,.app.no-dock .result,.app.no-dock.has-rdock .result{padding:12px 20
 .budget-summary{padding:16px 22px 4px;background:#f9fafc;border-top:1px solid #e8ecf2}
 .budget-total{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 12px;margin:0;padding:0;border:0}
 .budget-total .rhead-label{font-size:14px;color:var(--v-sub);line-height:1.5;margin:0}
-#viewAnswer .budget-summary #heroAmount,#viewAnswer .budget-summary #heroAmount.long{display:block;font-size:20px;line-height:1.4;letter-spacing:-.025em;color:var(--v-ink);font-weight:650;margin:0}
+#viewAnswer .budget-summary #heroAmount,#viewAnswer .budget-summary #heroAmount.long{display:block;font-size:20px;line-height:1.4;letter-spacing:-.025em;color:var(--v-ink);font-weight:700;margin:0}
 .budget-total .rhead-amount .ue,.budget-total .rhead-amount .um{font-size:.65em;font-weight:500;color:var(--v-sub)}
 .budget-summary #easyCostOpen{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:48px;margin:4px 0 0;padding:0;background:transparent;border:0;border-radius:0}
-#easyCostOpen>span{flex:1;text-align:left;color:var(--v-muted);font-size:14px;font-weight:450}#easyCostOpen strong{font-size:16px;font-weight:600;color:var(--v-sub)}#easyCostOpen .easy-row-arrow{display:block;font-size:20px;color:var(--v-muted);font-weight:400;margin:0}
+#easyCostOpen>span{flex:1;text-align:left;color:var(--v-muted);font-size:14px;font-weight:400}#easyCostOpen strong{font-size:16px;font-weight:600;color:var(--v-sub)}#easyCostOpen .easy-row-arrow{display:block;font-size:20px;color:var(--v-muted);font-weight:400;margin:0}
 #overWrap:empty{display:none}#overWrap{margin-top:12px;color:var(--v-coral);font-size:14px;line-height:1.6}
 #viewAnswer>#payTile{padding:20px 22px 0;border:1px solid var(--v-line);border-radius:18px;background:#fff;margin:0;box-shadow:none}
-#payTile .ans-k{margin:0;color:var(--v-sub);font-size:15px;line-height:1.5;font-weight:550}
+#payTile .ans-k{margin:0;color:var(--v-sub);font-size:15px;line-height:1.5;font-weight:600}
 #payTile .ans-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px}
-#payTile .ans-v{font-size:36px;font-weight:650;letter-spacing:-.05em;line-height:1.2;color:var(--v-ink)}
+#payTile .ans-v{font-size:36px;font-weight:700;letter-spacing:-.05em;line-height:1.2;color:var(--v-ink)}
 #payTile .ans-pct{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;max-width:55%;margin:0;line-height:1.5}
 #payTile .ans-pct .tile-k{font-size:13px;color:var(--v-muted);white-space:normal}#payTile .ans-pct #tileBurden{font-size:19px;font-weight:600;color:var(--v-ink);margin:0}
 #payTile #gauge{position:relative;height:5px;margin-top:16px;border-radius:4px;overflow:hidden;background:#e8ecf3}#payTile #gauge>i{height:100%;background:#5C85FF;border-radius:4px}#payTile #gauge>s{display:none}.gauge-scale{display:flex;justify-content:space-between;font-size:12px;color:var(--v-muted);margin-top:5px}
@@ -4636,7 +4636,7 @@ body .result,.app.no-dock .result,.app.no-dock.has-rdock .result{padding:12px 20
 #loanCutToggle{margin-top:14px}
 #viewAnswer #loanCutToggle{margin-top:14px}#rateSimNote{margin-top:12px;font-size:14px!important;line-height:1.6;color:var(--v-muted)}
 #viewAnswer .budget-overview>#easyBalance{margin:0;padding:18px 22px 22px;border:0;border-top:1px solid #cbd5e3;border-radius:0;background:#fff;box-shadow:none}
-#easyBalance>.easy-money-rows,#easyBalance>.easy-stack{display:none}#easyBalance>h2:not(.sr-only){margin:0 0 14px;font-size:15px;font-weight:550;color:var(--v-sub)}
+#easyBalance>.easy-money-rows,#easyBalance>.easy-stack{display:none}#easyBalance>h2:not(.sr-only){margin:0 0 14px;font-size:15px;font-weight:600;color:var(--v-sub)}
 #easyBalance .rbar{display:flex;height:6px!important;gap:2px;margin:0!important;overflow:hidden;border-radius:4px;background:transparent}#easyBalance .rbar>i{background:var(--design-cash,#1F5BFF)}#easyBalance .rbar>s{background:var(--design-loan,#9DB8FF)}
 #easyBalance .rlab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:14px 0 0}#easyBalance .rlab>div{min-width:0;text-align:left}#easyBalance .rlab>div+div{padding-left:16px;border-left:1px solid var(--v-line)}
 #easyBalance .rlab .t{font-size:14px!important;color:var(--v-muted)}#easyBalance .rlab em{margin-left:6px;font-size:13px!important;font-weight:400;color:var(--v-muted)}
@@ -4659,8 +4659,8 @@ body .dock{position:fixed;left:50%;right:auto;bottom:0;transform:translateX(-50%
 /* Shared editing sheets: consistent labels, targets and controlled scrolling. */
 body .sheet,body #whySheet,body #sheet{width:100%;max-width:560px;max-height:90svh;padding:18px 22px 0;background:#fff;border:1px solid var(--v-line);border-radius:24px 24px 0 0;box-shadow:0 -10px 60px #17203218;overflow-y:auto;overscroll-behavior:contain}
 .sheet-back{background:#1b27335e;backdrop-filter:none}.sheet,.sheet-back{transition:none!important}.sheet .sheet-grip{background:#c0c7d1!important;width:32px;height:4px;margin:0 auto 20px}
-.sheet-title,#whySheet .sheet-title{margin:0 0 22px;font-size:25px;font-weight:650;line-height:1.3;letter-spacing:-.045em}#qBox>.q-title{display:none}
-#whySheet>.cost-impact{margin:0 0 14px;padding:16px 18px!important;background:#f1f4fa;border:0;border-radius:12px}#whySheet .cost-impact>div{padding:0;font-size:14px}#whySheet .cost-impact strong{font-size:25px;font-weight:650}#whySheet .cost-impact #costImpactRow{margin-top:10px}
+.sheet-title,#whySheet .sheet-title{margin:0 0 22px;font-size:25px;font-weight:700;line-height:1.3;letter-spacing:-.045em}#qBox>.q-title{display:none}
+#whySheet>.cost-impact{margin:0 0 14px;padding:16px 18px!important;background:#f1f4fa;border:0;border-radius:12px}#whySheet .cost-impact>div{padding:0;font-size:14px}#whySheet .cost-impact strong{font-size:25px;font-weight:700}#whySheet .cost-impact #costImpactRow{margin-top:10px}
 #whySheet>#costBox,#whySheet>.card{margin:0;padding:0;background:#fff;border:0;border-radius:0}#whySheet #costItems .bs-it{padding:10px 0;min-height:48px;border:0}#whySheet .bs-nm{font-size:14px;color:var(--v-muted)}#whySheet .bs-am{font-size:18px;font-weight:600;color:var(--v-ink)}
 #whySheet .costrow{min-height:74px;padding:12px 0;gap:10px;border:0;border-bottom:1px solid var(--v-line)}#whySheet .costrow .nm{font-size:15px;color:var(--v-sub);line-height:1.4}#whySheet .costrow .nm small{font-size:13px;margin-top:4px;color:var(--v-muted)}#whySheet .costrow .amt{border:1px solid var(--v-line-strong);border-radius:10px;background:#f8fafc}#whySheet .costrow .amt input{font-size:20px;min-height:42px;font-weight:600}#whySheet .costrow .amt u{font-size:13px;color:var(--v-muted)}
 .sw{min-width:44px;min-height:44px;background:transparent!important;position:relative;box-shadow:none!important}.sw::before{content:'';position:absolute;left:2px;right:2px;top:10px;height:24px;border-radius:20px;background:#d9dfe7}.sw.on::before,.sw[aria-checked=true]::before{background:#1F5BFF}.sw::after{width:18px;height:18px;left:5px;top:13px;background:white;box-shadow:0 1px 3px #0002}.sw.on::after,.sw[aria-checked=true]::after{transform:translateX(16px)}
@@ -4727,7 +4727,7 @@ body .crows .main-no-loan{font-size:14px;min-height:48px;gap:10px}
 @media(max-width:370px){#whySheet .costrow{grid-template-columns:minmax(0,1fr) 44px 86px;column-gap:8px}#whySheet .costrow .amt{width:86px}#viewAnswer .budget-summary .budget-total{align-items:flex-start;gap:8px}#viewAnswer .budget-summary #heroAmount{font-size:19px}}
 
 #viewAnswer .rhead #easyPrice{justify-content:flex-start!important;width:auto!important}
-#qSheetTitle.sr-only{position:static!important;width:auto!important;height:auto!important;margin:0 0 20px!important;clip:auto!important;white-space:normal!important;overflow:visible!important;font-size:25px;font-weight:650;line-height:1.3}
+#qSheetTitle.sr-only{position:static!important;width:auto!important;height:auto!important;margin:0 0 20px!important;clip:auto!important;white-space:normal!important;overflow:visible!important;font-size:25px;font-weight:700;line-height:1.3}
 
 #viewAnswer .budget-summary .rhead-amount{font-size:20px!important;line-height:1.4!important;margin:0!important;min-height:0!important}#viewAnswer .budget-summary #heroAmount{display:inline}#viewAnswer .budget-summary #heroAmount .ue,#viewAnswer .budget-summary #heroAmount .um{font-size:.7em!important}#viewAnswer .budget-summary .rhead-tail:empty{display:none}#viewAnswer .budget-summary #easyCost{font-size:16px!important}
 
@@ -4746,8 +4746,8 @@ body .sw::before{transform:none!important}body .sw::after{transform:none!importa
 #qSheet .mfield input{min-height:44px;font-size:30px;font-variant-numeric:tabular-nums}
 #qSheet .mfield>span{font-size:14px;color:var(--v-muted)}
 #qSheet .debt-none{min-height:46px;margin-top:12px;border:1px solid var(--v-line-strong);border-radius:10px;background:white;font-size:14px;color:var(--v-sub);padding:8px 14px;transition:background-color .14s,border-color .14s,color .14s}
-#qSheet .debt-none.is-on{background:var(--v-blue-soft);border-color:#5C85FF;color:var(--v-blue-deep);font-weight:650}
-#qSheet .debt-none.is-on::after{content:'선택됨';float:right;padding:2px 7px;border-radius:999px;background:#dce5ff;color:var(--v-blue-deep);font-size:12px;font-weight:650;line-height:1.5}
+#qSheet .debt-none.is-on{background:var(--v-blue-soft);border-color:#5C85FF;color:var(--v-blue-deep);font-weight:700}
+#qSheet .debt-none.is-on::after{content:'선택됨';float:right;padding:2px 7px;border-radius:999px;background:#dce5ff;color:var(--v-blue-deep);font-size:12px;font-weight:700;line-height:1.5}
 #qSheet #debtPartsToggle{margin-top:12px;min-height:48px;padding-inline:0;font-size:15px;border-top:1px solid var(--v-line)}
 #qSheet #debtParts.open{display:block;padding:0;margin:0}
 #qSheet #debtParts .costrow{display:grid;grid-template-columns:1fr 130px;gap:12px;padding:12px 0;align-items:center;border:0}
@@ -4771,7 +4771,7 @@ body .sw::before{transform:none!important}body .sw::after{transform:none!importa
 #limitNotes{padding-top:14px;border-top:1px solid var(--v-line)}
 #limitNotes .chg{display:block;margin:0 0 8px}
 #viewDeals #dealCard{margin:0;padding:22px;border:1px solid var(--v-line);border-radius:18px;background:white}
-#viewDeals .card-title{font-size:23px;line-height:1.4;font-weight:650}
+#viewDeals .card-title{font-size:23px;line-height:1.4;font-weight:700}
 #viewDeals .helper,#viewDeals .deal-note,#viewDeals .deal-msg{font-size:14px!important;line-height:1.7;word-break:keep-all}
 #viewDeals #dealChips{display:flex;flex-wrap:wrap;gap:8px;overflow:visible}
 #viewDeals #dealChips .chip{min-height:44px;font-size:14px;padding:8px 12px}
@@ -4795,7 +4795,7 @@ body .sw::before{transform:none!important}body .sw::after{transform:none!importa
 #viewAnswer .budget-summary .budget-total{position:relative;align-items:center;flex-wrap:nowrap;gap:10px;padding:17px 0 19px;border-top:1px solid #cbd5e3}
 #viewAnswer .budget-summary .budget-total .rhead-label{font-size:15px!important;font-weight:600;color:var(--v-ink)}
 #viewAnswer .budget-summary .budget-total .rhead-amount{flex:none;text-align:right;white-space:nowrap}
-#viewAnswer .budget-summary #heroAmount{font-size:22px!important;font-weight:650;color:#1848D6}
+#viewAnswer .budget-summary #heroAmount{font-size:22px!important;font-weight:700;color:#1848D6}
 #viewAnswer .budget-summary #heroAmount .ue,#viewAnswer .budget-summary #heroAmount .um{color:inherit}
 #payTile .ans-pct{max-width:52%;justify-content:flex-end;text-align:right;gap:4px 6px}
 #payTile .ans-pct .tile-k{font-size:13px;line-height:1.5;word-break:keep-all}
@@ -4833,7 +4833,7 @@ h1,h2,h3{word-break:keep-all;text-wrap:balance}
 button,summary{cursor:pointer}button:disabled{cursor:default}
 body .funnel .cond-lead{letter-spacing:-.04em;line-height:1.3}
 body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text-align:right;word-break:keep-all}
-#qSheet #qSheetTitle{position:static!important;clip:auto!important;clip-path:none!important;width:auto!important;height:auto!important;overflow:visible!important;margin:0 0 18px!important;white-space:normal!important;font-size:23px;line-height:1.35;letter-spacing:-.035em;font-weight:650}
+#qSheet #qSheetTitle{position:static!important;clip:auto!important;clip-path:none!important;width:auto!important;height:auto!important;overflow:visible!important;margin:0 0 18px!important;white-space:normal!important;font-size:23px;line-height:1.35;letter-spacing:-.035em;font-weight:700}
 #qSheet .region-intro{font-size:14px;line-height:1.6;color:var(--v-muted);margin:0 0 18px}
 #qSheet .zonegrid{gap:8px;margin:0 0 16px}#qSheet .zonecard{min-height:46px}
 #qSheet .pane-title{margin:16px 0 10px;font-size:15px}
@@ -4861,7 +4861,7 @@ body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text
 #viewDeals .deal-region-chips .chip.is-on::before{content:'✓ '}
 #viewDeals .deal-regions summary::-webkit-details-marker,.primary-region summary::-webkit-details-marker{display:none}
 #viewDeals #dealCard{padding:20px;border:1px solid var(--v-line);border-radius:18px}
-#viewDeals .card-title{font-size:23px;line-height:1.35;letter-spacing:-.03em;margin:0 0 16px;font-weight:650}
+#viewDeals .card-title{font-size:23px;line-height:1.35;letter-spacing:-.03em;margin:0 0 16px;font-weight:700}
 #viewDeals .deal-budget{margin:0 0 20px;padding:16px;border:0}
 #viewDeals .deal-budget p{font-size:14px!important;line-height:1.6!important;margin-top:10px!important}
 #viewDeals .deal-budget strong{font-size:25px;line-height:1.35}
@@ -4872,7 +4872,7 @@ body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text
 #cashRemainderNote{font-size:13px!important;line-height:1.6!important;margin-top:12px!important}
 #easyBalance>#reasonCard{margin-top:14px}
 #easyBalance>#reasonCard>#limitToggle{min-height:48px;display:flex;justify-content:space-between;gap:12px}
-#limitToggle .k{color:var(--v-blue);font-size:14px!important;font-weight:550}
+#limitToggle .k{color:var(--v-blue);font-size:14px!important;font-weight:600}
 #easyBalance>#reasonCard>#limitBox{padding:0 0 8px}
 #limitBox .limitrow{grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;padding:10px 0;position:relative}
 #limitBox .limitrow .bar{grid-row:2;grid-column:1/-1;height:4px}
@@ -4894,7 +4894,7 @@ body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text
 .report .report-cond{font-size:13px;line-height:1.6;word-break:keep-all}
 .report .report-label{font-size:14px;line-height:1.5}
 .report .report-amount{font-size:40px;letter-spacing:-.035em;line-height:1.25}
-.report .report-total{font-size:23px;font-weight:650;margin:6px 0 14px;line-height:1.35}
+.report .report-total{font-size:23px;font-weight:700;margin:6px 0 14px;line-height:1.35}
 .report .bs{display:grid;grid-template-columns:1fr;gap:20px}
 .report .bs-side{width:100%;padding:0;border:0}.report .bs-side+.bs-side{border-top:1px solid #dce2ea;padding-top:18px}
 .report .bs-it{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;padding:8px 0}
@@ -4919,7 +4919,7 @@ body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text
 /* v51.1: the exported result includes the ongoing monthly commitment. */
 .report .report-monthly{padding:18px 0;margin-top:20px;border-top:1px solid #dce2ea;border-bottom:1px solid #dce2ea}
 .report .report-monthly p{margin:0;font-size:13px;line-height:1.6;color:#536173}
-.report .report-monthly strong{display:block;margin:6px 0;font-size:28px;line-height:1.3;color:#192332;font-weight:650;letter-spacing:-.025em}
+.report .report-monthly strong{display:block;margin:6px 0;font-size:28px;line-height:1.3;color:#192332;font-weight:700;letter-spacing:-.025em}
 
 /* v52 final pass. Hierarchy: house price → required total → sources → details. */
 #viewAnswer .budget-overview{box-shadow:none}
@@ -4928,9 +4928,9 @@ body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text
 #viewAnswer .rhead #easyPrice{font-size:clamp(34px,10vw,44px);font-weight:700;line-height:1.25}
 #viewAnswer .budget-summary{padding:0 22px 16px;background:#fff;border-top:0}
 #viewAnswer .budget-summary #easyCostOpen{min-height:48px;margin:0}
-#viewAnswer #easyCostOpen strong{font-size:17px;font-weight:550}
+#viewAnswer #easyCostOpen strong{font-size:17px;font-weight:600}
 #viewAnswer .budget-summary .budget-total{padding-top:14px;margin-top:4px;border-top:1px solid var(--v-line)}
-#viewAnswer .budget-summary #heroAmount{font-size:22px!important;font-weight:650}
+#viewAnswer .budget-summary #heroAmount{font-size:22px!important;font-weight:700}
 #viewAnswer .budget-overview>#easyBalance{border-top:0;padding:6px 22px 14px}
 #easyBalance .rlab>div+div{border-left:0;padding-left:8px}
 #easyBalance .rlab .t{font-size:13px!important}
@@ -4955,11 +4955,11 @@ body .crow{align-items:center}.crow .k{flex-shrink:0}.crow .v{max-width:68%;text
 #viewDeals #sortSeg[hidden]{display:none!important}
 #sortSeg button{flex:0 1 auto;min-height:44px;padding:10px 14px;border:0;border-radius:8px;font-size:14px;line-height:1.5;background:transparent;color:var(--v-muted);font-weight:500}
 #viewDeals #sortSeg button::after{display:none}
-#viewDeals #sortSeg button.is-on{background:#e7ecf4;color:var(--v-ink);font-weight:650;box-shadow:none}
+#viewDeals #sortSeg button.is-on{background:#e7ecf4;color:var(--v-ink);font-weight:700;box-shadow:none}
 #viewDeals #dealList{order:7;background:#fff;border:1px solid var(--v-line);border-radius:14px;padding:0 16px}
 #viewDeals #dealMapPanel{order:8}
 #viewDeals #dealNote{order:9}#viewDeals #dealFoot{order:10}
-#viewDeals .deal .nm{font-size:16px;line-height:1.5;font-weight:550;word-break:keep-all}
+#viewDeals .deal .nm{font-size:16px;line-height:1.5;font-weight:600;word-break:keep-all}
 #viewDeals .deal .amt{font-size:17px;line-height:1.4;font-weight:600;white-space:nowrap}
 #viewDeals .deal .nm small{font-size:13px;line-height:1.5;margin-top:5px}
 #viewDeals .deal{padding-block:18px;gap:10px}
@@ -5031,8 +5031,8 @@ body .cond-legal{font-size:13px;line-height:1.6;margin-top:16px}
 #viewDeals #dealList{padding:0 18px;border-radius:var(--product-radius)}
 #viewDeals .dealwrap{border-color:var(--v-line)}
 #viewDeals .deal{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px 12px;padding:20px 0}
-#viewDeals .deal .nm{grid-column:1/-1;font-size:16px;font-weight:550;line-height:1.5;white-space:normal;overflow:visible;text-overflow:clip}
-#viewDeals .deal .amt{grid-row:2;grid-column:1/-1;font-size:22px;font-weight:650;line-height:1.4;text-align:left;white-space:normal;overflow-wrap:break-word}
+#viewDeals .deal .nm{grid-column:1/-1;font-size:16px;font-weight:600;line-height:1.5;white-space:normal;overflow:visible;text-overflow:clip}
+#viewDeals .deal .amt{grid-row:2;grid-column:1/-1;font-size:22px;font-weight:700;line-height:1.4;text-align:left;white-space:normal;overflow-wrap:break-word}
 #viewDeals .deal .amt u{font-size:13px;font-weight:400;line-height:1.5}
 #viewDeals .deal-meta{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:2px;color:var(--v-muted);font-size:13px;font-weight:400;line-height:1.6}
 #viewDeals .deal-area{display:inline-block;white-space:nowrap}
@@ -5117,7 +5117,7 @@ body .inline-money .inline-help{margin-top:5px}
 /* v56 share card: fixed export typography, not a responsive page capture. */
 #reportCard{width:440px;border-radius:20px;overflow:hidden;border:1px solid #e1e5eb;background:#fff}
 #reportCard .report-top{padding:24px 28px 26px;background:#1d2d44;color:#fff}
-#reportCard .report-brand{display:flex;align-items:center;gap:6px;margin:0;color:#dce6f4;font-size:12px;line-height:1.5;font-weight:550}
+#reportCard .report-brand{display:flex;align-items:center;gap:6px;margin:0;color:#dce6f4;font-size:12px;line-height:1.5;font-weight:600}
 #reportCard .report-brand-mark{font-size:20px;color:#8FB0FF;line-height:1}
 #reportCard .report-badge{margin-left:auto;border:1px solid #687a91;padding:3px 7px;border-radius:6px;font-size:11px;color:#e2eaf4;font-weight:400}
 #reportCard .report-title{font-size:26px;line-height:1.3;letter-spacing:-.035em;color:#fff;margin:18px 0 8px}
@@ -5134,7 +5134,7 @@ body .inline-money .inline-help{margin-top:5px}
 #reportCard .bs-side{padding:0;border:0}
 #reportCard .bs-side+.bs-side{padding-top:12px;border-top:1px solid #e1e5eb}
 #reportCard .report-total{color:#1848D6;font-size:26px;line-height:1.3;margin:5px 0 8px}
-#reportCard .bs-cap{font-size:13px;color:#465262;font-weight:550}
+#reportCard .bs-cap{font-size:13px;color:#465262;font-weight:600}
 #reportCard .bs-it{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;padding:5px 0}
 #reportCard .bs-nm{font-size:13px;color:#5f6b7d;line-height:1.5}
 #reportCard .bs-am{font-size:17px;font-weight:600;line-height:1.5;color:#192332}
@@ -5266,9 +5266,9 @@ body .crows .crow{min-height:60px;padding:16px 0;align-items:center}
 .crows .crow .v{font-size:15px;color:var(--design-ink);font-weight:600;line-height:1.5}
 .crows .crow.empty .v{color:var(--design-blue)}
 body .crows .inline-money{padding:16px 0 10px}
-.inline-money>label{font-size:14px;color:var(--design-sub);font-weight:550}
+.inline-money>label{font-size:14px;color:var(--design-sub);font-weight:600}
 .inline-money .inline-money-field{min-height:56px;padding:5px 14px;margin-top:9px;border-color:var(--design-line);background:#f8fafc;border-radius:12px}
-body .inline-money-field input{font-size:29px;color:var(--design-ink);font-weight:650;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+body .inline-money-field input{font-size:29px;color:var(--design-ink);font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
 .inline-money-field:focus-within{border-color:#5C85FF;background:#fff;box-shadow:0 0 0 3px #1848D612}
 body .inline-money .inline-help{font-size:13px!important;color:var(--v-muted);line-height:1.6}
 body .crows .main-no-loan{display:flex;align-items:center;gap:10px;margin:10px 0 0;padding:12px;min-height:48px;border:1px solid #e1e5eb;border-radius:12px;background:#f8fafc;color:var(--design-sub);font-size:14px;line-height:1.5;cursor:pointer}
@@ -5280,8 +5280,8 @@ body .cond-legal{font-size:12px;line-height:1.7;color:var(--v-muted);margin-top:
 #viewAnswer .budget-overview{border-color:#e1e5eb;border-radius:20px;background:#fff}
 #viewAnswer .budget-overview>.rhead{padding:26px 22px 22px;background:#F2F5FF}
 #viewAnswer .rhead .price-answer{gap:12px}
-#viewAnswer .rhead .price-answer>span{font-size:15px;color:#465262;font-weight:550}
-#viewAnswer .rhead #easyPrice{font-size:clamp(32px,10vw,44px);font-weight:720;line-height:1.25;letter-spacing:-.045em;color:#192332;font-variant-numeric:tabular-nums}
+#viewAnswer .rhead .price-answer>span{font-size:15px;color:#465262;font-weight:600}
+#viewAnswer .rhead #easyPrice{font-size:clamp(32px,10vw,44px);font-weight:700;line-height:1.25;letter-spacing:-.045em;color:#192332;font-variant-numeric:tabular-nums}
 #viewAnswer .budget-overview .estimate-tag{background:#fff;border-color:#CFDCFF;color:var(--design-blue);border-radius:5px}
 #viewAnswer .budget-summary{padding-top:10px}
 #viewAnswer .budget-summary #easyCostOpen{min-height:52px;padding:10px 0;gap:8px}
@@ -5303,7 +5303,7 @@ body .cond-legal{font-size:12px;line-height:1.7;color:var(--v-muted);margin-top:
 #cashRemainderNote{font-size:12px!important;line-height:1.7!important;color:var(--v-muted);margin-top:14px!important}
 #easyBalance>#reasonCard{margin-top:14px;border-color:#e1e5eb}
 #easyBalance>#reasonCard>#limitToggle{min-height:54px;align-items:center}
-#limitToggle .k{color:#465262;font-size:14px!important;font-weight:550}
+#limitToggle .k{color:#465262;font-size:14px!important;font-weight:600}
 #viewAnswer>#payTile,#viewAnswer>#easyMarket.plot{border-color:var(--design-line);border-radius:20px;box-shadow:none}
 #payTile .ans-k{font-size:15px;color:var(--design-sub);font-weight:600;line-height:1.6}
 #payTile .ans-row{margin-top:18px;align-items:baseline;gap:10px 14px;flex-wrap:wrap}
@@ -5369,7 +5369,7 @@ body .cond-legal{font-size:12px;line-height:1.7;color:var(--v-muted);margin-top:
 #viewDeals .deal-filter-fold[open]>summary{color:var(--design-blue)}
 /* Keep each sheet's established scroll, close button, and action bar geometry. */
 #qSheet,#whySheet{border-color:var(--design-line)}
-#qSheet #qSheetTitle,#whySheet #whyTitle{color:var(--design-ink);font-weight:650;letter-spacing:-.035em}
+#qSheet #qSheetTitle,#whySheet #whyTitle{color:var(--design-ink);font-weight:700;letter-spacing:-.035em}
 #qSheet .q-dismiss{border-color:var(--design-line);color:#465262;background:#f8fafc}
 #whySheet>.cost-impact{background:#F2F5FF;border:1px solid #CFDCFF;border-radius:14px;padding:14px 16px!important}
 #whySheet .cost-impact>div{color:var(--design-sub);font-size:13px;line-height:1.6;flex-wrap:wrap;gap:6px 12px}
@@ -5396,7 +5396,7 @@ body .cond-legal{font-size:12px;line-height:1.7;color:var(--v-muted);margin-top:
 #viewDeals #dealFilterBox{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 #viewDeals #dealFilterBox #dealChips{display:contents}
 #viewDeals #dealUnitFilter .unit-options button{flex:0 1 auto;min-height:44px;padding:10px 12px;font:inherit;font-size:14px;line-height:1.4;background:#fff;border:1px solid #cfd7e2}
-#viewDeals #dealUnitFilter .unit-options button[aria-pressed=true]{background:#EDF2FF;border-color:#5C85FF;color:#1848D6;font-weight:650}
+#viewDeals #dealUnitFilter .unit-options button[aria-pressed=true]{background:#EDF2FF;border-color:#5C85FF;color:#1848D6;font-weight:700}
 #viewDeals #dealUnitNote{flex-basis:100%;margin:4px 0 0;font-size:12px;line-height:1.6}
 #viewDeals #dealResetFilters{margin:4px 0 0 auto}
 #viewDeals #dealResetFilters:disabled{display:none}
@@ -5444,11 +5444,11 @@ body .app.has-rdock .guide-nav{margin:0 auto;padding:4px 20px calc(24px + env(sa
 /* v70: consistent controls and interaction feedback without moving content. */
 :root{--control-radius:10px;--control-border:#cdd4de;--control-selected:#EDF2FF;--control-selected-border:#5C85FF}
 #viewDeals #sortSeg{border:1px solid #e1e5eb;border-radius:12px;background:#edf1f6;padding:3px;gap:3px}
-#viewDeals #sortSeg button{border:1px solid transparent;border-radius:8px;line-height:1.4;font-weight:550}
-#viewDeals #sortSeg button.is-on{background:#fff;border-color:#BFD0FF;color:#1848D6;font-weight:650}
+#viewDeals #sortSeg button{border:1px solid transparent;border-radius:8px;line-height:1.4;font-weight:600}
+#viewDeals #sortSeg button.is-on{background:#fff;border-color:#BFD0FF;color:#1848D6;font-weight:700}
 #viewDeals .unit-options button,#viewDeals .filter-reset,#viewDeals .deal-region-chips .chip{border-radius:var(--control-radius)}
 #viewDeals .unit-options button{font-size:13px;line-height:1.4;border-color:var(--control-border)}
-#viewDeals .unit-options button[aria-pressed=true]{background:var(--control-selected);border-color:var(--control-selected-border);color:#1848D6;font-weight:650}
+#viewDeals .unit-options button[aria-pressed=true]{background:var(--control-selected);border-color:var(--control-selected-border);color:#1848D6;font-weight:700}
 #viewDeals .deal[aria-expanded=true]{border-bottom-color:#bdcce6}
 #viewDeals .deal[aria-expanded=true] .deal-expand{color:#1848D6;font-weight:600}
 #viewDeals .deal-expand .caret{width:7px;height:7px;flex:0 0 7px}
@@ -5469,7 +5469,7 @@ body .app.has-rdock .guide-nav{margin:0 auto;padding:4px 20px calc(24px + env(sa
 #whySheet #whyTitle{font-size:22px;line-height:1.35;letter-spacing:-.025em}
 #qSheet .q-dismiss{border-radius:12px;align-self:center}
 #whySheet .cost-impact{border-radius:16px}
-#whySheet .cost-basis summary{font-size:14px;font-weight:550;line-height:1.5}
+#whySheet .cost-basis summary{font-size:14px;font-weight:600;line-height:1.5}
 #whySheet .costrow .nm small{display:block;margin-top:4px}
 
 /* v73: reduce introductory and search overhead; retain the budget equation as one unit. */
@@ -5514,12 +5514,12 @@ body .funnel .cond-lead{font-size:30px;line-height:1.22;max-width:17ch}
 #viewDeals #dealUnitFilter .unit-options button{
  width:100%;min-width:0;min-height:44px;margin:0;padding:10px 8px;
  border:1px solid #cdd4de;border-radius:10px;background:#fff;color:#465262;
- font-family:inherit;font-size:14px;font-weight:550;line-height:1.45;
+ font-family:inherit;font-size:14px;font-weight:600;line-height:1.45;
  letter-spacing:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
  box-shadow:none;box-sizing:border-box;text-align:center;
 }
 #viewDeals #dealChips .chip.is-on,
-#viewDeals #dealUnitFilter .unit-options button[aria-pressed=true]{background:#EDF2FF;color:#1848D6;border-color:#5C85FF;font-weight:650}
+#viewDeals #dealUnitFilter .unit-options button[aria-pressed=true]{background:#EDF2FF;color:#1848D6;border-color:#5C85FF;font-weight:700}
 #viewDeals #dealUnitNote,#viewDeals #dealResetFilters{grid-column:1/-1}
 #viewDeals #dealResetFilters{justify-self:end;min-height:44px;margin:0}
 #viewDeals #dealRangeNote{margin:0 0 12px;font-size:12px;line-height:1.65;color:var(--v-muted)}
@@ -5731,8 +5731,8 @@ body #viewDeals .deal-switch{display:grid;grid-template-columns:1fr 1fr;gap:3px;
   background:#edf1f6;border:1px solid #e1e5eb;border-radius:12px}
 body #viewDeals .deal-switch button,
 body #viewDeals .deal-switch button[aria-selected=true]{min-height:var(--tap);padding:0 var(--sp-4);border:1px solid transparent;border-radius:8px;
-  background:transparent;color:var(--v-muted);font-size:14px;font-weight:550}
-body #viewDeals .deal-switch button[aria-selected=true]{background:#fff;border-color:#BFD0FF;color:#1848D6;font-weight:650}
+  background:transparent;color:var(--v-muted);font-size:14px;font-weight:600}
+body #viewDeals .deal-switch button[aria-selected=true]{background:#fff;border-color:#BFD0FF;color:#1848D6;font-weight:700}
 body #viewDeals .deal-switch button::after{content:none!important;display:none!important}
 body #viewDeals .deal-map-status{padding:0;text-align:right}
 
@@ -5773,7 +5773,7 @@ body #viewAnswer .hero-deals{margin-top:var(--sp-4);padding:var(--sp-3) var(--sp
 body #viewAnswer #easyMarket .hero-deals{margin:var(--sp-3) 0 var(--sp-4);padding:0;background:none;border:0;border-radius:0}
 body #viewAnswer #easyMarket .hero-deals .hd-map{margin-top:0}
 body #viewAnswer .hero-deals .hd-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;margin:0 0 var(--sp-1);font-size:13px;line-height:1.5;color:var(--v-muted)}
-body #viewAnswer .hero-deals .hd-head b{font-size:14px;font-weight:650;color:var(--v-ink)}
+body #viewAnswer .hero-deals .hd-head b{font-size:14px;font-weight:700;color:var(--v-ink)}
 body #viewAnswer .hero-deals .hd-list{list-style:none;margin:0;padding:0}
 body #viewAnswer .hero-deals .hd-list li{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);padding:10px 0;border-top:1px solid var(--v-line)}
 body #viewAnswer .hero-deals .hd-list li:first-child{border-top:0}
@@ -5837,11 +5837,11 @@ body #viewAnswer #easyMarket .market-chart-fold #marketMethod{margin:var(--sp-2)
    v99 의 「가격 분포 그래프」는 파란 글자 + 붙은 꺾쇠(= 「그래프 집계 기준」·「거래 상세」 같은 **작은 각주 접기** 문법)라
    카드 한 덩어리를 여는 줄인데 각주처럼 보였고, 펼치면 안에 **똑같이 생긴** 「그래프 집계 기준」이 또 섰습니다.
    값은 실측 그대로: 높이 48 · 윗선 1px #e1e5eb · 글자 14/550 잉크 · 꺾쇠 7px #5f6b7d 오른쪽. */
-body #viewAnswer #easyMarket .market-chart-fold>summary{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:48px;margin:0;padding:0;border-top:1px solid #e1e5eb;color:#192332;font-size:14px;font-weight:550;line-height:1.5}
+body #viewAnswer #easyMarket .market-chart-fold>summary{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:48px;margin:0;padding:0;border-top:1px solid #e1e5eb;color:#192332;font-size:14px;font-weight:600;line-height:1.5}
 body #viewAnswer #easyMarket .market-chart-fold>summary::after{margin:0 4px 0 auto;border-color:#5f6b7d}
 body #viewAnswer #easyMarket .market-chart-fold{margin:var(--sp-2) 0 var(--sp-3)}
 /* 두 카드 줄의 글자도 한 벌로 — 「한도·조건」만 550/청회색(#465262), 「금리가 달라지면」은 500/잉크였습니다. */
-body #viewAnswer #limitToggle>.k,body #viewAnswer #rateToggle>.k{font-size:14px;font-weight:550;color:#192332}
+body #viewAnswer #limitToggle>.k,body #viewAnswer #rateToggle>.k{font-size:14px;font-weight:600;color:#192332}
 
 /* ⑬-7 실거래 화면 머리 — 「예상 집값」 판과 「선택한 지역」 판을 **한 장**으로.
    결과 화면 답 카드와 같은 문법: 연파랑 머리(답) + 흰 몸(조건). 모서리 16/12 로 갈려 있던 것도 16 한 벌. */
@@ -5864,7 +5864,7 @@ body #viewDeals .yk-map-label{position:relative;display:inline-flex;align-items:
 body #viewDeals .yk-map-label::after{content:"";position:absolute;left:50%;bottom:-3px;width:8px;height:8px;margin-left:-4px;background:inherit;transform:rotate(45deg);border-radius:0 0 2px 0}
 body #viewDeals .yk-map-label span{display:inline;margin:0;color:rgba(255,255,255,.82);font-size:10px;font-weight:500;line-height:1.2}
 body #viewDeals .yk-map-label span:empty{display:none}
-body #viewDeals .yk-map-label strong{display:inline;margin:0;color:#fff;font-size:13px;font-weight:650;line-height:1.2;font-variant-numeric:tabular-nums}
+body #viewDeals .yk-map-label strong{display:inline;margin:0;color:#fff;font-size:13px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
 body #viewDeals .yk-map-label.is-over{background:#5f6b7d}
 body #viewDeals .yk-map-label.is-active{background:#192332;transform:translateY(-8px)}
 body #viewDeals .yk-map-label.is-dot{width:12px;height:12px;padding:0;gap:0;border:2px solid #fff;box-sizing:border-box;transform:translateY(6px)}
@@ -5891,7 +5891,7 @@ body #viewAnswer #easyMarket .hero-deals .hd-map{margin-bottom:var(--sp-2)}
    입력 시트의 지역 칩도 같은 초록 규칙(v46 무렵 `#qSheet .input-region-grid .chip.is-on, #viewDeals .deal-region-chips .chip.is-on`)이라
    **둘 다** 필터 칩 값으로 맞춥니다(켜짐만 · 꺼짐 모양은 이미 거의 같음). ✓ 표시는 남깁니다.
    ⚠ 같은 규칙에 묶였던 「기존 대출 없음」(#qSheet .debt-none)은 칩이 아니라 확인 줄이라 **안 건드렸습니다**. */
-body #viewDeals .deal-region-chips .chip.is-on,body #qSheet .input-region-grid .chip.is-on{background:#EDF2FF!important;border-color:#5C85FF!important;color:#1848D6!important;font-weight:650}
+body #viewDeals .deal-region-chips .chip.is-on,body #qSheet .input-region-grid .chip.is-on{background:#EDF2FF!important;border-color:#5C85FF!important;color:#1848D6!important;font-weight:700}
 
 /* ⑬-11 v102.2 — 결과 화면 위아래 숨 (오너 실기 캡처 2026-09-15 · v102 운영 「아직도 위아래 공간이 좁다」).
    실측(390px · v102): 카드 사이 18 · 답 머리↔부대비용 10 · 부대비용↔총 필요 금액 4(+안 8) · 총액↔막대 16 ·
@@ -5923,7 +5923,7 @@ body #reportCard #rDeals .d{display:flex;align-items:baseline;justify-content:sp
 body #reportCard #rDeals .d:last-child{border-bottom:0;padding-bottom:0}
 body #reportCard #rDeals .d .n{flex:1;min-width:0;font-weight:600;color:#192332;word-break:keep-all;overflow-wrap:anywhere}
 body #reportCard #rDeals .d .n small{display:block;margin-top:2px;font-size:12px;font-weight:500;color:#5f6b7d}
-body #reportCard #rDeals .d .a{flex:none;font-size:15px;font-weight:650;color:#192332}
+body #reportCard #rDeals .d .a{flex:none;font-size:15px;font-weight:700;color:#192332}
 
 /* ⑬-14 v102.6 — 답 밑 작은 지도 핀 ①②③ · 목록 번호: 짙은 남색 #192332 → 브랜드 파랑.
    큰 지도 말풍선(예산 이하)이 v102.3 부터 파랑인데 작은 지도 핀만 남색이라, 같은 「예산 안의 거래」가 두 색이었습니다. 흰 숫자 5.25:1. */
@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v112 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v114 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13877,6 +13877,32 @@ body #viewDeals .yk-range button{position:relative;min-height:34px;margin:0;padd
 body #viewDeals .yk-range button::before{content:"";position:absolute;inset:-5px 0}
 body #viewDeals .yk-range button[aria-pressed="true"]{border-color:#192332;background:#192332;color:#fff}
 body #viewDeals .yk-range button:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
+</style>
+<style>/* v113 — 디자인 깎기 1차 */
+html body #viewAnswer>#payTile{padding-top:24px!important}
+html body #payTile .ans-row{margin-top:4px!important}
+html body #payTile #tileMonthly,html body #payTile #tileMonthlySub{margin-top:0!important}
+html body #viewAnswer>#payTile>#rateToggle{margin-top:24px!important;min-height:0!important;padding:26px 0 24px!important}
+html body #easyMarket #easyMarketLead{margin-top:2px!important}
+html body #easyMarket #heroDeals{margin-top:20px!important;margin-bottom:25px!important}
+html body #easyMarket .hero-deals .hd-map{margin-bottom:16px!important}
+html body #viewAnswer .hero-deals .hd-list li{height:64px!important;padding:0!important;row-gap:2px!important;border-top:0!important;align-content:center!important}
+html body #viewAnswer .hero-deals .hd-list li:first-child{height:55px!important;align-content:start!important}
+html body #viewAnswer .hero-deals .hd-list li:last-child{height:55px!important;align-content:end!important}
+html body #viewAnswer .hero-deals .hd-list li:only-child{height:47px!important}
+html body #easyMarket #marketRatio{margin-bottom:28px!important}
+html body #easyMarket #marketChartFold{margin:0 0 4px!important}
+html body #easyMarket #marketChartFold>summary{min-height:0!important;padding:24px 0 22px!important}
+html body #easyMarket #marketOpen{margin-top:2px!important}
+html body #viewDeals .deal{padding:22px 0 18px!important;row-gap:0!important}
+html body #viewDeals .deal .amt{margin-top:2px!important}
+html body #viewDeals .deal .deal-meta{margin-top:10px!important}
+html body #viewDeals .deal .budget-gap{margin-top:0!important}
+html body #viewDeals .deal-expand{margin-top:6px!important}
+html body #viewDeals .costbox.dealbox{border-top:0!important;border-bottom:0!important}
+html body #viewDeals #dealList .costbox.dealbox{padding-top:0!important}
+html body #viewDeals #dealList .deal-afford{border:0!important;background:#f6f7f9!important;padding:12px 16px!important;margin:4px 0!important}
+html body #viewDeals .deal-afford .da-gap{border-top:0!important;padding-top:0!important;margin-top:12px!important}
 </style>
 </body>
 </html>
