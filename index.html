@@ -7461,7 +7461,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v108 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v109 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13601,5 +13601,14 @@ h1{max-width:18ch;text-wrap:balance}.contents a{min-height:44px;display:inline-f
 
 </script>
 <style>/* v108 */ .dealbox .deal-range{margin:0 0 6px;font-size:13px;line-height:1.5;color:#1848D6;font-weight:600;font-variant-numeric:tabular-nums;word-break:keep-all}</style>
+<style>/* v109 — 외부 사이트에서 확인: 흰 카드 한 줄 */
+body #viewNext .minigrid .external-links{margin:0 -2px 16px;padding:0 20px;background:#fff;border:1px solid #e1e5eb;border-radius:20px}
+body #viewNext .minigrid .external-links>summary{min-height:56px;padding:0;color:#192332;font-size:15px;font-weight:600}
+body #viewNext .minigrid .external-links>summary::after{content:'';flex:none;width:7px;height:7px;margin:0 4px 0 auto;border-right:2px solid #5f6b7d;border-bottom:2px solid #5f6b7d;transform:translateY(-2px) rotate(45deg);font-size:0}
+body #viewNext .minigrid .external-links[open]>summary::after{content:'';transform:translateY(2px) rotate(225deg)}
+body #viewNext .minigrid .external-links[open]{padding-bottom:12px}
+body #viewNext .minigrid .external-links .mini{margin:0 0 8px}
+body #viewNext .minigrid .external-links>summary:focus-visible{outline:2px solid #8FAEFF;outline-offset:2px;border-radius:12px}
+</style>
 </body>
 </html>
