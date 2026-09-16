@@ -6241,6 +6241,7 @@ body .app:not(.no-dock){padding-bottom:0}
         <div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
+        <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예산</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button></div>
         <p class="yk-legend" id="dealMapLegend" hidden><span><i class="fit"></i>내 예상 집값 이하</span><span><i class="near"></i><b data-near></b></span><span><i class="over"></i>그보다 높음</span></p>
         <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약 금액은 그 지역 최근 거래가의 중앙값이에요(면적이 섞여 있어요). 색은 내 예상 집값과 비교한 것이에요.</p>
         <p class="deal-map-miss" id="dealMapMiss" hidden></p>
@@ -6310,7 +6311,7 @@ body .app:not(.no-dock){padding-bottom:0}
 </section>
   
   
-  <nav class="guide-nav" aria-label="서비스 안내"><button type="button" id="openCalculationGuide" aria-haspopup="dialog">계산 방법과 결과 읽기</button><a href="/loan-limit.html">대출 한도 해설</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
+  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 방법과 결과 읽기</a><a href="/loan-limit.html">대출 한도 해설</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
   <p class="copyright" id="copyright"></p>
 </div>
 
@@ -7464,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v110 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v111 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10919,6 +10920,29 @@ function dealRangeLine(x, all){
   const body = lo === hi ? '모두 ' + w(lo) : '최저 ' + w(lo) + ' ~ 최고 ' + w(hi);
   return '<p class="deal-range">' + esc((a ? a + ' ' : '') + same.length + '건 · ' + body) + '</p>';
 }
+/* v111 — 「이 가격으로 사면」 — 결과 화면과 같은 엔진(calcCosts · ctx)으로 그 거래 가격을 셈. 결과가 없거나 셈이 안 되면 빈 문자열(빈 칸 안 만듦). */
+function dealAfford(man){
+  if(typeof calcCosts !== 'function' || typeof ctx !== 'function' || typeof S !== 'object' || !S) return null;
+  const price = Number(man) * 10000;
+  if(!(price > 0) || !(Number(S.cash) > 0)) return null;
+  let c; try { c = calcCosts({...ctx(), price}); } catch(e) { return null; }
+  if(!c || !Number.isFinite(c.totalNeeded) || !Number.isFinite(c.cashNeeded)) return null;
+  const T = Math.ceil(Math.max(0, c.totalNeeded) / 10000);
+  const C = Math.ceil(Math.max(0, c.cashNeeded) / 10000);
+  const L = Math.max(0, T - C);
+  const M = Math.round(monthlyPaymentCalc(L * 10000, D.rate, D.years) / 10000);
+  return { T, C, L, M, gap: C - Number(S.cash) };
+}
+function dealAffordHtml(x){
+  const f = dealAfford(x && x.amountMan); if(!f) return '';
+  const row = (k, v) => '<div class="dealrow"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
+  const gap = f.gap > 0 ? '<p class="da-gap is-short">내 현금보다 ' + formatWon(f.gap * 10000) + ' 더 필요해요</p>'
+            : '<p class="da-gap">내 현금 안에서 살 수 있어요' + (f.gap < 0 ? ' · ' + formatWon(-f.gap * 10000) + ' 남아요' : '') + '</p>';
+  return '<div class="deal-afford"><p class="da-h">이 가격으로 사면 <span>부대비용 포함</span></p>'
+       + row('필요한 현금', formatWon(f.C * 10000))
+       + (f.L > 0 ? row('주택담보대출', formatWon(f.L * 10000)) + row('월 상환액', formatWon(f.M * 10000)) : '')
+       + gap + '</div>';
+}
 function dealBox(x, i){
   /* 같은 단지의 판단 기준은 **「거래 활발」 뱃지와 같은 키**입니다(원칙 58) —
      이름만 보면 「현대」·「벽산」처럼 흔한 이름이 다른 동의 단지와 한 덩어리가 됩니다. */
@@ -10950,7 +10974,7 @@ function dealBox(x, i){
   const head = [yearFull(x.buildYear), units ? comma(units) + '세대' : '', count]
     .filter(Boolean).join(' · ');
   return `<div class="costbox dealbox" id="dealBox${i}">`
-       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all)
+       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x)
        + shown.map(n => {
            /* 🔴 v83 — **이 줄은 「이 상자 안에서 달라지는 것」만 적습니다.**
               같은 값을 열 줄이 똑같이 되뇌면 그건 정보가 아니라 벽입니다 —
@@ -12567,7 +12591,11 @@ if(RESUME_RESULT) showResult(false);
     if (typeof splitDeals !== 'function') return [];
     const divided = splitDeals(DEAL.items, DEAL.lastPrice);
     /* v110 A — 목록과 **같은 줄**(dealReadingRows · 같은 필터·정렬). 상한은 paintMap 의 MAP_MAX(넘으면 지도 밑에 말함). */
-    return typeof dealReadingRows === 'function' ? dealReadingRows(divided.under, divided.over) : (DEAL.over ? divided.under.concat(divided.over) : divided.under);
+    void divided;
+    /* v111 — 지도는 예산 ±mapRange%(기본 20 · 그래프 축과 같은 폭). 예산 이하 먼저, 초과는 회색 말풍선. */
+    const r = mapRange / 100, kb = DEAL.band, ko = DEAL.overBand;
+    try { DEAL.band = 1 - r; DEAL.overBand = 1 + r; const d = splitDeals(DEAL.items, DEAL.lastPrice); return d.under.concat(d.over); }
+    finally { DEAL.band = kb; DEAL.overBand = ko; }
   }
 
   /* 🔴 좌표가 한반도 안인지 **한 곳에서** 봅니다(원칙 58). 두 갈래가 이것을 씁니다 —
@@ -12644,6 +12672,10 @@ if(RESUME_RESULT) showResult(false);
        ⚠ v102.8 의 알약(「지도에 찍힌 거래」 = 이미 예산 범위로 거른 거래)의 중앙값은 **정의상 거의 늘 예산 안**이라 색을 입힐 뜻이 없었음.
      C 단지 상세 시트 — 말풍선을 누르면 지도 위 아래쪽 시트: 선택 거래 · 면적별 건수·최저~최고 · 이 단지 최근 거래 표(목록 상자와 같은 dealBox). */
   let layer = 'deal';
+  let mapRange = 20;   /* v111 — 지도 가격 범위 ±% (한 곳) */
+  const rangeBox = byId('dealMapRange');
+  function setRange(v, repaint) { mapRange = [10, 20, 30].includes(+v) ? +v : 20; if (rangeBox) rangeBox.querySelectorAll('button[data-range]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.range === mapRange))); if (repaint !== false) paintMap(); }
+  if (rangeBox) rangeBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-range]'); if (b) setRange(b.dataset.range); });
   let pendingFocus = null;
   let statsToken = 0;
   const layerBox = byId('dealMapLayer');
@@ -12726,6 +12758,8 @@ if(RESUME_RESULT) showResult(false);
       const wrap = document.createElement('div');
       /* 목록 상자와 **같은 함수**(원칙 58) — 면적별 줄은 위 요약이 말하므로 상자의 같은 면적 한 줄은 뺍니다. */
       wrap.innerHTML = dealBox(deal, 'Map').replace('class="costbox dealbox"', 'class="costbox dealbox open"').replace(/<p class="deal-range">[\s\S]*?<\/p>/, '');
+      const afford = wrap.querySelector('.deal-afford');   /* v111 — 「이 가격으로 사면」은 선택 거래 바로 밑(시트에서 가장 먼저 읽을 다음 질문) */
+      if (afford) pick.after(afford);
       detail.append(...wrap.childNodes);
     }
     h.focus({ preventScroll: true });
@@ -12854,7 +12888,7 @@ if(RESUME_RESULT) showResult(false);
     /* v110 A — 목록과 지도 곳 수가 다르면 **왜 다른지** 지도 밑에 한 줄(목록 머리 「N곳」과 지도 「단지 M곳」을 사람이 비교합니다). */
     if (miss) {
       const lost = deals.length - located.length, cut = all.length - deals.length;
-      const t = [cut > 0 ? `목록 ${all.length}곳 중 가격순 앞 ${deals.length}곳만 지도에 표시해요.` : '',
+      const t = [cut > 0 ? `이 범위 ${all.length}곳 중 앞 ${deals.length}곳만 지도에 표시해요.` : '',
         lost > 0 ? `${lost}곳은 주소로 위치를 찾지 못해 지도에 없어요.` : ''].filter(Boolean).join(' ');
       miss.textContent = t; miss.hidden = !t;
     }
@@ -13112,14 +13146,14 @@ if(RESUME_RESULT) showResult(false);
 
   listTab.addEventListener('click', () => setMode('list'));
   /* v110 A — 목록 거래 상세 「지도에서 보기」 */
-  list.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.deal-onmap'); if (!b) return; e.preventDefault(); e.stopPropagation(); pendingFocus = b.dataset.key; setMode('map'); bar.scrollIntoView({ block: 'nearest' }); });
+  list.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.deal-onmap'); if (!b) return; e.preventDefault(); e.stopPropagation(); pendingFocus = b.dataset.key; if (mapRange < 20) setRange(20, false); setMode('map'); bar.scrollIntoView({ block: 'nearest' }); });
   { const near = legend && legend.querySelector('[data-near]'); if (near) near.textContent = `${Math.round((DEAL.overBand - 1) * 100)}% 이내로 높음`; }
   mapTab.addEventListener('click', () => setMode('map'));
   new MutationObserver(() => {
     if (mode === 'map') paintMap();
   }).observe(list, { childList:true, subtree:true });
 
-  window.__ykMap = { isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map, setLayer, layer: () => layer, focusKey };
+  window.__ykMap = { setRange, range: () => mapRange, isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map, setLayer, layer: () => layer, focusKey };
   window.navermap_authFailure = function () {
     window.__ykMapFailed = true;
     if (status) status.textContent = '지도를 열 수 없어요';
@@ -13467,47 +13501,6 @@ if(RESUME_RESULT) showResult(false);
 const measure=()=>document.documentElement.style.setProperty('--result-dock-height',Math.ceil(dock.getBoundingClientRect().height)+'px');
 if(typeof ResizeObserver==='function')new ResizeObserver(measure).observe(dock);
 window.addEventListener('resize',measure);measure();})();
-</script><style>
-.guide-nav #openCalculationGuide{font:inherit;color:inherit;background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
-#calculationGuide{padding:0;border:1px solid #e1e5eb;border-radius:20px;width:min(800px,calc(100% - 24px));max-width:none;height:min(880px,calc(100dvh - 32px));max-height:calc(100% - 32px);background:#f5f7fa;color:#192332;overflow:hidden}
-#calculationGuide::backdrop{background:rgba(20,32,50,.45)}
-#calculationGuide[open]{display:flex;flex-direction:column}
-.guide-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid #e1e5eb}
-.guide-dialog-head h2{margin:0;font-size:16px;line-height:1.4}
-#closeCalculationGuide{flex:none;min-width:48px;min-height:44px;border:1px solid #e1e5eb;border-radius:12px;background:#f5f7fa;color:#243145;font:inherit;cursor:pointer}
-#calculationGuide iframe{display:block;width:100%;flex:1;min-height:0;border:0}
-#openCalculationGuide:focus-visible,#closeCalculationGuide:focus-visible{outline:3px solid #1F5BFF;outline-offset:4px}
-</style>
-<dialog id="calculationGuide" aria-labelledby="calculationGuideTitle"><header class="guide-dialog-head"><h2 id="calculationGuideTitle">계산 방법과 결과 읽기</h2><button type="button" id="closeCalculationGuide" autofocus>닫기</button></header><iframe title="계산 방법 안내" srcdoc="&lt;!doctype html&gt;
-&lt;html lang=&quot;ko&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;title&gt;계산 방법과 결과 읽기 | 영끌계산기&lt;/title&gt;&lt;meta name=&quot;description&quot; content=&quot;집값과 부대비용을 함께 계산하는 방법, 월 상환액과 실거래 그래프를 읽는 방법을 예시로 설명합니다.&quot;&gt;&lt;link rel=&quot;canonical&quot; href=&quot;https://www.myhome-price.com/guide.html&quot;&gt;&lt;style&gt;
-:root{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#192332;background:#f5f7fa}*{box-sizing:border-box}body{margin:0;font-size:14px;line-height:1.6;letter-spacing:0;word-break:keep-all;overflow-wrap:anywhere}header,main,footer{width:min(100% - 40px,760px);margin:auto}header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:22px 0;border-bottom:1px solid #e1e5eb}a{color:#1848D6;text-underline-offset:4px}header a{font-size:14px}header strong{font-size:18px}main{padding:24px 0}h1{font-size:clamp(26px,5vw,34px);line-height:1.35;letter-spacing:-.045em;margin:12px 0 18px}h2{font-size:20px;letter-spacing:-.025em;margin:0 0 12px;line-height:1.4}h3{font-size:16px;margin:20px 0 8px}p{margin:8px 0;color:#465262}.eyebrow{font-size:13px;color:#1848D6}.lead{font-size:14px;line-height:1.6}.contents{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}.contents a{padding:8px 12px;border:1px solid #d7e0ed;border-radius:10px;background:#fff;text-decoration:none;font-size:14px}section{scroll-margin-top:20px;background:#fff;border:1px solid #e1e5eb;border-radius:18px;padding:22px;margin:16px 0}ol,ul{padding-left:22px;color:#465262}li+li{margin-top:12px}.formula{padding:16px;background:#EDF2FF;border-radius:12px;color:#1848D6;font-weight:650}.example{background:#F2F5FF;border:1px solid #CFDCFF;padding:18px;border-radius:12px}.example strong{color:#1848D6}.row{display:flex;gap:12px;justify-content:space-between;border-bottom:1px solid #e1e5eb;padding:7px 0}.row span:last-child{font-weight:650;white-space:nowrap}.bar{height:8px;display:flex;overflow:hidden;border-radius:8px;margin:16px 0 8px;background:#EDF2FF}.bar span:first-child{width:60%;background:#1F5BFF}.bar span:last-child{width:40%;background:#9DB8FF}.caption{font-size:13px}.notice{border-left:3px solid #CFDCFF;padding-left:14px}.back{display:inline-block;border-radius:12px;background:#1F5BFF;color:white;text-decoration:none;padding:12px 20px;margin-top:18px}footer{padding:20px 0 40px;font-size:13px;color:#69768a}details{border-top:1px solid #e0e5ed;padding:14px 0}summary{cursor:pointer;font-weight:600}section a{overflow-wrap:anywhere}@media(max-width:380px){section{padding:20px}header,main,footer{width:calc(100% - 32px)}}
-h1{max-width:18ch;text-wrap:balance}.contents a{min-height:44px;display:inline-flex;align-items:center;box-sizing:border-box}.row{flex-wrap:wrap;align-items:baseline}.row span:last-child{margin-left:auto}a:focus-visible,summary:focus-visible{outline:3px solid #8FAEFF;outline-offset:3px}summary{min-height:44px;display:flex;align-items:center}details{padding:8px 0}ol,ul{margin-block:12px}footer{line-height:1.6}@media(max-width:380px){section{padding:18px}.example,.formula{padding:14px}}
-&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;main&gt;&lt;p class=&quot;eyebrow&quot;&gt;내 집 마련 가이드&lt;/p&gt;&lt;h1&gt;집값만 보면 예산이 부족할 수 있어요.&lt;/h1&gt;&lt;p class=&quot;lead&quot;&gt;집을 살 때 필요한 총금액과 매달 갚을 돈을 함께 살펴보세요. 영끌계산기의 입력값과 결과를 읽는 방법을 정리했습니다.&lt;/p&gt;&lt;nav class=&quot;contents&quot; aria-label=&quot;이 페이지 목차&quot;&gt;&lt;a href=&quot;#inputs&quot;&gt;입력 방법&lt;/a&gt;&lt;a href=&quot;#budget&quot;&gt;예산 계산 예시&lt;/a&gt;&lt;a href=&quot;#monthly&quot;&gt;월 상환액&lt;/a&gt;&lt;a href=&quot;#deals&quot;&gt;실거래 읽기&lt;/a&gt;&lt;a href=&quot;#faq&quot;&gt;자주 묻는 질문&lt;/a&gt;&lt;/nav&gt;
-&lt;section id=&quot;inputs&quot;&gt;&lt;h2&gt;1. 집에 쓸 돈부터 구분하세요&lt;/h2&gt;&lt;ol&gt;&lt;li&gt;&lt;strong&gt;집에 쓸 현금:&lt;/strong&gt; 현재 가진 현금에서 남겨 둘 생활비와 비상금을 빼고 입력하세요. 예상 대출금은 현금에 더하지 않습니다.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;연 소득:&lt;/strong&gt; 세전 연간 소득을 만원 단위로 입력합니다. 월 소득과 연 소득을 혼동하지 않도록 확인하세요.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;기존 대출:&lt;/strong&gt; 현재 매달 갚는 원금과 이자의 합계를 입력합니다. 대출 잔액이 아닙니다. 다만 이자만 내는 신용대출(만기일시상환)·마이너스통장은 ‘대출별로 나눠 입력’에 잔액(마이너스통장은 한도)을 넣으세요. 매달 내는 이자는 알면 넣고, 모르면 비워 두면 연 5.5%(은행연합회 공시 5대 은행 일반신용대출 평균금리 기준)로 추정합니다. 은행의 DSR 산정처럼 원금을 5년에 나눠 갚는 것으로 보고 월 상환액에 더합니다. 대출이 없다면 ‘기존 대출 없음’을 선택하세요.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;지역과 주택 보유:&lt;/strong&gt; 계산에 사용할 지역과 본인의 주택 보유 상태를 선택하세요. 비교 지역은 실거래 탐색을 위한 추가 선택입니다.&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;예를 들어 현금 3억원은 &lt;strong&gt;30,000만원&lt;/strong&gt;, 연 소득 6,000만원은 &lt;strong&gt;6,000만원&lt;/strong&gt;으로 입력합니다. 화면의 한글 금액 표시도 함께 확인하세요.&lt;/p&gt;&lt;/section&gt;
-&lt;section id=&quot;budget&quot;&gt;&lt;h2&gt;2. 집값과 총 필요 금액은 달라요&lt;/h2&gt;&lt;p class=&quot;formula&quot;&gt;총 필요 금액 = 집값 + 부대비용&lt;/p&gt;&lt;p&gt;부대비용에는 계산 조건에 따른 취득세, 중개보수, 법무사·등기 관련 비용 등이 포함됩니다. 인테리어 등 선택 비용은 설정 상태에 따라 달라집니다. 결과의 ‘부대비용’을 눌러 포함 항목과 금액을 확인하세요.&lt;/p&gt;&lt;div class=&quot;example&quot;&gt;&lt;strong&gt;계산 구조를 이해하기 위한 가상 예시&lt;/strong&gt;&lt;div class=&quot;row&quot;&gt;&lt;span&gt;사용할 현금&lt;/span&gt;&lt;span&gt;3억원&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;row&quot;&gt;&lt;span&gt;예상 대출&lt;/span&gt;&lt;span&gt;2억원&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;row&quot;&gt;&lt;span&gt;총 필요 금액&lt;/span&gt;&lt;span&gt;5억원&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;bar&quot; aria-hidden=&quot;true&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;&lt;p class=&quot;caption&quot;&gt;현금 60% · 대출 40%&lt;/p&gt;&lt;p&gt;이 중 부대비용을 &lt;strong&gt;2,000만원으로 가정&lt;/strong&gt;하면 살펴볼 집값은 &lt;strong&gt;4억 8,000만원&lt;/strong&gt;입니다. 집값에 5억원을 모두 쓰면 부대비용이 따로 필요합니다.&lt;/p&gt;&lt;/div&gt;&lt;p class=&quot;caption&quot;&gt;위 대출과 부대비용은 설명을 위해 정한 숫자입니다. 실제 세율·대출 한도나 계산기 실행 결과를 제시한 예시가 아닙니다.&lt;/p&gt;&lt;p&gt;부대비용을 늘리면 같은 자금으로 살펴볼 집값은 줄어듭니다. 반대로 포함 비용을 줄여 집값이 올라갔다면, 그 비용을 실제로 지출하지 않아도 되는지 확인해야 합니다.&lt;/p&gt;&lt;/section&gt;
-&lt;section id=&quot;monthly&quot;&gt;&lt;h2&gt;3. 월 상환액은 생활비와 함께 보세요&lt;/h2&gt;&lt;p&gt;결과의 ‘주택담보대출 월 상환액’은 표시된 금리·기간·상환 방식으로 계산한 예상치입니다. 기존 대출 상환액이나 주택 관리비까지 모두 포함한 월 지출액은 아닙니다.&lt;/p&gt;&lt;p&gt;‘세전 소득의 몇 %’는 세전 월 소득 대비 새 주택담보대출 상환액의 비율입니다. 실제 통장에 들어오는 돈 대비 비율이나 대출 심사에 쓰는 DSR 수치와 같지 않습니다.&lt;/p&gt;&lt;div class=&quot;example&quot;&gt;&lt;strong&gt;매달 남는 돈을 따로 확인해 보세요&lt;/strong&gt;&lt;p&gt;실수령 월 소득에서 새 주택담보대출 상환액, 기존 대출 상환액, 생활비·관리비, 저축 등 예정 지출을 차례로 빼 보세요. 계산기의 소득 비율 하나만으로 감당 가능한 수준을 판단하기는 어렵습니다.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;금리를 바꿔 월 상환액이 얼마나 달라지는지도 비교해 보세요. 표시된 금리는 계산 조건이며 금융기관의 개인별 대출 견적이 아닙니다.&lt;/p&gt;&lt;/section&gt;
-&lt;section id=&quot;deals&quot;&gt;&lt;h2&gt;4. 실거래 그래프와 목록은 이렇게 읽어요&lt;/h2&gt;&lt;ul&gt;&lt;li&gt;&lt;strong&gt;그래프의 세로선:&lt;/strong&gt; 계산한 예상 집값의 위치입니다. 파란 표시와 옅은 표시를 통해 예산 이하와 초과 거래를 구분합니다.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;그래프 집계 기준:&lt;/strong&gt; 표시 범위와 최근 거래 표본 수를 확인할 수 있습니다. 그래프의 점 개수가 전체 조회 건수와 같지는 않을 수 있습니다.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;예산 이하 거래 비율:&lt;/strong&gt; 조회·집계된 단지·면적별 자료 중 예상 집값 이하인 비율입니다. 해당 지역 전체 매물 중 살 수 있는 비율이나 매수 성공 확률은 아닙니다.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;목록의 조회 가격:&lt;/strong&gt; 실제 적용되는 가격 범위입니다. 면적·준공연도 등 조건에 따라 목록이 줄어들 수 있으니 필터도 확인하세요.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;거래 상세:&lt;/strong&gt; 같은 단지여도 면적, 층, 계약 시점 등에 따라 가격이 다를 수 있습니다. 가격만으로 동일한 주택이라고 판단하지 마세요.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;실거래는 신고된 과거 계약 자료입니다. 현재 판매 중인 매물이나 지금 거래할 수 있는 가격을 뜻하지 않습니다. 표시 자료의 출처는 &lt;a href=&quot;https://rt.molit.go.kr/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;국토교통부 실거래가 공개시스템&lt;/a&gt;에서 확인할 수 있습니다.&lt;/p&gt;&lt;/section&gt;
-&lt;section id=&quot;faq&quot;&gt;&lt;h2&gt;자주 묻는 질문&lt;/h2&gt;&lt;details&gt;&lt;summary&gt;대출 가능 금액을 확정해 주나요?&lt;/summary&gt;&lt;p&gt;아니요. 입력값과 계산 조건에 따른 참고용 예상치입니다. 실제 대출 가능 여부·금액·금리는 금융기관의 심사와 적용 조건에 따라 달라집니다. 영끌계산기는 대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.&lt;/p&gt;&lt;/details&gt;&lt;details&gt;&lt;summary&gt;대출 한도를 직접 입력하면 그 금액을 모두 빌리나요?&lt;/summary&gt;&lt;p&gt;직접 입력한 값은 계산에 사용할 상한입니다. 다른 계산상 한도가 더 낮으면 예상 대출은 직접 입력한 금액보다 작을 수 있습니다. 결과에 표시되는 적용 설명을 확인하세요.&lt;/p&gt;&lt;/details&gt;&lt;details&gt;&lt;summary&gt;지역을 추가하면 집값 예산도 지역마다 다시 계산하나요?&lt;/summary&gt;&lt;p&gt;비교 지역은 기본 계산 지역에서 산출한 예산으로 실거래를 함께 살펴보기 위한 선택입니다. 다른 지역의 조건으로 계산하려면 계산 기준 지역을 변경하세요.&lt;/p&gt;&lt;/details&gt;&lt;details&gt;&lt;summary&gt;세금과 비용은 최종 납부액인가요?&lt;/summary&gt;&lt;p&gt;아니요. 입력한 조건에 따른 예상 비용입니다. 실제 계약과 개인별 적용 요건에 따라 달라질 수 있으므로 계약 전 해당 비용을 별도로 확인해야 합니다.&lt;/p&gt;&lt;/details&gt;&lt;details&gt;&lt;summary&gt;공유 이미지와 실거래 목록이 왜 다른가요?&lt;/summary&gt;&lt;p&gt;공유 이미지는 예상 집값, 총 필요 금액, 현금·대출, 월 상환액과 함께 결과 화면의 「내 예산에 맞는 실거래」 세 곳을 담습니다. 실거래 목록에서 바꾼 필터·정렬과 나머지 단지는 담지 않습니다. 실거래를 불러오기 전에 저장하면 실거래 없이 저장됩니다.&lt;/p&gt;&lt;/details&gt;&lt;/section&gt;
-&lt;section id=&quot;more&quot;&gt;&lt;h2&gt;더 읽어보기&lt;/h2&gt;&lt;ul&gt;&lt;li&gt;&lt;a href=&quot;/loan-limit.html&quot; target=&quot;_top&quot;&gt;주택담보대출 한도는 무엇이 정하나요 — LTV·DSR·집값 구간 상한&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;/existing-debt.html&quot; target=&quot;_top&quot;&gt;신용대출·마이너스통장이 있으면 한도는 얼마나 줄어드나요&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;/buying-costs.html&quot; target=&quot;_top&quot;&gt;집값 말고 드는 돈 — 취득세·중개보수·등기비&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&quot;/about.html&quot; target=&quot;_top&quot;&gt;서비스 소개·자료 출처·문의&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;
-&lt;p class=&quot;notice&quot;&gt;영끌계산기는 참고용 계산 도구입니다. 대출 주선·알선·중개 및 대출상품 연결 서비스를 제공하지 않습니다.&lt;/p&gt;&lt;/main&gt;&lt;footer&gt;이용 안내 업데이트: 2026.09.13 · &lt;a href=&quot;/about.html&quot; target=&quot;_top&quot;&gt;서비스 소개·문의&lt;/a&gt; · &lt;a href=&quot;/privacy.html&quot; target=&quot;_top&quot;&gt;개인정보처리방침&lt;/a&gt;&lt;/footer&gt;&lt;/body&gt;&lt;/html&gt;
-"></iframe></dialog>
-<script>
-(()=>{
- const guide=document.getElementById('calculationGuide');
- const open=document.getElementById('openCalculationGuide');
- const close=document.getElementById('closeCalculationGuide');
- const frame=guide.querySelector('iframe');
- const bindEscape=()=>{
-   frame.contentDocument?.addEventListener('keydown',event=>{
-     if(event.key==='Escape' && guide.open){event.preventDefault();guide.close();}
-   });
- };
- frame.addEventListener('load',bindEscape);bindEscape();
- let previousOverflow='';
- open.addEventListener('click',()=>{previousOverflow=document.body.style.overflow;guide.showModal();document.body.style.overflow='hidden';});
- close.addEventListener('click',()=>guide.close());
- guide.addEventListener('close',()=>{document.body.style.overflow=previousOverflow;open.focus({preventScroll:true});});
-})();
 </script><script>
 /* ═══════════════════════════════════════════════════════════════════════
    🔴 v95 — **답 바로 밑에 「그 돈으로 실제로 거래된 단지」 세 곳** (오너 「킥이 없다 · 밋밋하다」 2026-09-15)
@@ -13803,6 +13796,48 @@ body #viewDeals .deal-map-detail .costbox.dealbox{margin:0;padding:12px;border-r
 body #viewDeals .yk-area-fit{margin:0 0 10px;color:#465262;font-size:14px;line-height:1.5}
 body #viewDeals .yk-sheet-go,body #viewDeals .deal-onmap{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:8px 0 0;padding:0 12px;border:1px solid #CFDCFF;border-radius:12px;background:#F2F5FF;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 body #viewDeals .yk-sheet-go:focus-visible,body #viewDeals .deal-onmap:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
+</style>
+<style>/* v111 — 이 가격으로 사면 */
+body #viewDeals .deal-afford{margin:4px 0 12px;padding:12px 14px;border-radius:12px;background:#fff;border:1px solid #e1e5eb}
+body #viewDeals .deal-afford .da-h{margin:0 0 4px;color:#192332;font-size:14px;font-weight:700;line-height:1.4}
+body #viewDeals .deal-afford .da-h span{margin-left:6px;color:#5f6b7d;font-size:12px;font-weight:500}
+body #viewDeals .deal-afford .dealrow{padding:4px 0}
+body #viewDeals .deal-afford .dealrow .k{color:#465262}
+body #viewDeals .deal-afford .dealrow .v{color:#192332;font-weight:600;font-variant-numeric:tabular-nums}
+body #viewDeals .deal-afford .da-gap{margin:6px 0 0;padding-top:8px;border-top:1px solid #e1e5eb;color:#1848D6;font-size:14px;font-weight:700;line-height:1.45;word-break:keep-all}
+body #viewDeals .deal-afford .da-gap.is-short{color:#192332}
+/* v111 — 결과 첫 카드 간격 (오너 「위아래 여백이 어느 건 너무 붙고 어느 건 떨어져 있다」 2026-09-16 · 캡처 두 번)
+   잰 것 = **눈에 보이는 글자 사이**(390px 캡처 픽셀로 글자 잉크 위·아래를 셈 · 줄높이 여백 제외 · 검증도구/cardgap.mjs).
+   v110: 이름→금액 28 · 금액→면 끝 20 · 면 끝→부대비용 29 · 부대비용→총 32 · 총→막대 23 · 막대→범례 15 · 범례→금액 13 · 금액→안내 18 · 안내→선 26 · 선→한도 26 · 한도→카드 끝 25
+   규칙: 이름표↔값 10(막대→범례 16) · 같은 묶음 안 줄 24 · 묶음 사이·면 끝·선·카드 끝 32. ⏹ 첫 판(8·16·24)은 오너 「너무 위아래 간격이 없어 답답」 → 시안 A 20·28 / **B 24·32 ← 오너**.
+   v111: 18 · 32 · 32 · 24 · 32 · 16 · 10 · 24 · 32 · 28 · 28(±1). 선은 오너 시안 C(부대비용·총 사이 선 없음) · 총 필요 금액 잉크 700. 문구·숫자 그대로. */
+body #app #viewAnswer .budget-overview>.rhead{padding:27px 22px 32px}   /* 줄높이 여백 5px 를 빼 글자 위 32 */
+body #app #viewAnswer .budget-overview .price-answer{row-gap:6px}
+body #app #viewAnswer .budget-overview #easyPrice{line-height:1.05}
+body #app #viewAnswer .budget-overview .budget-summary{padding-top:15px}
+body #app #viewAnswer .budget-overview #easyCostOpen{padding:8px 0 0;min-height:44px}
+body #app #viewAnswer .budget-overview .budget-total{margin:0;padding:8px 0 29px;border:0;align-items:baseline}
+body #app #viewAnswer .budget-overview .budget-total #heroLabel{color:#192332;font-size:15px;font-weight:700}
+body #app #viewAnswer .budget-overview .budget-total #heroAmount,body #app #viewAnswer .budget-overview .budget-total #heroAmount .u{color:#192332;font-weight:700}
+body #app #viewAnswer #easyBalance .rlab{margin-top:13px}
+body #app #viewAnswer #easyBalance .rlab .n{margin-top:1px}
+body #app #viewAnswer #easyBalance .cash-remainder[hidden]+#cashRemainderNote{margin-top:18px!important}   /* 옛 규칙이 !important(var(--sp-3) 12) 라 같은 무게로 이김 */
+body #app #viewAnswer #easyBalance #reasonCard{margin-top:26px}
+body #app #viewAnswer #easyBalance #limitToggle{margin-top:10px}
+body #app #viewAnswer .budget-overview #easyBalance{padding-bottom:9px}
+/* v111 — 결과·실거래 바닥 「계산 결과 · 이미지 저장」 선이 굵어 보임(오너): 실측 border 1px + box-shadow inset 1px = 2px 겹침 → 그림자 뗌 */
+body .app.has-rdock #rdock .cta,body .app.has-rdock #rdock button{box-shadow:none}
+/* v111 — 안내 링크 줄은 첫 화면에만(오너 「모든 페이지에 해야 해? 최소한으로만」). 결과·실거래는 저작권 한 줄. */
+body .app.no-dock .guide-nav{display:none}
+body .app.no-dock .guide-nav+.copyright{padding-top:16px}
+</style>
+<style>/* v111 — 지도 가격 범위 */
+body #viewDeals .yk-range{display:flex;align-items:center;gap:6px;margin:10px var(--sp-3) 0;font-size:13px;color:#465262}
+body #viewDeals .yk-range span{margin-right:2px}
+body #viewDeals .yk-range button{position:relative;min-height:34px;margin:0;padding:0 12px;border:1px solid #cdd4de;border-radius:999px;background:#fff;color:#465262;font:inherit;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer}
+body #viewDeals .yk-range button::before{content:"";position:absolute;inset:-5px 0}
+body #viewDeals .yk-range button[aria-pressed="true"]{border-color:#192332;background:#192332;color:#fff}
+body #viewDeals .yk-range button:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
 </style>
 </body>
 </html>
