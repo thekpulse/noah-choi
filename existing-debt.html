@@ -11,9 +11,9 @@ table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}th,td{bor
 .src{font-size:13px;color:#5f6b7d;border-top:1px solid #e1e5eb;margin-top:14px;padding-top:10px}.notice{font-size:14px;border-left:3px solid #CFDCFF;padding-left:12px}
 .cta{display:inline-flex;align-items:center;min-height:48px;border-radius:12px;background:#1F5BFF;color:#fff;text-decoration:none;padding:0 20px;margin:10px 0 4px;font-weight:600}
 .related a{display:flex;align-items:center;min-height:44px}footer{padding:12px 0 40px;font-size:13px;color:#5f6b7d}footer nav{display:flex;flex-wrap:wrap;gap:0 14px}
-.scroll{overflow-x:auto}a:focus-visible{outline:3px solid #8FAEFF;outline-offset:3px}@media(max-width:380px){header,main,footer{width:calc(100% - 32px)}section{padding:18px}th,td{padding:8px 4px}}
+.scroll{overflow-x:auto}td:first-child,th:first-child{min-width:6.5em}@media(max-width:480px){table.stack thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}table.stack,table.stack tbody,table.stack tr,table.stack td{display:block;width:100%}table.stack tr{border-bottom:1px solid #e1e5eb;padding:8px 0}table.stack td{border:0;padding:3px 0;display:flex;justify-content:space-between;gap:12px;text-align:right;white-space:normal;min-width:0}table.stack td:first-child{display:block;font-weight:600;color:#192332;text-align:left;white-space:normal}table.stack td[data-label]:not(:first-child)::before{content:attr(data-label);color:#5f6b7d;font-weight:400;text-align:left;flex:none}}table.compact th,table.compact td{padding-inline:4px}a:focus-visible{outline:3px solid #8FAEFF;outline-offset:3px}@media(max-width:380px){header,main,footer{width:calc(100% - 32px)}section{padding:18px}th,td{padding:8px 4px}}
 </style></head>
-<body><header><strong>영끌계산기</strong><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide.html">계산 방법</a><a href="/loan-limit.html">대출 한도 해설</a><a href="/existing-debt.html">기존 대출과 한도</a><a href="/about.html">소개·문의</a></nav></header><main>
+<body><header><strong>영끌계산기</strong><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide.html">계산 방법</a><a href="/loan-limit.html">대출 한도 해설</a><a href="/existing-debt.html">기존 대출과 한도</a><a href="/buying-costs.html">부대비용 해설</a><a href="/about.html">소개·문의</a></nav></header><main>
 
 <p class="eyebrow">기존 대출과 한도</p>
 <h1>신용대출·마이너스통장이 있으면 한도는 얼마나 줄어드나요</h1>
@@ -30,10 +30,10 @@ table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}th,td{bor
 
 <section id="example"><h2>2. 얼마나 달라지나 — 예시</h2>
 <p>연 소득 6,000만원, 수도권, 변동금리 연 5.4%(한도 계산 금리 연 8.4%), 30년 원리금균등 조건에서 DSR 기준 한도만 비교했습니다.</p>
-<div class="scroll"><table><thead><tr><th>기존 대출</th><th class="num">DSR에 넣은 월 금액</th><th class="num">DSR 기준 한도</th></tr></thead><tbody>
-<tr><td>없음</td><td class="num">0원</td><td class="num">약 2억 6,300만원</td></tr>
-<tr><td>신용대출 5,000만원 — 이자 월 20만원<strong>만</strong> 넣은 경우</td><td class="num">20만원</td><td class="num">약 2억 3,600만원</td></tr>
-<tr><td>신용대출 5,000만원 — 원금 5년 + 이자로 넣은 경우</td><td class="num">104만원</td><td class="num"><strong>약 1억 2,600만원</strong></td></tr>
+<div class="scroll"><table class="stack"><thead><tr><th>기존 대출</th><th class="num">DSR에 넣은 월 금액</th><th class="num">DSR 기준 한도</th></tr></thead><tbody>
+<tr><td data-label="기존 대출">없음</td><td class="num" data-label="DSR에 넣은 월 금액">0원</td><td class="num" data-label="DSR 기준 한도">약 2억 6,300만원</td></tr>
+<tr><td data-label="기존 대출">신용대출 5,000만원 — 이자 월 20만원<strong>만</strong> 넣은 경우</td><td class="num" data-label="DSR에 넣은 월 금액">20만원</td><td class="num" data-label="DSR 기준 한도">약 2억 3,600만원</td></tr>
+<tr><td data-label="기존 대출">신용대출 5,000만원 — 원금 5년 + 이자로 넣은 경우</td><td class="num" data-label="DSR에 넣은 월 금액">104만원</td><td class="num" data-label="DSR 기준 한도"><strong>약 1억 2,600만원</strong></td></tr>
 </tbody></table></div>
 <p>5,000만원을 5년(60개월)에 나누면 원금이 매달 약 83만원입니다. 영끌계산기는 만원 단위로 올려 84만원으로 보고, 이자 20만원을 더해 월 104만원을 DSR에 넣습니다. 이자만 넣었을 때와 비교하면 한도가 <strong>약 1억 1,000만원</strong> 차이 납니다. 실제 적용 한도는 여기에 LTV와 집값 구간 상한을 함께 본 가장 낮은 값입니다(<a href="/loan-limit.html">대출 한도 해설</a>).</p></section>
 
