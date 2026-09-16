@@ -7461,7 +7461,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v107 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v108 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10904,6 +10904,17 @@ function dealSameKey(x){ return (x.name||'') + '|' + (x.dong||'') + '|' + (x.law
 const dealWhen = n => (n.y||0)*10000 + (n.m||0)*100 + (n.d||0);
 const dealDate = n => (n.y && n.m && n.d)
   ? `${n.y}.${String(n.m).padStart(2,'0')}.${String(n.d).padStart(2,'0')}` : '';
+/* v108 — 같은 면적 거래가 범위(최저~최고). 상자 머리 한 줄 · 없으면 빈 문자열(빈 칸 안 만듦). */
+function dealRangeLine(x, all){
+  if(x.areaM2 == null) return '';
+  const same = (all || []).filter(n => n.areaM2 != null && Number(n.areaM2) === Number(x.areaM2) && Number.isFinite(Number(n.amountMan)));
+  if(same.length < 2) return '';
+  const v = same.map(n => Number(n.amountMan)); const lo = Math.min(...v), hi = Math.max(...v);
+  const a = (areaParts(x.areaM2) || {}).m2 || '';
+  const w = m => formatWon(m * 10000).replace(/ /g, ' ');   /* 금액 안에서 줄이 안 꺾이게(390px 실측 「14억 / 2,400만원」) */
+  const body = lo === hi ? '모두 ' + w(lo) : '최저 ' + w(lo) + ' ~ 최고 ' + w(hi);
+  return '<p class="deal-range">' + esc((a ? a + ' ' : '') + same.length + '건 · ' + body) + '</p>';
+}
 function dealBox(x, i){
   /* 같은 단지의 판단 기준은 **「거래 활발」 뱃지와 같은 키**입니다(원칙 58) —
      이름만 보면 「현대」·「벽산」처럼 흔한 이름이 다른 동의 단지와 한 덩어리가 됩니다. */
@@ -10935,7 +10946,7 @@ function dealBox(x, i){
   const head = [yearFull(x.buildYear), units ? comma(units) + '세대' : '', count]
     .filter(Boolean).join(' · ');
   return `<div class="costbox dealbox" id="dealBox${i}">`
-       + `<p class="deal-sum">${esc(head)}</p>`
+       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all)
        + shown.map(n => {
            /* 🔴 v83 — **이 줄은 「이 상자 안에서 달라지는 것」만 적습니다.**
               같은 값을 열 줄이 똑같이 되뇌면 그건 정보가 아니라 벽입니다 —
@@ -13589,5 +13600,6 @@ h1{max-width:18ch;text-wrap:balance}.contents a{min-height:44px;display:inline-f
 })();
 
 </script>
+<style>/* v108 */ .dealbox .deal-range{margin:0 0 6px;font-size:13px;line-height:1.5;color:#1848D6;font-weight:600;font-variant-numeric:tabular-nums;word-break:keep-all}</style>
 </body>
 </html>
