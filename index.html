@@ -6241,7 +6241,7 @@ body .app:not(.no-dock){padding-bottom:0}
         <div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
-        <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예산</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button></div>
+        <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예산</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button><button type="button" data-range="50" aria-pressed="false">±50%</button></div>
         <p class="yk-legend" id="dealMapLegend" hidden><span><i class="fit"></i>내 예상 집값 이하</span><span><i class="near"></i><b data-near></b></span><span><i class="over"></i>그보다 높음</span></p>
         <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약 금액은 그 지역 최근 거래가의 중앙값이에요(면적이 섞여 있어요). 색은 내 예상 집값과 비교한 것이에요.</p>
         <p class="deal-map-miss" id="dealMapMiss" hidden></p>
@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v117 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v118 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10570,6 +10570,7 @@ async function fetchOne(lawd){
   const rs = await Promise.all(months.map(ymd =>
     fetch(`/api/apt-price?lawd=${encodeURIComponent(lawd)}&ymd=${ymd}`)
       .then(r => r.ok ? r.json() : null)
+      .then(j => (j && !Array.isArray(j) && j.ok === false) ? null : j)   /* v118 — ok:false(조회 실패)는 「거래 없음」이 아니라 실패 */
       .catch(() => null)                 /* 한 달이 실패해도 나머지는 씁니다 */
   ));
   if(rs.every(r => r === null)) throw new Error('실거래 조회 실패');
@@ -12719,7 +12720,7 @@ if(RESUME_RESULT) showResult(false);
   let layer = 'deal';
   let mapRange = 20;   /* v111 — 지도 가격 범위 ±% (한 곳) */
   const rangeBox = byId('dealMapRange');
-  function setRange(v, repaint) { mapRange = [10, 20, 30].includes(+v) ? +v : 20; if (rangeBox) rangeBox.querySelectorAll('button[data-range]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.range === mapRange))); if (repaint !== false) paintMap(); }
+  function setRange(v, repaint) { mapRange = [10, 20, 30, 50].includes(+v) ? +v : 20; if (rangeBox) rangeBox.querySelectorAll('button[data-range]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.range === mapRange))); if (repaint !== false) paintMap(); }
   if (rangeBox) rangeBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-range]'); if (b) setRange(b.dataset.range); });
   let pendingFocus = null;
   let statsToken = 0;
@@ -13954,5 +13955,6 @@ html body #viewDeals .region-edit{display:inline-flex!important;align-items:cent
   };
 })();
 </script>
+<style>/* v118b — 칩 넷이 320px 에서 넘치지 않게 줄바꿈 허용 */ body #viewDeals .yk-range{flex-wrap:wrap}</style>
 </body>
 </html>
