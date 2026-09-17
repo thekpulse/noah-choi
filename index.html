@@ -6078,7 +6078,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
     
     
     <div class="crows" id="crows"></div>
-    <p class="cond-legal">입력한 조건을 바탕으로 계산한 참고용 예상 금액입니다.</p>
+    
   <div class="dock" id="dock">
   
   <p class="cond-todo" id="ctaTodo" hidden></p>
@@ -6304,7 +6304,8 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 
       <div id="restartWrap"></div>
       <div class="easy-next-card">
-      <p class="nx-lead">※ 실제 대출 한도는 계산 결과와 다를 수 있습니다.</p>
+      <p class="nx-lead">※ 입력한 조건을 바탕으로 계산한 참고용 예상 금액입니다.</p>
+      <p class="nx-body">※ 실제 대출 한도는 계산 결과와 다를 수 있습니다.</p>
       <p class="nx-body">※ 대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.</p>
       
       <p class="nx-body">※ 입력한 금액은 브라우저에서 계산하며 서버로 전송하지 않습니다.</p>
@@ -7493,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v131 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v132 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9750,7 +9751,7 @@ function renderBalance(c, price){
   $('cashRemainderNote').textContent = (remainder===0
     ? '입력한 현금을 전액 사용합니다.\n'
     : remainder<0 ? '부족한 현금은 별도로 준비해야 합니다.\n' : '')
-    + '생활비·비상금과 제외한 비용은 별도입니다.';
+    + '생활비·비상금과 계산에서 뺀 비용은 별도입니다.';
   /* 🔴 v37.6 — 「제외한 → 뺀」 · 「별도로 → 따로」.
      ⏹ 한자어를 우리말로 푼 것이고(V10-SIAN 2장), **덤으로 360px에서 「해요.」가 혼자
        남던 고아 줄이 사라집니다**(`tools/wrap.mjs` 실측). 뜻은 한 자도 안 버렸습니다. */
@@ -11742,7 +11743,7 @@ function exportStatus(message){
 async function saveImage(){
   if(exportBusy || !LASTVIEW) return;
   exportBusy=true;
-  const buttons=[$('outSave'),$('rdockR')].filter(b=>b && b.textContent.includes('이미지'));
+  const buttons=[$('outSave'),$('rdockL'),$('rdockR')].filter(b=>b && b.textContent.includes('이미지'));
   buttons.forEach(b=>{b.disabled=true;b.setAttribute('aria-busy','true');});
   exportStatus('결과 이미지를 만들고 있어요.');
   try{
@@ -11897,8 +11898,8 @@ function paintRDock(){
     L.textContent = '공유';           L.onclick = e => { e.preventDefault(); copySummary(); };
     R.textContent = '이미지 저장'; R.onclick = e => { e.preventDefault(); saveImage(); };
   } else {
-    L.textContent = '계산 결과'; L.onclick = e => { e.preventDefault(); setRView('answer'); };
-    R.textContent = '이미지 저장'; R.onclick = e => { e.preventDefault(); saveImage(); };
+    L.textContent = '이미지 저장'; L.onclick = e => { e.preventDefault(); saveImage(); };
+    R.textContent = '계산 결과'; R.onclick = e => { e.preventDefault(); setRView('answer'); };
   }
   R.classList.toggle('back', R.textContent === '이미지 저장');
 }
@@ -13113,6 +13114,16 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `yk-map-label${deal.amountMan > DEAL.lastPrice ? ' is-over' : ''}`;
+    /* 🔴 v132 — **단계가 정해지기 전에는 안 보입니다**(오너 실기 2026-09-18: 「성동구 17.6억 나오기 전에 동별 거래금액이 먼저 반짝」).
+       ⏹ 왜 반짝였나: `paintMap` 은 단지 말풍선을 **보이는 채로** 지도에 붙인 뒤(여기), `buildGroups` 에서
+         구·동 중심 좌표를 **지오코딩으로 받아오는 동안 기다리고**, 그 다음에야 `renderLevel()` 이 단계를 골라
+         단지 말풍선을 숨기고 구 알약을 세웁니다. 그 기다리는 동안 단지 금액이 그대로 서 있었습니다
+         (390 실측: 105ms 에 말풍선 16개 보임 → 118ms 에 「광진구 16.6억 · 성동구 16.3억 · 중구 23.4억」 로 교체.
+          운영에서는 지오코딩이 네트워크라 이 사이가 훨씬 깁니다).
+       → 숨긴 채로 붙이고, 보이고 안 보이고는 `renderLevel()` 한 곳에서만 정합니다(원칙 58 — 값의 출처 하나).
+       ⚠ `renderLevel()` 은 `paintMap` 끝에서 반드시 한 번 돕니다 · 단계가 「단지」면 거기서 바로 다시 켭니다.
+       ⚠ `declutter()` 는 `renderLevel()` 이 켠 **뒤에** 돕니다(같은 함수 안 순서) — 상자 크기를 0 으로 재지 않습니다. */
+    button.hidden = true;
     const baseLabel = `${deal.name || '단지'}, ${fullPrice(deal.amountMan)}`;
     button.setAttribute('aria-label', baseLabel);
     button.__ykBaseLabel = baseLabel;
