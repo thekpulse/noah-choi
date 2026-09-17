@@ -6071,7 +6071,7 @@ body .app:not(.no-dock){padding-bottom:0}
         
     <div class="rview" id="viewAnswer">
 <section class="budget-overview" aria-label="주택 구입 예산"><header class="rhead">
-<div class="easy-money-row price-answer"><span>살 수 있는 집값 <small class="estimate-tag">예상</small></span><strong id="easyPrice">—</strong><em class="easy-row-pct" id="easyPricePct"></em></div><p class="hero-context" id="heroContext" aria-live="polite">&nbsp;</p>
+<div class="easy-money-row price-answer"><span>살 수 있는 집값 <small class="estimate-tag">예상</small></span><strong id="easyPrice">—</strong><em class="easy-row-pct" id="easyPricePct"></em></div><button type="button" class="hero-context" id="heroContext" aria-live="polite" disabled>&nbsp;</button>
       
 
       
@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v120 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v121 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9202,7 +9202,7 @@ function showResult(keepScroll){
   /* 2-Track — 왼쪽 35%: 조건만 고치기(세컨더리) / 오른쪽 65%: 처음부터(메인) */
   $('restartWrap').innerHTML =
     '<div class="restartrow">' +
-    '<button class="restart-cta" id="restartBtn">다시 계산하기</button>' +
+    '<button class="restart-cta" id="restartBtn">처음부터 다시 계산하기</button>' +
     '</div>';
   $('restartBtn').onclick = restart;
 
@@ -11052,6 +11052,11 @@ function dealAffordHtml(x){
        + (f.L > 0 ? row('주택담보대출', formatWon(f.L * 10000)) + row('월 상환액', formatWon(f.M * 10000)) : '')
        + gap + '</div>';
 }
+/* v121 ⑤ — 네이버 부동산 검색 주소(동 + 단지명 · 괄호는 띄어쓰기로). 가격·조건은 안 실음. */
+function dealNaverUrl(x){
+  const q = [x && x.dong, x && x.name].filter(Boolean).join(' ').replace(/[()\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+  return 'https://m.land.naver.com/search/result/' + encodeURIComponent(q);
+}
 function dealBox(x, i){
   /* 같은 단지의 판단 기준은 **「거래 활발」 뱃지와 같은 키**입니다(원칙 58) —
      이름만 보면 「현대」·「벽산」처럼 흔한 이름이 다른 동의 단지와 한 덩어리가 됩니다. */
@@ -11102,6 +11107,7 @@ function dealBox(x, i){
                 + `<span class="v">${formatWon(n.amountMan*10000)}</span></div>`;
          }).join('')
        + (typeof i === 'number' && typeof window !== 'undefined' && window.__ykMap && window.__ykMap.isReady() ? `<button type="button" class="deal-onmap" data-key="${esc(key)}">지도에서 보기</button>` : '')   /* v110 A */
+       + `<a class="deal-naver" href="${dealNaverUrl(x)}" target="_blank" rel="noopener noreferrer">네이버 부동산에서 이 단지 찾기<span aria-hidden="true"> ↗</span></a>`   /* v121 ⑤ */
        + `</div>`;
 }
 
@@ -14169,7 +14175,7 @@ body #viewDeals .yk-map-stage{isolation:isolate}
   const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   function heroContext() {
     const el = document.getElementById('heroContext'); if (!el || typeof DEAL === 'undefined') return;
-    const scope = typeof dealScopeLabel === 'function' ? dealScopeLabel() : '', m = DEAL.months || 3;
+    const extra = (DEAL.compareCodes || []).length, scope = extra ? (extra + 1) + '개 지역' : (DEAL.wide ? '인근 지역 포함' : ''), m = DEAL.months || 3;   /* v121 — 지역 이름은 앱 바가 말함(3곳이면 잘리던 것) */
     let html = '&nbsp;';
     if (DEAL.status === 'loading') html = '내 예산에 맞는 실거래 확인 중' + (scope ? ' · ' + esc(scope) : '');
     else if (DEAL.status === 'error') html = '실거래를 불러오지 못했어요';
@@ -14177,13 +14183,35 @@ body #viewDeals .yk-map-stage{isolation:isolate}
       const n = DEAL.status === 'empty' ? 0 : splitDeals(DEAL.items || [], DEAL.lastPrice).under.length;
       html = (n ? '내 예산에 맞는 실거래 <b>' + n + '곳</b>' : '내 예산에 맞는 최근 실거래 없음') + (scope ? ' · ' + esc(scope) : '') + ' · 최근 ' + m + '개월';
     }
-    el.innerHTML = html;
+    const go = DEAL.status === 'ready' || DEAL.status === 'empty';   /* v121 ① — 실거래 화면으로 */
+    el.disabled = !go;
+    const chev = go ? '<span class="chev" aria-hidden="true"></span>' : '';
+    el.innerHTML = '<span class="hc-t">' + html + '</span>' + chev;
+    /* v121 ⓪ — 한 줄에 안 들어가면(좁은 폭 · 여러 지역) 「· 최근 N개월」을 뗌(기간은 바로 밑 실거래 카드가 말함) */
+    const t = el.firstChild; if (t && t.scrollWidth > t.clientWidth + 1 && / · 최근 \d+개월$/.test(html)) t.innerHTML = html.replace(/ · 최근 \d+개월$/, '');
   }
+  { const el = document.getElementById('heroContext'); if (el) el.addEventListener('click', () => { if (!el.disabled && typeof setRView === 'function') setRView('deals'); }); }
   window.__ykHeroContext = heroContext;
   document.addEventListener('deals:ready', heroContext);
   if (typeof paintDeals === 'function') { const pd = paintDeals; paintDeals = function () { const r = pd.apply(this, arguments); heroContext(); return r; }; }
   heroContext();
 })();
 </script>
+<style>/* v121 */
+html body #viewAnswer #heroContext{display:flex;align-items:center;gap:6px;width:100%;box-sizing:content-box;height:22px;margin:-1px 0 -11px;padding:11px 0;border:0;background:none;font:inherit;font-size:14px;line-height:22px;color:#EDF2FF;text-align:left;cursor:pointer;opacity:1;-webkit-appearance:none;appearance:none}
+html body #viewAnswer #heroContext:disabled{cursor:default}
+html body #viewAnswer #heroContext .hc-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #viewAnswer #heroContext .chev{flex:none;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);margin-left:1px}
+html body #viewAnswer #heroContext:focus-visible{outline:3px solid #fff;outline-offset:2px;border-radius:6px}
+@media(max-width:370px){html body #viewAnswer #heroContext{font-size:13px}}
+html body #viewDeals .deal-budget{background:#1F5BFF!important;border-color:#1F5BFF!important}
+html body #viewDeals .deal-budget span{color:#EDF2FF!important}
+html body #viewDeals .deal-budget strong{color:#fff!important}
+html body #viewDeals .deal-naver{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:4px;font-size:14px;font-weight:600;color:#1848D6;text-decoration:none}
+html body #viewDeals .deal-naver:focus-visible,html body #viewAnswer .deal-naver:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px;border-radius:8px}
+html body #viewDeals .deal-map-detail .deal-naver,html body .deal-map-detail .deal-naver{display:flex;align-items:center;justify-content:center;min-height:44px;font-size:14px;font-weight:600;color:#1848D6;text-decoration:none}
+html body #restartWrap .restartrow{display:flex!important;justify-content:center!important}
+html body #restartWrap .restart-cta,html body #viewNext .restart-cta{flex:none!important;display:block;width:auto!important;height:auto!important;min-height:44px;margin:4px auto 0!important;padding:0 12px!important;border:0!important;background:none!important;box-shadow:none!important;color:#5f6b7d!important;font-size:14px!important;font-weight:500!important;text-decoration:underline;text-underline-offset:3px}
+</style>
 </body>
 </html>
