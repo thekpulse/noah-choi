@@ -7493,7 +7493,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v130 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v131 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -7850,12 +7850,12 @@ function renderQuestion(){
       <button class="debt-none ${S.debtMonthly===0?'is-on':''}" id="debtNone" aria-pressed="${S.debtMonthly===0}">기존 대출 없음</button>
       <button class="disc" id="debtPartsToggle" aria-expanded="${S.debtPartsOpen}" aria-controls="debtParts"><span>대출별로 나눠 입력</span><span class="caret"></span></button>
       <div class="costbox ${S.debtPartsOpen?'open':''}" id="debtParts"><p class="debt-parts-help">각 대출의 월 상환액을 입력하면 위에 합산됩니다.</p>
-        <div class="costrow"><div class="nm">신용대출<small>원금과 이자를 함께 갚는 대출</small></div><div class="amt"><input id="inDebtCredit" inputmode="numeric" value="${S.debtParts.credit||''}" aria-label="신용대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
-        <div class="costrow"><div class="nm">기타 대출</div><div class="amt"><input id="inDebtEtc" inputmode="numeric" value="${S.debtParts.etc||''}" aria-label="기타 대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
+        <div class="costrow"><div class="nm">신용대출<small>원금과 이자를 함께 갚는 대출</small></div><div class="amt"><input id="inDebtCredit" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.credit||''}" aria-label="신용대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
+        <div class="costrow"><div class="nm">기타 대출</div><div class="amt"><input id="inDebtEtc" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.etc||''}" aria-label="기타 대출 매달 갚을 돈(만원)"><u>만원</u></div></div>
         <div class="debt-bullet" id="debtBullet" role="group" aria-labelledby="debtBulletHead">
           <p class="debt-bullet-head" id="debtBulletHead">이자만 내는 신용대출 · 마이너스통장</p>
-          <div class="costrow"><div class="nm">대출 잔액<small>마이너스통장은 한도</small></div><div class="amt"><input id="inDebtBulletBal" inputmode="numeric" placeholder="0" value="${S.debtParts.bulletBal?comma(S.debtParts.bulletBal):''}" aria-label="이자만 내는 대출 잔액(만원), 마이너스통장은 한도"><u>만원</u></div></div>
-          <div class="costrow"><div class="nm">매달 내는 이자<small>모르면 비워 두세요</small></div><div class="amt"><input id="inDebtBulletInt" inputmode="numeric" placeholder="0" value="${S.debtParts.bulletInt?comma(S.debtParts.bulletInt):''}" aria-label="이자만 내는 대출 매달 내는 이자(만원), 모르면 비워 두세요"><u>만원</u></div></div>
+          <div class="costrow"><div class="nm">대출 잔액<small>마이너스통장은 한도</small></div><div class="amt"><input id="inDebtBulletBal" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.bulletBal?comma(S.debtParts.bulletBal):''}" aria-label="이자만 내는 대출 잔액(만원), 마이너스통장은 한도"><u>만원</u></div></div>
+          <div class="costrow"><div class="nm">매달 내는 이자<small>모르면 비워 두세요</small></div><div class="amt"><input id="inDebtBulletInt" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.bulletInt?comma(S.debtParts.bulletInt):''}" aria-label="이자만 내는 대출 매달 내는 이자(만원), 모르면 비워 두세요"><u>만원</u></div></div>
           <p class="debt-bullet-echo" id="debtBulletEcho" aria-live="polite"></p>
         </div>
       </div></div>`;
@@ -14524,6 +14524,9 @@ html body #viewDeals #sortSeg button{font-weight:600!important}
 html body #viewDeals #sortSeg button{position:relative}
 html body #viewDeals #sortSeg button.is-on{color:#192332!important;background:transparent!important;font-weight:600!important;box-shadow:none!important}   /* v115 블록이 .is-on 을 700!important 로 두고 있어 여기서도 굵기를 적습니다 */
 html body #viewDeals #sortSeg button.is-on::after{content:""!important;display:block!important;position:absolute;left:14px;right:14px;bottom:8px;height:2px;border-radius:1px;background:#192332}   /* 밑줄은 글자 폭에 · 상자 모서리(8px)를 따라 휘지 않게 ::after 로 */
+</style>
+<style>/* v131 — 저장 카드 금액 단위 붙임새 = 화면 */
+html body #reportCard .report-amount .u{padding-left:0!important;margin-left:0!important;letter-spacing:-.02em!important}
 </style>
 </body>
 </html>
