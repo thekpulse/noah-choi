@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v123 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v124 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -12892,12 +12892,44 @@ if(RESUME_RESULT) showResult(false);
     const h = document.createElement('h3'); h.textContent = title; h.tabIndex = -1;
     const x = document.createElement('button'); x.type = 'button'; x.className = 'yk-sheet-close'; x.setAttribute('aria-label', '닫기');
     x.addEventListener('click', () => closeSheet(true));
-    head.append(h, x);
+    const grow = document.createElement('button'); grow.type = 'button'; grow.className = 'yk-sheet-grow'; grow.hidden = true;   /* v124 */
+    grow.addEventListener('click', () => setSheetFull(!detail.classList.contains('is-full')));
+    head.append(h, grow, x);
     detail.append(head);
+    detail.style.transition = 'none'; detail.classList.remove('is-full'); detail.scrollTop = 0;   /* 다른 단지로 바꿀 때 크게→절반을 애니메이션 없이(sheetPan 이 바로 잼) */
+    requestAnimationFrame(() => requestAnimationFrame(() => { detail.style.transition = ''; }));
+    setSheetFull(false);
     detail.hidden = false;
     detail.setAttribute('role', 'region');
     detail.setAttribute('aria-label', title + ' 상세');
     return h;
+  }
+  /* v124 — 시트 높이 두 단(절반 · 크게) */
+  function setSheetFull(on) {
+    if (!detail) return;
+    detail.classList.toggle('is-full', !!on);
+    const g = detail.querySelector('.yk-sheet-grow');
+    if (g) { g.setAttribute('aria-expanded', on ? 'true' : 'false'); g.setAttribute('aria-label', on ? '상세 작게 보기' : '상세 크게 보기'); }
+  }
+  function sheetGrowSync() {
+    if (!detail || detail.hidden) return;
+    const g = detail.querySelector('.yk-sheet-grow'); if (!g) return;
+    g.hidden = !(detail.classList.contains('is-full') || detail.scrollHeight > detail.clientHeight + 2);
+  }
+  /* v124 — 고른 단지를 시트 위 보이는 칸 가운데로(말풍선은 좌표 위로 선다 · BOTTOM_CENTER) */
+  function sheetPan(position) {
+    if (!map || !position) return;
+    try {
+      const proj = map.getProjection && map.getProjection();
+      if (!detail || detail.hidden || !proj || typeof proj.fromOffsetToCoord !== 'function' || typeof proj.fromCoordToOffset !== 'function') { map.panTo(position); return; }
+      const box = mapNode.getBoundingClientRect(), sh = detail.getBoundingClientRect();
+      const top = box.top, bottom = Math.min(box.bottom, sh.top);
+      const lh = (activeLabel && activeLabel.offsetHeight) || 44;
+      const dy = Math.round((box.top + box.height / 2) - ((top + bottom) / 2 + lh / 2));
+      if (!(dy > 0) || bottom - top < lh + 16) { map.panTo(position); return; }
+      const o = proj.fromCoordToOffset(position);
+      map.panTo(proj.fromOffsetToCoord(new naver.maps.Point(o.x, o.y + dy)));
+    } catch (e) { map.panTo(position); }
   }
   function closeSheet(returnFocus) {
     if (!detail) return;
@@ -12947,6 +12979,7 @@ if(RESUME_RESULT) showResult(false);
       if (afford) pick.after(afford);
       detail.append(...wrap.childNodes);
     }
+    sheetGrowSync();   /* v124 */
     h.focus({ preventScroll: true });
   }
   function showAreaSheet(group) {
@@ -12970,6 +13003,18 @@ if(RESUME_RESULT) showResult(false);
   }
   if (layerBox) layerBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-layer]'); if (b) setLayer(b.dataset.layer); });
   if (detail) detail.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeSheet(true); } });
+  /* v124 — 시트 안을 읽으러 스크롤하면 크게 · 머리를 밀면 크게/작게/닫기 */
+  if (detail) {
+    detail.addEventListener('scroll', () => { if (!detail.hidden && !detail.classList.contains('is-full') && detail.scrollTop > 8) { setSheetFull(true); sheetGrowSync(); } }, { passive: true });
+    let sy = null;
+    detail.addEventListener('touchstart', (e) => { const t = e.target; sy = (t.closest && t.closest('.yk-sheet-head') && !t.closest('button')) ? e.touches[0].clientY : null; }, { passive: true });
+    detail.addEventListener('touchend', (e) => {
+      if (sy == null) return; const d = e.changedTouches[0].clientY - sy; sy = null;
+      const full = detail.classList.contains('is-full');
+      if (d < -30 && !full) { setSheetFull(true); sheetGrowSync(); }
+      else if (d > 30) { if (full) { detail.scrollTop = 0; setSheetFull(false); sheetGrowSync(); } else closeSheet(true); }
+    }, { passive: true });
+  }
 
   function addOverlay(deal, coordinate, positions, overlayRank) {
     const position = new naver.maps.LatLng(coordinate.lat, coordinate.lng);
@@ -12994,7 +13039,7 @@ if(RESUME_RESULT) showResult(false);
       const pts = [position].concat(members.map((m) => m.position));
       const same = pts.every((q) => q.lat() === pts[0].lat() && q.lng() === pts[0].lng());
       if (members.length && !same && z < 18) { map.fitBounds(pts, { top:72, right:72, bottom:72, left:72 }); return; }
-      showDetail(deal, button); map.panTo(position);
+      showDetail(deal, button); sheetPan(position);   /* v124 */
     };
     let lastOpen = 0;
     const once = () => { const now = Date.now(); if (now - lastOpen < 300) return; lastOpen = now; open(); };
@@ -13275,7 +13320,7 @@ if(RESUME_RESULT) showResult(false);
     setLayer('deal');
     map.setCenter(p.position); map.setZoom(Math.max(map.getZoom ? map.getZoom() : 0, 17));
     pendingFloor = 'deal'; renderLevel();
-    showDetail(p.deal, p.button);
+    showDetail(p.deal, p.button); sheetPan(p.position);   /* v124 */
   }
 
   function setMode(next) {
@@ -14215,6 +14260,17 @@ html body #viewDeals .deal-naver:focus-visible,html body #viewAnswer .deal-naver
 html body #viewDeals .deal-map-detail .deal-naver,html body .deal-map-detail .deal-naver{display:flex;align-items:center;justify-content:center;min-height:44px;font-size:14px;font-weight:600;color:#1848D6;text-decoration:none}
 html body #restartWrap .restartrow{display:flex!important;justify-content:center!important}
 html body #restartWrap .restart-cta,html body #viewNext .restart-cta{flex:none!important;display:block;width:auto!important;height:auto!important;min-height:44px;margin:4px auto 0!important;padding:0 12px!important;border:0!important;background:none!important;box-shadow:none!important;color:#5f6b7d!important;font-size:14px!important;font-weight:500!important;text-decoration:underline;text-underline-offset:3px}
+</style>
+<style>/* v124 — 시트 절반 · 크게 */
+html body #viewDeals .deal-map-detail{max-height:48%;transition:max-height .2s ease}
+html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 16px)}
+html body #viewDeals .yk-sheet-head h3{flex:1}
+html body #viewDeals .yk-sheet-grow{position:relative;flex:none;width:44px;height:44px;margin:0 -8px 0 0;padding:0;border:0;background:transparent;cursor:pointer}
+html body #viewDeals .yk-sheet-grow[hidden]{display:none}
+html body #viewDeals .yk-sheet-grow::before{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-2px 0 0 -4px;border-left:1.5px solid #5f6b7d;border-top:1.5px solid #5f6b7d;transform:rotate(45deg)}
+html body #viewDeals .yk-sheet-grow[aria-expanded="true"]::before{margin-top:-6px;transform:rotate(225deg)}
+html body #viewDeals .yk-sheet-grow:focus-visible{outline:3px solid #8FAEFF;outline-offset:-4px;border-radius:12px}
+@media (prefers-reduced-motion:reduce){html body #viewDeals .deal-map-detail{transition:none}}
 </style>
 </body>
 </html>
