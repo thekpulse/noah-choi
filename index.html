@@ -6071,7 +6071,7 @@ body .app:not(.no-dock){padding-bottom:0}
         
     <div class="rview" id="viewAnswer">
 <section class="budget-overview" aria-label="주택 구입 예산"><header class="rhead">
-<div class="easy-money-row price-answer"><span>살 수 있는 집값 <small class="estimate-tag">예상</small></span><strong id="easyPrice">—</strong><em class="easy-row-pct" id="easyPricePct"></em></div>
+<div class="easy-money-row price-answer"><span>살 수 있는 집값 <small class="estimate-tag">예상</small></span><strong id="easyPrice">—</strong><em class="easy-row-pct" id="easyPricePct"></em></div><p class="hero-context" id="heroContext" aria-live="polite">&nbsp;</p>
       
 
       
@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v119 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v120 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13621,8 +13621,8 @@ if(RESUME_RESULT) showResult(false);
     if(keepNote)ratio.appendChild(keepNote);
     ratio.hidden=!deals.length;
     byId('easyMarketNote').innerHTML = inside === deals.length
-      ? `<b>조회된 ${deals.length}건 모두</b> 예산 범위에서 거래됐어요.`
-      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예산 범위에서 거래됐어요.`;
+      ? `<b>조회된 ${deals.length}건 모두</b> 예산 이하로 거래됐어요.`
+      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예산 이하로 거래됐어요.`;
     byId('plotDetail').hidden = true;
     byId('marketRatio')?.appendChild(byId('easyMarketNote'));
     card.hidden = false;
@@ -14149,6 +14149,40 @@ const SGG_SHAPE = {"11110":[[2967,4566,2950,4618,2972,4632,2982,4596,3023,4572]]
   if (r && 'ResizeObserver' in window) { let t = 0; const ro = new ResizeObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(check); }); ro.observe(r); [...r.querySelectorAll('strong')].forEach((s) => ro.observe(s)); }
   if (r && 'MutationObserver' in window) new MutationObserver(() => requestAnimationFrame(check)).observe(r, { subtree: true, childList: true, characterData: true });
   addEventListener('resize', check); check();
+})();
+</script>
+<style>/* v120 — 결과 상단 B안 */
+html body #viewAnswer .budget-overview>.rhead{background:#1F5BFF!important;border-bottom:0!important}
+html body #viewAnswer .budget-overview>.rhead .price-answer>span{color:#EDF2FF!important}
+html body #viewAnswer .budget-overview .estimate-tag{background:transparent!important;border:1px solid rgba(255,255,255,.6)!important;color:#fff!important}
+html body #viewAnswer #easyPrice,html body #viewAnswer #easyPrice .money-part{color:#fff!important}
+html body #viewAnswer #easyPrice{font-size:46px!important}
+html body #viewAnswer #easyPrice .money-unit{color:#EDF2FF!important}
+html body #viewAnswer #heroContext{margin:10px 0 0;font-size:14px;line-height:22px;height:22px;color:#EDF2FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #viewAnswer #heroContext b{color:#fff;font-weight:700}
+html body #viewAnswer #tileMonthly{font-size:30px!important}
+body #viewDeals .yk-map-stage{isolation:isolate}
+@media(max-width:370px){html body #viewAnswer #easyPrice{font-size:40px!important}html body #viewAnswer #heroContext{font-size:13px}}
+</style>
+<script>/* v120 — 집값 밑 맥락 한 줄. 셈은 목록과 같은 splitDeals(DEAL.items, DEAL.lastPrice).under (원칙 58) */
+(function () {
+  const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  function heroContext() {
+    const el = document.getElementById('heroContext'); if (!el || typeof DEAL === 'undefined') return;
+    const scope = typeof dealScopeLabel === 'function' ? dealScopeLabel() : '', m = DEAL.months || 3;
+    let html = '&nbsp;';
+    if (DEAL.status === 'loading') html = '내 예산에 맞는 실거래 확인 중' + (scope ? ' · ' + esc(scope) : '');
+    else if (DEAL.status === 'error') html = '실거래를 불러오지 못했어요';
+    else if (DEAL.status === 'empty' || (DEAL.status === 'ready' && DEAL.lastPrice > 0 && typeof splitDeals === 'function')) {
+      const n = DEAL.status === 'empty' ? 0 : splitDeals(DEAL.items || [], DEAL.lastPrice).under.length;
+      html = (n ? '내 예산에 맞는 실거래 <b>' + n + '곳</b>' : '내 예산에 맞는 최근 실거래 없음') + (scope ? ' · ' + esc(scope) : '') + ' · 최근 ' + m + '개월';
+    }
+    el.innerHTML = html;
+  }
+  window.__ykHeroContext = heroContext;
+  document.addEventListener('deals:ready', heroContext);
+  if (typeof paintDeals === 'function') { const pd = paintDeals; paintDeals = function () { const r = pd.apply(this, arguments); heroContext(); return r; }; }
+  heroContext();
 })();
 </script>
 </body>
