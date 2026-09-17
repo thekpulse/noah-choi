@@ -1,5 +1,5 @@
 /* ===================================================================
-   공동주택(K-apt) 세대수 프록시  —  v117c(느린 응답 대기 · 후보 동시)
+   공동주택(K-apt) 세대수 프록시  —  v118(서비스 새 판 AptListService4 · AptBasisInfoServiceV5)
    Vercel Serverless Function.  GET /api/apt-units?lawd=41135&part=0
 
    왜: 앱 안의 세대수 표(APT_UNITS)는 서울 25구 2,939곳뿐이라 경기·인천에서는 세대수가 한 번도
@@ -22,17 +22,19 @@
 
 /* v117b — 운영 첫 응답이 list-failed(2026-09-17 · www·vercel.app 둘 다). 서비스 주소를 확정 못 해 **후보를 차례로** 시도하고,
    실패하면 후보마다 HTTP 상태·응답 앞 160자(키 가림)를 돌려줘 원인을 화면에서 읽게 함. 처음 성공한 후보를 인스턴스에 기억. */
+/* v118 — v117c 운영 진단(vercel.app · 2026-09-17): 후보 넷 전부 400 **NO_OPENAPI_SERVICE_ERROR 「해당 오픈API 서비스가 없거나 폐기됨」**(0.4~0.6초).
+   포털 영문 상세(2026-09-17 확인): 단지 목록 = **AptListService4**(요청 예 getSidoAptList4) · 기본 정보 = **AptBasisInfoServiceV5**(요청 예 getAphusDtlInfoV5).
+   포털 「최종 수정 2026-08-07」에 판이 올라가 옛 V3/V4 가 폐기된 것으로 봄. 새 판을 맨 앞에 · 옛 판은 뒤에 남김(한 번에 동시 호출이라 비용 작음). */
 const LISTS = [
+  'https://apis.data.go.kr/1613000/AptListService4/getSigunguAptList4',
   'https://apis.data.go.kr/1613000/AptListService3/getSigunguAptList3',
-  'http://apis.data.go.kr/1613000/AptListService3/getSigunguAptList3',
   'https://apis.data.go.kr/1613000/AptListService2/getSigunguAptList',
-  'http://apis.data.go.kr/1611000/AptListService/getSigunguAptList',
 ];
 const INFOS = [
+  'https://apis.data.go.kr/1613000/AptBasisInfoServiceV5/getAphusBassInfoV5',
+  'https://apis.data.go.kr/1613000/AptBasisInfoServiceV5/getAphusDtlInfoV5',
   'https://apis.data.go.kr/1613000/AptBasisInfoServiceV4/getAphusBassInfoV4',
-  'http://apis.data.go.kr/1613000/AptBasisInfoServiceV4/getAphusBassInfoV4',
   'https://apis.data.go.kr/1613000/AptBasisInfoServiceV3/getAphusBassInfoV3',
-  'http://apis.data.go.kr/1611000/AptBasisInfoService/getAphusBassInfo',
 ];
 let LIST = null, INFO = null;   /* 성공한 후보 */
 /* v117c — 운영 v117b 진단(2026-09-17): 목록 후보 넷 모두 status 0 · AbortError = **4초 안에 응답이 안 옴**(주소가 틀리면 404 등 상태가 옴).
@@ -125,7 +127,7 @@ async function infoOf(key, c){
 module.exports = async function handler(req, res){
   const lawd = String((req.query && req.query.lawd) || '').replace(/[^\d]/g, '');
   const part = Math.max(0, parseInt((req.query && req.query.part) || '0', 10) || 0);
-  const short = () => res.setHeader('Cache-Control', 'public, s-maxage=600');
+  const short = () => res.setHeader('Cache-Control', 'no-store');   /* v118 — 실패는 캐시 안 함 */
   if (lawd.length !== 5 || !SIDO_OK.includes(lawd.slice(0, 2))) { short(); return res.status(200).json({ ok:false, reason:'bad-param', items:[] }); }
   const key = process.env.MOLIT_API_KEY;
   if (!key) { short(); return res.status(200).json({ ok:false, reason:'no-key', items:[] }); }
