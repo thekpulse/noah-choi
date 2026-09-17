@@ -6029,8 +6029,8 @@ html body .funnel .crows .inline-money>.inline-error{grid-column:1/-1!important;
 </style>
 <style>/* v128 첫 그림 — 현금만으로 계산 스위치 줄 */
 html body .funnel .crows .main-no-loan,html body .funnel .crows .main-no-loan:has(input:checked){display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-height:52px!important;margin:0!important;padding:10px 0!important;border:0!important;border-radius:0!important;background:none!important;color:#465262!important;font-size:16px!important;font-weight:400!important;line-height:1.5!important;cursor:pointer;-webkit-tap-highlight-color:transparent}
+html body .funnel .crows .main-no-loan,html body .funnel .crows .main-no-loan:has(input:checked){margin-top:12px!important;border-top:1px solid #E1E5EB!important;padding-top:14px!important}
 html body .funnel .crows .main-no-loan .nl-t{display:flex!important;flex-direction:column!important;min-width:0}
-html body .funnel .crows .main-no-loan .nl-sub{display:block!important;margin-top:2px!important;color:#5F6B7D!important;font-size:14px!important;font-weight:400!important;line-height:1.5!important}
 html body .funnel .crows .main-no-loan input{-webkit-appearance:none!important;appearance:none!important;position:relative;flex:0 0 51px!important;width:51px!important;height:31px!important;margin:0!important;padding:0;border:0;border-radius:999px;background:#D5DAE1;cursor:pointer;transition:background-color .2s}
 html body .funnel .crows .main-no-loan input::before{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(25,35,50,.28);transition:transform .2s}
 html body .funnel .crows .main-no-loan input:checked{background:#1F5BFF}
@@ -6090,7 +6090,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 
   <div class="sheet-back" id="qBack" hidden></div>
   <div class="sheet qsheet" id="qSheet" role="dialog" aria-modal="true" aria-labelledby="qSheetTitle" hidden>
-    <header class="q-sheet-header"><h2 id="qSheetTitle">조건 수정</h2><button type="button" class="q-dismiss" aria-label="입력창 닫기" onclick="closeSheet('q')">×</button></header>
+    <header class="q-sheet-header"><h2 id="qSheetTitle">조건 수정</h2><button type="button" class="q-dismiss" aria-label="입력창 닫기" onclick="closeSheet('q')"></button></header>
     <div class="q" id="qBox"></div>
     <button class="cta sheet-close" id="qClose">완료</button>
   </div>
@@ -6294,9 +6294,9 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
       
       
       
-      <button class="mini" id="outCopy" aria-label="결과 공유 — 계산 결과 글과 링크"><div class="txt"><b>결과 공유</b></div><span class="arw"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M5 12v8h14v-8"/></svg></span></button>
-      
       <button class="mini" id="outSave" aria-label="이미지 저장 — 계산 결과 카드 이미지"><div class="txt"><b>이미지 저장</b></div><span class="arw"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg></span></button>
+      
+      <button class="mini" id="outCopy" aria-label="결과 공유 — 계산 결과 글과 링크"><div class="txt"><b>결과 공유</b></div><span class="arw"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M5 12v8h14v-8"/></svg></span></button>
       </div>
     </div>
 
@@ -6425,13 +6425,12 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 
 <div class="reportwrap" aria-hidden="true"><div class="report" id="reportCard">
   <div class="report-top">
-    <p class="report-brand"><span class="report-brand-mark" aria-hidden="true">⌂</span> 영끌계산기 <span class="report-badge">나의 예산 요약</span></p><h1 class="report-title">내 집 마련, 얼마까지?</h1>
-    <p class="report-cond" id="rCond"></p>
+    <div class="report-head"><p class="report-brand"><span class="report-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#1F5BFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/></svg></span>영끌계산기</p><p class="report-cond" id="rCond"></p></div>
     <p class="report-label" id="rLabel"></p>
     <p class="report-amount" id="rAmount"></p>
   </div>
   <div class="report-body">
-    <section class="report-monthly" id="rMonthly" hidden></section><div class="report-mix" id="rMix"></div>
+    <div class="report-mix" id="rMix"></div><section class="report-monthly" id="rMonthly" hidden></section>
     <div class="report-deals" id="rDeals" hidden></div>
     <div class="report-cta" id="rCta" hidden></div>
     <div class="report-foot">
@@ -7494,7 +7493,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v128 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v129 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -8200,7 +8199,7 @@ function renderAnswered(){
       <span class="k">${names[r.mode] || r.k}</span><span class="v">${v || '선택'}<i class="chev" aria-hidden="true"></i></span></button>`;
   });
   /* v128 ② — 「현금만으로 계산」 = 집에 쓸 현금 바로 밑 스위치 줄(켜면 사라지는 줄은 모두 이 아래) */
-  const noLoanRow=`<label class="main-no-loan"><span class="nl-t"><span id="noLoanT">주택담보대출 안 받기</span><span class="nl-sub" id="noLoanSub">현금만으로 계산해요</span></span><input id="mainNoLoan" type="checkbox" role="switch" aria-labelledby="noLoanT" aria-describedby="noLoanSub" ${S.noLoan?'checked':''}></label>`;
+  const noLoanRow=`<label class="main-no-loan"><span class="nl-t" id="noLoanT">주택담보대출 안 받기</span><input id="mainNoLoan" type="checkbox" role="switch" aria-labelledby="noLoanT" ${S.noLoan?'checked':''}></label>`;
   const cashAt=rows.findIndex(x=>x.includes('id="main-cash"'));
   rows.splice(cashAt<0?rows.length:cashAt+1,0,noLoanRow);
   box.innerHTML=rows.join('');
@@ -11492,7 +11491,7 @@ function renderReport(v){
      ⚠ 집값을 잃지 않습니다 — 카드 아래 자금 구성이 그 돈의 출처를 그대로 적습니다.
      ⚠ 갈래(`isOverride`)로 머리를 나누지 않습니다. 총액은 **두 경우 모두 참**입니다. */
   /* 🔴 v26.0 — 화면 머리와 **같이** 움직였습니다(위 근거는 `heroLabel` 자리). */
-  $('rLabel').textContent = '살 수 있는 집값 · 예상';
+  $('rLabel').innerHTML = '살 수 있는 집값<span class="r-est">예상</span>';   /* v129 — 화면 머리와 같은 알약 */
   /* 「11억 1,900만원 선」 — 단위 span을 새로 열지 않고 마지막 것에 이어 붙입니다.
      ⚠ **카드는 「선」을 그대로 둡니다** — 한눈에 읽는 매체라 100만원 자리에서 반올림합니다.
        정확한 값은 화면이 말합니다(v25.48이 화면에서 반올림을 뗀 근거의 뒷면). */
@@ -11584,16 +11583,15 @@ function renderReport(v){
   const bsIt = (name, man, pct) =>
     `<div class="bs-it"><p class="bs-nm">${name}</p>`
     + `<p class="bs-am">${gridFmt(man)}<b class="fpct">(${pct}%)</b></p></div>`;
+  /* v129 — 화면 순서(부대비용 → 총 필요 금액 → 막대 → 현금·대출). 값은 위 v25.60 눈금 그대로. */
+  const rsAmt = m => formatWon(m * 10000), cashPct = fig.L > 0 ? fig.pCash : 100;
   $('rMix').innerHTML =
-    `<div class="bs">`
-    + `<div class="bs-side"><p class="bs-cap">총 필요 금액</p><p class="report-total">${formatWon(fig.T * 10000)}</p>`
-
-    +   bsIt('취득세 · 중개보수 등', Tg - snap(fig.P), fig.pEtc)
-    + `</div>`
-    + `<div class="bs-side"><p class="bs-cap">마련할 방법</p>`
-
-    +   bsIt('사용할 현금', snap(fig.C), fig.pCash)
-    +   (fig.L > 0 ? bsIt('주택담보대출', Tg - snap(fig.C), fig.pLoan) : '')
+    `<div class="rs">`
+    + `<div class="rs-row"><span class="rs-k"><i class="rs-sign">+</i>부대비용</span><span class="rs-v">${rsAmt(Tg - snap(fig.P))}</span></div>`
+    + `<div class="rs-row rs-total"><span class="rs-k">총 필요 금액</span><span class="rs-v report-total">${formatWon(fig.T * 10000)}</span></div>`
+    + `<div class="rs-bar" aria-hidden="true"><i class="c" style="width:${cashPct}%"></i>${fig.L > 0 ? `<i class="l" style="width:${100 - cashPct}%"></i>` : ''}</div>`
+    + `<div class="rs-split"><div><p class="rs-t"><i class="dot c"></i>사용할 현금 <em>${cashPct}%</em></p><p class="rs-a">${rsAmt(snap(fig.C))}</p></div>`
+    + (fig.L > 0 ? `<div class="r"><p class="rs-t"><i class="dot l"></i>주택담보대출 <em>${fig.pLoan}%</em></p><p class="rs-a">${rsAmt(Tg - snap(fig.C))}</p></div>` : '')
     + `</div></div>` + note;
 
   /* ⏹ v24.15 — 「매달 갚는 돈」과 「소득 대비 부담」·「무엇이 정했나」를 **전부 뺐습니다.**
@@ -14440,6 +14438,84 @@ html body #rdockL,html body #rdockR{font-weight:600!important}
 html body #dealMapDetail .yk-sheet-head h3{font-size:16px!important;font-weight:600!important}
 html body #dealMapDetail .yk-pick strong{font-size:22px!important;font-weight:700!important}
 html body #dealMapDetail .deal-sum{font-size:13px!important}
+</style>
+<style>/* v129 — 버튼 갈래 · 안내 링크 */
+html body #viewAnswer #marketOpen{min-height:48px!important;height:48px!important;padding-block:0!important;box-sizing:border-box!important;border-radius:12px!important}
+html body #viewAnswer #outNaver,html body #viewAnswer #outHogang,html body #viewDeals #dealMore{border-radius:12px!important}
+html body #qSheet .zonegrid .zonecard,html body #qSheet #houseSeg button,html body #qSheet #ownSeg button,html body #qSheet #debtNone{min-height:48px!important;border-radius:12px!important;font-size:15px!important;font-weight:600!important}
+html body #qSheet .q-dismiss{position:relative;width:44px!important;height:44px!important;min-width:44px;padding:0!important;border:0!important;border-radius:12px!important;background:transparent!important;font-size:0!important;color:#465262!important}
+html body #qSheet .q-dismiss::before,html body #qSheet .q-dismiss::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;border-radius:1px;background:currentColor;transform:rotate(45deg)}
+html body #qSheet .q-dismiss::after{transform:rotate(-45deg)}
+html body #qSheet .q-dismiss:active{background:#F1F3F6!important}
+html body #qSheet .q-dismiss:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
+html body #viewAnswer .minigrid{grid-template-columns:auto minmax(0,1fr)!important;gap:8px!important}
+html body #viewAnswer .minigrid #outSave,html body #viewAnswer .minigrid #outCopy{min-height:52px!important;height:52px!important;padding:0 18px!important;border-radius:12px!important;justify-content:center!important;gap:6px!important}
+html body #viewAnswer .minigrid #outSave{background:#fff!important;border:1px solid #CDD4DE!important}
+@media (max-width:360px){html body #viewAnswer .minigrid #outSave{padding:0 14px!important}html body #viewAnswer .minigrid #outSave .arw{display:none!important}}   /* 좁은 폭: 저장 그림 뗌 → 공유가 더 넓게 */
+html body #viewAnswer .minigrid #outSave .txt b,html body #viewAnswer .minigrid #outSave .arw{color:#465262!important;font-size:16px!important;font-weight:600!important}
+html body #viewAnswer .minigrid #outCopy{background:#1F5BFF!important;border:1px solid #1F5BFF!important}
+html body #viewAnswer .minigrid #outCopy .txt b,html body #viewAnswer .minigrid #outCopy .arw{color:#fff!important;font-size:16px!important;font-weight:600!important}
+html body #viewAnswer .minigrid #outSave .txt,html body #viewAnswer .minigrid #outCopy .txt{flex:0 0 auto!important}
+html body #viewAnswer .minigrid #outSave:active{background:#F1F3F6!important}
+html body #viewAnswer .minigrid #outCopy:active{background:#1848D6!important;border-color:#1848D6!important}
+html body #app:not(.no-dock) .guide-nav:not([hidden]){display:grid!important;grid-template-columns:1fr 1fr;column-gap:0!important;row-gap:0!important;justify-items:stretch;max-width:360px;margin-left:auto!important;margin-right:auto!important;font-size:13px!important;line-height:1.5!important}
+html body #app .guide-nav a{position:relative;min-height:44px!important;padding:0 12px!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;text-decoration:none!important;white-space:nowrap}
+html body #app .guide-nav a:nth-child(odd){justify-content:flex-end}
+html body #app .guide-nav a:nth-child(even){justify-content:flex-start}
+html body #app .guide-nav a:nth-child(even)::before{content:"";position:absolute;left:0;top:50%;width:1px;height:11px;margin-top:-5px;background:#CDD4DE}
+html body #app .guide-nav a[href="/privacy.html"]{color:#465262!important;font-weight:600!important}
+html body #app .guide-nav a:active{color:#192332!important}
+html body #app .guide-nav a:focus-visible{outline:3px solid #8FAEFF;outline-offset:-2px;border-radius:8px}
+</style>
+<style>/* v129 — 저장 이미지 카드 = 화면 순서·색 */
+html body #reportCard{border-color:#E1E5EB!important;border-radius:20px!important;overflow:hidden}
+html body #reportCard,html body #reportCard *{font-variant-numeric:normal!important}   /* 이미지(html2canvas)에서 고정폭 숫자 「1」이 「1 5억원」처럼 벌어짐 */
+html body #reportCard .report-top{background:#1F5BFF!important;padding:22px 24px 28px!important}
+html body #reportCard .report-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+html body #reportCard .report-brand{display:flex!important;align-items:center;gap:6px;margin:0!important;padding:0!important;color:#fff!important;font-size:14px!important;font-weight:700!important;line-height:1.5!important}
+html body #reportCard .report-brand::before{display:none!important;content:none!important}
+html body #reportCard .report-brand-mark{display:inline-flex!important;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:#fff;font-size:0!important}
+html body #reportCard .report-cond{margin:0!important;color:#DCE6FF!important;font-size:13px!important;font-weight:400!important;line-height:1.5!important;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #reportCard .report-label{display:flex;align-items:center;gap:6px;margin:22px 0 0!important;color:#fff!important;font-size:15px!important;font-weight:600!important;line-height:1.5!important}
+html body #reportCard .report-label .r-est{padding:0 6px;border:1px solid rgba(255,255,255,.75);border-radius:6px;color:#fff;font-size:12px;font-weight:400;line-height:18px}
+html body #reportCard .report-amount{margin:4px 0 0!important;color:#fff!important;font-size:46px!important;font-weight:700!important;line-height:1.2!important;letter-spacing:-.02em}
+html body #reportCard .report-amount .u{color:#fff!important;font-size:24px!important;font-weight:500!important}
+html body #reportCard .report-body{padding:20px 24px 22px!important}
+html body #reportCard .rs-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;min-height:30px}
+html body #reportCard .rs-k{color:#465262;font-size:14px;font-weight:400;line-height:1.5}
+html body #reportCard .rs-sign{display:inline-block;width:18px;color:#5F6B7D;font-style:normal}
+html body #reportCard .rs-v{color:#192332;font-size:15px;font-weight:700;white-space:nowrap}
+html body #reportCard .rs-total{margin-top:6px}
+html body #reportCard .rs-total .rs-k{color:#192332;font-weight:700}
+html body #reportCard .rs-total .rs-v{margin:0!important;color:#192332!important;font-size:20px!important;font-weight:700!important;line-height:1.4!important}
+html body #reportCard .rs-bar{display:flex;gap:2px;height:8px;margin:18px 0 0;border-radius:7px;overflow:hidden}
+html body #reportCard .rs-bar i{display:block;height:8px}
+html body #reportCard .rs-bar .c{background:#1F5BFF}
+html body #reportCard .rs-bar .l{background:#9DB8FF}
+html body #reportCard .rs-split{display:flex;justify-content:space-between;gap:12px;margin-top:13px}
+html body #reportCard .rs-split .r{text-align:right}
+html body #reportCard .rs-t{display:flex;align-items:center;gap:6px;margin:0;color:#465262;font-size:13px;line-height:1.5}
+html body #reportCard .rs-split .r .rs-t{justify-content:flex-end}
+html body #reportCard .rs-t em{color:#5F6B7D;font-size:12px;font-style:normal}
+html body #reportCard .rs-t .dot{width:6px;height:6px;border-radius:50%}
+html body #reportCard .rs-t .dot.c{background:#1F5BFF}
+html body #reportCard .rs-t .dot.l{background:#9DB8FF}
+html body #reportCard .rs-a{margin:1px 0 0;color:#192332;font-size:20px;font-weight:700;line-height:1.4;white-space:nowrap}
+html body #reportCard #rMix .nt{margin:16px 0 0!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;line-height:1.6!important}
+html body #reportCard .report-monthly{display:block!important;margin:20px 0 0!important;padding:18px 0 0!important;border:0!important;border-top:1px solid #E1E5EB!important;border-radius:0!important;background:none!important}
+html body #reportCard .report-monthly[hidden]{display:none!important}
+html body #reportCard .report-monthly p:first-child{margin:0!important;color:#192332!important;font-size:15px!important;font-weight:600!important;line-height:1.5!important}
+html body #reportCard .report-monthly strong{display:block;margin:6px 0 0!important;color:#192332!important;font-size:30px!important;font-weight:700!important;line-height:1.3!important}
+html body #reportCard .report-monthly p:last-child{margin:2px 0 0!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;line-height:1.5!important}
+html body #reportCard #rDeals:not([hidden]){margin:20px 0 0!important;padding:18px 0 0!important;border-top:1px solid #E1E5EB!important}
+html body #reportCard #rDeals .h{margin:0 0 6px!important;color:#192332!important;font-size:15px!important;font-weight:600!important;line-height:1.5!important}
+html body #reportCard #rDeals .h span{display:block!important;margin:0!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important}
+html body #reportCard #rDeals .d .n{color:#192332!important;font-size:15px!important;font-weight:600!important}
+html body #reportCard #rDeals .d .n small{color:#5F6B7D!important;font-size:13px!important;font-weight:400!important}
+html body #reportCard #rDeals .d .a{color:#192332!important;font-size:15px!important;font-weight:700!important}
+html body #reportCard #rCta b{color:#1848D6!important;font-size:14px!important;font-weight:600!important}
+html body #reportCard #rCta span{color:#5F6B7D!important;font-size:13px!important}
+html body #reportCard #rNote{color:#5F6B7D!important;font-size:12px!important;font-weight:400!important}
 </style>
 </body>
 </html>
