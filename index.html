@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v122 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v123 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13030,7 +13030,10 @@ if(RESUME_RESULT) showResult(false);
     return true;
   }
 
+  let lastMapSig = null;
+  function mapSig() { try { return mapRange + '#' + mapDeals().map((d) => dealSameKey(d)).sort().join('|'); } catch (e) { return String(Math.random()); } }
   async function paintMap() {
+    if (typeof mapSig === 'function') lastMapSig = mapSig();   /* v123 */
     const keepView = arguments[0] === true;   /* v119 ③ — 지도를 옮겨 더 받은 뒤 다시 그릴 때: 화면을 안 옮김 */
     if (!sdkReady || mode !== 'map') return;
     const token = ++paintToken;
@@ -13342,7 +13345,7 @@ if(RESUME_RESULT) showResult(false);
   { const near = legend && legend.querySelector('[data-near]'); if (near) near.textContent = `${Math.round((DEAL.overBand - 1) * 100)}% 이내로 높음`; }
   mapTab.addEventListener('click', () => setMode('map'));
   new MutationObserver(() => {
-    if (mode === 'map') paintMap();
+    if (mode === 'map' && mapSig() !== lastMapSig) paintMap();   /* v123 — 묶음이 같으면(세대수만 붙음) 지도·시트 그대로 */
   }).observe(list, { childList:true, subtree:true });
 
   window.__ykMap = { setRange, range: () => mapRange, isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map, setLayer, layer: () => layer, focusKey };
