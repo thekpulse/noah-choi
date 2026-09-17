@@ -41,7 +41,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="영끌계산기">
 <meta property="og:title" content="내 예산으로 살 수 있는 집은? | 영끌계산기">
-<meta property="og:description" content="집값·부대비용·대출·월 상환액을 한 번에 계산해요.">
+<meta property="og:description" content="취득세·중개보수까지 더해 계산해요.">
 
 <meta property="og:url" content="https://www.myhome-price.com">
 <meta property="og:locale" content="ko_KR">
@@ -53,7 +53,7 @@
 <meta property="og:image:alt" content="영끌계산기 — 내 예산으로 살 수 있는 집은?">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="내 예산으로 살 수 있는 집은? | 영끌계산기">
-<meta name="twitter:description" content="집값·부대비용·대출·월 상환액을 한 번에 계산해요.">
+<meta name="twitter:description" content="취득세·중개보수까지 더해 계산해요.">
 <meta name="twitter:image" content="https://www.myhome-price.com/og-image.png">
 <link rel="canonical" href="https://www.myhome-price.com/">
 <meta name="description" content="가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 사용할 현금을 함께 봐요.">
@@ -6340,7 +6340,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 </section>
   
   
-  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 방법과 결과 읽기</a><a href="/loan-limit.html">대출 한도 해설</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
+  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 방법과 결과 읽기</a><a href="/loan-limit.html">대출 한도 해설</a><i class="gn-br" aria-hidden="true"></i><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
   <p class="copyright" id="copyright"></p>
 </div>
 
@@ -7493,7 +7493,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v129 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v130 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -7861,6 +7861,8 @@ function renderQuestion(){
       </div></div>`;
   }
   box.innerHTML=h; bind();
+  /* v130 — 선택 상태를 낭독기에도(그리는 자리 한 곳) */
+  box.querySelectorAll('.zonegrid .zonecard,#houseSeg [data-house],#ownSeg [data-own]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('is-on'))));
   if($('debtNone')) $('debtNone').onclick=()=>{
     S.debtMonthly=0; S.debtParts={credit:null,etc:null}; S.debtPartsOpen=false;
     renderQuestion(); syncCta(); $('debtNone').focus({preventScroll:true});
@@ -11697,17 +11699,18 @@ function summaryText(){
      🔒 그대로인 것: 금액 = heroFigures(화면·이미지·주소와 한 벌) · 실거래 = window.__ykHeroRows(카드와 같은 셈) · 참고용·중개 안 함 두 줄 · 마지막 줄 = 공유 주소(v126). 소득·기존 대출 안 실음. */
   if(!LASTVIEW) return '';
   const {c,price}=LASTVIEW, f=heroFigures(c,price), won=v=>formatWon(v*10000), rows=[
-    '🏠 내 예산으로 살 수 있는 집값', won(f.P)+' (예상)', '',
+    '🏠 내 예산으로 살 수 있는 집값 (예상)', won(f.P), '',
     '📍 '+regionLabel()+' · '+HOUSE[S.houseStatus],
-    '🧾 총 필요 금액 '+won(f.T)+' (부대비용 '+won(f.E)+' 포함)',
+    '🧾 총 필요 금액 '+won(f.T), '(부대비용 '+won(f.E)+' 포함)',
     f.L>0 ? '💰 현금 '+won(f.C)+' + 대출 '+won(f.L) : '💰 현금 '+won(f.C)+' (대출 없이)'];
   if(f.L>0) rows.push('📅 월 상환액 '+formatWon(monthlyPaymentCalc(f.L*10000,D.rate,D.years))+' (연 '+D.rate+'% · '+D.years+'년)');
   { const hr = (typeof window === 'object' && typeof window.__ykHeroRows === 'function') ? window.__ykHeroRows(Math.floor(approx(price) / 10000)) : [];
     if(hr.length){
-      rows.push('', '🏢 내 예산에 맞는 실거래 · 최근 ' + ((typeof DEAL === 'object' && DEAL && DEAL.months) || 3) + '개월' + (DEAL.compareCodes && DEAL.compareCodes.length ? ' · ' + dealScopeLabel() : ''));
+      rows.push('', '🏢 내 예산에 맞는 실거래 · 최근 ' + ((typeof DEAL === 'object' && DEAL && DEAL.months) || 3) + '개월');
+      if(DEAL.compareCodes && DEAL.compareCodes.length) rows.push(dealScopeLabel());   /* v130 — 지역은 다음 줄(머리 줄이 꺾이던 것) */
       hr.forEach(x => rows.push('· ' + x.name + ' ' + formatWon(x.amountMan * 10000)));
     } }
-  rows.push('', '※ 참고용 예상치예요. 실제 대출 한도는 금융회사 심사에 따라 달라요.', '※ 대출을 주선·알선·중개하지 않아요.',
+  rows.push('', '※ 참고용 예상치예요.', '※ 한도는 금융회사 심사에 따라 달라요.', '※ 대출을 주선·알선·중개하지 않아요.',
     '', '👉 내 조건으로 계산해 보기', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL));
   return rows.join('\n');
 }
@@ -14458,11 +14461,10 @@ html body #viewAnswer .minigrid #outCopy .txt b,html body #viewAnswer .minigrid 
 html body #viewAnswer .minigrid #outSave .txt,html body #viewAnswer .minigrid #outCopy .txt{flex:0 0 auto!important}
 html body #viewAnswer .minigrid #outSave:active{background:#F1F3F6!important}
 html body #viewAnswer .minigrid #outCopy:active{background:#1848D6!important;border-color:#1848D6!important}
-html body #app:not(.no-dock) .guide-nav:not([hidden]){display:grid!important;grid-template-columns:1fr 1fr;column-gap:0!important;row-gap:0!important;justify-items:stretch;max-width:360px;margin-left:auto!important;margin-right:auto!important;font-size:13px!important;line-height:1.5!important}
-html body #app .guide-nav a{position:relative;min-height:44px!important;padding:0 12px!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;text-decoration:none!important;white-space:nowrap}
-html body #app .guide-nav a:nth-child(odd){justify-content:flex-end}
-html body #app .guide-nav a:nth-child(even){justify-content:flex-start}
-html body #app .guide-nav a:nth-child(even)::before{content:"";position:absolute;left:0;top:50%;width:1px;height:11px;margin-top:-5px;background:#CDD4DE}
+html body #app:not(.no-dock) .guide-nav:not([hidden]){display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;column-gap:0!important;row-gap:0!important;max-width:360px;margin-left:auto!important;margin-right:auto!important;font-size:13px!important;line-height:1.5!important}
+html body #app .guide-nav .gn-br{flex:0 0 100%!important;width:100%!important;height:0!important;margin:0!important;padding:0!important}
+html body #app .guide-nav a{position:relative;justify-content:center;min-height:44px!important;padding:0 11px!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;text-decoration:none!important;white-space:nowrap}
+html body #app .guide-nav a+a::before{content:"";position:absolute;left:-2px;top:50%;width:3px;height:3px;margin-top:-1.5px;border-radius:50%;background:#CDD4DE}
 html body #app .guide-nav a[href="/privacy.html"]{color:#465262!important;font-weight:600!important}
 html body #app .guide-nav a:active{color:#192332!important}
 html body #app .guide-nav a:focus-visible{outline:3px solid #8FAEFF;outline-offset:-2px;border-radius:8px}
@@ -14516,6 +14518,12 @@ html body #reportCard #rDeals .d .a{color:#192332!important;font-size:15px!impor
 html body #reportCard #rCta b{color:#1848D6!important;font-size:14px!important;font-weight:600!important}
 html body #reportCard #rCta span{color:#5F6B7D!important;font-size:13px!important}
 html body #reportCard #rNote{color:#5F6B7D!important;font-size:12px!important;font-weight:400!important}
+</style>
+<style>/* v130 — 정렬 탭 선택 표시 */
+html body #viewDeals #sortSeg button{font-weight:600!important}
+html body #viewDeals #sortSeg button{position:relative}
+html body #viewDeals #sortSeg button.is-on{color:#192332!important;background:transparent!important;font-weight:600!important;box-shadow:none!important}   /* v115 블록이 .is-on 을 700!important 로 두고 있어 여기서도 굵기를 적습니다 */
+html body #viewDeals #sortSeg button.is-on::after{content:""!important;display:block!important;position:absolute;left:14px;right:14px;bottom:8px;height:2px;border-radius:1px;background:#192332}   /* 밑줄은 글자 폭에 · 상자 모서리(8px)를 따라 휘지 않게 ::after 로 */
 </style>
 </body>
 </html>
