@@ -1,5 +1,5 @@
 /* ===================================================================
-   공동주택(K-apt) 세대수 프록시  —  v117b(주소 후보 · 진단)
+   공동주택(K-apt) 세대수 프록시  —  v117c(느린 응답 대기 · 후보 동시)
    Vercel Serverless Function.  GET /api/apt-units?lawd=41135&part=0
 
    왜: 앱 안의 세대수 표(APT_UNITS)는 서울 25구 2,939곳뿐이라 경기·인천에서는 세대수가 한 번도
@@ -35,7 +35,11 @@ const INFOS = [
   'http://apis.data.go.kr/1611000/AptBasisInfoService/getAphusBassInfo',
 ];
 let LIST = null, INFO = null;   /* 성공한 후보 */
-const PART = 40;           /* 조각당 단지 수(= ② 호출 수) */
+/* v117c — 운영 v117b 진단(2026-09-17): 목록 후보 넷 모두 status 0 · AbortError = **4초 안에 응답이 안 옴**(주소가 틀리면 404 등 상태가 옴).
+   같은 서버의 실거래 API 는 6초 안에 옴 → 이 서비스가 느린 것으로 봄. 대기를 늘리고(목록 20초 · 기본정보 10초) 후보를 **동시에** 불러 한 요청 시간을 줄임.
+   Vercel 함수 최대 시간 60초로 요청(module.exports.config). */
+const T_LIST = 20000, T_INFO = 10000;
+const PART = 20;           /* 조각당 단지 수(= ② 호출 수) · v117c 40 → 20(응답이 느려 한 요청 시간을 줄임) */
 const CONC = 10;           /* ② 동시 호출 */
 const SIDO_OK = ['11', '28', '41'];   /* 오너 결정 2026-09-17 「수도권까지」 */
 
@@ -70,11 +74,11 @@ function dongOf(addr){
 const LAST = { tries: [] };   /* 진단: 후보별 결과 */
 const peek = (t, key) => String(t || '').replace(key ? new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g') : /$^/, '***').replace(/\s+/g, ' ').slice(0, 160);
 async function get(url, ms, key){
-  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), ms);
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), ms); const t0 = Date.now();
   try { const r = await fetch(url, { signal: ctrl.signal }); const text = await r.text();
-        if (key !== undefined) LAST.tries.push({ at: url.split('?')[0].replace('http://apis.data.go.kr', 'http:').replace('https://apis.data.go.kr', 'https:'), status: r.status, head: peek(text, key) });
+        if (key !== undefined) LAST.tries.push({ at: url.split('?')[0], status: r.status, ms: Date.now() - t0, head: peek(text, key) });
         return r.ok ? text : null; }
-  catch (e) { if (key !== undefined) LAST.tries.push({ at: url.split('?')[0], status: 0, head: String(e && (e.name || e.message) || 'error') }); return null; }
+  catch (e) { if (key !== undefined) LAST.tries.push({ at: url.split('?')[0], status: 0, ms: Date.now() - t0, head: String(e && (e.name || e.message) || 'error') + (e && e.cause ? ' · ' + String(e.cause.code || e.cause.message || '') : '') }); return null; }
   finally { clearTimeout(timer); }
 }
 
@@ -83,17 +87,14 @@ async function listOf(key, lawd){
   const all = [];
   if (!LIST) {   /* 후보 고르기: 첫 페이지가 목록 모양으로 오는 주소 */
     LAST.tries = [];
-    for (const base of LISTS) {
-      const q = new URLSearchParams({ serviceKey: key, sigunguCode: lawd, pageNo: '1', numOfRows: '10' });
-      const text = await get(`${base}?${q}`, 4000, key); if (text == null) continue;
-      if (/returnReasonCode/.test(text)) continue;
-      const r = itemsOf(text); if ((r.code === '00' || r.code === '000') && r.items.some(x => x.kaptCode)) { LIST = base; break; }
-    }
+    const texts = await Promise.all(LISTS.map(base => get(`${base}?${new URLSearchParams({ serviceKey: key, sigunguCode: lawd, pageNo: '1', numOfRows: '10' })}`, T_LIST, key)));
+    for (let k = 0; k < LISTS.length; k++) { const text = texts[k]; if (text == null || /returnReasonCode/.test(text)) continue;
+      const r = itemsOf(text); if ((r.code === '00' || r.code === '000') && r.items.some(x => x.kaptCode)) { LIST = LISTS[k]; break; } }
     if (!LIST) return { error: 'list-failed', tries: LAST.tries };
   }
   for (let page = 1; page <= 20; page++) {
     const q = new URLSearchParams({ serviceKey: key, sigunguCode: lawd, pageNo: String(page), numOfRows: '1000' });
-    const text = await get(`${LIST}?${q}`, 6000); if (text == null) return { error: 'list-failed' };
+    const text = await get(`${LIST}?${q}`, T_LIST); if (text == null) return { error: 'list-failed' };
     /* 키 미등록·트래픽 초과는 게이트웨이가 다른 껍데기(OpenAPI_ServiceResponse · returnReasonCode)로 답함 */
     const gw = String(text).match(/<returnReasonCode>(\d+)<\/returnReasonCode>/); if (gw) return { error: 'gateway-' + gw[1] };
     const r = itemsOf(text); if (r.code !== '00' && r.code !== '000') return { error: 'api-' + r.code };
@@ -107,16 +108,14 @@ async function listOf(key, lawd){
 
 async function pickInfo(key, c){
   LAST.tries = [];
-  for (const base of INFOS) {
-    const q = new URLSearchParams({ serviceKey: key, kaptCode: c.code });
-    const text = await get(`${base}?${q}`, 4000, key); if (text == null || /returnReasonCode/.test(text)) continue;
-    const r = itemsOf(text); if (r.items[0] && (r.items[0].kaptdaCnt != null || r.items[0].kaptName)) { INFO = base; return true; }
-  }
+  const texts = await Promise.all(INFOS.map(base => get(`${base}?${new URLSearchParams({ serviceKey: key, kaptCode: c.code })}`, T_INFO, key)));
+  for (let k = 0; k < INFOS.length; k++) { const text = texts[k]; if (text == null || /returnReasonCode/.test(text)) continue;
+    const r = itemsOf(text); if (r.items[0] && (r.items[0].kaptdaCnt != null || r.items[0].kaptName)) { INFO = INFOS[k]; return true; } }
   return false;
 }
 async function infoOf(key, c){
   const q = new URLSearchParams({ serviceKey: key, kaptCode: c.code });
-  const text = await get(`${INFO}?${q}`, 4000); if (text == null) return null;
+  const text = await get(`${INFO}?${q}`, T_INFO); if (text == null) return null;
   const r = itemsOf(text); const x = r.items[0]; if (!x) return null;
   const units = parseInt(String(x.kaptdaCnt || '').replace(/[^\d]/g, ''), 10);
   if (!(units > 0)) return false;   /* 세대수 없는 단지 — 실패가 아니라 빈칸 */
@@ -144,4 +143,5 @@ module.exports = async function handler(req, res){
   res.setHeader('Cache-Control', failed ? 'public, s-maxage=3600' : 'public, s-maxage=2592000, stale-while-revalidate=604800');
   return res.status(200).json({ ok:true, lawd, part, parts, total:list.length, failed, items: out });
 };
+module.exports.config = { maxDuration: 60 };   /* v117c — 느린 공공데이터 응답 대기(Vercel 요금제 한도 안에서 적용) */
 module.exports._test = { itemsOf, dongOf, PART, reset: () => { LIST = null; INFO = null; } };
