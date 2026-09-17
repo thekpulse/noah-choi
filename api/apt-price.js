@@ -13,7 +13,12 @@
      그때 화면은 「확인된 단지 위치가 없어요」로 섭니다 — 깨지지 않습니다.
    =================================================================== */
 
-const BASE = 'http://apis.data.go.kr/1613000/RTMSDataSvcAptTrade'
+/* 🔴 v118 (2026-09-17) — **https 로 바꿈 · 실패 응답은 캐시 안 함 · 대기 15초.**
+   오너 「갑자기 실거래 연동이 안 됨 · 거래가 없다고 뜸」 → 운영 실측: 이번 달(202608) 조회가 여러 구에서 `fetch-failed`(6초 안에 응답 없음),
+   캐시에 남은 지난달 응답만 옴. 공공데이터포털 공지(2026-08-03 · NOTICE_0000000004907): 「http(80포트) 호출이 정상 처리되지 않는 현상 …
+   안정적인 이용을 위해 https(443포트)로 호출」. 게다가 이 파일은 **실패 응답에도 s-maxage=1800 · stale-while-revalidate=86400** 을 붙여
+   한 번 실패하면 CDN 이 그 실패를 최대 하루 다시 내보낼 수 있었음 → 실패는 no-store. */
+const BASE = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade'
            + '/getRTMSDataSvcAptTrade';
 
 const CACHE = new Map();
@@ -70,13 +75,15 @@ function parseItems(xml){
 }
 
 module.exports = async function handler(req, res){
+  /* v118 — 성공 응답만 CDN 캐시. 실패는 아래 fail() 이 no-store 로 덮음 */
   res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=86400');
+  const fail = (reason) => { res.setHeader('Cache-Control', 'no-store'); return res.status(200).json({ ok:false, reason, items:[] }); };
 
   const lawd = String((req.query && req.query.lawd) || '').replace(/[^\d]/g, '');
   const ymd  = String((req.query && req.query.ymd)  || '').replace(/[^\d]/g, '');
 
   if(lawd.length !== 5 || ymd.length !== 6)
-    return res.status(200).json({ ok:false, reason:'bad-param', items:[] });
+    return fail('bad-param');
 
   /* 🔴 v25.0 — 캐시 키에 **판 번호**를 넣습니다. 안 넣으면 배포 직후에도 옛 응답(지번 없음)이
      최대 24시간 그대로 나갑니다 — 「고쳤는데 지도가 여전히 비어 있다」로 보입니다.
@@ -88,7 +95,7 @@ module.exports = async function handler(req, res){
 
   const serviceKey = process.env.MOLIT_API_KEY;
   if(!serviceKey)
-    return res.status(200).json({ ok:false, reason:'no-key', items:[] });
+    return fail('no-key');
 
   try{
     const params = new URLSearchParams({
@@ -102,21 +109,22 @@ module.exports = async function handler(req, res){
     const url = `${BASE}?${params.toString()}`;
 
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 6000);
+    const timer = setTimeout(() => ctrl.abort(), 15000);   /* v118 — 6초 → 15초(느린 응답에서 바로 실패로 끊지 않게) */
     const r = await fetch(url, { signal: ctrl.signal });
     clearTimeout(timer);
 
-    if(!r.ok) return res.status(200).json({ ok:false, reason:'upstream-'+r.status, items:[] });
+    if(!r.ok) return fail('upstream-'+r.status);
 
     const xml = await r.text();
     const code = tag(xml, 'resultCode');
     if(code && code !== '00' && code !== '000')
-      return res.status(200).json({ ok:false, reason:'api-'+code, items:[] });
+      return fail('api-'+code);
 
     const items = parseItems(xml);
     cacheSet(key, items, ymd);
     return res.status(200).json({ ok:true, cached:false, items });
   }catch(e){
-    return res.status(200).json({ ok:false, reason:'fetch-failed', items:[] });
+    return fail('fetch-failed');
   }
 };
+module.exports.config = { maxDuration: 30 };   /* v118 — 15초 대기 + 여유 */
