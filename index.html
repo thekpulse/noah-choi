@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v121 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v122 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11055,7 +11055,7 @@ function dealAffordHtml(x){
 /* v121 ⑤ — 네이버 부동산 검색 주소(동 + 단지명 · 괄호는 띄어쓰기로). 가격·조건은 안 실음. */
 function dealNaverUrl(x){
   const q = [x && x.dong, x && x.name].filter(Boolean).join(' ').replace(/[()\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
-  return 'https://m.land.naver.com/search/result/' + encodeURIComponent(q);
+  return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(q + ' 아파트');   /* v122 — 통합검색(부동산 검색은 표기 차이·동 이름에 약함) */
 }
 function dealBox(x, i){
   /* 같은 단지의 판단 기준은 **「거래 활발」 뱃지와 같은 키**입니다(원칙 58) —
@@ -11107,7 +11107,7 @@ function dealBox(x, i){
                 + `<span class="v">${formatWon(n.amountMan*10000)}</span></div>`;
          }).join('')
        + (typeof i === 'number' && typeof window !== 'undefined' && window.__ykMap && window.__ykMap.isReady() ? `<button type="button" class="deal-onmap" data-key="${esc(key)}">지도에서 보기</button>` : '')   /* v110 A */
-       + `<a class="deal-naver" href="${dealNaverUrl(x)}" target="_blank" rel="noopener noreferrer">네이버 부동산에서 이 단지 찾기<span aria-hidden="true"> ↗</span></a>`   /* v121 ⑤ */
+       + `<a class="deal-naver" href="${dealNaverUrl(x)}" target="_blank" rel="noopener noreferrer">네이버에서 이 단지 찾기<span aria-hidden="true"> ↗</span></a>`   /* v121 ⑤ */
        + `</div>`;
 }
 
