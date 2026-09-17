@@ -6237,11 +6237,11 @@ body .app:not(.no-dock){padding-bottom:0}
           <button class="chip sm" id="dealOver" aria-pressed="false">예산 10% 초과까지</button>
         </div>
       </div>
-      <div class="yk-range" id="dealMapRange" role="group" aria-label="실거래 가격 범위"><span>가격 범위</span><button type="button" data-range="0" aria-pressed="true" aria-label="예산 이하">예산 이하</button><button type="button" data-range="10" aria-pressed="false" aria-label="예산의 110%까지">+10%</button><button type="button" data-range="20" aria-pressed="false" aria-label="예산의 120%까지">+20%</button><button type="button" data-range="30" aria-pressed="false" aria-label="예산의 130%까지">+30%</button></div>
       <div class="deal-map-panel" id="dealMapPanel" hidden>
         <div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
+        <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예산</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button></div>
         <p class="yk-legend" id="dealMapLegend" hidden><span><i class="fit"></i>내 예상 집값 이하</span><span><i class="near"></i><b data-near></b></span><span><i class="over"></i>그보다 높음</span></p>
         <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약 금액은 그 지역 최근 거래가의 중앙값이에요(면적이 섞여 있어요). 색은 내 예상 집값과 비교한 것이에요.</p>
         <p class="deal-map-miss" id="dealMapMiss" hidden></p>
@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v116 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v117 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10527,7 +10527,7 @@ const NEARBY = {
      실물 「84㎡형」은 대개 84.0~84.99라 85로 좁혀도 빠지는 단지가 사실상 없습니다.
    ⚠ 85는 **포함**입니다(`v <= 85`). 정확히 85.0인 단지는 국민주택규모 **이내**라 농특세가 안 붙습니다.
      초과분에만 붙는 세금이므로 경계값 자체는 안전한 쪽입니다. */
-const DEAL = { months:3, rows:5, boxRows:8, newYears:10, band:0.85, overBand:1.10, up:0, hiBand:1, want:3,
+const DEAL = { months:3, rows:5, boxRows:8, newYears:10, band:0.85, overBand:1.10, want:3,
                /* 🔴 v83 — 「거래 활발」 기준. **2 → 3건**(오너 결정 · 2026-09-14).
                   근거는 운영 데이터 전수입니다 — 광진구 3개월 194건에서 2건 기준은
                   단지의 **41~51%** 에 붙었습니다(첫 화면 다섯 줄 중 3~4곳).
@@ -10576,6 +10576,7 @@ async function fetchOne(lawd){
   /* 어느 구에서 왔는지 붙여 둡니다 — 화면에서 인근 구만 구 이름을 답니다. */
   const items = rs.flatMap(r => (Array.isArray(r) ? r : (r && r.items) || [])).map(x => ({...x, lawd}));
   if(rs.every(r => r !== null)) DEAL.cache.set(lawd, items);
+  if (typeof window !== 'undefined' && window.ykUnitsLoad) window.ykUnitsLoad(lawd);   /* v117 — 그 구 세대수(백그라운드) */
   return items;
 }
 /* 🔴 v24.14 — **캐스케이드.** 선택한 구에서 충분히 나오면 거기서 멈춥니다.
@@ -10624,7 +10625,7 @@ function passesUnitFilter(x){
 }
 function splitDeals(items, priceMan){
   const lo = Math.round(priceMan * DEAL.band);
-  const hi = Math.round(priceMan * (DEAL.hiBand || DEAL.overBand));   /* v116 — 상한 = 범위 칩(DEAL.up) */
+  const hi = Math.round(priceMan * DEAL.overBand);
   const thisYear = new Date().getFullYear();
   const when = n => (n.y||0)*10000 + (n.m||0)*100 + (n.d||0);
 
@@ -10884,8 +10885,13 @@ const aptFold = (s, dong) => {
   for (const pre of [full, base]) if (pre && v.startsWith(pre) && v.length > pre.length + 1) out.add(v.slice(pre.length));
   return [...out].filter(x => x.length >= 2);
 };
+const APT_UNITS_EXTRA = {};   /* v117 — K-apt API 로 받은 줄(법정동코드5 → [[동, aptNorm(이름), 세대수]]) */
 function unitsOf(lawd, name, dong){
-  const rows = APT_UNITS[lawd]; if(!rows) return null;
+  const v = unitsOfIn(APT_UNITS, lawd, name, dong);
+  return v != null ? v : (APT_UNITS_EXTRA[lawd] ? unitsOfIn(APT_UNITS_EXTRA, lawd, name, dong) : null);
+}
+function unitsOfIn(T, lawd, name, dong){
+  const rows = T[lawd]; if(!rows) return null;
   const n = aptNorm(name); if(!n) return null;
   /* 🔴 후보가 여럿이어도 **값이 전부 같으면** 그건 충돌이 아닙니다. 갈리면 버립니다. */
   const one = c => { if(!c.length) return null; const v = c[0][2];
@@ -11073,7 +11079,7 @@ function dealReadingLimit(priceMan){
 function paintDeals(priceMan){
   DEAL.lastPrice = priceMan;
   syncUnitFilter();
-  $('dealRangeNote').textContent='조회 가격 '+formatWon(Math.round(priceMan*DEAL.band)*10000)+' ~ '+formatWon(Math.round(priceMan*(DEAL.over?(DEAL.hiBand||DEAL.overBand):1))*10000)+' · 단지별 최근 거래';
+  $('dealRangeNote').textContent='조회 가격 '+formatWon(Math.round(priceMan*DEAL.band)*10000)+' ~ '+formatWon(Math.round(priceMan*(DEAL.over?DEAL.overBand:1))*10000)+' · 단지별 최근 거래';
   const list=$('dealList'), lead=$('dealLead'), foot=$('dealFoot'), chips=$('dealChips'), note=$('dealNote');
   note.textContent = '';          /* 🔴 v25.1 — 뱃지가 없는 화면에는 기준도 없습니다 */
   const {under, over, underRaw, overRaw} = splitDeals(DEAL.items || [], priceMan);
@@ -12513,8 +12519,7 @@ unitFilter.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   else syncUnitFilter();
 });
 function resetDealFilters(){
-  Object.assign(DEAL,{onlyNew:false,only59:false,only84:false,over:false,up:0,hiBand:1,minUnits:0,open:null});
-  if (typeof window !== 'undefined' && window.ykSetDealUp) window.ykSetDealUp(0, false);   /* v116 — 초기화는 범위도 예산 이하로(칩 눌림 표시) */
+  Object.assign(DEAL,{onlyNew:false,only59:false,only84:false,over:false,minUnits:0,open:null});
   for(const id of ['dealNew','deal59','deal84','dealOver']){
     const btn=$(id);if(btn){btn.classList.remove('is-on');btn.setAttribute('aria-pressed','false');}
   }
@@ -12532,7 +12537,7 @@ function syncUnitFilter(){
   if(reset) reset.disabled=!(DEAL.onlyNew||DEAL.only59||DEAL.only84||DEAL.over||DEAL.minUnits);
   const summary=$('dealUnitSummary');
   if(summary){
-    const labels=[['onlyNew','dealNew'],['only59','deal59'],['only84','deal84']]   /* v116 — 범위는 필터 밖 칩이 직접 보여 줌 */
+    const labels=[['onlyNew','dealNew'],['only59','deal59'],['only84','deal84'],['over','dealOver']]
       .filter(([key])=>DEAL[key]).map(([,id])=>$(id)?.textContent.trim()).filter(Boolean);
     if(DEAL.minUnits) labels.push(DEAL.minUnits.toLocaleString('ko-KR')+'세대 이상');
     summary.textContent=labels.join(' · ');
@@ -12631,9 +12636,11 @@ if(RESUME_RESULT) showResult(false);
     if (typeof splitDeals !== 'function') return [];
     const divided = splitDeals(DEAL.items, DEAL.lastPrice);
     /* v110 A — 목록과 **같은 줄**(dealReadingRows · 같은 필터·정렬). 상한은 paintMap 의 MAP_MAX(넘으면 지도 밑에 말함). */
+    void divided;
     /* v111 — 지도는 예산 ±mapRange%(기본 20 · 그래프 축과 같은 폭). 예산 이하 먼저, 초과는 회색 말풍선. */
-    /* v116 — 목록과 같은 범위(DEAL.up). 예산 이하 먼저, 초과는 회색 말풍선. */
-    return DEAL.over ? divided.under.concat(divided.over) : divided.under;
+    const r = mapRange / 100, kb = DEAL.band, ko = DEAL.overBand;
+    try { DEAL.band = 1 - r; DEAL.overBand = 1 + r; const d = splitDeals(DEAL.items, DEAL.lastPrice); return d.under.concat(d.over); }
+    finally { DEAL.band = kb; DEAL.overBand = ko; }
   }
 
   /* 🔴 좌표가 한반도 안인지 **한 곳에서** 봅니다(원칙 58). 두 갈래가 이것을 씁니다 —
@@ -12710,9 +12717,9 @@ if(RESUME_RESULT) showResult(false);
        ⚠ v102.8 의 알약(「지도에 찍힌 거래」 = 이미 예산 범위로 거른 거래)의 중앙값은 **정의상 거의 늘 예산 안**이라 색을 입힐 뜻이 없었음.
      C 단지 상세 시트 — 말풍선을 누르면 지도 위 아래쪽 시트: 선택 거래 · 면적별 건수·최저~최고 · 이 단지 최근 거래 표(목록 상자와 같은 dealBox). */
   let layer = 'deal';
+  let mapRange = 20;   /* v111 — 지도 가격 범위 ±% (한 곳) */
   const rangeBox = byId('dealMapRange');
-  window.__ykMapRepaint = () => { if (mode === 'map') paintMap(); };
-  function setRange(v, repaint) { window.ykSetDealUp(v, repaint); }
+  function setRange(v, repaint) { mapRange = [10, 20, 30].includes(+v) ? +v : 20; if (rangeBox) rangeBox.querySelectorAll('button[data-range]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.range === mapRange))); if (repaint !== false) paintMap(); }
   if (rangeBox) rangeBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-range]'); if (b) setRange(b.dataset.range); });
   let pendingFocus = null;
   let statsToken = 0;
@@ -13184,14 +13191,14 @@ if(RESUME_RESULT) showResult(false);
 
   listTab.addEventListener('click', () => setMode('list'));
   /* v110 A — 목록 거래 상세 「지도에서 보기」 */
-  list.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.deal-onmap'); if (!b) return; e.preventDefault(); e.stopPropagation(); pendingFocus = b.dataset.key; setMode('map'); bar.scrollIntoView({ block: 'nearest' }); });
+  list.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.deal-onmap'); if (!b) return; e.preventDefault(); e.stopPropagation(); pendingFocus = b.dataset.key; if (mapRange < 20) setRange(20, false); setMode('map'); bar.scrollIntoView({ block: 'nearest' }); });
   { const near = legend && legend.querySelector('[data-near]'); if (near) near.textContent = `${Math.round((DEAL.overBand - 1) * 100)}% 이내로 높음`; }
   mapTab.addEventListener('click', () => setMode('map'));
   new MutationObserver(() => {
     if (mode === 'map') paintMap();
   }).observe(list, { childList:true, subtree:true });
 
-  window.__ykMap = { setRange, range: () => DEAL.up, isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map, setLayer, layer: () => layer, focusKey };
+  window.__ykMap = { setRange, range: () => mapRange, isReady: () => sdkReady && !window.__ykMapFailed, coordinate: dealCoordinate, declutter, renderLevel, level: () => levelNow, bigMap: () => map, setLayer, layer: () => layer, focusKey };
   window.navermap_authFailure = function () {
     window.__ykMapFailed = true;
     if (status) status.textContent = '지도를 열 수 없어요';
@@ -13917,19 +13924,35 @@ html body #viewDeals .region-edit .chev{margin:0 1px 0 6px}
 html body #viewDeals .deal-filter-fold[open]>summary .chev,html body #viewDeals .deal-regions[open] .region-edit .chev{transform:translateY(2px) rotate(225deg)!important}
 html body #viewDeals .region-edit{display:inline-flex!important;align-items:center}
 </style>
-<script>/* v116 — 실거래 가격 범위 한 곳 */
-window.ykSetDealUp = function (v, repaint) {
-  DEAL.up = [0, 10, 20, 30].includes(+v) ? +v : 0; DEAL.over = DEAL.up > 0; DEAL.hiBand = 1 + DEAL.up / 100; DEAL.open = null;
-  const box = document.getElementById('dealMapRange');
-  if (box) box.querySelectorAll('button[data-range]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.range === DEAL.up)));
-  const legacy = document.getElementById('dealOver'); if (legacy) { legacy.classList.toggle('is-on', DEAL.over); legacy.setAttribute('aria-pressed', String(DEAL.over)); }
-  if (repaint !== false && DEAL.lastPrice > 0) { paintDeals(DEAL.lastPrice); if (window.__ykMapRepaint) window.__ykMapRepaint(); }
-};
+<script>/* v117 — K-apt 세대수 받기(구마다 한 번 · 조각을 차례로) */
+(function () {
+  const SIDO = ['11', '28', '41'], started = new Set();
+  let timer = 0;
+  const repaint = () => { clearTimeout(timer); timer = setTimeout(() => {
+    if (typeof DEAL !== 'undefined' && DEAL.lastPrice > 0 && DEAL.open == null && typeof paintDeals === 'function') paintDeals(DEAL.lastPrice);
+  }, 300); };
+  function add(lawd, rows) {
+    const T = (APT_UNITS_EXTRA[lawd] ||= []); let n = 0;
+    for (const r of rows || []) { if (!Array.isArray(r) || r.length < 3) continue;
+      const nm = aptNorm(r[1]), u = +r[2]; if (!nm || !(u > 0)) continue;
+      if (T.some(x => x[0] === r[0] && x[1] === nm)) continue;
+      T.push([String(r[0] || ''), nm, u]); n++; }
+    return n;
+  }
+  window.ykUnitsAdd = add;
+  window.ykUnitsLoad = async function (lawd) {
+    lawd = String(lawd || ''); if (lawd.length !== 5 || !SIDO.includes(lawd.slice(0, 2)) || started.has(lawd)) return;
+    started.add(lawd);
+    const one = (part) => fetch('/api/apt-units?lawd=' + lawd + '&part=' + part).then(r => r.ok ? r.json() : null).catch(() => null);
+    const first = await one(0); if (!first || !first.ok) return;
+    let added = add(lawd, first.items);
+    for (let p = 1; p < (first.parts || 1); p += 2) {
+      const got = await Promise.all([one(p), p + 1 < first.parts ? one(p + 1) : null]);
+      for (const g of got) if (g && g.ok) added += add(lawd, g.items);
+    }
+    if (added) repaint();
+  };
+})();
 </script>
-<style>/* v116 — 범위 칩 새 자리(목록/지도 전환 밑 · 필터 위) · 옛 「예산 10% 초과까지」 칩은 숨김(요소는 초기화 코드가 씀) */
-body #viewDeals #dealCard>#dealMapRange{order:4;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 8px}
-body #viewDeals #dealCard>#dealMapRange>span{margin-right:4px;font-size:13px;color:#465262}
-body #viewDeals #dealOver{display:none!important}
-</style>
 </body>
 </html>
