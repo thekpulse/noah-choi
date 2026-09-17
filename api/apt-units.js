@@ -1,5 +1,5 @@
 /* ===================================================================
-   공동주택(K-apt) 세대수 프록시  —  v117
+   공동주택(K-apt) 세대수 프록시  —  v117b(주소 후보 · 진단)
    Vercel Serverless Function.  GET /api/apt-units?lawd=41135&part=0
 
    왜: 앱 안의 세대수 표(APT_UNITS)는 서울 25구 2,939곳뿐이라 경기·인천에서는 세대수가 한 번도
@@ -20,8 +20,21 @@
        /api/apt-units?lawd=11200&part=0  → ok:true · total > 0 · items 에 [동, 이름, 세대수]
    =================================================================== */
 
-const LIST = 'http://apis.data.go.kr/1613000/AptListService3/getSigunguAptList3';
-const INFO = 'http://apis.data.go.kr/1613000/AptBasisInfoServiceV4/getAphusBassInfoV4';
+/* v117b — 운영 첫 응답이 list-failed(2026-09-17 · www·vercel.app 둘 다). 서비스 주소를 확정 못 해 **후보를 차례로** 시도하고,
+   실패하면 후보마다 HTTP 상태·응답 앞 160자(키 가림)를 돌려줘 원인을 화면에서 읽게 함. 처음 성공한 후보를 인스턴스에 기억. */
+const LISTS = [
+  'https://apis.data.go.kr/1613000/AptListService3/getSigunguAptList3',
+  'http://apis.data.go.kr/1613000/AptListService3/getSigunguAptList3',
+  'https://apis.data.go.kr/1613000/AptListService2/getSigunguAptList',
+  'http://apis.data.go.kr/1611000/AptListService/getSigunguAptList',
+];
+const INFOS = [
+  'https://apis.data.go.kr/1613000/AptBasisInfoServiceV4/getAphusBassInfoV4',
+  'http://apis.data.go.kr/1613000/AptBasisInfoServiceV4/getAphusBassInfoV4',
+  'https://apis.data.go.kr/1613000/AptBasisInfoServiceV3/getAphusBassInfoV3',
+  'http://apis.data.go.kr/1611000/AptBasisInfoService/getAphusBassInfo',
+];
+let LIST = null, INFO = null;   /* 성공한 후보 */
 const PART = 40;           /* 조각당 단지 수(= ② 호출 수) */
 const CONC = 10;           /* ② 동시 호출 */
 const SIDO_OK = ['11', '28', '41'];   /* 오너 결정 2026-09-17 「수도권까지」 */
@@ -54,18 +67,33 @@ function dongOf(addr){
   return w.find(x => /(동|\d+가|리)$/.test(x) && !/(시|군|구)$/.test(x)) || w.find(x => /(읍|면)$/.test(x)) || '';
 }
 
-async function get(url, ms){
+const LAST = { tries: [] };   /* 진단: 후보별 결과 */
+const peek = (t, key) => String(t || '').replace(key ? new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g') : /$^/, '***').replace(/\s+/g, ' ').slice(0, 160);
+async function get(url, ms, key){
   const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), ms);
-  try { const r = await fetch(url, { signal: ctrl.signal }); return r.ok ? await r.text() : null; }
-  catch { return null; } finally { clearTimeout(timer); }
+  try { const r = await fetch(url, { signal: ctrl.signal }); const text = await r.text();
+        if (key !== undefined) LAST.tries.push({ at: url.split('?')[0].replace('http://apis.data.go.kr', 'http:').replace('https://apis.data.go.kr', 'https:'), status: r.status, head: peek(text, key) });
+        return r.ok ? text : null; }
+  catch (e) { if (key !== undefined) LAST.tries.push({ at: url.split('?')[0], status: 0, head: String(e && (e.name || e.message) || 'error') }); return null; }
+  finally { clearTimeout(timer); }
 }
 
 async function listOf(key, lawd){
   const hit = LIST_CACHE.get(lawd); if (hit && Date.now() < hit.exp) return hit.val;
   const all = [];
+  if (!LIST) {   /* 후보 고르기: 첫 페이지가 목록 모양으로 오는 주소 */
+    LAST.tries = [];
+    for (const base of LISTS) {
+      const q = new URLSearchParams({ serviceKey: key, sigunguCode: lawd, pageNo: '1', numOfRows: '10' });
+      const text = await get(`${base}?${q}`, 4000, key); if (text == null) continue;
+      if (/returnReasonCode/.test(text)) continue;
+      const r = itemsOf(text); if ((r.code === '00' || r.code === '000') && r.items.some(x => x.kaptCode)) { LIST = base; break; }
+    }
+    if (!LIST) return { error: 'list-failed', tries: LAST.tries };
+  }
   for (let page = 1; page <= 20; page++) {
     const q = new URLSearchParams({ serviceKey: key, sigunguCode: lawd, pageNo: String(page), numOfRows: '1000' });
-    const text = await get(`${LIST}?${q}`, 6000); if (text == null) return null;
+    const text = await get(`${LIST}?${q}`, 6000); if (text == null) return { error: 'list-failed' };
     /* 키 미등록·트래픽 초과는 게이트웨이가 다른 껍데기(OpenAPI_ServiceResponse · returnReasonCode)로 답함 */
     const gw = String(text).match(/<returnReasonCode>(\d+)<\/returnReasonCode>/); if (gw) return { error: 'gateway-' + gw[1] };
     const r = itemsOf(text); if (r.code !== '00' && r.code !== '000') return { error: 'api-' + r.code };
@@ -77,6 +105,15 @@ async function listOf(key, lawd){
   return all;
 }
 
+async function pickInfo(key, c){
+  LAST.tries = [];
+  for (const base of INFOS) {
+    const q = new URLSearchParams({ serviceKey: key, kaptCode: c.code });
+    const text = await get(`${base}?${q}`, 4000, key); if (text == null || /returnReasonCode/.test(text)) continue;
+    const r = itemsOf(text); if (r.items[0] && (r.items[0].kaptdaCnt != null || r.items[0].kaptName)) { INFO = base; return true; }
+  }
+  return false;
+}
 async function infoOf(key, c){
   const q = new URLSearchParams({ serviceKey: key, kaptCode: c.code });
   const text = await get(`${INFO}?${q}`, 4000); if (text == null) return null;
@@ -95,7 +132,8 @@ module.exports = async function handler(req, res){
   if (!key) { short(); return res.status(200).json({ ok:false, reason:'no-key', items:[] }); }
 
   const list = await listOf(key, lawd);
-  if (!list || list.error) { short(); return res.status(200).json({ ok:false, reason: list ? list.error : 'list-failed', items:[] }); }
+  if (!list || list.error) { short(); return res.status(200).json({ ok:false, reason: list ? list.error : 'list-failed', tries: (list && list.tries) || [], items:[] }); }
+  if (!INFO && list.length && !(await pickInfo(key, list[0]))) { short(); return res.status(200).json({ ok:false, reason:'info-failed', tries: LAST.tries, items:[] }); }
   const parts = Math.ceil(list.length / PART);
   const slice = list.slice(part * PART, (part + 1) * PART);
   const out = []; let failed = 0;
@@ -106,4 +144,4 @@ module.exports = async function handler(req, res){
   res.setHeader('Cache-Control', failed ? 'public, s-maxage=3600' : 'public, s-maxage=2592000, stale-while-revalidate=604800');
   return res.status(200).json({ ok:true, lawd, part, parts, total:list.length, failed, items: out });
 };
-module.exports._test = { itemsOf, dongOf, PART };
+module.exports._test = { itemsOf, dongOf, PART, reset: () => { LIST = null; INFO = null; } };
