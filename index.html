@@ -6097,7 +6097,7 @@ body .app:not(.no-dock){padding-bottom:0}
       
       
       
-    </header>    <div class="budget-summary"><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span><i class="math-sign" aria-hidden="true">+</i>부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true">›</b></button><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
+    </header>    <div class="budget-summary"><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span><i class="math-sign" aria-hidden="true">+</i>부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true"></b></button><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
       <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p></div>        </div><section class="easy-card easy-balance" id="easyBalance" aria-labelledby="easyUseTitle">
       
       
@@ -6169,7 +6169,7 @@ body .app:not(.no-dock){padding-bottom:0}
         
         <div class="axis"><span id="plotLo"></span><span id="plotHi"></span></div>
       </div>
-      <p class="axis-note" id="easyMarketNote"></p><button class="market-open" id="marketOpen" type="button">실거래 확인 <span aria-hidden="true">›</span></button>
+      <p class="axis-note" id="easyMarketNote"></p><button class="market-open" id="marketOpen" type="button">실거래 확인 <span class="chev-r" aria-hidden="true"></span></button>
       
       <div class="plot-detail" id="plotDetail" hidden>
         
@@ -7465,7 +7465,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v124 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v126 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11647,6 +11647,20 @@ function paintReportDeals(priceMan){
       }).join('');
 }
 
+/* v126 — 공유 주소. 소득·기존 대출은 싣지 않습니다. */
+function shareUrl(){
+  try{
+    if(!LASTVIEW || !S.sgg || !HOUSE[S.houseStatus]) return SERVICE_URL;
+    const f = heroFigures(LASTVIEW.c, LASTVIEW.price), q = new URLSearchParams(), n = v => String(Math.max(0, Math.round(Number(v) || 0)));
+    q.set('r', S.sgg);
+    if(DEAL.compareCodes && DEAL.compareCodes.length) q.set('x', DEAL.compareCodes.join('.'));
+    q.set('h', S.houseStatus);
+    if(S.houseStatus === 'multi'){ q.set('o', n(S.ownCount || 1)); if(S.disposePlan) q.set('d', '1'); }
+    if(S.noLoan) q.set('n', '1');
+    q.set('c', n(S.cash)); q.set('p', n(f.P)); q.set('u', n(f.C)); q.set('l', n(f.L));
+    return SERVICE_URL + '/#' + q.toString();   /* # 뒤 = 브라우저 밖으로(서버·접속 기록) 안 나감 — 「입력한 금액은 서버로 전송하지 않습니다」 약속 그대로 */
+  }catch(e){ return SERVICE_URL; }
+}
 function summaryText(){
   if(!LASTVIEW) return '';
   const {c,price}=LASTVIEW, f=heroFigures(c,price), rows=[
@@ -11665,10 +11679,10 @@ function summaryText(){
         rows.push(x.name + ' ' + formatWon(x.amountMan * 10000) + (where ? ' (' + where + ')' : '')); });
     } }
   rows.push('', '참고용 예상치이며, 실제 대출 한도는 금융기관 심사에 따라 달라집니다.',
-    '대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.', '', SERVICE_URL);
+    '대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.', '', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL));   /* v126 */
   return rows.join('\n');
 }
-function shareCaption(){ return ['내 집 마련, 얼마까지?', '영끌계산기 · 참고용 예상 결과', SERVICE_URL].join('\n'); }
+function shareCaption(){ return ['내 집 마련, 얼마까지?', '영끌계산기 · 참고용 예상 결과', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL)].join('\n'); }
 
 async function copySummary(){
   const btn=$('outCopy'), t=btn.querySelector('b'), o=t.textContent, txt=summaryText();
@@ -12639,13 +12653,59 @@ $('marketOpen').onclick=()=>setRView('deals');
   $('sw'+key).setAttribute('aria-label',label+' 포함');
   $('in'+key).setAttribute('aria-label',label+' 금액, 만원 단위');
 });
+/* v126 — 받은 공유 주소 읽기. 온전하지 않으면 null(아무 일 없음). */
+function readSharedLink(search){
+  try{
+    const q = new URLSearchParams(String(search == null ? location.hash : search).replace(/^[#?]/, ''));
+    const r = q.get('r'), h = q.get('h');
+    if(!r || !/^\d{5}$/.test(r) || !sggName(r) || !HOUSE[h]) return null;
+    const int = (k, max) => { const v = q.get(k); if(v == null || !/^\d{1,9}$/.test(v)) return null; const x = +v; return x <= max ? x : null; };
+    const c = int('c', 999999), p = int('p', 9999999), u = int('u', 9999999), l = int('l', 9999999);
+    if(!(c > 0) || !(p > 0) || u == null || l == null) return null;
+    const noLoan = q.get('n') === '1';
+    const own = int('o', 2);
+    const sido = sidoOfCode(r), base = new Set(typeof lawdCodesOf === 'function' ? lawdCodesOf(r) : [r]);
+    const x = [...new Set(String(q.get('x') || '').split('.'))].filter(k => /^\d{5}$/.test(k) && (LAWD[sido] || []).some(z => z[0] === k) && !base.has(k)).slice(0, 2);
+    S.sgg = r; S.sido = sido; S.group = sido === SEOUL ? 'seoul' : (METRO.indexOf(sido) >= 0 ? 'metro' : 'other');
+    S.pick = (typeof pickOfCode === 'function' && (pickOfCode(r) || {}).id) || '';
+    S.houseStatus = h; S.ownCount = h === 'multi' && own >= 1 ? own : 1; S.disposePlan = h === 'multi' && S.ownCount === 1 && q.get('d') === '1';
+    S.noLoan = noLoan; S.cash = c; S.compareCodes = x;
+    S.onResult = false; S.lockedPrice = null; S.fromResult = false;
+    S.step = visible()[visible().length - 1];
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+    try{ if(typeof track === 'function') track('share_link_open', { house: h, no_loan: noLoan, compare: x.length }); }catch(e){}
+    return { region: regionLabel(), house: HOUSE[h], p, u, l, noLoan };
+  }catch(e){ return null; }
+}
+function paintSharedIn(o){
+  const lead = document.querySelector('.funnel .entry-sub'); if(!lead || !o) return;
+  const won = v => formatWon(v * 10000);
+  const box = document.createElement('section'); box.className = 'shared-in'; box.id = 'sharedIn'; box.setAttribute('aria-labelledby', 'sharedInK');
+  const head = document.createElement('div'); head.className = 'si-head';
+  const k = document.createElement('h2'); k.id = 'sharedInK'; k.textContent = '받은 계산 결과';
+  const x = document.createElement('button'); x.type = 'button'; x.className = 'si-close'; x.setAttribute('aria-label', '받은 계산 결과 닫기');
+  x.addEventListener('click', () => { box.remove(); const f = document.getElementById('main-cash'); if(f) f.focus({ preventScroll: true }); });
+  head.append(k, x);
+  const where = document.createElement('p'); where.className = 'si-where'; where.textContent = o.region + ' · ' + o.house;
+  const price = document.createElement('p'); price.className = 'si-price'; price.innerHTML = '<span>예상 집값</span> <b></b>'; price.querySelector('b').textContent = won(o.p);
+  const mix = document.createElement('p'); mix.className = 'si-mix';
+  mix.textContent = o.noLoan || !(o.l > 0) ? '현금 ' + won(o.u) + (o.noLoan ? ' · 현금만으로 계산' : '') : '현금 ' + won(o.u) + ' + 주택담보대출 ' + won(o.l);
+  const hint = document.createElement('p'); hint.className = 'si-hint';
+  hint.textContent = o.noLoan ? '같은 지역·주택 보유·현금을 채워 뒀어요. 내 현금으로 바꿔 계산해 보세요.' : '같은 지역·주택 보유·현금을 채워 뒀어요. 연 소득을 넣으면 내 결과가 나와요.';
+  box.append(head, where, price, mix, hint);
+  lead.after(box);
+  const cta = document.getElementById('ctaBtn'); if(cta) cta.addEventListener('click', () => { if(box.isConnected) box.remove(); }, { once: true });
+}
 loadDraft();          /* ⚠ render() 앞이어야 합니다. 뒤면 화면을 두 번 그립니다 */
+const SHARED_IN = readSharedLink();   /* v126 — 초안 뒤(받은 링크가 이김) · RESUME_RESULT 앞(결과 복원 끔) */
 /* 🔴 v23.27 — 결과 화면에서 밖으로 나갔다 돌아온 경우, 결과로 바로 되돌립니다.
    ⚠ render()는 S.onResult를 false로 되돌리므로 **여기서 값을 먼저 떠 둡니다.**
    ⚠ showResult()는 화면 요소를 만지므로 render() 뒤에 불러야 합니다. */
 const RESUME_RESULT = S.onResult && S.lockedPrice > 0 && allReady();
 render();
 if(RESUME_RESULT) showResult(false);
+if(SHARED_IN) paintSharedIn(SHARED_IN);   /* v126 */
+window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash)) location.reload(); });   /* v126 — 열린 앱에서 받은 링크를 눌러도(같은 문서 # 이동) 적용 */
 </script>
 <script >
 /* v85.0 — 실거래 데이터의 목록/지도 이중 보기. 확인된 실제 좌표만 표시합니다.
@@ -14271,6 +14331,34 @@ html body #viewDeals .yk-sheet-grow::before{content:"";position:absolute;left:50
 html body #viewDeals .yk-sheet-grow[aria-expanded="true"]::before{margin-top:-6px;transform:rotate(225deg)}
 html body #viewDeals .yk-sheet-grow:focus-visible{outline:3px solid #8FAEFF;outline-offset:-4px;border-radius:12px}
 @media (prefers-reduced-motion:reduce){html body #viewDeals .deal-map-detail{transition:none}}
+</style>
+<style>/* v125 — 크기 사다리 12·13·14·15·16·17·20·24·30·46 · 그린 꺾쇠 · 입력 설명 한 줄 */
+html body #viewAnswer .rhead #easyPrice .money-unit{font-size:24px}
+@media(max-width:370px){html body #viewAnswer .rhead #easyPrice .money-unit{font-size:20px}}
+html body #payTile .ans-v .u,html body #payTile .ans-v .ue,html body #payTile .ans-v .um,html body #payTile .ans-pct .u{font-size:14px!important}
+html body #easyCostOpen .easy-row-arrow{display:block;flex:none;width:7px;height:7px;margin:0 2px 0 4px;font-size:0;border-right:1.5px solid #5f6b7d;border-bottom:1.5px solid #5f6b7d;transform:rotate(-45deg)}
+html body #easyMarket .market-open .chev-r{flex:none;width:7px;height:7px;margin-right:3px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg)}
+html body .funnel .crows .inline-money{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:baseline}
+html body .funnel .crows .inline-money>label,html body .funnel .crows .inline-money>.inline-money-field,html body .funnel .crows .inline-money>.inline-error{grid-column:1/-1}
+html body .funnel .crows .inline-money>.inline-help{grid-column:1;grid-row:3;margin-top:6px!important}
+html body .funnel .crows .inline-money>.inline-echo{grid-column:2;grid-row:3;margin-top:6px!important;text-align:right;white-space:nowrap}
+html body .funnel .crows .inline-money>.inline-error{grid-row:4}
+</style>
+<style>/* v126 — 받은 계산 결과 카드 */
+html body .funnel .shared-in{margin:0 0 20px;padding:16px 20px 18px;border:1px solid #CFDCFF;border-radius:20px;background:#F2F5FF}
+html body .funnel .shared-in .si-head{display:flex;align-items:center;justify-content:space-between;margin:-10px -12px 0 0}
+html body .funnel .shared-in h2{margin:0;color:#1848D6;font-size:14px;font-weight:600;line-height:1.5}
+html body .funnel .shared-in .si-close{position:relative;flex:none;width:44px;height:44px;margin:0;padding:0;border:0;background:transparent;cursor:pointer}
+html body .funnel .shared-in .si-close::before,html body .funnel .shared-in .si-close::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:1.5px;margin:-1px 0 0 -6px;background:#465262;transform:rotate(45deg)}
+html body .funnel .shared-in .si-close::after{transform:rotate(-45deg)}
+html body .funnel .shared-in .si-close:focus-visible{outline:3px solid #8FAEFF;outline-offset:-4px;border-radius:12px}
+html body .funnel .shared-in p{margin:0;word-break:keep-all}
+html body .funnel .shared-in .si-where{color:#465262;font-size:13px;line-height:1.5}
+html body .funnel .shared-in .si-price{margin-top:10px;color:#192332;font-size:14px;line-height:1.4}
+html body .funnel .shared-in .si-price span{color:#465262}
+html body .funnel .shared-in .si-price b{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+html body .funnel .shared-in .si-mix{margin-top:4px;color:#192332;font-size:14px;font-weight:600;line-height:1.5;font-variant-numeric:tabular-nums}
+html body .funnel .shared-in .si-hint{margin-top:12px;padding-top:12px;border-top:1px solid #CFDCFF;color:#465262;font-size:13px;line-height:1.5}
 </style>
 </body>
 </html>
