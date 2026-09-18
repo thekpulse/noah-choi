@@ -2014,9 +2014,9 @@ input[type=range]:focus-visible::-webkit-slider-runnable-track{
 input[type=range]:focus-visible::-moz-range-track{
   box-shadow:0 0 0 4px var(--card), 0 0 0 6px var(--espresso)}
 input[type=range]::-webkit-slider-runnable-track{height:var(--track);border-radius:var(--r-pill);
-  background:linear-gradient(to right, var(--ink) 0 var(--fill-pct,0%), var(--line) var(--fill-pct,0%) 100%)}
+  background:linear-gradient(to right, var(--v-blue) 0 var(--fill-pct,0%), var(--line) var(--fill-pct,0%) 100%)}
 input[type=range]::-moz-range-track{height:var(--track);border-radius:var(--r-pill);background:var(--line)}
-input[type=range]::-moz-range-progress{height:var(--track);border-radius:var(--r-pill);background:var(--ink)}
+input[type=range]::-moz-range-progress{height:var(--track);border-radius:var(--r-pill);background:var(--v-blue)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:var(--thumb);height:var(--thumb);
   margin-top:calc((var(--track) - var(--thumb))/2);
   border-radius:var(--r-pill);background:var(--card);border:0;
@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v132 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v133 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9004,7 +9004,7 @@ function bindingTip(c, price){
        그 전제가 사실과 다릅니다** — 렌더로 확인하니 히어로는 라벨과 금액 둘뿐이고
        (`heroTail`은 빈 문자열) 이 문장은 **처음부터 한도 서랍 안**이었습니다.
        옮길 곳이 없어 **22갈래는 제자리**입니다(원칙 147 · 160). */
-    return `<b>소득 기준 한도가 적용됐습니다.</b> 연 소득의 40%를 연간 상환액 한도로 적용했습니다. ${S.debtMonthly ? '기존 대출로 매달 갚는 '+comma(S.debtMonthly)+'만원도 함께 계산했어요.' : '기존 대출이 있다면 조건에 함께 넣을 수 있어요.'}`;
+    return `<b>소득 기준 한도가 적용됐어요.</b> 연 소득의 40%를 연간 상환액 한도로 적용했어요. ${S.debtMonthly ? '기존 대출로 매달 갚는 '+comma(S.debtMonthly)+'만원도 함께 계산했어요.' : '기존 대출이 있다면 조건에 함께 넣을 수 있어요.'}`;
   if(c.binding==='구간한도')
     /* 🔴 v25.23 — 「붙어요」 → 「적용돼요」. 03 지역 안내와 **같은 낱말**입니다(원칙 58) —
        같은 사실을 두 화면이 다른 말로 부르면 한 사람이 같은 것을 두 이름으로 만납니다. */
@@ -9014,7 +9014,7 @@ function bindingTip(c, price){
          떼면서(오너 지시 · 부수 설명) 「위 막대」가 무엇을 가리키는지가 화면에서 흐려졌습니다.
        ⚠ **답을 잃지 않습니다** — 이 안내 바로 위 세 줄 중 **굵은 줄**이 그 값입니다
          (`.limitrow.bind`). 같은 말을 두 번 하지 않습니다(원칙 43). */
-    return `<b>집값 구간별 대출 상한을 적용했습니다.</b>`;
+    return `<b>집값 구간별 대출 상한을 적용했어요.</b>`;
   if(c.binding==='LTV'){
     const pct = price>0 ? Math.round(L.LTV/price*100) : 0;
     return `<b>주택담보대출 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요.<br>생애최초이거나 규제지역 밖이라면 더 높아져요.`;
@@ -10269,7 +10269,7 @@ function renderLimits(c, price){
     ? `<span class="chg">※ 시중은행 주택담보대출 기준입니다.</span>`
       + `<span class="chg">※ 입력한 소득과 기존 대출을 바탕으로 계산한 예상액입니다. 실제 대출 가능 금액은 금융기관 심사에 따라 달라집니다.</span>`
       + `<span class="chg chg-cont">은행별 우대금리는 반영하지 않았습니다.</span>`
-      + `<span class="chg">※ 신용대출을 1억원 넘게 갖고 있으면, 받은 날부터 1년간 규제지역 주택을 살 수 없어요. 이 규제는 계산에 반영하지 않았어요.</span>`
+      + `<span class="chg">※ 신용대출을 1억원 넘게 갖고 있으면, 받은 날부터 1년간 규제지역 주택을 살 수 없습니다. 이 규제는 계산에 반영하지 않았습니다.</span>`
     : '';
   notes.hidden = !hasLimit;
 }
