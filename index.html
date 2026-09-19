@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v139 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v140 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11717,24 +11717,18 @@ function shareUrl(){
   }catch(e){ return SERVICE_URL; }
 }
 function summaryText(){
-  /* v128 ⑤ — 카톡 공유 글(오너 「임팩트 있게 · 이모지 · 짧게」): 핵심 금액 먼저 · 이모지 머리 · 약 24줄 → 17줄.
-     🔒 그대로인 것: 금액 = heroFigures(화면·이미지·주소와 한 벌) · 실거래 = window.__ykHeroRows(카드와 같은 셈) · 참고용·중개 안 함 두 줄 · 마지막 줄 = 공유 주소(v126). 소득·기존 대출 안 실음. */
   if(!LASTVIEW) return '';
-  const {c,price}=LASTVIEW, f=heroFigures(c,price), won=v=>formatWon(v*10000), rows=[
-    '🏠 내 예산으로 살 수 있는 집값 (예상)', won(f.P), '',
-    '📍 '+regionLabel()+' · '+HOUSE[S.houseStatus],
-    '🧾 총 필요 금액 '+won(f.T), '(부대비용 '+won(f.E)+' 포함)',
-    f.L>0 ? '💰 현금 '+won(f.C)+' + 대출 '+won(f.L) : '💰 현금 '+won(f.C)+' (대출 없이)'];
-  if(f.L>0) rows.push('📅 월 상환액 '+formatWon(monthlyPaymentCalc(f.L*10000,D.rate,D.years))+' (연 '+D.rate+'% · '+D.years+'년)');
-  { const hr = (typeof window === 'object' && typeof window.__ykHeroRows === 'function') ? window.__ykHeroRows(Math.floor(approx(price) / 10000)) : [];
-    if(hr.length){
-      rows.push('', '🏢 내 예산에 맞는 실거래 · 최근 ' + ((typeof DEAL === 'object' && DEAL && DEAL.months) || 3) + '개월');
-      if(DEAL.compareCodes && DEAL.compareCodes.length) rows.push(dealScopeLabel());   /* v130 — 지역은 다음 줄(머리 줄이 꺾이던 것) */
-      hr.forEach(x => rows.push('· ' + x.name, '  ' + formatWon(x.amountMan * 10000), '  ' + dealBudgetGap(x.amountMan, f.P)));
-    } }
-  rows.push('', '※ 참고용 예상치예요.', '※ 한도는 금융회사 심사에 따라 달라요.', '※ 대출을 주선·알선·중개하지 않아요.',
-    '', '👉 내 조건으로 계산해 보기', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL));
-  return rows.join('\n');
+  const {c,price}=LASTVIEW, f=heroFigures(c,price);
+  return [
+    '🏠 내 예산으로 살 수 있는 집값 (예상)',
+    formatWon(f.P * 10000),
+    '📍 '+regionLabel(),
+    '',
+    '참고용 예상치 · 대출 주선·알선·중개 아님',
+    '',
+    '내 조건으로 계산해 보기',
+    SERVICE_URL
+  ].join('\n');
 }
 
 async function copySummary(){
@@ -14580,5 +14574,24 @@ html body #reportCard #rDeals .d .n{display:block;white-space:normal;overflow:vi
 html body #reportCard #rDeals .d .n small{line-height:1.5}
 html body #reportCard #rDeals .d .a{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;margin-top:3px;text-align:left;line-height:1.5}
 html body #reportCard #rDeals .report-budget-gap{margin-top:0;text-align:right}
+</style><style>/* v140: compact export only; the on-screen calculation stays complete */
+html body #reportCard .report-top{padding:16px 20px 18px!important}
+html body #reportCard .report-label{margin-top:12px!important}
+html body #reportCard .report-body{padding:14px 20px 14px!important}
+html body #reportCard #rMix .rs-bar,html body #reportCard #rMix .rs-split,html body #reportCard #rMix .nt{display:none!important}
+html body #reportCard .rs-row{min-height:25px}
+html body #reportCard .rs-total{margin-top:2px}
+html body #reportCard .report-monthly{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 10px;margin-top:12px!important;padding-top:10px!important}
+html body #reportCard .report-monthly[hidden]{display:none!important}
+html body #reportCard .report-monthly strong{margin:0!important;font-size:26px!important}
+html body #reportCard .report-monthly p:last-child{grid-column:1/-1;margin:0!important}
+html body #reportCard #rDeals:not([hidden]){margin-top:12px!important;padding-top:10px!important}
+html body #reportCard #rDeals .d{padding:6px 0}
+html body #reportCard #rDeals .d .n small{margin-top:0}
+html body #reportCard #rDeals .d .a{margin-top:1px}
+html body #reportCard .report-cta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 8px;margin-top:10px!important;padding-top:8px!important}
+html body #reportCard .report-cta[hidden]{display:none!important}
+html body #reportCard .report-cta span{margin:0!important}
+html body #reportCard .report-foot{margin-top:8px!important}
 </style></body>
 </html>
