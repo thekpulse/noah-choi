@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v133 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v137 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10903,10 +10903,8 @@ function dealLine(x, priceMan, hot, i){
        ⚠ 이모지를 안 씁니다. 점 하나 + 굵기 + 연한 무채색 면으로만 냅니다(원칙 62 · 채널 유지).
        🔴 v25.1 — **줄 끝에 매달지 않고 아래 단독 줄로** 내렸습니다(지시서 4 · 위 `.hotrow` 주석). */
     + (hot ? `<span class="hotrow"><span class="hot">거래 활발</span></span>` : '');
-  const budgetMan = (typeof LASTVIEW === 'object' && LASTVIEW && Number.isFinite(LASTVIEW.price) && LASTVIEW.price > 0) ? Math.floor(LASTVIEW.price / 10000) : Number(priceMan);
-  const difference = Number(x.amountMan) - budgetMan;
-  const gap = Number.isFinite(difference) && priceMan > 0
-    ? '<span class="budget-gap">'+(difference===0?'내 예산과 같음':'예산보다 '+formatWon(Math.abs(difference)*10000)+(difference>0?' 높음':' 낮음'))+'</span>' : '';
+  const budgetGap = dealBudgetGap(x.amountMan, priceMan);
+  const gap = budgetGap ? '<span class="budget-gap">' + esc(budgetGap) + '</span>' : '';
   /* 🔴 v25.16 — **`<div>`이 아니라 `<button>`입니다.**
      ⚠ `<a>`가 아닙니다. 이 동작은 **앱 안에서 끝납니다** — 채널 C(밖으로 나감 · `↗`)와 갈립니다.
        그래서 화살표를 안 붙이고 꺾쇠(`▾`)를 씁니다(v25.14가 좁힌 기호 규칙).
@@ -11065,6 +11063,18 @@ function dealRangeLine(x, all){
   return '<p class="deal-range">' + esc((a ? a + ' ' : '') + same.length + '건 · ' + body) + '</p>';
 }
 /* v111 — 「이 가격으로 사면」 — 결과 화면과 같은 엔진(calcCosts · ctx)으로 그 거래 가격을 셈. 결과가 없거나 셈이 안 되면 빈 문자열(빈 칸 안 만듦). */
+function dealBudgetDifference(amountMan, fallbackMan){
+  const budgetMan = (typeof LASTVIEW === 'object' && LASTVIEW && Number.isFinite(LASTVIEW.price) && LASTVIEW.price > 0)
+    ? Math.floor(LASTVIEW.price / 10000) : Number(fallbackMan);
+  const amount = Number(amountMan);
+  return Number.isFinite(amount) && amount > 0 && Number.isFinite(budgetMan) && budgetMan > 0 ? amount - budgetMan : null;
+}
+function dealBudgetGap(amountMan, fallbackMan){
+  const difference = dealBudgetDifference(amountMan, fallbackMan);
+  if(difference === null) return '';
+  if(difference === 0) return '예산과 같음';
+  return '예산 대비 ' + (difference > 0 ? '+' : '−') + formatWon(Math.abs(difference) * 10000);
+}
 function dealAfford(man){
   if(typeof calcCosts !== 'function' || typeof ctx !== 'function' || typeof S !== 'object' || !S) return null;
   const price = Number(man) * 10000;
@@ -11080,8 +11090,10 @@ function dealAfford(man){
 function dealAffordHtml(x){
   const f = dealAfford(x && x.amountMan); if(!f) return '';
   const row = (k, v) => '<div class="dealrow"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
-  const gap = f.gap > 0 ? '<p class="da-gap is-short">내 현금보다 ' + formatWon(f.gap * 10000) + ' 더 필요해요</p>'
-            : '<p class="da-gap">내 현금 안에서 살 수 있어요' + (f.gap < 0 ? ' · ' + formatWon(-f.gap * 10000) + ' 남아요' : '') + '</p>';
+  const basis = f.L > 0 ? '예상 대출 포함 · ' : '대출 없이 · ';
+  const balance = f.gap > 0 ? '현금 ' + formatWon(f.gap * 10000) + ' 부족'
+                : f.gap < 0 ? '현금 ' + formatWon(-f.gap * 10000) + ' 여유' : '추가 현금 0원';
+  const gap = '<p class="da-gap' + (f.gap > 0 ? ' is-short' : '') + '">' + basis + balance + '</p>';
   return '<div class="deal-afford"><p class="da-h">이 가격으로 사면 <span>부대비용 포함</span></p>'
        + row('필요한 현금', formatWon(f.C * 10000))
        + (f.L > 0 ? row('주택담보대출', formatWon(f.L * 10000)) + row('월 상환액', formatWon(f.M * 10000)) : '')
@@ -11677,7 +11689,7 @@ function paintReportDeals(priceMan){
            ⚠ 평은 **재산이 역산되는 값이 아닙니다** — 면적일 뿐이라 카드에 나가도 됩니다(원칙 110). */
         const sub = [where, Number(x.areaM2) > 0 ? `전용 ${x.areaM2}㎡` : ''].filter(Boolean).join(' · ');
         return `<div class="d"><span class="n">${esc(x.name)}<small>${esc(sub)}</small></span>`
-             + `<span class="a">${formatWon(x.amountMan*10000)}</span></div>`;
+             + `<span class="a">${formatWon(x.amountMan*10000)}<small class="report-budget-gap">${esc(dealBudgetGap(x.amountMan, priceMan))}</small></span></div>`;
       }).join('');
 }
 
@@ -11709,7 +11721,7 @@ function summaryText(){
     if(hr.length){
       rows.push('', '🏢 내 예산에 맞는 실거래 · 최근 ' + ((typeof DEAL === 'object' && DEAL && DEAL.months) || 3) + '개월');
       if(DEAL.compareCodes && DEAL.compareCodes.length) rows.push(dealScopeLabel());   /* v130 — 지역은 다음 줄(머리 줄이 꺾이던 것) */
-      hr.forEach(x => rows.push('· ' + x.name + ' ' + formatWon(x.amountMan * 10000)));
+      hr.forEach(x => rows.push('· ' + x.name + ' ' + formatWon(x.amountMan * 10000) + ' (' + dealBudgetGap(x.amountMan, f.P) + ')'));
     } }
   rows.push('', '※ 참고용 예상치예요.', '※ 한도는 금융회사 심사에 따라 달라요.', '※ 대출을 주선·알선·중개하지 않아요.',
     '', '👉 내 조건으로 계산해 보기', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL));
@@ -13059,6 +13071,8 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const price = document.createElement('strong'); price.textContent = fullPrice(deal.amountMan);
     const meta = document.createElement('p'); meta.textContent = [deal.dong, area, date].filter(Boolean).join(' · ');
     pick.append(price, meta);
+    const budgetGap = dealBudgetGap(deal.amountMan, DEAL.lastPrice);
+    if (budgetGap) { const gapLine = document.createElement('p'); gapLine.className = 'map-budget-gap'; gapLine.textContent = budgetGap; pick.append(gapLine); }
     detail.append(pick);
     const key = typeof dealSameKey === 'function' ? dealSameKey(deal) : '';
     const all = mapPool().filter((n) => dealSameKey(n) === key);
@@ -13925,7 +13939,7 @@ window.addEventListener('resize',measure);measure();})();
     if(DEAL && DEAL.status === 'loading' && typeof S === 'object' && S && S.sgg){
       box.setAttribute('aria-busy','true');
       box.innerHTML = (mapWanted() ? `<div class="hd-map hd-map-skel" aria-hidden="true"></div>` : '')
-        + `<ol class="hd-list hd-skel" aria-hidden="true">${'<li><span class="hd-nm"><i></i></span><span class="hd-sub"><i></i></span><strong class="hd-amt"><i></i></strong></li>'.repeat(SHOW)}</ol>`;
+        + `<ol class="hd-list hd-skel" aria-hidden="true">${'<li><span class="hd-nm"><i></i></span><span class="hd-sub"><i></i></span><strong class="hd-amt"><i></i></strong><span class="hd-budget-gap"><i></i></span></li>'.repeat(SHOW)}</ol>`;
       box.hidden = false; return;
     }
     box.removeAttribute('aria-busy');
@@ -13945,7 +13959,7 @@ window.addEventListener('resize',measure);measure();})();
          흔합니다(운영 API 강남구 2026-08 확인). 금액과 한 줄에 두면 390px 에서 9자 남짓만 보였습니다. */
       return `<li data-key="${esc(dealSameKey(x))}"><button type="button" class="hd-hit" aria-label="${esc(x.name)} ${esc(formatWon(x.amountMan * 10000))}, 거래 상세 보기"></button><span class="hd-nm" title="${esc(x.name)}">${withMap ? `<i class="hd-no" aria-hidden="true">${i+1}</i>` : ''}${esc(x.name)}</span>`
            + `<span class="hd-sub">${esc(where)}</span>`
-           + `<strong class="hd-amt">${esc(formatWon(x.amountMan * 10000))}</strong></li>`;
+           + `<strong class="hd-amt">${esc(formatWon(x.amountMan * 10000))}</strong><span class="hd-budget-gap">${esc(dealBudgetGap(x.amountMan, priceMan))}</span></li>`;
     }).join('');
     box.innerHTML = (withMap ? `<div class="hd-map" id="heroDealsMap"><div class="hd-map-canvas" id="heroDealsMapCanvas"></div>`
         + `<button type="button" class="hd-map-open" id="heroDealsMapOpen" aria-label="실거래 지도에서 보기"></button></div>` : '')
@@ -14539,5 +14553,13 @@ html body #viewDeals #sortSeg button.is-on::after{content:""!important;display:b
 <style>/* v131 — 저장 카드 금액 단위 붙임새 = 화면 */
 html body #reportCard .report-amount .u{padding-left:0!important;margin-left:0!important;letter-spacing:-.02em!important}
 </style>
-</body>
+<style>/* v136: quiet, readable secondary comparison */
+html body #viewAnswer #heroDeals .hd-list li{height:auto!important;min-height:84px;padding-top:8px!important;padding-bottom:8px!important;grid-template-rows:auto auto auto;align-content:center!important}
+html body #viewAnswer #heroDeals .hd-budget-gap{min-width:0;white-space:normal;overflow-wrap:anywhere}
+html body #viewAnswer #heroDeals .hd-skel .hd-budget-gap i{width:9em;height:1em}
+html body #viewAnswer .hero-deals .hd-budget-gap{grid-column:1/-1;font-size:13px;line-height:1.5;color:var(--v-muted);font-variant-numeric:tabular-nums}
+html body #reportCard #rDeals .d .a{text-align:right}
+html body #reportCard #rDeals .report-budget-gap{display:block;margin-top:4px;color:#465262;font-size:13px;font-weight:400;line-height:1.5;white-space:normal}
+html body #viewDeals .yk-pick .map-budget-gap{margin-top:4px;color:#465262;font-size:13px;line-height:1.5}
+</style></body>
 </html>
