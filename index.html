@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v138 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v139 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11730,7 +11730,7 @@ function summaryText(){
     if(hr.length){
       rows.push('', '🏢 내 예산에 맞는 실거래 · 최근 ' + ((typeof DEAL === 'object' && DEAL && DEAL.months) || 3) + '개월');
       if(DEAL.compareCodes && DEAL.compareCodes.length) rows.push(dealScopeLabel());   /* v130 — 지역은 다음 줄(머리 줄이 꺾이던 것) */
-      hr.forEach(x => rows.push('· ' + x.name + ' ' + formatWon(x.amountMan * 10000), '  ' + dealBudgetGap(x.amountMan, f.P)));
+      hr.forEach(x => rows.push('· ' + x.name, '  ' + formatWon(x.amountMan * 10000), '  ' + dealBudgetGap(x.amountMan, f.P)));
     } }
   rows.push('', '※ 참고용 예상치예요.', '※ 한도는 금융회사 심사에 따라 달라요.', '※ 대출을 주선·알선·중개하지 않아요.',
     '', '👉 내 조건으로 계산해 보기', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL));
@@ -14574,5 +14574,11 @@ html body .budget-delta{font-weight:600;font-variant-numeric:tabular-nums}
 html body .budget-delta.is-under{color:var(--v-blue-deep,#1848D6)}
 html body .budget-delta.is-over{color:var(--v-coral,#b8443c)}
 html body .budget-delta.is-equal{color:var(--v-muted,#5f6b7d);font-weight:400}
+</style><style>/* v139: names and values no longer compete for horizontal space */
+html body #reportCard #rDeals .d{display:block;padding:8px 0;min-width:0}
+html body #reportCard #rDeals .d .n{display:block;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.4}
+html body #reportCard #rDeals .d .n small{line-height:1.5}
+html body #reportCard #rDeals .d .a{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;margin-top:3px;text-align:left;line-height:1.5}
+html body #reportCard #rDeals .report-budget-gap{margin-top:0;text-align:right}
 </style></body>
 </html>
