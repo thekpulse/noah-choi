@@ -6341,7 +6341,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 </section>
   
   
-  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 방법과 결과 읽기</a><a href="/loan-limit.html">대출 한도 해설</a><i class="gn-br" aria-hidden="true"></i><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
+  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 방법과 결과 읽기</a><a href="/loan-limit.html">대출 한도 해설</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
   <p class="copyright" id="copyright"></p>
 </div>
 
@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v137 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v138 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10904,7 +10904,7 @@ function dealLine(x, priceMan, hot, i){
        🔴 v25.1 — **줄 끝에 매달지 않고 아래 단독 줄로** 내렸습니다(지시서 4 · 위 `.hotrow` 주석). */
     + (hot ? `<span class="hotrow"><span class="hot">거래 활발</span></span>` : '');
   const budgetGap = dealBudgetGap(x.amountMan, priceMan);
-  const gap = budgetGap ? '<span class="budget-gap">' + esc(budgetGap) + '</span>' : '';
+  const gap = budgetGap ? '<span class="budget-gap">' + dealBudgetGapHtml(x.amountMan, priceMan) + '</span>' : '';
   /* 🔴 v25.16 — **`<div>`이 아니라 `<button>`입니다.**
      ⚠ `<a>`가 아닙니다. 이 동작은 **앱 안에서 끝납니다** — 채널 C(밖으로 나감 · `↗`)와 갈립니다.
        그래서 화살표를 안 붙이고 꺾쇠(`▾`)를 씁니다(v25.14가 좁힌 기호 규칙).
@@ -11074,6 +11074,15 @@ function dealBudgetGap(amountMan, fallbackMan){
   if(difference === null) return '';
   if(difference === 0) return '예산과 같음';
   return '예산 대비 ' + (difference > 0 ? '+' : '−') + formatWon(Math.abs(difference) * 10000);
+}
+function dealBudgetGapHtml(amountMan, fallbackMan){
+  const d = dealBudgetDifference(amountMan, fallbackMan);
+  if(d === null) return '';
+  if(d === 0) return '<span class="budget-delta is-equal">예산과 같음</span>';
+  const amount = formatWon(Math.abs(d) * 10000);
+  return '예산 대비 <span class="budget-delta ' + (d > 0 ? 'is-over' : 'is-under')
+    + '" aria-label="' + esc(amount + (d > 0 ? ' 높음' : ' 낮음')) + '">'
+    + (d > 0 ? '+' : '−') + esc(amount) + '</span>';
 }
 function dealAfford(man){
   if(typeof calcCosts !== 'function' || typeof ctx !== 'function' || typeof S !== 'object' || !S) return null;
@@ -11689,7 +11698,7 @@ function paintReportDeals(priceMan){
            ⚠ 평은 **재산이 역산되는 값이 아닙니다** — 면적일 뿐이라 카드에 나가도 됩니다(원칙 110). */
         const sub = [where, Number(x.areaM2) > 0 ? `전용 ${x.areaM2}㎡` : ''].filter(Boolean).join(' · ');
         return `<div class="d"><span class="n">${esc(x.name)}<small>${esc(sub)}</small></span>`
-             + `<span class="a">${formatWon(x.amountMan*10000)}<small class="report-budget-gap">${esc(dealBudgetGap(x.amountMan, priceMan))}</small></span></div>`;
+             + `<span class="a">${formatWon(x.amountMan*10000)}<small class="report-budget-gap">${dealBudgetGapHtml(x.amountMan, priceMan)}</small></span></div>`;
       }).join('');
 }
 
@@ -11721,7 +11730,7 @@ function summaryText(){
     if(hr.length){
       rows.push('', '🏢 내 예산에 맞는 실거래 · 최근 ' + ((typeof DEAL === 'object' && DEAL && DEAL.months) || 3) + '개월');
       if(DEAL.compareCodes && DEAL.compareCodes.length) rows.push(dealScopeLabel());   /* v130 — 지역은 다음 줄(머리 줄이 꺾이던 것) */
-      hr.forEach(x => rows.push('· ' + x.name + ' ' + formatWon(x.amountMan * 10000) + ' (' + dealBudgetGap(x.amountMan, f.P) + ')'));
+      hr.forEach(x => rows.push('· ' + x.name + ' ' + formatWon(x.amountMan * 10000), '  ' + dealBudgetGap(x.amountMan, f.P)));
     } }
   rows.push('', '※ 참고용 예상치예요.', '※ 한도는 금융회사 심사에 따라 달라요.', '※ 대출을 주선·알선·중개하지 않아요.',
     '', '👉 내 조건으로 계산해 보기', (typeof shareUrl === 'function' ? shareUrl() : SERVICE_URL));
@@ -13072,7 +13081,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const meta = document.createElement('p'); meta.textContent = [deal.dong, area, date].filter(Boolean).join(' · ');
     pick.append(price, meta);
     const budgetGap = dealBudgetGap(deal.amountMan, DEAL.lastPrice);
-    if (budgetGap) { const gapLine = document.createElement('p'); gapLine.className = 'map-budget-gap'; gapLine.textContent = budgetGap; pick.append(gapLine); }
+    if (budgetGap) { const gapLine = document.createElement('p'); gapLine.className = 'map-budget-gap'; gapLine.innerHTML = dealBudgetGapHtml(deal.amountMan, DEAL.lastPrice); pick.append(gapLine); }
     detail.append(pick);
     const key = typeof dealSameKey === 'function' ? dealSameKey(deal) : '';
     const all = mapPool().filter((n) => dealSameKey(n) === key);
@@ -13959,7 +13968,7 @@ window.addEventListener('resize',measure);measure();})();
          흔합니다(운영 API 강남구 2026-08 확인). 금액과 한 줄에 두면 390px 에서 9자 남짓만 보였습니다. */
       return `<li data-key="${esc(dealSameKey(x))}"><button type="button" class="hd-hit" aria-label="${esc(x.name)} ${esc(formatWon(x.amountMan * 10000))}, 거래 상세 보기"></button><span class="hd-nm" title="${esc(x.name)}">${withMap ? `<i class="hd-no" aria-hidden="true">${i+1}</i>` : ''}${esc(x.name)}</span>`
            + `<span class="hd-sub">${esc(where)}</span>`
-           + `<strong class="hd-amt">${esc(formatWon(x.amountMan * 10000))}</strong><span class="hd-budget-gap">${esc(dealBudgetGap(x.amountMan, priceMan))}</span></li>`;
+           + `<strong class="hd-amt">${esc(formatWon(x.amountMan * 10000))}</strong><span class="hd-budget-gap">${dealBudgetGapHtml(x.amountMan, priceMan)}</span></li>`;
     }).join('');
     box.innerHTML = (withMap ? `<div class="hd-map" id="heroDealsMap"><div class="hd-map-canvas" id="heroDealsMapCanvas"></div>`
         + `<button type="button" class="hd-map-open" id="heroDealsMapOpen" aria-label="실거래 지도에서 보기"></button></div>` : '')
@@ -14486,11 +14495,10 @@ html body #viewAnswer .minigrid #outCopy .txt b,html body #viewAnswer .minigrid 
 html body #viewAnswer .minigrid #outSave .txt,html body #viewAnswer .minigrid #outCopy .txt{flex:0 0 auto!important}
 html body #viewAnswer .minigrid #outSave:active{background:#F1F3F6!important}
 html body #viewAnswer .minigrid #outCopy:active{background:#1848D6!important;border-color:#1848D6!important}
-html body #app:not(.no-dock) .guide-nav:not([hidden]){display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;column-gap:0!important;row-gap:0!important;max-width:360px;margin-left:auto!important;margin-right:auto!important;font-size:13px!important;line-height:1.5!important}
-html body #app .guide-nav .gn-br{flex:0 0 100%!important;width:100%!important;height:0!important;margin:0!important;padding:0!important}
-html body #app .guide-nav a{position:relative;justify-content:center;min-height:44px!important;padding:0 11px!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;text-decoration:none!important;white-space:nowrap}
-html body #app .guide-nav a+a::before{content:"";position:absolute;left:-2px;top:50%;width:3px;height:3px;margin-top:-1.5px;border-radius:50%;background:#CDD4DE}
-html body #app .guide-nav a[href="/privacy.html"]{color:#465262!important;font-weight:600!important}
+html body #app:not(.no-dock) .guide-nav:not([hidden]){display:grid!important;grid-template-columns:repeat(2,max-content);justify-content:center!important;align-items:center!important;column-gap:16px!important;row-gap:0!important;width:100%;max-width:560px;box-sizing:border-box;margin-left:auto!important;margin-right:auto!important;padding-left:8px!important;padding-right:8px!important;font-size:13px!important;line-height:1.5!important}
+html body #app .guide-nav a{position:relative;justify-content:center;min-height:44px!important;padding:0 4px!important;color:#5F6B7D!important;font-size:13px!important;font-weight:400!important;text-decoration:none!important;white-space:nowrap}
+html body #app .guide-nav a+a::before{content:none!important}
+@media(min-width:640px){html body #app:not(.no-dock) .guide-nav:not([hidden]){grid-template-columns:repeat(4,max-content);column-gap:12px!important}}
 html body #app .guide-nav a:active{color:#192332!important}
 html body #app .guide-nav a:focus-visible{outline:3px solid #8FAEFF;outline-offset:-2px;border-radius:8px}
 </style>
@@ -14561,5 +14569,10 @@ html body #viewAnswer .hero-deals .hd-budget-gap{grid-column:1/-1;font-size:13px
 html body #reportCard #rDeals .d .a{text-align:right}
 html body #reportCard #rDeals .report-budget-gap{display:block;margin-top:4px;color:#465262;font-size:13px;font-weight:400;line-height:1.5;white-space:normal}
 html body #viewDeals .yk-pick .map-budget-gap{margin-top:4px;color:#465262;font-size:13px;line-height:1.5}
+</style><style>/* v138: signs remain meaningful without color */
+html body .budget-delta{font-weight:600;font-variant-numeric:tabular-nums}
+html body .budget-delta.is-under{color:var(--v-blue-deep,#1848D6)}
+html body .budget-delta.is-over{color:var(--v-coral,#b8443c)}
+html body .budget-delta.is-equal{color:var(--v-muted,#5f6b7d);font-weight:400}
 </style></body>
 </html>
