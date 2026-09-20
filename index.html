@@ -15,7 +15,7 @@
 
 <script>
 (function(){
-  var GA_ID = 'G-L8Q12X6Y9V';   /* v25.71 — 실제 측정 ID를 심었습니다(스트림: 영끌계산기 · www.myhome-price.com) */
+  var GA_ID = 'G-NVTLEPG53G';   /* v148 — 소유자가 제공한 GA 웹 스트림 측정 ID */
   /* 🔴 자리표시자를 **두 번 적지 않습니다.** 처음엔 위 값과 같은 문자열을 여기 한 번 더
      써서 비교했는데, 그러면 ID를 위에서만 바꾸고 여기를 안 고쳤을 때 **조용히 안 켜집니다.**
      자리표시자는 X가 이어지는 형태이므로 **모양으로** 판정합니다(원칙 58).
@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v147 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v148 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13397,6 +13397,27 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if (standingShare(placed.map((p) => off(p.position)), LEVEL_BOX.deal) >= 0.6) return 'deal';
     return dongOrGu();
   }
+  // Move only overlapping region labels; retain geographic marker positions.
+  function spaceGroupLabels() {
+    const visible = groupMarkers.filter(g => !g.button.hidden);
+    visible.forEach(g => { g.button.style.transform = ''; g.button.style.setProperty('--leader', '0px'); });
+    const bounds = mapNode.getBoundingClientRect();
+    const boxes = visible.map(g => ({ g, rect: g.button.getBoundingClientRect() }))
+      .sort((a,b) => a.rect.top-b.rect.top || a.rect.left-b.rect.left);
+    const kept = [];
+    boxes.forEach(({g,rect}) => {
+      if (!rect.width || !rect.height) return;
+      const step = rect.height + 8;
+      const offsets = [0];
+      for(let i=1;i<=6;i++) offsets.push(-step*i,step*i);
+      const dy = offsets.find(y => rect.top+y >= bounds.top && rect.bottom+y <= bounds.bottom &&
+        !kept.some(k => rect.left < k.right+6 && rect.right > k.left-6 && rect.top+y < k.bottom+6 && rect.bottom+y > k.top-6)) ?? 0;
+      g.button.style.transform = `translateY(${dy}px)`;
+      g.button.style.setProperty('--leader', `${Math.max(0,Math.abs(dy)-rect.height/2)}px`);
+      g.button.dataset.shift = dy > 0 ? 'down' : 'up';
+      kept.push({left:rect.left,right:rect.right,top:rect.top+dy,bottom:rect.bottom+dy});
+    });
+  }
   function renderLevel() {
     if (!map) return;
     const RANK = { gu: 0, dong: 1, deal: 2 };
@@ -13411,6 +13432,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if (mapNode) { mapNode.dataset.level = level; mapNode.dataset.layer = layer; }
     placed.forEach((p) => { p.button.hidden = level !== 'deal'; });
     groupMarkers.forEach((g) => { g.button.hidden = g.group.level !== level; g.button.setAttribute('aria-label', g.button.__ykLabelFn()); });
+    spaceGroupLabels();
     const note = byId('dealMapNote'); if (note) note.hidden = level === 'deal';
     if (legend) legend.hidden = level === 'deal';
     if (level !== 'deal' && activeLabel) { activeLabel.classList.remove('is-active'); activeLabel = null; if (detail) detail.hidden = true; }
@@ -14634,5 +14656,10 @@ html body #app #viewAnswer .budget-overview>#easyBalance.cash-only>.ratio{displa
 html body #app #viewAnswer .budget-overview>#easyBalance.cash-only{padding-top:0;padding-bottom:16px}
 html body #app #viewAnswer #easyBalance.cash-only .cash-remainder[hidden]+#cashRemainderNote{margin-top:10px!important}
 html body #app #viewAnswer #cashRemainderNote{margin-bottom:0}
+html body #app #viewAnswer .budget-overview:has(>#easyBalance.cash-only) .budget-total{padding-bottom:8px}
+/* The list pagination count does not describe map coverage. Keep the map's own count. */
+html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{visibility:hidden}
+body #viewDeals .yk-map-group::after{content:'';position:absolute;left:50%;width:1px;height:var(--leader,0px);background:#64748b;pointer-events:none;top:100%;z-index:-1}
+body #viewDeals .yk-map-group[data-shift="down"]::after{top:auto;bottom:100%}
 </style></body>
 </html>
