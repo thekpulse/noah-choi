@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v140 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v143 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11731,22 +11731,39 @@ function summaryText(){
   ].join('\n');
 }
 
+let summaryBusy=false, summaryResetTimer;
 async function copySummary(){
-  const btn=$('outCopy'), t=btn.querySelector('b'), o=t.textContent, txt=summaryText();
+  if(summaryBusy || !LASTVIEW) return;
+  const btn=$('outCopy'), t=btn && btn.querySelector('b');
+  if(!t) return;
+  const txt=summaryText();
+  if(!txt) return;
+  const o=btn.dataset.shareLabel || t.textContent;
+  btn.dataset.shareLabel=o;
+  clearTimeout(summaryResetTimer);
+  t.textContent=o;
+  summaryBusy=true; btn.disabled=true; btn.setAttribute('aria-busy','true');
   const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
   try{
-    if(touch && navigator.share){ await navigator.share({text:txt}); t.textContent='공유했어요'; track('result_share',{method:'share'}); }
-    else if(navigator.clipboard){ await navigator.clipboard.writeText(txt); t.textContent='복사했어요'; track('result_share',{method:'copy'}); }
-    else throw new Error('no clipboard');
-  }catch(e){
-    if(e && e.name==='AbortError'){ return; }
-    const ta=document.createElement('textarea'); ta.value=txt;
-    document.body.appendChild(ta); ta.select();
-    try{ if(!document.execCommand('copy')) throw Error('copy failed'); t.textContent='복사했어요'; }
-    catch(e2){ t.textContent='복사하지 못했어요'; }
-    document.body.removeChild(ta);
+    try{
+      if(touch && navigator.share){ await navigator.share({text:txt}); t.textContent='공유했어요'; track('result_share',{method:'share'}); }
+      else if(navigator.clipboard){ await navigator.clipboard.writeText(txt); t.textContent='복사했어요'; track('result_share',{method:'copy'}); }
+      else throw new Error('no clipboard');
+    }catch(e){
+      if(e && e.name==='AbortError'){ t.textContent=o; return; }
+      const ta=document.createElement('textarea'); ta.value=txt;
+      ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+      const focused=document.activeElement;
+      document.body.appendChild(ta);
+      try{ ta.select(); if(!document.execCommand('copy')) throw Error('copy failed'); t.textContent='복사했어요'; track('result_share',{method:'copy'}); }
+      catch(e2){ t.textContent='복사하지 못했어요'; }
+      finally{ ta.remove(); if(focused && focused.isConnected) focused.focus({preventScroll:true}); }
+    }
+    exportStatus(t.textContent);
+    summaryResetTimer=setTimeout(()=>{t.textContent=o;},2200);
+  }finally{
+    summaryBusy=false;btn.disabled=false;btn.removeAttribute('aria-busy');
   }
-  exportStatus(t.textContent); setTimeout(()=>t.textContent=o, 2200);
 }
 let exportBusy=false, exportTimer;
 function exportStatus(message){
@@ -13014,6 +13031,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
   /* v124 — 시트 높이 두 단(절반 · 크게) */
   function setSheetFull(on) {
     if (!detail) return;
+    if (!on) detail.scrollTop = 0;
     detail.classList.toggle('is-full', !!on);
     const g = detail.querySelector('.yk-sheet-grow');
     if (g) { g.setAttribute('aria-expanded', on ? 'true' : 'false'); g.setAttribute('aria-label', on ? '상세 작게 보기' : '상세 크게 보기'); }
@@ -13096,8 +13114,10 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const pick = document.createElement('div'); pick.className = 'yk-pick';
     const price = document.createElement('strong'); price.textContent = '거래가 중앙값 ' + fullPrice(group.price);
     const meta = document.createElement('p');
-    const gap = Math.abs(group.price - DEAL.lastPrice);
-    meta.textContent = `최근 ${DEAL.months}개월 거래 ${group.count}건 · ` + (group.price <= DEAL.lastPrice ? `내 예상 집값보다 ${fullPrice(gap)} 낮아요` : `내 예상 집값보다 ${fullPrice(gap)} 높아요`);
+    const difference = dealBudgetDifference(group.price, DEAL.lastPrice);
+    const comparison = difference === null ? '' : difference === 0 ? '내 예상 집값과 같아요'
+      : `내 예상 집값보다 ${fullPrice(Math.abs(difference))} ${difference < 0 ? '낮아요' : '높아요'}`;
+    meta.textContent = `최근 ${DEAL.months}개월 거래 ${group.count}건` + (comparison ? ' · ' + comparison : '');
     pick.append(price, meta); detail.append(pick);
     const inBudget = document.createElement('p'); inBudget.className = 'yk-area-fit';
     inBudget.textContent = group.items.length ? `예산 범위에서 거래된 단지 ${group.items.length}곳` : '예산 범위에서 거래된 단지가 없어요';
@@ -13116,6 +13136,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
   if (detail) {
     detail.addEventListener('scroll', () => { if (!detail.hidden && !detail.classList.contains('is-full') && detail.scrollTop > 8) { setSheetFull(true); sheetGrowSync(); } }, { passive: true });
     let sy = null;
+    detail.addEventListener('touchcancel', () => { sy = null; }, { passive: true });
     detail.addEventListener('touchstart', (e) => { const t = e.target; sy = (t.closest && t.closest('.yk-sheet-head') && !t.closest('button')) ? e.touches[0].clientY : null; }, { passive: true });
     detail.addEventListener('touchend', (e) => {
       if (sy == null) return; const d = e.changedTouches[0].clientY - sy; sy = null;
@@ -13441,7 +13462,6 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     pendingFloor = 'deal'; renderLevel();
     showDetail(p.deal, p.button); sheetPan(p.position);   /* v124 */
   }
-
   function setMode(next) {
     mode = next === 'map' ? 'map' : 'list';
     const onMap = mode === 'map';
@@ -14593,5 +14613,12 @@ html body #reportCard .report-cta{display:flex;flex-wrap:wrap;justify-content:sp
 html body #reportCard .report-cta[hidden]{display:none!important}
 html body #reportCard .report-cta span{margin:0!important}
 html body #reportCard .report-foot{margin-top:8px!important}
+</style><style>/* v141: retain two/four columns while allowing text enlargement */
+html body #app:not(.no-dock) .guide-nav:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px!important}
+html body #app .guide-nav a{min-width:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;text-align:center;line-height:1.5}
+@media(min-width:640px){html body #app:not(.no-dock) .guide-nav:not([hidden]){grid-template-columns:repeat(4,minmax(0,1fr))}}
+html body #app .guide-nav a:active{color:#1848D6!important;background:#F2F5FF;border-radius:8px}
+html body #dealMapDetail .yk-sheet-head h3{overflow-wrap:anywhere}
+html body #dealMapDetail .yk-sheet-close:active,html body #dealMapDetail .yk-sheet-grow:active{background:#F2F5FF;border-radius:12px}
 </style></body>
 </html>
