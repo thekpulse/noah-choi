@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v148 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v149 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13406,12 +13406,13 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       .sort((a,b) => a.rect.top-b.rect.top || a.rect.left-b.rect.left);
     const kept = [];
     boxes.forEach(({g,rect}) => {
-      if (!rect.width || !rect.height) return;
+      if (!rect.width || !rect.height || rect.bottom <= bounds.top || rect.top >= bounds.bottom ||
+          rect.right <= bounds.left || rect.left >= bounds.right) return;
+      const overlaps = y => kept.some(k => rect.left < k.right+6 && rect.right > k.left-6 && rect.top+y < k.bottom+6 && rect.bottom+y > k.top-6);
       const step = rect.height + 8;
       const offsets = [0];
       for(let i=1;i<=6;i++) offsets.push(-step*i,step*i);
-      const dy = offsets.find(y => rect.top+y >= bounds.top && rect.bottom+y <= bounds.bottom &&
-        !kept.some(k => rect.left < k.right+6 && rect.right > k.left-6 && rect.top+y < k.bottom+6 && rect.bottom+y > k.top-6)) ?? 0;
+      const dy = !overlaps(0) ? 0 : (offsets.find(y => rect.top+y >= bounds.top && rect.bottom+y <= bounds.bottom && !overlaps(y)) ?? 0);
       g.button.style.transform = `translateY(${dy}px)`;
       g.button.style.setProperty('--leader', `${Math.max(0,Math.abs(dy)-rect.height/2)}px`);
       g.button.dataset.shift = dy > 0 ? 'down' : 'up';
