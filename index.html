@@ -6341,7 +6341,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 </section>
   
   
-  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 방법과 결과 읽기</a><a href="/loan-limit.html">대출 한도 해설</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
+  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 안내</a><a href="/loan-limit.html">대출 한도</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
   <p class="copyright" id="copyright"></p>
 </div>
 
@@ -7494,7 +7494,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v143 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v147 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -13264,7 +13264,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       map.setCenter(positions[0]);
       map.setZoom(15);
     }
-    if (status) status.textContent = located.length ? `단지 ${located.length}곳` + ((DEAL.mapExtra || []).length ? ' · 주변 ' + new Set(DEAL.mapExtra.map((d) => d.lawd)).size + '개 지역 포함' : '') : '확인된 단지 위치가 없어요';
+    if (status) status.textContent = located.length ? `지도에 표시한 단지 ${located.length}곳` + ((DEAL.mapExtra || []).length ? ' · 주변 ' + new Set(DEAL.mapExtra.map((d) => d.lawd)).size + '개 지역 포함' : '') : '확인된 단지 위치가 없어요';
     /* v110 A — 목록과 지도 곳 수가 다르면 **왜 다른지** 지도 밑에 한 줄(목록 머리 「N곳」과 지도 「단지 M곳」을 사람이 비교합니다). */
     if (miss) {
       const lost = deals.length - located.length, cut = all.length - deals.length;
@@ -14389,8 +14389,9 @@ body #viewDeals .yk-map-stage{isolation:isolate}
     if (DEAL.status === 'loading') html = '내 예산에 맞는 실거래 확인 중' + (scope ? ' · ' + esc(scope) : '');
     else if (DEAL.status === 'error') html = '실거래를 불러오지 못했어요';
     else if (DEAL.status === 'empty' || (DEAL.status === 'ready' && DEAL.lastPrice > 0 && typeof splitDeals === 'function')) {
-      const n = DEAL.status === 'empty' ? 0 : splitDeals(DEAL.items || [], DEAL.lastPrice).under.length;
-      html = (n ? '내 예산에 맞는 실거래 <b>' + n + '곳</b>' : '내 예산에 맞는 최근 실거래 없음') + (scope ? ' · ' + esc(scope) : '') + ' · 최근 ' + m + '개월';
+      const groups = DEAL.status === 'empty' ? { under: [], over: [] } : splitDeals(DEAL.items || [], DEAL.lastPrice);
+      const n = groups.under.length + (DEAL.over ? groups.over.length : 0);
+      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (scope ? ' · ' + esc(scope) : '') + ' · 최근 ' + m + '개월';
     }
     const go = DEAL.status === 'ready' || DEAL.status === 'empty';   /* v121 ① — 실거래 화면으로 */
     el.disabled = !go;
@@ -14620,5 +14621,18 @@ html body #app .guide-nav a{min-width:0;white-space:normal;word-break:keep-all;o
 html body #app .guide-nav a:active{color:#1848D6!important;background:#F2F5FF;border-radius:8px}
 html body #dealMapDetail .yk-sheet-head h3{overflow-wrap:anywhere}
 html body #dealMapDetail .yk-sheet-close:active,html body #dealMapDetail .yk-sheet-grow:active{background:#F2F5FF;border-radius:12px}
+</style><style>/* v144 — compact two-row footer, never stretched across the app */
+html body #app:not(.no-dock) .guide-nav:not([hidden]){grid-template-columns:repeat(2,minmax(0,max-content));width:fit-content;max-width:calc(100% - 32px);column-gap:20px!important;row-gap:0!important;padding:12px 0 0!important;margin:12px auto 0!important;border-top:1px solid #E1E5EB}
+html body #app .guide-nav a{padding:0 4px!important;min-height:44px!important;font-weight:400!important;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+html body #app .guide-nav+.copyright{padding-top:6px!important;padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+@media(min-width:640px){html body #app:not(.no-dock) .guide-nav:not([hidden]){grid-template-columns:repeat(4,minmax(0,max-content));column-gap:20px!important}}
+</style><style>/* v145 — result reading flow */
+html body #app #viewAnswer #heroContext{height:auto;min-height:44px;box-sizing:border-box;align-items:center;white-space:normal;overflow:visible;margin:0;padding:10px 0;line-height:1.55}
+html body #app #viewAnswer #heroContext .hc-t{white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all;overflow-wrap:anywhere}
+html body #app #viewAnswer #heroContext .chev{margin-left:auto;margin-right:3px}
+html body #app #viewAnswer .budget-overview>#easyBalance.cash-only>.ratio{display:none}
+html body #app #viewAnswer .budget-overview>#easyBalance.cash-only{padding-top:0;padding-bottom:16px}
+html body #app #viewAnswer #easyBalance.cash-only .cash-remainder[hidden]+#cashRemainderNote{margin-top:10px!important}
+html body #app #viewAnswer #cashRemainderNote{margin-bottom:0}
 </style></body>
 </html>
