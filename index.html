@@ -7495,7 +7495,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v150 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v151 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -7815,6 +7815,12 @@ function renderQuestion(){
            고르기 전의 일반론보다 고른 뒤의 사실이 낫습니다(원칙 43).
          ⚠ 되살리려면 이 자리에 .q-sub 한 줄을 되돌리면 됩니다. */
     h = eye + `<h2 class="q-title">어느 지역을 살펴볼까요?</h2><p class="region-intro">계산할 지역 1곳을 고르세요. 실거래를 비교할 지역도 2곳까지 추가할 수 있습니다.</p>
+      <section class="region-search" aria-label="지역 이름으로 찾기">
+        <label for="regionSearchInput">계산할 지역 검색</label>
+        <div class="region-search-field"><input id="regionSearchInput" type="search" placeholder="구·시·군 이름 검색 · 예: 성동, 분당" autocomplete="off" spellcheck="false" maxlength="60" aria-controls="regionSearchResults" aria-describedby="regionSearchStatus"><button id="regionSearchClear" type="button" hidden aria-label="지역 검색어 지우기">지우기</button></div>
+        <p id="regionSearchStatus" role="status" aria-live="polite"></p>
+        <div id="regionSearchResults" hidden></div>
+      </section>
       <div class="zonegrid">
         <button class="zonecard ${S.group==='seoul'?'is-on':''}" data-group="seoul"><b>서울</b></button>
         <button class="zonecard ${S.group==='metro'?'is-on':''}" data-group="metro"><b>경기 · 인천</b></button>
@@ -8475,6 +8481,52 @@ function bind(){
        (그 기호를 이 주석 안에 적는 것조차 같은 사고를 냅니다 — 실제로 두 번 냈습니다.)
        실제로 그렇게 했다가 스크립트 전체가 죽었습니다(첫 화면이 빈 채로 떴습니다). */
   bindPane();
+  bindRegionSearch();
+}
+function searchRegionRows(query){
+  const q=String(query||'').normalize('NFC').replace(/\s+/g,'').toLowerCase();
+  if(!q) return [];
+  return Object.entries(LAWD).flatMap(([sido,rows])=>rows.map(([code,name])=>({code,name,sido,label:(SIDO_SHORT[sido]||sido)+' '+name})))
+    .filter(row=>(row.sido+row.name).replace(/\s+/g,'').toLowerCase().includes(q)||row.label.replace(/\s+/g,'').toLowerCase().includes(q))
+    .sort((a,b)=>(a.name===q?-1:0)-(b.name===q?-1:0)||a.label.localeCompare(b.label,'ko'));
+}
+function selectSearchedRegion(code){
+  const sido=sidoOfCode(code);
+  if(!sido) return false;
+  S.sido=sido;S.group=sido===SEOUL?'seoul':METRO.includes(sido)?'metro':'other';
+  S.sgg=code;S.pick=(pickOfCode(code)||{}).id||'';
+  dealCompareCodes();
+  return true;
+}
+function bindRegionSearch(){
+  const input=$('regionSearchInput'),results=$('regionSearchResults'),status=$('regionSearchStatus'),clear=$('regionSearchClear');
+  if(!input||!results||!status||!clear) return;
+  const pane=$('regionPane'),zones=$('qBox').querySelector('.zonegrid');
+  function choose(code){
+    if(!selectSearchedRegion(code)) return;
+    input.blur();renderQuestion();syncCta();
+    $('qClose')?.focus({preventScroll:true});
+  }
+  function paint(){
+    const active=!!input.value.trim(),rows=searchRegionRows(input.value);
+    if(pane) pane.hidden=active;if(zones) zones.hidden=active;
+    clear.hidden=!input.value;results.hidden=!active||!rows.length;
+    results.replaceChildren();
+    status.textContent=!active?'':rows.length?rows.length+'개 지역 · 계산할 지역을 선택하세요.':'찾는 지역이 없어요. 구·시·군 이름을 다시 입력해 주세요.';
+    rows.forEach(row=>{
+      const b=document.createElement('button');b.type='button';b.textContent=row.label;
+      b.onclick=()=>choose(row.code);results.append(b);
+    });
+  }
+  input.addEventListener('input',paint);
+  input.addEventListener('keydown',e=>{
+    if(e.isComposing) return;
+    if(e.key==='ArrowDown'){const first=results.querySelector('button');if(first){e.preventDefault();first.focus();}}
+    if(e.key==='Enter'){e.preventDefault();const rows=searchRegionRows(input.value);if(rows.length===1)choose(rows[0].code);else results.querySelector('button')?.focus();}
+    if(e.key==='Escape'&&input.value){e.preventDefault();e.stopPropagation();input.value='';paint();}
+  });
+  clear.onclick=()=>{input.value='';paint();input.focus();};
+  paint();
 }
 function inputCompareMarkup(){
   const own=new Set(lawdCodesOf(S.sgg)), options=(LAWD[sidoOfCode(S.sgg)]||[]).filter(x=>!own.has(x[0]));
@@ -11364,7 +11416,8 @@ function renderDealRegions(price){
 function renderDeals(price){
   const card=$('dealCard');
   if(!card) return;
-  /* 🔴 v25.7 — **목록의 상한을 「화면에 적힌 금액」으로 맞췄습니다**(오너 지적을 대조하다 나왔습니다).
+  /* v151 현재: 결과 금액과 동일하게 만원 단위 내림. 아래는 과거 변경 이력이며 100만원 내림은 사용하지 않음.
+     🔴 v25.7 — **목록의 상한을 「화면에 적힌 금액」으로 맞췄습니다**(오너 지적을 대조하다 나왔습니다).
      ⏹ 전: `Math.floor(price/10000)` — 엔진이 푼 **정확한 집값**이 상한이었습니다.
        그런데 히어로가 적는 금액은 `approx(price)`로 **100만원 단위 내림**입니다.
        실측(종로 · 현금 18억 · 소득 3억): 화면은 「20억 6,000만원」인데 목록 상한은 **206,048만원**
@@ -11378,7 +11431,7 @@ function renderDeals(price){
        `<= priceMan`으로 엄격했습니다**(`splitDeals`의 `under`). 대조한 결과를 그대로 적습니다.
      ⚠ 공유 카드(`paintReportDeals`)도 **같은 값**을 받아야 합니다. 두 벌로 두면
        카드와 화면의 목록이 갈립니다(원칙 58). */
-  const lawd = S.sgg, priceMan = Math.floor(approx(price)/10000);
+  const lawd = S.sgg, priceMan = Math.floor(price/10000);
   renderDealRegions(price);
   if(!lawd || !(priceMan > 0)){ card.hidden = true; return; }
   const my = ++DEAL.req;                    /* 늦게 온 응답이 새 결과를 덮지 않게 */
@@ -11638,7 +11691,7 @@ function renderReport(v){
      예산의 85~100% 구간에 걸리는 거래가 **하나도 없어 블록이 통째로 안 나왔습니다.**
      ⚠ 「0건이면 안 그린다」를 만들어 둔 탓에 **에러 없이 조용히 사라졌습니다.**
        renderDeals는 `Math.floor(price/10000)`을 쓰는데 저만 안 썼습니다. */
-  paintReportDeals(Math.floor(approx(v.price) / 10000));   /* 🔴 v25.7 — 화면 목록과 같은 상한(위 renderDeals 주석) */
+  paintReportDeals(Math.floor(v.price / 10000));   /* v151 — 결과와 실거래 목록 모두 만원 단위 내림 */
 }
 /* 🔴 v24.15 — 요약 문구를 다시 짰습니다.
    전: 한 문장에 대괄호 태그 + 현금 + 지역 + 금액이 전부 들어간 **한 줄짜리 런온**이었습니다.
@@ -14652,5 +14705,20 @@ html body #viewDeals #dealScopeNote[hidden]{display:none!important}
   document.addEventListener('deals:ready', syncDealScopeNotice);
   syncDealScopeNotice();
 })();
-</script></body>
+</script><style>
+html body #qSheet .region-search{margin:0 0 18px}
+html body #qSheet .region-search label{display:block;margin-bottom:8px;font-size:14px;font-weight:600;color:var(--v-ink)}
+html body #qSheet .region-search-field{display:flex;align-items:center;gap:4px;min-height:48px;border:1px solid var(--v-line-strong,#cbd5e1);border-radius:12px;background:#fff;padding:0 8px 0 12px}
+html body #qSheet .region-search-field:focus-within{border-color:#1F5BFF;outline:2px solid #DCE6FF;outline-offset:1px}
+html body #qSheet #regionSearchInput{min-width:0;width:100%;height:48px;border:0;outline:0;background:transparent;padding:0;font:inherit;font-size:16px;color:var(--v-ink);text-align:left;box-shadow:none}
+html body #qSheet #regionSearchInput::-webkit-search-cancel-button{-webkit-appearance:none}
+html body #qSheet #regionSearchClear{flex:none;min-width:44px;min-height:44px;border:0;background:transparent;color:var(--v-sub);font-size:13px}
+html body #qSheet #regionSearchStatus{margin:8px 0 0;font-size:13px;line-height:1.6;color:var(--v-sub);word-break:keep-all}
+html body #qSheet #regionSearchStatus:empty{display:none}
+html body #qSheet #regionSearchResults{margin-top:8px;max-height:280px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--v-line-strong,#cbd5e1);border-radius:12px}
+html body #qSheet #regionSearchResults button{display:block;width:100%;min-height:48px;padding:12px 14px;text-align:left;border:0;border-bottom:1px solid var(--v-line,#e2e8f0);background:#fff;color:var(--v-ink);font:inherit;font-size:15px;line-height:1.5;word-break:keep-all}
+html body #qSheet #regionSearchResults button:last-child{border-bottom:0}
+html body #qSheet #regionSearchResults button:hover,html body #qSheet #regionSearchResults button:focus-visible{background:#EDF2FF;outline:2px solid #1F5BFF;outline-offset:-2px}
+html body #qSheet .region-search [hidden],html body #qSheet #regionPane[hidden],html body #qSheet .zonegrid[hidden]{display:none!important}
+</style></body>
 </html>
