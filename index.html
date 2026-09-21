@@ -7495,7 +7495,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v151 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v152 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -7816,8 +7816,8 @@ function renderQuestion(){
          ⚠ 되살리려면 이 자리에 .q-sub 한 줄을 되돌리면 됩니다. */
     h = eye + `<h2 class="q-title">어느 지역을 살펴볼까요?</h2><p class="region-intro">계산할 지역 1곳을 고르세요. 실거래를 비교할 지역도 2곳까지 추가할 수 있습니다.</p>
       <section class="region-search" aria-label="지역 이름으로 찾기">
-        <label for="regionSearchInput">계산할 지역 검색</label>
-        <div class="region-search-field"><input id="regionSearchInput" type="search" placeholder="구·시·군 이름 검색 · 예: 성동, 분당" autocomplete="off" spellcheck="false" maxlength="60" aria-controls="regionSearchResults" aria-describedby="regionSearchStatus"><button id="regionSearchClear" type="button" hidden aria-label="지역 검색어 지우기">지우기</button></div>
+        <label for="regionSearchInput" id="regionSearchLabel">지역 검색</label>
+        <div class="region-search-field"><input id="regionSearchInput" type="search" placeholder="구·시·군 이름 · 예: 성동, 분당" autocomplete="off" spellcheck="false" maxlength="60" aria-controls="regionSearchResults" aria-describedby="regionSearchStatus"><button id="regionSearchClear" type="button" hidden aria-label="지역 검색어 지우기">지우기</button></div>
         <p id="regionSearchStatus" role="status" aria-live="polite"></p>
         <div id="regionSearchResults" hidden></div>
       </section>
@@ -8188,7 +8188,7 @@ const CROWS = [
         + (S.ownCount === 1 && S.disposePlan ? ' (처분 예정)' : '') : '' },
   { k:'모아둔 현금',     step:0, mode:'cash', get:() => S.cash ? formatWon(man(S.cash)) : '' },
   { k:'연 소득',        step:1, mode:'income', get:() => S.noLoan ? '' : (S.income ? formatWon(man(S.income)) : '') },
-  { k:'갚고 있는 대출',   step:1, mode:'debt', get:() => S.noLoan ? '' : (S.debtMonthly ? '월 ' + comma(S.debtMonthly) + '만원' : '없어요') },
+  { k:'갚고 있는 대출',   step:1, mode:'debt', get:() => S.noLoan ? '' : (S.debtMonthly ? '월 ' + comma(S.debtMonthly) + '만원' : '없음') },
 ];
 function renderAnswered(){
   const box = $('crows'); if(!box) return;
@@ -8498,31 +8498,100 @@ function selectSearchedRegion(code){
   dealCompareCodes();
   return true;
 }
+/* v152 — 검색 하나로 계산 기준과 비교 지역을 모두 고릅니다.
+   기준 지역 전: 결과를 누르면 계산 기준 지역이 됩니다(묶어 계산하는 시는 한 줄로 모읍니다).
+   기준 지역 후: 같은 시·도 지역은 「비교 추가/해제」, 모든 지역은 「기준 변경」을 둡니다.
+   비교 규칙(같은 시·도 · 최대 2곳 · 기준 지역 제외)은 dealCompareCodes와 같은 조건을 씁니다. */
+function regionSearchView(query){
+  const rows=searchRegionRows(query);
+  if(!S.sgg){
+    const seen=new Set(), out=[];
+    rows.forEach(row=>{
+      const p=pickOfCode(row.code), group=p&&!p.split&&(p.codes||[]).length>1;
+      const key=group?'pick:'+row.sido+':'+p.id:row.code;
+      if(seen.has(key)) return; seen.add(key);
+      if(!group){ out.push(Object.assign({kind:'base'},row)); return; }
+      const parts=p.codes.map(c=>sggName(c).replace(p.name,'').trim()).filter(Boolean)
+        .sort((a,b)=>(b===row.name.replace(p.name,'').trim())-(a===row.name.replace(p.name,'').trim()));
+      out.push(Object.assign({},row,{kind:'base',label:(SIDO_SHORT[row.sido]||row.sido)+' '+p.name,note:parts.join('·')+' 포함'}));
+    });
+    return out;
+  }
+  const own=new Set(lawdCodesOf(S.sgg)), sido=sidoOfCode(S.sgg);
+  return rows.slice().sort((a,b)=>(b.sido===sido)-(a.sido===sido)).map(row=>Object.assign({},row,{
+    kind:own.has(row.code)?'own':'both',
+    comparable:row.sido===sido&&!own.has(row.code),
+    compared:DEAL.compareCodes.includes(row.code)
+  }));
+}
+function toggleSearchedCompare(code){
+  const sido=sidoOfCode(S.sgg);
+  if(!S.sgg||sidoOfCode(code)!==sido||lawdCodesOf(S.sgg).includes(code)) return 'invalid';
+  const at=DEAL.compareCodes.indexOf(code);
+  if(at>=0){ DEAL.compareCodes.splice(at,1); return 'removed'; }
+  if(DEAL.compareCodes.length>=2) return 'full';
+  DEAL.compareCodes.push(code); dealCompareCodes(); return 'added';
+}
 function bindRegionSearch(){
   const input=$('regionSearchInput'),results=$('regionSearchResults'),status=$('regionSearchStatus'),clear=$('regionSearchClear');
   if(!input||!results||!status||!clear) return;
-  const pane=$('regionPane'),zones=$('qBox').querySelector('.zonegrid');
+  const pane=$('regionPane'),zones=$('qBox').querySelector('.zonegrid'),label=$('regionSearchLabel');
+  const both=!!S.sgg;
+  if(label) label.textContent=both?'지역 검색 · 기준 변경 또는 비교 추가':'지역 검색';
+  input.placeholder=both?'비교할 구·시·군 이름 · 예: 마포':'구·시·군 이름 · 예: 성동, 분당';
   function choose(code){
     if(!selectSearchedRegion(code)) return;
     input.blur();renderQuestion();syncCta();
     $('qClose')?.focus({preventScroll:true});
   }
+  function compare(code){
+    const r=toggleSearchedCompare(code);
+    if(r==='invalid') return;
+    if(r==='full'){ status.textContent='비교 지역은 2곳까지입니다. 선택한 지역을 해제하면 다시 추가할 수 있습니다.'; return; }
+    input.value=''; input.blur(); paint();
+    if(pane){ pane.innerHTML=regionPane(); bindPane(); }
+    syncCta();
+    pane?.querySelector('[data-input-region="'+code+'"]')?.scrollIntoView({block:'nearest'});
+  }
+  function actionButton(text,act,code,extra){
+    const b=document.createElement('button');b.type='button';b.textContent=text;b.dataset.act=act;b.className='rs-act'+(extra||'');
+    b.onclick=()=>act==='compare'?compare(code):choose(code);return b;
+  }
   function paint(){
-    const active=!!input.value.trim(),rows=searchRegionRows(input.value);
+    const active=!!input.value.trim(),rows=regionSearchView(input.value);
     if(pane) pane.hidden=active;if(zones) zones.hidden=active;
     clear.hidden=!input.value;results.hidden=!active||!rows.length;
     results.replaceChildren();
-    status.textContent=!active?'':rows.length?rows.length+'개 지역 · 계산할 지역을 선택하세요.':'찾는 지역이 없어요. 구·시·군 이름을 다시 입력해 주세요.';
+    const sidoName=S.sgg?(SIDO_SHORT[sidoOfCode(S.sgg)]||sidoOfCode(S.sgg)):'';
+    status.textContent=!active?'':!rows.length?'찾는 지역이 없어요. 구·시·군 이름을 다시 입력해 주세요.'
+      :S.sgg?rows.length+'개 지역 · 비교는 '+sidoName+' 안에서 2곳까지'
+      :rows.length+'개 지역 · 계산할 지역을 선택하세요.';
     rows.forEach(row=>{
-      const b=document.createElement('button');b.type='button';b.textContent=row.label;
-      b.onclick=()=>choose(row.code);results.append(b);
+      if(row.kind==='base'){
+        const b=document.createElement('button');b.type='button';b.className='rs-pick';
+        const name=document.createElement('span');name.textContent=row.label;b.append(name);
+        if(row.note){const s=document.createElement('small');s.textContent=row.note;b.append(s);}
+        b.onclick=()=>choose(row.code);results.append(b);return;
+      }
+      const line=document.createElement('div');line.className='rs-row';
+      const name=document.createElement('span');name.className='rs-name';name.textContent=row.label;line.append(name);
+      const acts=document.createElement('span');acts.className='rs-acts';
+      if(row.kind==='own'){const t=document.createElement('small');t.className='rs-tag';t.textContent='계산 기준';acts.append(t);}
+      else{
+        if(row.comparable){
+          const c=actionButton(row.compared?'비교 해제':'비교 추가','compare',row.code,row.compared?' is-on':'');
+          c.setAttribute('aria-pressed',String(row.compared));c.setAttribute('aria-label',row.label+(row.compared?' 비교 해제':' 비교 추가'));acts.append(c);
+        }
+        const k=actionButton('기준 변경','base',row.code,' is-quiet');k.setAttribute('aria-label',row.label+'을 계산 기준으로 변경');acts.append(k);
+      }
+      line.append(acts);results.append(line);
     });
   }
   input.addEventListener('input',paint);
   input.addEventListener('keydown',e=>{
     if(e.isComposing) return;
     if(e.key==='ArrowDown'){const first=results.querySelector('button');if(first){e.preventDefault();first.focus();}}
-    if(e.key==='Enter'){e.preventDefault();const rows=searchRegionRows(input.value);if(rows.length===1)choose(rows[0].code);else results.querySelector('button')?.focus();}
+    if(e.key==='Enter'){e.preventDefault();const rows=regionSearchView(input.value);if(!S.sgg&&rows.length===1)choose(rows[0].code);else results.querySelector('button')?.focus();}
     if(e.key==='Escape'&&input.value){e.preventDefault();e.stopPropagation();input.value='';paint();}
   });
   clear.onclick=()=>{input.value='';paint();input.focus();};
@@ -11725,7 +11794,7 @@ function paintReportDeals(priceMan){
   /* 🔴 v24.18 — 전: 주소가 길면 「영끌계산기에서 확인하세요」로 대체했습니다.
      ①지시문이고 ②카드 맨 아래에 이미 「영끌계산기」 워드마크가 있어 같은 말이 두 번이었습니다.
      → **줄을 아예 접습니다.** 못 칠 주소 자리에 안내를 채우는 것보다 비우는 편이 카드가 조용합니다. */
-  cta.innerHTML = `<b>내 조건으로 계산해보기</b>`
+  cta.innerHTML = `<b>내 조건으로 계산해 보기</b>`
     + (host ? `<span>${esc(host)}</span>` : '');
 
   /* 칩(신축·면적)은 **안 겁니다.** 보낸 사람이 화면에서 켠 취향이 받는 사람의 취향은 아닙니다.
@@ -11813,7 +11882,7 @@ async function copySummary(){
       catch(e2){ t.textContent='복사하지 못했어요'; }
       finally{ ta.remove(); if(focused && focused.isConnected) focused.focus({preventScroll:true}); }
     }
-    exportStatus(t.textContent);
+    exportStatus(t.textContent==='복사했어요'?'결과 문구를 복사했어요. 붙여넣어 공유할 수 있어요.':t.textContent);
     summaryResetTimer=setTimeout(()=>{t.textContent=o;},2200);
   }finally{
     summaryBusy=false;btn.disabled=false;btn.removeAttribute('aria-busy');
@@ -11826,23 +11895,95 @@ function exportStatus(message){
   clearTimeout(exportTimer); el.textContent=message; el.hidden=false;
   exportTimer=setTimeout(()=>{el.hidden=true;},4000);
 }
+const EXPORT_FRAME = { width:1080, feed:1350, story:1920, side:72, feedPad:96, storyPad:240, bg:'#EEF2F8' };
+function isInAppBrowser(ua){
+  return /Instagram|FBAN|FBAV|FB_IAB|KAKAOTALK|NAVER\(inapp|Line\/|DaumApps|everytimeApp|Barcelona|; wv\)/i.test(String(ua || ''));
+}
+/* 카드 캔버스(가로 cw × 세로 ch)를 어느 규격 · 어느 배율로 놓을지 정합니다. */
+function exportLayout(cw, ch){
+  const F = EXPORT_FRAME, full = (F.width - F.side * 2) / cw;
+  if(ch * full <= F.feed - F.feedPad * 2) return { width:F.width, height:F.feed, scale:full, ratio:'4:5' };
+  const scale = Math.min(full, (F.story - F.storyPad * 2) / ch);
+  return { width:F.width, height:F.story, scale, ratio:'9:16' };
+}
+function frameCanvas(card){
+  const L = exportLayout(card.width, card.height), out = document.createElement('canvas');
+  out.width = L.width; out.height = L.height;
+  const g = out.getContext('2d');
+  g.fillStyle = EXPORT_FRAME.bg; g.fillRect(0, 0, L.width, L.height);
+  const w = Math.round(card.width * L.scale), h = Math.round(card.height * L.scale);
+  const x = Math.round((L.width - w) / 2), y = Math.round((L.height - h) / 2);
+  g.save(); g.shadowColor = 'rgba(25,35,50,.10)'; g.shadowBlur = 40; g.shadowOffsetY = 12;
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.drawImage(card, x, y, w, h); g.restore();
+  return out;
+}
+/* 이미지 도구는 cdnjs에서 옵니다. 회사망·일부 앱에서 cdnjs가 막히면 저장이 통째로 실패했습니다.
+   그때만 같은 버전(1.4.1)을 jsDelivr에서 한 번 더 불러옵니다. 입력값은 보내지 않습니다(스크립트 파일 요청만). */
+function ensureHtml2canvas(){
+  if(typeof html2canvas==='function') return Promise.resolve();
+  return new Promise(resolve=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.onload=s.onerror=()=>resolve();
+    document.head.appendChild(s);
+    setTimeout(resolve,8000);
+  });
+}
+let exportPreviewReturn = null;
+function closeExportPreview(){
+  const box = $('exportPreview'); if(!box || box.hidden) return;
+  box.hidden = true; box.querySelector('img').removeAttribute('src');
+  const app = $('app'); if(app) app.inert = false;
+  document.removeEventListener('keydown', exportPreviewKey, true);
+  if(exportPreviewReturn && exportPreviewReturn.isConnected) setTimeout(()=>exportPreviewReturn.focus({preventScroll:true}),0);   /* 저장 버튼이 다시 켜진 뒤 */
+}
+function exportPreviewKey(e){
+  if(e.key === 'Escape'){ e.preventDefault(); closeExportPreview(); }
+  else if(e.key === 'Tab'){ e.preventDefault(); const b = $('exportPreview') && $('exportPreview').querySelector('button'); if(b) b.focus({preventScroll:true}); }
+}
+function showExportPreview(dataUrl, opener){
+  let box = $('exportPreview');
+  if(!box){
+    box = document.createElement('div'); box.id = 'exportPreview'; box.className = 'export-preview';
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', '결과 이미지');
+    box.innerHTML = '<img alt="영끌계산기 결과 이미지"><p>이미지를 길게 누르면 사진에 저장할 수 있습니다.<small>앱 안 브라우저에서 저장이 안 되면 메뉴(⋯)에서 외부 브라우저로 열어 주세요.</small></p><button type="button">닫기</button>';
+    box.querySelector('button').onclick = closeExportPreview;
+    box.addEventListener('click', e => { if(e.target === box) closeExportPreview(); });
+    document.body.appendChild(box);
+  }
+  exportPreviewReturn = opener || document.activeElement;
+  box.querySelector('img').src = dataUrl; box.hidden = false;
+  const app = $('app'); if(app) app.inert = true;   /* 미리보기가 열린 동안 뒤 화면으로 초점이 빠지지 않게 */
+  document.addEventListener('keydown', exportPreviewKey, true);
+  box.querySelector('button').focus({preventScroll:true});
+}
 async function saveImage(){
   if(exportBusy || !LASTVIEW) return;
   exportBusy=true;
+  const opener=document.activeElement;
   const buttons=[$('outSave'),$('rdockL'),$('rdockR')].filter(b=>b && b.textContent.includes('이미지'));
   buttons.forEach(b=>{b.disabled=true;b.setAttribute('aria-busy','true');});
   exportStatus('결과 이미지를 만들고 있어요.');
   try{
     renderReport(LASTVIEW);
+    await ensureHtml2canvas();
     if(typeof html2canvas!=='function') throw Error('Image renderer unavailable');
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
-    const canvas=await html2canvas($('reportCard'),{backgroundColor:null,scale:2,useCORS:true});
+    const card=await html2canvas($('reportCard'),{backgroundColor:null,scale:3,useCORS:true});
+    const canvas=frameCanvas(card);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob) throw Error('Empty image');
     const file=new File([blob],'영끌계산기-내집마련-계산결과.png',{type:'image/png'});
+    const inApp=isInAppBrowser(navigator.userAgent);
     if(navigator.canShare && navigator.canShare({files:[file]})){
       try{ await navigator.share({files:[file]}); exportStatus('이미지를 내보냈어요.'); track('report_save',{method:'share'}); return; }   /* v128 — 이미지만(캡션·링크는 「결과 공유」) */
       catch(e){ if(e && e.name==='AbortError'){exportStatus('이미지 저장을 취소했어요.');return;} }
+    }
+    if(inApp){
+      showExportPreview(canvas.toDataURL('image/png'), opener);
+      const s=$('exportStatus'); if(s) s.hidden=true;
+      track('report_save',{method:'preview'}); return;
     }
     const url=URL.createObjectURL(blob), a=document.createElement('a');
     a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
@@ -14446,7 +14587,7 @@ body #viewDeals .yk-map-stage{isolation:isolate}
     else if (DEAL.status === 'empty' || (DEAL.status === 'ready' && DEAL.lastPrice > 0 && typeof splitDeals === 'function')) {
       const groups = DEAL.status === 'empty' ? { under: [], over: [] } : splitDeals(DEAL.items || [], DEAL.lastPrice);
       const n = groups.under.length + (DEAL.over ? groups.over.length : 0);
-      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (scope ? ' · ' + esc(scope) : '') + ' · 최근 ' + m + '개월';
+      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (scope ? ' · <span class="hc-nw">' + esc(scope) + '</span>' : '') + ' · <span class="hc-nw">최근 ' + m + '개월</span>';
     }
     const go = DEAL.status === 'ready' || DEAL.status === 'empty';   /* v121 ① — 실거래 화면으로 */
     el.disabled = !go;
@@ -14719,6 +14860,35 @@ html body #qSheet #regionSearchResults{margin-top:8px;max-height:280px;overflow-
 html body #qSheet #regionSearchResults button{display:block;width:100%;min-height:48px;padding:12px 14px;text-align:left;border:0;border-bottom:1px solid var(--v-line,#e2e8f0);background:#fff;color:var(--v-ink);font:inherit;font-size:15px;line-height:1.5;word-break:keep-all}
 html body #qSheet #regionSearchResults button:last-child{border-bottom:0}
 html body #qSheet #regionSearchResults button:hover,html body #qSheet #regionSearchResults button:focus-visible{background:#EDF2FF;outline:2px solid #1F5BFF;outline-offset:-2px}
+html body #qSheet .region-search label{letter-spacing:-.01em}
+html body #qSheet #regionSearchResults .rs-pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+html body #qSheet #regionSearchResults .rs-pick small{font-size:13px;line-height:1.5;color:var(--v-muted)}
+html body #qSheet #regionSearchResults .rs-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:56px;padding:6px 8px 6px 14px;border-bottom:1px solid var(--v-line,#e2e8f0);background:#fff}
+html body #qSheet #regionSearchResults .rs-row:last-child{border-bottom:0}
+html body #qSheet #regionSearchResults .rs-name{font-size:15px;line-height:1.5;color:var(--v-ink);word-break:keep-all}
+html body #qSheet #regionSearchResults .rs-acts{display:flex;flex:none;align-items:center;gap:4px}
+html body #qSheet #regionSearchResults .rs-acts .rs-act{display:inline-flex;align-items:center;justify-content:center;width:auto;min-width:0;min-height:44px;padding:0 12px;border:1px solid #cdd4de;border-bottom:1px solid #cdd4de;border-radius:10px;background:#fff;color:var(--v-ink);font-size:14px;font-weight:600;line-height:1.4;white-space:nowrap}
+html body #qSheet #regionSearchResults .rs-acts .rs-act.is-on{background:#EDF2FF;border-color:#5C85FF;color:#1848D6}
+html body #qSheet #regionSearchResults .rs-acts .rs-act.is-quiet{border-color:transparent;background:transparent;color:var(--v-sub);font-weight:500;padding:0 8px}
+html body #qSheet #regionSearchResults .rs-tag{padding:0 8px;font-size:13px;font-weight:600;color:#1848D6;white-space:nowrap}
 html body #qSheet .region-search [hidden],html body #qSheet #regionPane[hidden],html body #qSheet .zonegrid[hidden]{display:none!important}
-</style></body>
+</style><style>
+.export-preview{position:fixed;inset:0;z-index:1300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));background:rgba(15,22,33,.95)}
+.export-preview[hidden]{display:none!important}
+.export-preview img{display:block;max-width:100%;max-height:calc(100svh - 220px);width:auto;height:auto;border-radius:12px;background:#fff;-webkit-touch-callout:default;user-select:auto}
+.export-preview p{max-width:360px;margin:0;color:#fff;font-size:14px;line-height:1.6;text-align:center;word-break:keep-all}
+.export-preview p small{display:block;margin-top:4px;color:#C7D2E3;font-size:13px}
+.export-preview button{min-width:160px;min-height:48px;padding:12px 24px;border:0;border-radius:999px;background:#fff;color:#192332;font-size:16px;font-weight:600}
+</style><style>html body #qSheet .ownbox{border-radius:0}</style><style>
+html body .inline-money-field,html body .single-money-field{cursor:text}
+html body #homeBtn{min-height:44px;display:inline-flex;align-items:center}
+html body #viewDeals .deal>.budget-gap{font-size:13px}
+</style>
+<script>
+document.addEventListener('click',e=>{
+  const field=e.target.closest&&e.target.closest('.inline-money-field,.single-money-field');
+  if(!field||e.target.closest('input,button,a')) return;
+  const input=field.querySelector('input'); if(input&&!input.disabled) input.focus();
+});
+</script><style>html body #heroContext .hc-nw{white-space:nowrap}</style></body>
 </html>
