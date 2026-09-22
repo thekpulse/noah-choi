@@ -3643,7 +3643,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 <section class="plot" id="easyMarket" aria-labelledby="easyMarketTitle" hidden>
       <h2 id="easyMarketTitle">내 예산이 어디쯤인가요</h2>
       <p class="plot-lede" id="easyMarketLead"></p>
-      <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예산 이하</span><span><i aria-hidden="true"></i>예산 초과</span></p><div class="chart" id="easyMarketRows">
+      <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예상 집값 이하</span><span><i aria-hidden="true"></i>초과</span></p><div class="chart" id="easyMarketRows">
         <div class="budget" id="plotLine"></div>
         
         <div class="axis"><span id="plotLo"></span><span id="plotHi"></span></div>
@@ -3714,14 +3714,14 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
           <button class="chip sm" id="deal59" aria-pressed="false" aria-label="전용 59제곱미터">59㎡</button>
           <button class="chip sm" id="deal84" aria-pressed="false" aria-label="전용 84제곱미터">84㎡</button>
           
-          <button class="chip sm" id="dealOver" aria-pressed="false">예산 10% 초과까지</button>
+          <button class="chip sm" id="dealOver" aria-pressed="false"><span class="lbl">예상 집값 <span class="nw">10% 초과까지</span></span></button>
         </div>
       </div>
       <div class="deal-map-panel" id="dealMapPanel" hidden>
         <div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
-        <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예산</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button><button type="button" data-range="custom" aria-pressed="false" aria-expanded="false" aria-controls="dealMapRangeStep">직접</button><button type="button" class="yk-range-back" data-back aria-label="±10·20·30% 고르기로 돌아가기" hidden>‹</button><span class="yk-range-step" id="dealMapRangeStep" role="group" aria-label="직접 정한 가격 범위" hidden><button type="button" data-step="-10" aria-label="가격 범위 10% 줄이기">−</button><output id="dealMapRangeVal" aria-live="polite">±40%</output><button type="button" data-step="10" aria-label="가격 범위 10% 늘리기">+</button></span></div>
+        <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예상 집값</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button><button type="button" data-range="custom" aria-pressed="false" aria-expanded="false" aria-controls="dealMapRangeStep">직접</button><button type="button" class="yk-range-back" data-back aria-label="±10·20·30% 고르기로 돌아가기" hidden>‹</button><span class="yk-range-step" id="dealMapRangeStep" role="group" aria-label="직접 정한 가격 범위" hidden><button type="button" data-step="-10" aria-label="가격 범위 10% 줄이기">−</button><output id="dealMapRangeVal" aria-live="polite">±40%</output><button type="button" data-step="10" aria-label="가격 범위 10% 늘리기">+</button></span></div>
         <p class="yk-legend" id="dealMapLegend" hidden><span><i class="fit"></i>내 예상 집값 이하</span><span><i class="near"></i><b data-near></b></span><span><i class="over"></i>그보다 높음</span></p>
         <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약 금액은 그 지역 최근 거래가의 중앙값이에요(면적이 섞여 있어요). 색은 내 예상 집값과 비교한 것이에요.</p>
         <p class="deal-map-miss" id="dealMapMiss" hidden></p>
@@ -3805,8 +3805,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 
 <div class="sheet-back" id="whyBack" hidden></div>
 <div class="sheet" id="whySheet" role="dialog" aria-modal="true" aria-labelledby="whyTitle" hidden>
-  <div class="sheet-grip"></div>
-  <h2 class="sheet-title" id="whyTitle">계산 상세</h2>
+  <header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="whyTitle">계산 상세</h2><button type="button" class="why-dismiss" aria-label="닫기" onclick="closeSheet()"></button></header>
   <div class="cost-impact" aria-live="polite">
     
     <div><span>부대비용 합계</span><strong id="costImpactTotal">—</strong></div>
@@ -4945,7 +4944,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v156 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v157 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5573,7 +5572,7 @@ function bindRegionSearch(){
 }
 function inputCompareMarkup(){
   const own=new Set(lawdCodesOf(S.sgg)), options=(LAWD[sidoOfCode(S.sgg)]||[]).filter(x=>!own.has(x[0]));
-  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>추가 지역은 계산 기준 지역의 예산으로 실거래만 비교합니다.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
+  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>추가 지역은 계산 기준 지역의 예상 집값으로 실거래만 비교합니다.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
 }
 function bindPane(){
   const p=$('regionPane'); if(!p) return;
@@ -6612,15 +6611,15 @@ function dealBudgetDifference(amountMan, fallbackMan){
 function dealBudgetGap(amountMan, fallbackMan){
   const difference = dealBudgetDifference(amountMan, fallbackMan);
   if(difference === null) return '';
-  if(difference === 0) return '예산과 같음';
-  return '예산보다 ' + formatWon(Math.abs(difference) * 10000) + (difference > 0 ? ' 높음' : ' 낮음');
+  if(difference === 0) return '예상 집값과 같음';
+  return '예상 집값보다 ' + formatWon(Math.abs(difference) * 10000) + (difference > 0 ? ' 높음' : ' 낮음');
 }
 function dealBudgetGapHtml(amountMan, fallbackMan){
   const d = dealBudgetDifference(amountMan, fallbackMan);
   if(d === null) return '';
-  if(d === 0) return '<span class="budget-delta is-equal">예산과 같음</span>';
+  if(d === 0) return '<span class="budget-delta is-equal">예상 집값과 같음</span>';
   const amount = formatWon(Math.abs(d) * 10000);
-  return '예산보다 <span class="budget-delta ' + (d > 0 ? 'is-over' : 'is-under') + '">'
+  return '예상 집값보다 <span class="budget-delta ' + (d > 0 ? 'is-over' : 'is-under') + '">'
     + esc(amount) + (d > 0 ? ' 높음' : ' 낮음') + '</span>';
 }
 function dealAfford(man){
@@ -7985,7 +7984,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     meta.textContent = `최근 ${DEAL.months}개월 거래 ${group.count}건` + (comparison ? ' · ' + comparison : '');
     pick.append(price, meta); detail.append(pick);
     const inBudget = document.createElement('p'); inBudget.className = 'yk-area-fit';
-    inBudget.textContent = group.items.length ? `예산 범위에서 거래된 단지 ${group.items.length}곳` : '예산 범위에서 거래된 단지가 없어요';
+    inBudget.textContent = group.items.length ? `예상 집값 범위에서 거래된 단지 ${group.items.length}곳` : '예상 집값 범위에서 거래된 단지가 없어요';
     detail.append(inBudget);
     if (group.items.length) {
       const go = document.createElement('button'); go.type = 'button'; go.className = 'yk-sheet-go';
@@ -8524,7 +8523,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     byId('easyMarketLead').textContent = (place ? place + ' · ' : '') + `최근 ${months}개월`;
     let info=byId('marketMethod');
     if(!info){info=document.createElement('details');info.id='marketMethod';info.className='market-method';byId('easyMarketLead').after(info);}
-    info.innerHTML='<summary>그래프 집계 기준</summary><p>'+`단지·면적별 ${deals.length}건 중 ${money(axis.lo)}~${money(axis.hi)} 범위의 최근 ${Math.min(nearby.length,PLOT.max)}건을 표시합니다.`+(deals.length>nearby.length?` 표시 범위 밖 ${deals.length-nearby.length}건도 예산 비교 집계에 포함됩니다.`:'')+'</p>';
+    info.innerHTML='<summary>그래프 집계 기준</summary><p>'+`단지·면적별 ${deals.length}건 중 ${money(axis.lo)}~${money(axis.hi)} 범위의 최근 ${Math.min(nearby.length,PLOT.max)}건을 표시합니다.`+(deals.length>nearby.length?` 표시 범위 밖 ${deals.length-nearby.length}건도 예상 집값 비교 집계에 포함됩니다.`:'')+'</p>';
 
     /* 막대. 자리가 겹치면(17px 안) 위로 한 칸 쌓습니다. */
     const lefts = [];
@@ -8594,12 +8593,12 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if(!ratio){ratio=document.createElement('div');ratio.id='marketRatio';ratio.className='market-ratio';byId('marketMethod').before(ratio);}
     const percent=deals.length?Math.round(inside/deals.length*100):0;
     const keepNote=byId('easyMarketNote');
-    ratio.innerHTML='<div class="ratio-label"><span>예산 이하 거래 비율</span><strong>'+percent+'%</strong></div><div class="ratio-track" aria-hidden="true"><span style="width:'+percent+'%"></span></div>';
+    ratio.innerHTML='<div class="ratio-label"><span>예상 집값 이하 거래 비율</span><strong>'+percent+'%</strong></div><div class="ratio-track" aria-hidden="true"><span style="width:'+percent+'%"></span></div>';
     if(keepNote)ratio.appendChild(keepNote);
     ratio.hidden=!deals.length;
     byId('easyMarketNote').innerHTML = inside === deals.length
-      ? `<b>조회된 ${deals.length}건 모두</b> 예산 이하로 거래됐어요.`
-      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예산 이하로 거래됐어요.`;
+      ? `<b>조회된 ${deals.length}건 모두</b> 예상 집값 이하로 거래됐어요.`
+      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예상 집값 이하로 거래됐어요.`;
     byId('plotDetail').hidden = true;
     byId('marketRatio')?.appendChild(byId('easyMarketNote'));
     card.hidden = false;
@@ -8616,7 +8615,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
   if(dealTitle){
     const budget = document.createElement('div');
     budget.className = 'deal-budget';
-    budget.innerHTML = '<div><span>예상 집값</span><strong id="dealBudget">—</strong></div><p>아래 실거래와 비교할 내 예산입니다.</p>';
+    budget.innerHTML = '<div><span>예상 집값</span><strong id="dealBudget">—</strong></div><p>아래 실거래를 이 금액과 비교합니다.</p>';
     dealTitle.after(budget);
   }
 
@@ -9472,5 +9471,15 @@ html body .disc[aria-expanded=true] .caret,html body .disc[aria-expanded="true"]
 html body #viewAnswer .external-links .mini,html body #viewNext .minigrid .external-links .mini,html body #viewAnswer #outNaver,html body #viewAnswer #outHogang{min-height:48px!important;margin:0!important;padding:0 2px!important;border:0!important;border-top:1px solid var(--v-line)!important;border-radius:0!important;background:transparent!important}
 html body .crows .crow .v .chev{border-right-width:1.5px!important;border-top-width:1.5px!important}
 html body .funnel .shared-in{border-color:transparent!important}
+</style><style>
+html body #whySheet .why-sheet-header{position:sticky;top:-18px;z-index:8;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--v-line);margin:-18px -22px 16px;padding:14px 22px}
+html body #whySheet .why-sheet-header #whyTitle{flex:1;margin:0!important;font-size:22px!important;line-height:1.35!important}
+html body #whySheet .why-dismiss{position:relative;flex:none;width:44px;height:44px;min-width:44px;margin:0;padding:0;border:0;border-radius:var(--r-s);background:transparent;color:#465262;font-size:0;cursor:pointer}
+html body #whySheet .why-dismiss::before,html body #whySheet .why-dismiss::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;border-radius:1px;background:currentColor;transform:rotate(45deg)}
+html body #whySheet .why-dismiss::after{transform:rotate(-45deg)}
+html body #whySheet .why-dismiss:active{background:#F1F3F6}
+html body #whySheet .why-dismiss:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
+html body #dealOver .lbl{display:block;text-align:center}
+html body #dealOver .nw{white-space:nowrap}   /* 칩이 flex 라 글자를 한 덩어리(.lbl)로 묶어야 안쪽 꺾임이 글줄로 작동 */
 </style></body>
 </html>
