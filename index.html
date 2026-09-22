@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v153 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v154 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6683,6 +6683,7 @@ function bindDealRows(list){
       e.preventDefault();
       const i = +btn.dataset.deal;
       DEAL.open = (DEAL.open === i) ? null : i;
+      if(DEAL.open === i) track('deal_detail_open', { from: e.isTrusted ? 'list' : (window.__ykDealFrom === 'top3' ? 'top3' : 'list') });
       list.querySelectorAll('.deal[data-deal]').forEach(b => {
         const on = +b.dataset.deal === DEAL.open;
         b.setAttribute('aria-expanded', String(on));
@@ -7101,7 +7102,9 @@ let RVIEW = 'answer';
 function dealsAlive(){ const d=$('dealCard'); return !!d && !d.hidden; }
 function setRView(v){
   if(v==='next' || (v==='deals' && !dealsAlive())) v='answer';
+  const wasRView = RVIEW;
   RVIEW = v;
+  if(v === 'deals' && wasRView !== 'deals') track('deal_list_view', { from: window.__ykDealFrom || 'other' });
   for(const k in RVIEWS) $(RVIEWS[k]).hidden = (k !== v);
   paintRDock();
   window.scrollTo(0,0);
@@ -7926,6 +7929,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     button.classList.add('is-active');
     setTimeout(declutter, 0);
     const h = sheetShell(deal.name || '단지');
+    if (typeof track === 'function') track('deal_detail_open', { from: 'map' });
     const parts = typeof areaParts === 'function' ? areaParts(Number(deal.areaM2).toFixed(1).replace(/\.0$/, '')) : null;
     /* v102.8 — 선택 거래는 전용㎡ 와 평형을 **둘 다** 적습니다(말풍선이 평형만 적어 원값을 여기서 봅니다). */
     const area = parts ? [parts.m2, parts.py].filter(Boolean).join(' · ') : '';
@@ -9395,5 +9399,34 @@ html body #reportCard #rCta b{color:#192332!important;font-size:14px!important;f
 html body #reportCard #rCta span{color:#1848D6!important;font-size:14px!important;font-weight:700!important}
 html body #reportCard .report-foot{margin-top:12px!important}
 html body #reportCard #rNote{font-size:12px!important;line-height:1.6!important;white-space:pre-line}
-</style></body>
+</style><style>
+html body .appbar .barlabel{font-weight:400!important}
+html body #rateToggle .v{font-weight:400!important}
+html body #restartWrap .restart-cta,html body #viewNext .restart-cta{font-weight:400!important}
+html body .copyright{font-weight:400!important}
+html body #viewDeals .deal-meta b{font-weight:400!important}
+html body #viewDeals .deal-meta{column-gap:4px!important}
+html body #viewDeals .deal-meta .deal-place:has(+ .deal-area)::after{content:'\00a0·'}
+html body #viewDeals .deal-meta .hotrow{flex-basis:auto!important;margin:0 0 0 4px!important}
+html body #viewNext .minigrid .external-links>summary::after{border-right-width:1.5px!important;border-bottom-width:1.5px!important}
+html body #marketOpen{border-color:transparent!important}
+html body .cta,html body .inline-money-field,html body .single-money-field,html body .region-search-field,html body .zonecard,html body #result .minigrid .mini{border-radius:var(--r-s)!important}
+html body #viewAnswer #marketOpen,html body #viewAnswer .minigrid #outSave,html body #viewAnswer .minigrid #outCopy,html body #viewAnswer #outNaver,html body #viewAnswer #outHogang,html body #viewDeals #dealMore{border-radius:var(--r-s)!important}
+html body #viewDeals .deal-budget{border-radius:var(--r-l) var(--r-l) 0 0!important}
+html body #viewDeals .deal-regions{border-radius:0 0 var(--r-l) var(--r-l)!important}
+html body .sheet,html body #whySheet,html body #sheet{border-radius:var(--r-xl) var(--r-xl) 0 0!important}
+html body #viewDeals .region-edit,html body .estimate-tag,html body #viewDeals .deal-meta .hot{border-radius:var(--r-s)!important}
+html body #easyBalance .rbar{border-radius:var(--r-pill)!important}
+</style><script>
+document.addEventListener('click', function(e){
+  if(!e.isTrusted || !e.target || !e.target.closest) return;
+  var t = e.target;
+  var from = t.closest('.hd-hit') ? 'top3'
+    : t.closest('#heroDealsMapOpen') ? 'map_button'
+    : t.closest('#marketOpen') ? 'button'
+    : t.closest('#heroContext') ? 'hero'
+    : t.closest('#rdockL,#rdockR') ? 'dock' : null;
+  window.__ykDealFrom = from;   /* 사람이 누를 때마다 덮어씀 — 지난 출발지가 남아 엉뚱한 진입에 붙지 않게 */
+}, true);
+</script></body>
 </html>
