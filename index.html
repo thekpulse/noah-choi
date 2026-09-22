@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v154 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v155 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5077,7 +5077,7 @@ function renderQuestion(){
       `;
   }
   if(st.id==='region'){
-    h = eye + `<h2 class="q-title">어느 지역을 살펴볼까요?</h2><p class="region-intro">계산할 지역 1곳을 고르세요. 실거래를 비교할 지역도 2곳까지 추가할 수 있습니다.</p>
+    h = eye + `<h2 class="q-title">어느 지역을 살펴볼까요?</h2><p class="region-intro">계산할 지역 1곳을 고르세요.</p>
       <section class="region-search" aria-label="지역 이름으로 찾기">
         <label for="regionSearchInput" id="regionSearchLabel">지역 검색</label>
         <div class="region-search-field"><input id="regionSearchInput" type="search" placeholder="구·시·군 이름 · 예: 성동, 분당" autocomplete="off" spellcheck="false" maxlength="60" aria-controls="regionSearchResults" aria-describedby="regionSearchStatus"><button id="regionSearchClear" type="button" hidden aria-label="지역 검색어 지우기">지우기</button></div>
@@ -5573,7 +5573,7 @@ function bindRegionSearch(){
 }
 function inputCompareMarkup(){
   const own=new Set(lawdCodesOf(S.sgg)), options=(LAWD[sidoOfCode(S.sgg)]||[]).filter(x=>!own.has(x[0]));
-  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>추가 지역은 계산 기준 지역의 예산으로 실거래만 비교합니다.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status">'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '추가 선택 없이도 완료할 수 있습니다.')+'</p></section>';
+  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>추가 지역은 계산 기준 지역의 예산으로 실거래만 비교합니다.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
 }
 function bindPane(){
   const p=$('regionPane'); if(!p) return;
@@ -6645,7 +6645,26 @@ function dealAffordHtml(x){
   return '<div class="deal-afford"><p class="da-h">이 가격으로 사면 <span>부대비용 포함</span></p>'
        + row('필요한 현금', formatWon(f.C * 10000))
        + (f.L > 0 ? row('주택담보대출', formatWon(f.L * 10000)) + row('월 상환액', formatWon(f.M * 10000)) : '')
-       + gap + '</div>';
+       + gap + dealAffordWhy(x, f) + '</div>';
+}
+function dealAffordWhy(x, f){
+  if(typeof LASTVIEW !== 'object' || !LASTVIEW || !(LASTVIEW.price > 0) || typeof S !== 'object' || !S || !f) return '';
+  const P = Number(x && x.amountMan), B = Math.floor(LASTVIEW.price / 10000);
+  if(!(P > 0) || P === B) return '';
+  const b = dealAfford(B); if(!b) return '';
+  const total = -f.gap, price = B - P, loan = f.L - b.L;
+  let rest = Number(S.cash) - b.C; if(Math.abs(rest) <= 1) rest = 0;
+  const cost = total - price - loan - rest;
+  const won = m => formatWon(Math.abs(m) * 10000);
+  const parts = [];
+  if(price) parts.push([price, '집값 ' + won(price) + (price > 0 ? ' 낮음' : ' 높음')]);
+  if(cost) parts.push([cost, '부대비용 ' + won(cost) + (cost > 0 ? ' 줄어듦' : ' 늘어남')]);
+  if(loan) parts.push([loan, '대출 ' + won(loan) + (loan > 0 ? ' 늘어남' : ' 줄어듦')]);
+  if(rest) parts.push([rest, '결과에서 남은 현금 ' + won(rest)]);
+  if(parts.length < 2) return '';
+  const dir = Math.sign(total) || 1;
+  const line = parts.map((p, i) => (Math.sign(p[0]) === dir ? (i ? ' + ' : '') : (i ? ' − ' : '− ')) + '<span>' + esc(p[1]) + '</span>').join('');
+  return '<p class="da-why">' + line + '</p>';
 }
 /* v121 ⑤ — 네이버 부동산 검색 주소(동 + 단지명 · 괄호는 띄어쓰기로). 가격·조건은 안 실음. */
 function dealNaverUrl(x){
@@ -9428,5 +9447,23 @@ document.addEventListener('click', function(e){
     : t.closest('#rdockL,#rdockR') ? 'dock' : null;
   window.__ykDealFrom = from;   /* 사람이 누를 때마다 덮어씀 — 지난 출발지가 남아 엉뚱한 진입에 붙지 않게 */
 }, true);
-</script></body>
+</script><style>
+html body #qSheet .zonegrid .zonecard,html body #qSheet .zonegrid .zonecard b,html body #qSheet #houseSeg button,html body #qSheet #ownSeg button,html body #qSheet #debtNone,html body #qSheet .chip,html body #qSheet .chip *{font-size:15px!important;font-weight:600!important}
+html body #qSheet .zonegrid .zonecard b,html body #qSheet .chip:not(.is-on),html body #qSheet .chip:not(.is-on) *{color:var(--v-sub)!important}
+html body #qSheet .zonegrid .zonecard.is-on,html body #qSheet .chip.is-on{background:#EDF2FF!important;border-color:#5C85FF!important;color:#1848D6!important}
+html body #qSheet .zonegrid .zonecard.is-on b,html body #qSheet .chip.is-on *,html body #qSheet .chip.is-on::before{color:#1848D6!important;font-weight:600!important}
+html body #qSheet .zonegrid .zonecard,html body #qSheet #houseSeg button,html body #qSheet #ownSeg button,html body #qSheet #debtNone,html body #qSheet .moneycard,html body #qSheet #regionSearchResults,html body #qSheet #inputRegionStatus{border-radius:var(--r-s)!important}
+html body #whySheet .sheet-title{font-size:22px!important}
+html body #whySheet #costImpactCash{font-size:20px!important}
+html body #whySheet .cost-basis summary::after,html body #whySheet .cost-basis[open] summary::after{content:''!important;flex:none;width:7px;height:7px;margin:0 4px 0 auto;border-right:1.5px solid #5f6b7d;border-bottom:1.5px solid #5f6b7d;font-size:0;transform:translateY(-2px) rotate(45deg)}
+html body #whySheet .cost-basis[open] summary::after{transform:translateY(2px) rotate(225deg)}
+html body #whySheet .cost-impact{border-color:transparent!important;border-radius:var(--r-m)!important}
+html body .crows .crow.empty .v{font-weight:400!important}
+html body #qSheet #regionSearchLabel,html body #qSheet .pane-title,html body #qSheet .input-compare h3{font-size:15px!important;font-weight:600!important}
+html body #qSheet .input-compare h3 small{display:inline!important;margin-left:6px}
+html body #qSheet:has(#regionSearchResults:not([hidden])) .region-intro{display:none}
+html body #qSheet:has(#regionSearchResults:not([hidden])) #regionSearchLabel{position:absolute!important;width:1px!important;height:1px!important;margin:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
+html body #viewDeals .deal-afford .da-why,html body .deal-afford .da-why{margin:4px 0 0;color:#5f6b7d;font-size:13px;font-weight:400;line-height:1.5;word-break:keep-all}
+html body .deal-afford .da-why span{white-space:nowrap}
+</style></body>
 </html>
