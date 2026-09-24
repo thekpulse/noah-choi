@@ -4944,7 +4944,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v157 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v159 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5993,7 +5993,7 @@ function paintRateSim(loan, rate){
   const now  = monthlyPaymentCalc(loan, rate,   D.years);
   const diff = Math.round(now - base);
   $('rateSimNote').textContent = (Math.abs(diff) < 5000)
-    ? '금리가 바뀌어도 집값·예상 대출금은 그대로예요.'
+    ? '금리가 바뀌어도 집값\u2060·\u2060예상 대출금은 그대로예요.'
     : `연 ${D.rate}%일 때보다 매달 ${formatWon(Math.abs(diff))} ${diff > 0 ? '더' : '덜'} 갚아요.`;
 }
 
@@ -6046,7 +6046,7 @@ function renderBalance(c, price){
   $('cashRemainderNote').textContent = (remainder===0
     ? '입력한 현금을 전액 사용합니다.\n'
     : remainder<0 ? '부족한 현금은 별도로 준비해야 합니다.\n' : '')
-    + '생활비·비상금과 계산에서 뺀 비용은 별도입니다.';
+    + '생활비\u2060·\u2060비상금과 계산에서 뺀 비용은 별도입니다.';
   $('costImpactTotal').textContent=formatWon(f.E*10000);
   const impactRow = $('costImpactRow');
   if(impactRow) impactRow.hidden = (remainder === 0);   /* 🔴 v37.5 — 0이면 안 세웁니다 */
@@ -6680,7 +6680,7 @@ function dealBox(x, i){
               + (all.length > shown.length ? ` 중 ${shown.length}건` : '');
   const units = DEAL.units ? unitsOf(x.lawd, x.name, x.dong) : null;
   const head = [yearFull(x.buildYear), units ? comma(units) + '세대' : '', count]
-    .filter(Boolean).join(' · ');
+    .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0')).join('\u00a0· ');
   return `<div class="costbox dealbox" id="dealBox${i}">`
        + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x)
        + shown.map(n => {
@@ -6726,7 +6726,7 @@ function dealReadingLimit(priceMan){
 function paintDeals(priceMan){
   DEAL.lastPrice = priceMan;
   syncUnitFilter();
-  $('dealRangeNote').textContent='조회 가격 '+formatWon(Math.round(priceMan*DEAL.band)*10000)+' ~ '+formatWon(Math.round(priceMan*(DEAL.over?DEAL.overBand:1))*10000)+' · 단지별 최근 거래';
+  $('dealRangeNote').textContent='조회 가격 '+formatWon(Math.round(priceMan*DEAL.band)*10000).replace(/ /g,'\u00a0')+' ~ '+formatWon(Math.round(priceMan*(DEAL.over?DEAL.overBand:1))*10000).replace(/ /g,'\u00a0')+'\u00a0· 단지별\u00a0최근\u00a0거래';
   const list=$('dealList'), lead=$('dealLead'), foot=$('dealFoot'), chips=$('dealChips'), note=$('dealNote');
   note.textContent = '';          /* 🔴 v25.1 — 뱃지가 없는 화면에는 기준도 없습니다 */
   const {under, over, underRaw, overRaw} = splitDeals(DEAL.items || [], priceMan);
@@ -8597,8 +8597,8 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if(keepNote)ratio.appendChild(keepNote);
     ratio.hidden=!deals.length;
     byId('easyMarketNote').innerHTML = inside === deals.length
-      ? `<b>조회된 ${deals.length}건 모두</b> 예상 집값 이하로 거래됐어요.`
-      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 예상 집값 이하로 거래됐어요.`;
+      ? `<b>조회된 ${deals.length}건 모두</b> <span class="nw">예상 집값</span> 이하로 거래됐어요.`
+      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 <span class="nw">예상 집값</span> 이하로 거래됐어요.`;
     byId('plotDetail').hidden = true;
     byId('marketRatio')?.appendChild(byId('easyMarketNote'));
     card.hidden = false;
@@ -9481,5 +9481,21 @@ html body #whySheet .why-dismiss:active{background:#F1F3F6}
 html body #whySheet .why-dismiss:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
 html body #dealOver .lbl{display:block;text-align:center}
 html body #dealOver .nw{white-space:nowrap}   /* 칩이 flex 라 글자를 한 덩어리(.lbl)로 묶어야 안쪽 꺾임이 글줄로 작동 */
+</style><style>
+html body .axis-note .nw{white-space:nowrap}
+@media(max-width:359px){
+html body #viewAnswer #heroDeals .hd-list li[data-key]{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto auto!important;padding-right:22px!important}
+html body #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt{grid-column:1;grid-row:2;justify-self:start}
+html body #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{grid-column:1;grid-row:3}
+html body #viewAnswer #heroDeals .hd-list li[data-key] .hd-budget-gap{grid-row:4}
+html body #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt::after{content:none}
+html body #viewAnswer #heroDeals .hd-list li[data-key]::after{content:"";position:absolute;right:4px;top:50%;width:7px;height:7px;margin-top:-4px;border-right:1.5px solid #5f6b7d;border-bottom:1.5px solid #5f6b7d;transform:rotate(-45deg);pointer-events:none}
+}
+html body #viewDeals .yk-layer button[aria-pressed="true"]{background:#EDF2FF;color:#1848D6;box-shadow:inset 0 0 0 1px #5C85FF}
+html body #viewDeals .yk-range button[aria-pressed="true"]{border-color:#5C85FF;background:#EDF2FF;color:#1848D6}
+html body #viewDeals .yk-range-step{background:#EDF2FF;color:#1848D6;box-shadow:inset 0 0 0 1px #5C85FF}
+html body #viewDeals .yk-range-step button{color:#1848D6}
+</style><style>
+html body #qSheet .costrow .nm small{text-wrap:balance}
 </style></body>
 </html>
