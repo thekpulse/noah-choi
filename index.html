@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v163 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v164 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5464,9 +5464,28 @@ function bind(){
 function searchRegionRows(query){
   const q=String(query||'').normalize('NFC').replace(/\s+/g,'').toLowerCase();
   if(!q) return [];
+  /* v164 — 조합 중인 마지막 한 글자를 받아 준다(ㅁ → 마 → 맢 → 마포 사이에 결과가 사라지지 않게). */
+  const INI='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ',FIN=' ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
+  const SPLIT={'ㄳ':'ㄱㅅ','ㄵ':'ㄴㅈ','ㄶ':'ㄴㅎ','ㄺ':'ㄹㄱ','ㄻ':'ㄹㅁ','ㄼ':'ㄹㅂ','ㄽ':'ㄹㅅ','ㄾ':'ㄹㅌ','ㄿ':'ㄹㅍ','ㅀ':'ㄹㅎ','ㅄ':'ㅂㅅ'};
+  const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),ch=n=>String.fromCharCode(n);
+  const lead=i=>'['+ch(0xAC00+i*588)+'-'+ch(0xAC00+i*588+587)+']';
+  const head=esc(q.slice(0,-1)),last=q.slice(-1),code=last.charCodeAt(0);
+  let pattern=esc(q);
+  if(INI.includes(last)) pattern=head+lead(INI.indexOf(last));
+  else if(code>=0xAC00&&code<=0xD7A3){
+    const fin=(code-0xAC00)%28;
+    if(!fin) pattern=head+'['+last+'-'+ch(code+27)+']';
+    else{
+      const pair=SPLIT[FIN[fin]]||' '+FIN[fin],move=INI.indexOf(pair[1]);
+      if(move>=0) pattern=head+'(?:'+esc(last)+'|'+ch(code-fin+Math.max(0,FIN.indexOf(pair[0])))+lead(move)+')';
+    }
+  }
+  const re=new RegExp(pattern);
+  const keys=row=>[(row.sido+row.name).replace(/\s+/g,'').toLowerCase(),row.label.replace(/\s+/g,'').toLowerCase()];
+  const loose=row=>keys(row).some(k=>k.includes(q))?0:1;
   return Object.entries(LAWD).flatMap(([sido,rows])=>rows.map(([code,name])=>({code,name,sido,label:(SIDO_SHORT[sido]||sido)+' '+name})))
-    .filter(row=>(row.sido+row.name).replace(/\s+/g,'').toLowerCase().includes(q)||row.label.replace(/\s+/g,'').toLowerCase().includes(q))
-    .sort((a,b)=>(a.name===q?-1:0)-(b.name===q?-1:0)||a.label.localeCompare(b.label,'ko'));
+    .filter(row=>keys(row).some(k=>re.test(k)))
+    .sort((a,b)=>(a.name===q?-1:0)-(b.name===q?-1:0)||loose(a)-loose(b)||a.label.localeCompare(b.label,'ko'));
 }
 function selectSearchedRegion(code){
   const sido=sidoOfCode(code);
@@ -5522,17 +5541,24 @@ function bindRegionSearch(){
     const r=toggleSearchedCompare(code);
     if(r==='invalid') return;
     if(r==='full'){ status.textContent='비교 지역은 2곳까지입니다. 선택한 지역을 해제하면 다시 추가할 수 있습니다.'; return; }
-    input.value=''; input.blur(); paint();
+    /* v164 — 검색칸을 떠나지 않는다(키보드 유지 · 스크롤 안 함). 2곳이 차면 그때 포커스를 뺀다. */
+    if(r==='added') input.value='';
+    paint();
     if(pane){ pane.innerHTML=regionPane(); bindPane(); }
     syncCta();
-    pane?.querySelector('[data-input-region="'+code+'"]')?.scrollIntoView({block:'nearest'});
+    const n=DEAL.compareCodes.length;
+    status.textContent=sggName(code)+(r==='added'?' 비교 추가 · ':' 비교 해제 · ')+n+' / 2곳';
+    if(r==='added'&&n>=2) input.blur(); else input.focus({preventScroll:true});
   }
   function actionButton(text,act,code,extra){
     const b=document.createElement('button');b.type='button';b.textContent=text;b.dataset.act=act;b.className='rs-act'+(extra||'');
-    b.onclick=()=>act==='compare'?compare(code):choose(code);return b;
+    b.onclick=()=>act==='compare'?compare(code):choose(code);
+    if(act==='compare') b.onmousedown=e=>e.preventDefault();
+    return b;
   }
   function paint(){
     const active=!!input.value.trim(),rows=regionSearchView(input.value);
+    if(active) input.closest?.('.region-search')?.classList.add('is-used');
     if(pane) pane.hidden=active;if(zones) zones.hidden=active;
     clear.hidden=!input.value;results.hidden=!active||!rows.length;
     results.replaceChildren();
@@ -9517,5 +9543,11 @@ html body #app .funnel #crows>.inline-money{padding:var(--sp-3) 0!important}
 html body #app .funnel #crows>.main-no-loan,html body #app .funnel #crows>.main-no-loan:has(input:checked){min-height:var(--rh-4)!important;margin:0!important;padding:var(--sp-3) 0!important;border-top:0!important}
 html body #app .funnel #crows .inline-money-field{margin-top:var(--sp-2)!important}
 html body #app .funnel #crows .inline-help{margin-top:var(--sp-2)!important}
+</style><style>
+html body #qSheet:not([hidden]):has(#regionSearchInput){height:90vh;height:90svh;display:flex;flex-direction:column}
+html body #qSheet:has(#regionSearchInput)>.q-sheet-header,html body #qSheet:has(#regionSearchInput)>.sheet-actions{flex:none}
+html body #qSheet:has(#regionSearchInput)>#qBox{flex:1 0 auto}
+html body #qSheet:has(.region-search.is-used) .region-intro{display:none}
+html body #qSheet:has(.region-search.is-used) #regionSearchLabel{position:absolute!important;width:1px!important;height:1px!important;margin:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
 </style></body>
 </html>
