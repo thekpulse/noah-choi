@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v165 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v166 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5110,7 +5110,7 @@ function renderQuestion(){
     h=h.split('<p class="blockhead">보유 주택</p>')[0];
   } else if(QMODE==='debt'){
     h=`<h2 class="q-title">기존 대출 월 상환액</h2>
-      <p class="preset-help">현재 대출의 월 상환액을 입력하세요. 원금과 이자를 합한 금액입니다.</p>
+      <p class="preset-help">현재 대출의 월 상환액을 입력하세요. 원금과 이자를 합한 금액입니다. 현금에 넣은 신용대출 등도 포함합니다.</p>
       <button type="button" class="debt-bullet-link" id="debtBulletLink" aria-controls="debtParts">이자만 내는 신용대출·마이너스통장이 있나요?</button>
       <div class="debtbox open"><div class="moneycard"><div class="mfield">
         <input id="inDebt" inputmode="numeric" pattern="[0-9]*" placeholder="0"
@@ -5244,7 +5244,7 @@ function renderAnswered(){
   const rows = CROWS.filter(r => visible().includes(r.step)).map(r => {
     if(r.mode === 'cash' || r.mode === 'income'){
       const key=r.mode, label=key==='cash'?'집에 쓸 현금':'연 소득 (세전)';
-      const note=key==='cash'?'대출금·생활비·비상금은 빼고 입력하세요.':'부부 소득 합산 가능';
+      const note=key==='cash'?'주택담보대출·생활비·비상금 제외':'부부 소득 합산 가능';
       return `<div class="inline-money"><label for="main-${key}">${label}</label>
         <div class="inline-money-field"><input id="main-${key}" data-money="${key}" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
           value="${S[key] ? comma(S[key]) : ''}" placeholder="0" aria-describedby="${key}-echo ${key}-help ${key}-error"><span>만원</span></div>
