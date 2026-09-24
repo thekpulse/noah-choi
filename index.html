@@ -4944,7 +4944,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v159 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v160 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -8597,8 +8597,8 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if(keepNote)ratio.appendChild(keepNote);
     ratio.hidden=!deals.length;
     byId('easyMarketNote').innerHTML = inside === deals.length
-      ? `<b>조회된 ${deals.length}건 모두</b> <span class="nw">예상 집값</span> 이하로 거래됐어요.`
-      : `<b>조회된 ${deals.length}건 중 ${inside}건</b>이 <span class="nw">예상 집값</span> 이하로 거래됐어요.`;
+      ? `<span class="nw">단지·면적별</span> 최근 거래 <b class="nw">${deals.length}건 모두</b> <span class="nw">예상 집값</span> 이하예요.`
+      : `<span class="nw">단지·면적별</span> 최근 거래 <b class="nw">${deals.length}건 중 ${inside}건</b>이 <span class="nw">예상 집값</span> 이하예요.`;
     byId('plotDetail').hidden = true;
     byId('marketRatio')?.appendChild(byId('easyMarketNote'));
     card.hidden = false;
