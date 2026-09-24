@@ -79,6 +79,7 @@
   --sh-lift:none;
 
   --d1:64px; --t1:30px; --t2:26px; --t3:19px; --t4:17px; --t5:16px; --t6:14px; --t7:13px; --t8:12px;
+  --t-card:15px;
   --bar:48px;
   --glyph:23px;
   --h-cta:54px;     /* 메인 CTA — 화면 하단 고정 · 16px SemiBold */
@@ -4944,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v160 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v161 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9497,5 +9498,14 @@ html body #viewDeals .yk-range-step{background:#EDF2FF;color:#1848D6;box-shadow:
 html body #viewDeals .yk-range-step button{color:#1848D6}
 </style><style>
 html body #qSheet .costrow .nm small{text-wrap:balance}
+</style><style>
+html body #viewDeals .deal-afford .da-h span{font-weight:400}
+html body #viewDeals .deal-afford{border-radius:var(--r-s)}
+html body #viewDeals .region-edit{color:var(--v-blue-deep)}
+html body #app #viewAnswer .budget-summary #heroAmount,html body #app #easyCash,html body #app #easyLoan,html body #app #tileBurden{font-size:var(--t3)!important}
+html body #app #viewAnswer .budget-summary #heroAmount i.u{font-size:var(--t7)!important}
+html body #app #qSheetTitle,html body div#whySheet .why-sheet-header #whyTitle{font-size:24px!important}
+html body #app #viewDeals .deal .amt{font-size:var(--t3)!important}
+html body #app #viewDeals .deal-budget strong,html body div#whySheet .cost-impact strong{font-size:24px}
 </style></body>
 </html>
