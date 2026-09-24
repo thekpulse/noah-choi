@@ -3525,7 +3525,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
     
     
     
-    <p class="entry-eyebrow">내 집 마련 예산</p><h1 class="cond-lead">내 예산으로<br>살 수 있는 집은?</h1><p class="entry-sub">집값부터 부대비용, 매달 갚을 돈까지.</p>
+    <h1 class="cond-lead">내 예산으로<br>살 수 있는 집은?</h1><p class="entry-sub">집값부터 부대비용, 매달 갚을 돈까지.</p>
     
     
     <div class="crows" id="crows"></div>
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v161 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v163 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9507,5 +9507,15 @@ html body #app #viewAnswer .budget-summary #heroAmount i.u{font-size:var(--t7)!i
 html body #app #qSheetTitle,html body div#whySheet .why-sheet-header #whyTitle{font-size:24px!important}
 html body #app #viewDeals .deal .amt{font-size:var(--t3)!important}
 html body #app #viewDeals .deal-budget strong,html body div#whySheet .cost-impact strong{font-size:24px}
+</style><style>
+html body #app #ctaBtn:disabled{border-color:#EDF2FF;background:#EDF2FF;color:#5C85FF}
+</style><style>
+html body #app #crows .inline-money-field input::placeholder{color:var(--v-line-strong)}
+html body #app .funnel #crows{padding-top:var(--sp-2)!important;padding-bottom:var(--sp-2)!important}
+html body #app .funnel #crows>.crow{min-height:var(--rh-4)!important;padding:var(--sp-3) 0!important}
+html body #app .funnel #crows>.inline-money{padding:var(--sp-3) 0!important}
+html body #app .funnel #crows>.main-no-loan,html body #app .funnel #crows>.main-no-loan:has(input:checked){min-height:var(--rh-4)!important;margin:0!important;padding:var(--sp-3) 0!important;border-top:0!important}
+html body #app .funnel #crows .inline-money-field{margin-top:var(--sp-2)!important}
+html body #app .funnel #crows .inline-help{margin-top:var(--sp-2)!important}
 </style></body>
 </html>
