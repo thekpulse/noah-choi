@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v167 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v167.1 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6020,7 +6020,8 @@ function paintRateSim(loan, rate){
   }
   const base = monthlyPaymentCalc(loan, D.rate, D.years);
   const now  = monthlyPaymentCalc(loan, rate,   D.years);
-  const diff = Math.round(now - base);
+  const shownMan = value => Math.round(Math.round(value) / 10000);
+  const diff = (shownMan(now) - shownMan(base)) * 10000;
   $('rateSimNote').textContent = (Math.abs(diff) < 5000)
     ? '금리가 바뀌어도 집값\u2060·\u2060예상 대출금은 그대로예요.'
     : `연 ${D.rate}%일 때보다 매달 ${formatWon(Math.abs(diff))} ${diff > 0 ? '더' : '덜'} 갚아요.`;
