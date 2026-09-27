@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v171 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v173 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -7129,7 +7129,9 @@ function openSheet(key, costMode=false){
   SHEET_LAST = document.activeElement;
   sh.hidden=false; bk.hidden=false; sh.scrollTop=0; setInert(true);
   if(key==='q') $('qSheetTitle').textContent=$('qBox').querySelector('.q-title')?.textContent || '조건 수정';
-  requestAnimationFrame(()=>{ sh.classList.add('on'); bk.classList.add('on'); });
+  if(key==='q' && QMODE==='region'){
+    sh.classList.add('on'); bk.classList.add('on');
+  } else requestAnimationFrame(()=>{ sh.classList.add('on'); bk.classList.add('on'); });
   document.documentElement.style.overflow='hidden';
   sh.tabIndex=-1; sh.focus({preventScroll:true});
 }
@@ -7140,7 +7142,9 @@ function closeSheet(key){
   sh.classList.remove('on'); bk.classList.remove('on');
   setInert(false);
   document.documentElement.style.overflow='';
-  sh._closeTimer=setTimeout(()=>{ sh.hidden=true; bk.hidden=true; }, 280);
+  if(key==='q' && QMODE==='region'){
+    sh.hidden=true; bk.hidden=true;
+  } else sh._closeTimer=setTimeout(()=>{ sh.hidden=true; bk.hidden=true; }, 280);
   if(SHEET_LAST && SHEET_LAST.isConnected) SHEET_LAST.focus({preventScroll:true});
   else if(key==='q') document.querySelector('#crows [data-mode="'+QMODE+'"]')?.focus({preventScroll:true});
 }
