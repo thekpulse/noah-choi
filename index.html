@@ -3643,7 +3643,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
     
 <section class="plot" id="easyMarket" aria-labelledby="easyMarketTitle" hidden>
       <h2 id="easyMarketTitle">내 예산이 어디쯤인가요</h2>
-      <p class="plot-lede" id="easyMarketLead"></p>
+      <p class="plot-lede" id="easyMarketLead"></p><p id="resultScopeNote" hidden>선택 지역에 예상 집값에 맞는 거래가 적어 인근 지역도 함께 보여드려요.</p>
       <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예상 집값 이하</span><span><i aria-hidden="true"></i>초과</span></p><div class="chart" id="easyMarketRows">
         <div class="budget" id="plotLine"></div>
         
@@ -3696,7 +3696,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
         <div class="deal-region-chips" id="dealRegionChips"></div>
         <p class="deal-region-status" id="dealRegionStatus" aria-live="polite"></p>
       </details>
-<p id="dealScopeNote" hidden role="status">인근 지역의 거래도 함께 조회했어요.</p>
+<p id="dealScopeNote" hidden role="status">선택 지역에 예상 집값에 맞는 거래가 적어 인근 지역도 함께 보여드려요.</p>
       <div class="deal-viewbar" id="dealViewBar" hidden>
         <div class="deal-switch" role="tablist" aria-label="실거래 보기 방식">
           <button type="button" id="dealListTab" role="tab" aria-selected="true">목록</button>
@@ -3807,7 +3807,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 <div class="sheet-back" id="whyBack" hidden></div>
 <div class="sheet" id="whySheet" role="dialog" aria-modal="true" aria-labelledby="whyTitle" hidden>
   <header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="whyTitle">계산 상세</h2><button type="button" class="why-dismiss" aria-label="닫기" onclick="closeSheet()"></button></header>
-  <div class="cost-impact" aria-live="polite">
+  <p id="costAdjustmentNote">비용을 바꿔도 예상 집값은 그대로예요. 필요한 현금이 달라지며, 부족한 금액은 아래에 표시돼요.</p><div class="cost-impact" aria-live="polite">
     
     <div><span>부대비용 합계</span><strong id="costImpactTotal">—</strong></div>
     <div id="costImpactRow"><span id="costImpactLabel">남는 현금</span><strong id="costImpactCash">—</strong></div>
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v170 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v171 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -8698,7 +8698,7 @@ window.addEventListener('resize',measure);measure();})();
   function ensureBox(){
     let box = $h('heroDeals');
     if(box) return box;
-    const host = $h('easyMarketLead');
+    const host = $h('resultScopeNote') || $h('easyMarketLead');
     if(!host) return null;
     box = document.createElement('section');
     box.id = 'heroDeals'; box.className = 'hero-deals'; box.hidden = true;
@@ -9372,13 +9372,16 @@ html body #app #viewAnswer .budget-overview:has(>#easyBalance.cash-only) .budget
 html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{visibility:hidden}
 </style><style>
 html body #viewDeals #dealScopeNote{order:2;flex:0 0 100%;margin:-4px 0 12px;padding:0 2px;color:var(--v-sub);font-size:13px;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
-html body #viewDeals #dealScopeNote[hidden]{display:none!important}
+html body #app #resultScopeNote{margin:8px 0 12px;color:var(--v-sub);font-size:13px;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+html body #app #resultScopeNote[hidden],html body #viewDeals #dealScopeNote[hidden]{display:none!important}
 </style><script>
 (function(){
   function syncDealScopeNotice(){
     const note = document.getElementById('dealScopeNote');
     if(!note) return;
     note.hidden = !((DEAL.status === 'ready' || DEAL.status === 'empty') && DEAL.wide && !(DEAL.compareCodes || []).length);
+    const resultNote = document.getElementById('resultScopeNote');
+    if(resultNote) resultNote.hidden = note.hidden;
   }
   document.addEventListener('deals:ready', syncDealScopeNotice);
   syncDealScopeNotice();
@@ -9573,6 +9576,7 @@ html body #qSheet:not([hidden]):has(#regionSearchInput){height:min(640px,90vh);h
 }
 @media(prefers-reduced-motion:reduce){html body #qSheet .region-search-field{transition:none}}
 </style><style>/* v168 — 구입 예산과 월 상환액은 별도 카드 */
+html body #whySheet #costAdjustmentNote{margin:0 0 var(--sp-3);font-size:13px;line-height:1.6;color:var(--v-sub);word-break:keep-all;overflow-wrap:anywhere}
 /* v169: 모바일 간격 12px. PC 첫 행은 내용 높이에 고정해 실거래 카드의 여분 높이가 끼어들지 않게 합니다. */
 html body #app #viewAnswer{row-gap:var(--sp-3)}
 html body #app #viewAnswer>#fundingOverview{grid-column:auto;grid-row:auto}
