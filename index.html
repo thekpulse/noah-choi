@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v168 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v169 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9573,6 +9573,8 @@ html body #qSheet:not([hidden]):has(#regionSearchInput){height:min(640px,90vh);h
 }
 @media(prefers-reduced-motion:reduce){html body #qSheet .region-search-field{transition:none}}
 </style><style>/* v168 — 구입 예산과 월 상환액은 별도 카드 */
+/* v169: 모바일 간격 12px. PC 첫 행은 내용 높이에 고정해 실거래 카드의 여분 높이가 끼어들지 않게 합니다. */
+html body #app #viewAnswer{row-gap:var(--sp-3)}
 html body #app #viewAnswer>#fundingOverview{grid-column:auto;grid-row:auto}
 html body #app #viewAnswer #fundingOverview>.rhead{padding:var(--sp-5)!important}
 html body #app #viewAnswer #fundingOverview>.budget-summary{padding:var(--sp-5) var(--sp-5) var(--sp-4)}
@@ -9592,7 +9594,7 @@ html body #app #viewAnswer #fundingOverview>.rhead{padding-inline:var(--sp-4)!im
 html body #app #viewAnswer>#payTile,html body #app #viewAnswer #fundingOverview>.budget-summary,html body #app #viewAnswer #fundingOverview>#easyBalance{padding-inline:var(--sp-4)}
 }
 @media(min-width:960px){
-html body #app #viewAnswer{grid-template-rows:auto auto}
+html body #app #viewAnswer{grid-template-rows:min-content 1fr;row-gap:var(--sp-4)}
 html body #app #viewAnswer>#fundingOverview{grid-column:1;grid-row:1}
 html body #app #viewAnswer>#payTile{grid-column:1;grid-row:2}
 html body #app #viewAnswer>#easyMarket{grid-column:2;grid-row:1/span 2}
