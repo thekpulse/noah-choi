@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v187 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v188 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6714,7 +6714,7 @@ function dealBox(x, i){
        + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x)
        + shown.map(n => {
            const k = [dealDate(n), oneArea ? '' : (areaParts(n.areaM2) || {}).m2, floorText(n.floor)]
-             .filter(Boolean).map(s => String(s).replace(/ /g, ' ').replace(/(\d)㎡/g, '$1⁠㎡')).join(' · ');
+             .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0').replace(/(\d)㎡/g, '$1\u2060㎡')).join('\u00a0· ');
            return `<div class="dealrow"><span class="k">${esc(k)}</span>`
                 + `<span class="v">${formatWon(n.amountMan*10000)}</span></div>`;
          }).join('')
@@ -9129,7 +9129,7 @@ body #viewDeals .yk-map-stage{isolation:isolate}
     else if (DEAL.status === 'empty' || (DEAL.status === 'ready' && DEAL.lastPrice > 0 && typeof splitDeals === 'function')) {
       const groups = DEAL.status === 'empty' ? { under: [], over: [] } : splitDeals(DEAL.items || [], DEAL.lastPrice);
       const n = groups.under.length + (DEAL.over ? groups.over.length : 0);
-      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (scope ? ' · <span class="hc-nw">' + esc(scope) + '</span>' : '') + ' · <span class="hc-nw">최근 ' + m + '개월</span>';
+      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (scope ? '\u00a0· <span class="hc-nw">' + esc(scope) + '</span>' : '') + '\u00a0· <span class="hc-nw">최근 ' + m + '개월</span>';
     }
     const go = DEAL.status === 'ready' || DEAL.status === 'empty';   /* v121 ① — 실거래 화면으로 */
 
@@ -9734,8 +9734,9 @@ html body #app #viewDeals #dealDistribution .dd-note{display:block!important;mar
 html body #app #viewDeals #dealDistribution .dd-method{margin-top:var(--sp-1)}
 html body #app #viewDeals #dealDistribution .dd-method summary{display:flex;align-items:center;justify-content:space-between;min-height:var(--tap);cursor:pointer;list-style:none;font-size:var(--t7);color:#53617C}
 html body #app #viewDeals #dealDistribution .dd-method summary::-webkit-details-marker{display:none}
-html body #app #viewDeals #dealDistribution .dd-method summary::after{content:'＋';font-size:var(--t5)}
-html body #app #viewDeals #dealDistribution .dd-method[open] summary::after{content:'−'}
+/* v188 — 펼침 표시는 앱의 다른 접힘 줄(외부 사이트에서 확인 · 비용 산정 기준)과 같은 아래 꺾쇠. ＋/− 는 여기만 달랐다 */
+html body #app #viewDeals #dealDistribution .dd-method summary::after{content:'';flex:none;width:7px;height:7px;margin:0 4px 0 var(--sp-2);border-right:1.5px solid #5f6b7d;border-bottom:1.5px solid #5f6b7d;transform:translateY(-2px) rotate(45deg)}
+html body #app #viewDeals #dealDistribution .dd-method[open] summary::after{transform:translateY(2px) rotate(-135deg)}
 html body #app #viewDeals #dealDistribution .dd-legend{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-top:var(--sp-1)}
 html body #app #viewDeals #dealDistribution .dd-legend span{color:#0E1B45!important;font-size:var(--t7)}
 html body #app #viewDeals #dealDistribution .dd-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:var(--sp-1);background:#2458FF}
@@ -9919,6 +9920,15 @@ html body #app #viewDeals #dealList .dealbox>.dealrow .v{color:#0E1B45!important
 html body #app #viewDeals #dealList .dealbox>.deal-naver{margin-top:var(--sp-1)!important}
 /* v187 — 320 에서 거래 이력 줄(날짜·면적·층)이 두 줄로 감기지 않게 한 단 낮춘다 */
 @media (max-width:374px){html body #app #viewDeals #dealList .dealbox>.dealrow{font-size:var(--t7)!important}}
+html body #app #viewAnswer #easyMarket{display:flex!important;flex-direction:column}
+html body #app #viewAnswer #easyMarket>*{order:5}
+html body #app #viewAnswer #easyMarket>#easyMarketTitle{order:0}
+html body #app #viewAnswer #easyMarket>#easyMarketLead{display:none!important}
+html body #app #viewAnswer #easyMarket>#heroContext{order:1;margin:2px 0 0!important;font-size:var(--t7)!important;line-height:1.6!important;color:#53617C!important}
+html body #app #viewAnswer #easyMarket>#resultScopeNote{order:2;margin:2px 0 0!important}
+html body #app #viewAnswer #easyMarket>#heroDeals{order:3}
+html body #app #viewAnswer #easyMarket>#marketRatio{order:4}
+html body #app #viewAnswer #easyMarket>#marketOpen{order:9}
 /* ③ 상단 바 가격 */
 html body #app .appbar .barprice{display:none}
 html body #app .appbar.is-price-pinned .barprice{display:inline-flex;align-items:baseline;gap:var(--sp-2);min-width:0;margin-right:auto;font-size:var(--t-card);font-weight:700;color:var(--v-blue,#2458FF);white-space:nowrap;font-variant-numeric:tabular-nums}
