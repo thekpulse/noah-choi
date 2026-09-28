@@ -3807,7 +3807,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 <div class="sheet-back" id="whyBack" hidden></div>
 <div class="sheet" id="whySheet" role="dialog" aria-modal="true" aria-labelledby="whyTitle" hidden>
   <header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="whyTitle">계산 상세</h2><button type="button" class="why-dismiss" aria-label="닫기" onclick="closeSheet()"></button></header>
-  <p id="costAdjustmentNote">비용을 바꿔도 예상 집값은 그대로예요. 필요한 현금이 달라지며, 부족한 금액은 아래에 표시돼요.</p><div class="cost-impact" aria-live="polite">
+  <p id="costAdjustmentNote">비용을 바꿔도 집값은 그대로고, 필요한 현금만 달라져요.</p><div class="cost-impact" aria-live="polite">
     
     <div><span>부대비용 합계</span><strong id="costImpactTotal">—</strong></div>
     <div id="costImpactRow"><span id="costImpactLabel">남는 현금</span><strong id="costImpactCash">—</strong></div>
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v186 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v187 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5111,7 +5111,7 @@ function renderQuestion(){
     h=h.split('<p class="blockhead">보유 주택</p>')[0];
   } else if(QMODE==='debt'){
     h=`<h2 class="q-title">기존 대출 월 상환액</h2>
-      <p class="preset-help">현재 대출의 월 상환액을 입력하세요. 원금과 이자를 합한 금액입니다. 현금에 넣은 신용대출 등도 포함합니다.</p>
+      <p class="preset-help">원금·이자를 합친 금액이에요. 신용대출도 포함해요.</p>
       <button type="button" class="debt-bullet-link" id="debtBulletLink" aria-controls="debtParts">이자만 내는 신용대출·마이너스통장이 있나요?</button>
       <div class="debtbox open"><div class="moneycard"><div class="mfield">
         <input id="inDebt" inputmode="numeric" pattern="[0-9]*" placeholder="0"
@@ -5153,14 +5153,14 @@ function ownDrawer(){
     + `</div>` + dispose + `</div>`;
 }
 function houseEchoText(){
-  if(S.houseStatus === 'first') return '주택을 소유한 이력이 없는 경우입니다.';
-  if(S.houseStatus === 'none') return '과거에 주택을 소유했지만 현재는 없는 경우입니다.';
+  if(S.houseStatus === 'first') return '집을 가져본 적이 없는 경우예요.';
+  if(S.houseStatus === 'none') return '예전에 집이 있었지만 지금은 없는 경우예요.';
   if(S.houseStatus !== 'multi') return '';
   /* 🔴 v25.0 — 「중과」를 무조건 말하지 않습니다. **비조정지역에서 2주택은 중과가 아닙니다.** */
   if(S.ownCount === 1 && S.disposePlan)
     return `종전 집을 ${POLICY.dispose.years}년 안에 팔면 무주택과 같은 기준이에요. 못 팔면 차액을 다시 내요.`;
   return S.ownCount >= 2
-    ? '2주택 이상 보유 조건으로 계산합니다. 실제 세금은 보유 주택 수와 지역에 따라 달라집니다.'
+    ? '2주택 이상 기준이며, 세금은 주택 수·지역마다 달라요.'
     : '집이 있으면 대출 한도가 줄어요. 취득세는 규제지역에서만 중과돼요.';
 }
 /* 지금 고른 pick — 갈리는 시는 구를 고르기 전에도 「시를 골랐다」는 상태가 필요합니다. */
@@ -5601,7 +5601,7 @@ function bindRegionSearch(){
 }
 function inputCompareMarkup(){
   const own=new Set(lawdCodesOf(S.sgg)), options=(LAWD[sidoOfCode(S.sgg)]||[]).filter(x=>!own.has(x[0]));
-  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>추가 지역은 계산 기준 지역의 예상 집값으로 실거래만 비교합니다.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
+  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>추가 지역은 계산에 넣지 않고 실거래만 비교해요.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
 }
 function bindPane(){
   const p=$('regionPane'); if(!p) return;
@@ -5822,12 +5822,12 @@ function bindingTip(c, price){
   if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 금액이 올라가요.`;
   const L=c.limits||{};
   if(L.LTV===0)
-    return `<b>입력한 조건에서는 주택담보대출 예상액이 0원입니다.</b> 현재 결과는 현금만으로 계산했습니다. 주택 보유와 처분 예정 여부를 확인하세요.`;
+    return `<b>이 조건에서는 주택담보대출 예상액이 0원이에요.</b> 주택 보유·처분 예정에 따라 달라져요.`;
   if(c.mortgageLoan<=0){
     if(L.DSR===0 || L.DTI===0)
       return `<b>갚고 있는 대출이 한도를 다 썼어요.</b> 은행은 연소득의 40%까지만 대출 갚는 데 쓸 수 있다고 봐요. ${S.debtMonthly ? '월 '+comma(S.debtMonthly)+'만원 갚는 대출이 ' : '기존 대출이 '}그 자리를 다 차지했어요.`;
     if(c.roomCut>0)
-      return `<b>방공제 적용 후 대출 예상액이 0원입니다.</b> 계산된 대출 한도가 방공제 금액보다 작습니다.`;
+      return `<b>방공제를 빼면 대출 예상액이 0원이에요.</b> 한도가 방공제 금액보다 작아요.`;
     return `<b>이 조건에서는 주택담보대출이 나오지 않아요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요.`;
   }
   if(c.binding==='DSR'||c.binding==='DTI')
@@ -5836,7 +5836,7 @@ function bindingTip(c, price){
     return `<b>집값 구간별 대출 상한을 적용했어요.</b>`;
   if(c.binding==='LTV'){
     const pct = price>0 ? Math.round(L.LTV/price*100) : 0;
-    return `<b>주택담보대출 비율(LTV)이 한도를 정했어요.</b> 이 조건에서는 집값의 ${pct}%까지 빌릴 수 있어요.<br>생애최초이거나 규제지역 밖이라면 더 높아져요.`;
+    return `<b>LTV 기준으로 집값의 ${pct}%까지 빌릴 수 있어요.</b><br>생애최초이거나 규제지역 밖이면 더 높아져요.`;
   }
   return `<b>여러 기준 중 가장 작은 값이 한도가 돼요.</b>`;
 }
@@ -6073,10 +6073,9 @@ function renderBalance(c, price){
   $('cashRemainderLabel').textContent = remainder<0 ? '추가로 필요한 현금' : '비용을 낸 뒤 남는 현금';
   $('cashRemainder').textContent = remainder===0 ? '0원' : formatWon(Math.abs(remainder)*10000);
   $('cashRemainder').classList.toggle('shortfall',remainder<0);
-  $('cashRemainderNote').textContent = (remainder===0
-    ? '입력한 현금을 전액 사용합니다.\n'
-    : remainder<0 ? '부족한 현금은 별도로 준비해야 합니다.\n' : '')
-    + '생활비\u2060·\u2060비상금과 계산에서 뺀 비용은 별도입니다.';
+  $('cashRemainderNote').textContent = remainder===0
+    ? '입력한 현금을 모두 쓰는 기준이에요.'
+    : '생활비\u2060·\u2060비상금은 계산에 넣지 않았어요.';
   $('costImpactTotal').textContent=formatWon(f.E*10000);
   const impactRow = $('costImpactRow');
   if(impactRow) impactRow.hidden = (remainder === 0);   /* 🔴 v37.5 — 0이면 안 세웁니다 */
@@ -6215,9 +6214,9 @@ function renderLimits(c, price){
          비용을 한도 옆에 두면 「한도를 깎는 무엇」으로 읽힙니다(원칙 53). */;
   const mciOn = !!S.mciCovered;
   $('roomTip').innerHTML = c.roomCut>0
-    ? `<b>방공제 ${formatWon(c.roomCut)}을 차감했어요.</b> 소액임차보증금 보호를 위해 대출 한도에서 차감하는 금액이에요.`
+    ? `<b>소액임차보증금 몫으로 방공제 ${formatWon(c.roomCut)}을 뺐어요.</b>`
     : (mciOn
-      ? `<b>방공제를 적용하지 않았습니다.</b> 가입 가능 여부와 비용은 은행에서 확인하세요.`
+      ? `<b>방공제를 적용하지 않았어요.</b> 가입 조건과 비용은 은행마다 달라요.`
       : '');
   $('roomTip').hidden = !(c.roomCut>0 || mciOn);
   (function(){
@@ -6628,7 +6627,7 @@ function dealRangeLine(x, all){
   const v = same.map(n => Number(n.amountMan)); const lo = Math.min(...v), hi = Math.max(...v);
   const a = (areaParts(x.areaM2) || {}).m2 || '';
   const w = m => formatWon(m * 10000).replace(/ /g, ' ');   /* 금액 안에서 줄이 안 꺾이게(390px 실측 「14억 / 2,400만원」) */
-  const body = lo === hi ? '모두 ' + w(lo) : '최저 ' + w(lo) + ' ~ 최고 ' + w(hi);
+  const body = lo === hi ? '모두 ' + w(lo) : w(lo).replace(/원$/, '') + '~' + w(hi);
   return '<p class="deal-range">' + esc((a ? a + ' ' : '') + same.length + '건 · ' + body) + '</p>';
 }
 /* v111 — 「이 가격으로 사면」 — 결과 화면과 같은 엔진(calcCosts · ctx)으로 그 거래 가격을 셈. 결과가 없거나 셈이 안 되면 빈 문자열(빈 칸 안 만듦). */
@@ -6715,7 +6714,7 @@ function dealBox(x, i){
        + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x)
        + shown.map(n => {
            const k = [dealDate(n), oneArea ? '' : (areaParts(n.areaM2) || {}).m2, floorText(n.floor)]
-             .filter(Boolean).join(' · ');
+             .filter(Boolean).map(s => String(s).replace(/ /g, ' ').replace(/(\d)㎡/g, '$1⁠㎡')).join(' · ');
            return `<div class="dealrow"><span class="k">${esc(k)}</span>`
                 + `<span class="v">${formatWon(n.amountMan*10000)}</span></div>`;
          }).join('')
@@ -6799,12 +6798,12 @@ function paintDeals(priceMan){
     list.appendChild(more);
   }        /* 🔴 v25.16 — 다시 그릴 때마다 다시 겁니다(칩을 켜면 줄이 바뀝니다) */
   note.textContent = shownRows.some(hotOf)
-    ? `※ 「거래 활발」은 같은 단지에서 최근 ${DEAL.months}개월 안 ${DEAL.hotMin}건 이상 거래된 곳이에요.` : '';
+    ? `※ 「거래 활발」은 ${DEAL.months}개월 안 ${DEAL.hotMin}건 이상 거래된 단지입니다.` : '';
   /* 인근 구까지 봤으면 그 사실만 한 마디. 어느 구인지는 각 줄이 말합니다. */
   const shown = shownRows.length;
   lead.textContent = `최근 ${DEAL.months}개월 · ${total}곳` + (total > shown ? ` 중 ${shown}곳` : '');
   /* 🔴 v25.5 — ※를 붙였습니다. 이 화면의 각주는 전부 ※로 시작합니다(위 마크업 주석). */
-  foot.textContent = '※ 국토교통부 실거래 자료입니다. 평형은 공급면적 추정치이며, 계약이 해제된 거래는 제외했습니다.';
+  foot.innerHTML = '※ 국토교통부 실거래 기준(해제 거래 제외)입니다.<br>※ 평형은 공급면적 추정치입니다.';
 }
 
 
@@ -6949,7 +6948,7 @@ function renderReport(v){
 
   const monthly=$('rMonthly'); monthly.hidden=true; monthly.innerHTML='';   /* v152 — 월 상환액은 공유 이미지에 싣지 않음(오너 결정) */
   $('rWm').textContent = '영끌계산기';
-  $('rNote').textContent = '입력 조건에 따른 참고용 예상치입니다.\n대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.';
+  $('rNote').textContent = '※ 입력 조건에 따른 참고용 예상치입니다.\n※ 대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.';
   paintReportDeals(Math.floor(v.price / 10000));   /* v151 — 결과와 실거래 목록 모두 만원 단위 내림 */
 }
 function paintReportDeals(priceMan){
@@ -9825,7 +9824,7 @@ function renderDealDistribution(priceMan){
  const points=dots.points.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+(base-5-Math.min(p.level,CAP-1)*8)+'" r="3.5" fill="'+(p.amount<=budget?'#2458FF':'#8792A8')+'" fill-opacity="'+(p.level>=CAP-1?'.75':'1')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
  const shade='<path d="M12 4H'+mx.toFixed(1)+'V'+base+'H12Z" fill="#2458FF" fill-opacity=".06"/>';
  const summary='조회 거래 '+model.n+'건 중 예상 집값 이하 '+model.under+'건, 초과 '+(model.n-model.under)+'건';
- const dotNote='점 1개 = 거래 1건 · 구간 안 최근 '+dots.points.length+'건 · 같은 가격대가 많으면 점이 겹쳐요';
+ const dotNote='점 하나가 거래 1건이고, 최근 '+dots.points.length+'건까지 보여요.';
  const pct=model.marker*100,side=pct<22?' is-left':pct>78?' is-right':'';
  const mark='<span class="dd-mark'+side+'" style="left:'+(pct<22?0:pct>78?100:pct).toFixed(1)+'%">내 예상 집값 '+money(budget)+'</span>';
  const bars=model.bins.map((b,i)=>{
@@ -9841,8 +9840,8 @@ function renderDealDistribution(priceMan){
   +'<p class="dd-note">표시 구간('+moneyShort(model.lo)+'~'+moneyShort(model.hi)+') '+model.shown+'건'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
   +'<p class="dd-note">'+dotNote+'</p>'
   +'<svg class="dd-bars" viewBox="0 0 360 80" role="img" aria-label="가격 구간별 거래 건수"><line x1="12" x2="348" y1="74" y2="74" stroke="#DCE2EC"/>'+bars+'</svg>'
-  +'<p class="dd-note">막대 위 숫자 = 해당 가격 구간의 거래 건수</p>'
-  +'<p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 그래프는 예상 집값의 약 50~150% 구간만 표시하며, 범위 밖 거래도 전체 건수와 예상 집값 이하·초과 집계에는 포함합니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다. 아래 목록은 단지별 최근 거래라 건수가 다릅니다.</p></details>';
+  +'<p class="dd-note">막대 위 숫자는 그 가격대의 거래 건수예요.</p>'
+  +'<p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준이에요.<br>그래프는 예상 집값의 약 50~150%만 그려요.<br>범위 밖 거래도 건수에는 넣어요.<br>같은 단지 거래도 한 건씩 세요.<br>지도를 옮겨 더한 거래는 빼요.<br>아래 목록은 단지별 최근 거래라 건수가 달라요.</p></details>';
 }
 function dealTools(){
  const card=document.getElementById('dealCard'),seg=document.getElementById('sortSeg'),fold=card&&card.querySelector(':scope>.deal-filter-fold');
@@ -9918,6 +9917,8 @@ html body #app #viewDeals #dealList .dealbox>.dealrow{padding:var(--sp-2) 0!impo
 html body #app #viewDeals #dealList .dealbox>.dealrow .k{color:#53617C!important}
 html body #app #viewDeals #dealList .dealbox>.dealrow .v{color:#0E1B45!important;font-weight:500;font-variant-numeric:tabular-nums}
 html body #app #viewDeals #dealList .dealbox>.deal-naver{margin-top:var(--sp-1)!important}
+/* v187 — 320 에서 거래 이력 줄(날짜·면적·층)이 두 줄로 감기지 않게 한 단 낮춘다 */
+@media (max-width:374px){html body #app #viewDeals #dealList .dealbox>.dealrow{font-size:var(--t7)!important}}
 /* ③ 상단 바 가격 */
 html body #app .appbar .barprice{display:none}
 html body #app .appbar.is-price-pinned .barprice{display:inline-flex;align-items:baseline;gap:var(--sp-2);min-width:0;margin-right:auto;font-size:var(--t-card);font-weight:700;color:var(--v-blue,#2458FF);white-space:nowrap;font-variant-numeric:tabular-nums}
