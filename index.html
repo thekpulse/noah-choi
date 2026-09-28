@@ -3503,7 +3503,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
     <button class="wordmark" id="homeBtn" aria-label="처음으로">영끌계산기</button>
     
     
-    <span class="barlabel" id="barLabel"></span>
+    <span class="barprice" id="barPrice" aria-hidden="true" hidden></span><span class="barlabel" id="barLabel"></span>
     
     <button class="trust barresult" id="toResultBtn" hidden>결과 보기</button>
     
@@ -3643,7 +3643,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
     
 <section class="plot" id="easyMarket" aria-labelledby="easyMarketTitle" hidden>
       <h2 id="easyMarketTitle">내 예산이 어디쯤인가요</h2>
-      <p class="plot-lede" id="easyMarketLead"></p><p id="resultScopeNote" hidden>선택 지역에 예상 집값에 맞는 거래가 적어 인근 지역도 함께 보여드려요.</p>
+      <p class="plot-lede" id="easyMarketLead"></p><p id="resultScopeNote" hidden>맞는 거래가 적어 인근 지역까지 넓혔어요.</p>
       <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예상 집값 이하</span><span><i aria-hidden="true"></i>초과</span></p><div class="chart" id="easyMarketRows">
         <div class="budget" id="plotLine"></div>
         
@@ -3696,7 +3696,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
         <div class="deal-region-chips" id="dealRegionChips"></div>
         <p class="deal-region-status" id="dealRegionStatus" aria-live="polite"></p>
       </details>
-<p id="dealScopeNote" hidden role="status">선택 지역에 예상 집값에 맞는 거래가 적어 인근 지역도 함께 보여드려요.</p>
+<p id="dealScopeNote" hidden role="status">맞는 거래가 적어 인근 지역까지 넓혔어요.</p>
       <div class="deal-viewbar" id="dealViewBar" hidden>
         <div class="deal-switch" role="tablist" aria-label="실거래 보기 방식">
           <button type="button" id="dealListTab" role="tab" aria-selected="true">목록</button>
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v179 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v186 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6761,6 +6761,7 @@ function paintDeals(priceMan){
   note.textContent = '';          /* 🔴 v25.1 — 뱃지가 없는 화면에는 기준도 없습니다 */
   const {under, over, underRaw, overRaw} = splitDeals(DEAL.items || [], priceMan);
   if(typeof renderDealDistribution === "function") renderDealDistribution(priceMan);
+  if(typeof dealTools === "function") dealTools();
   $('dealFilterBox').hidden = !(DEAL.items?.length || DEAL.onlyNew || DEAL.only59 || DEAL.only84 || DEAL.over || DEAL.minUnits);
   chips.hidden = false;
   const rows = dealReadingRows(under,over);
@@ -9711,33 +9712,71 @@ html body #app #easyMarket .plot-legend{display:none!important}
 </style><style id="deal-distribution-style">
 /* v180: distribution belongs to the transactions screen only. */
 html body #app #easyMarket #marketChartFold,html body #app #easyMarket #easyMarketRows,html body #app #easyMarket #plotLab,html body #app #easyMarket #plotNone,html body #app #easyMarket #plotDetail,html body #app #easyMarket #marketMethod{display:none!important}
-html body #app #viewDeals #dealDistribution{display:block!important;background:#fff;color:#0E1B45;border-top:1px solid #DCE2EC;padding:12px 21px;margin:10px -21px -12px;border-radius:0;min-width:0;font-size:13px;line-height:1.5}
+html body #app #viewDeals #dealCard>.deal-budget{background:#fff!important;border:1px solid #DCE2EC!important;border-radius:var(--r-l)!important;padding:var(--sp-4) 20px var(--sp-3)!important;margin:0 0 var(--sp-3)!important;color:#fff}
+html body #app #viewDeals #dealCard>.deal-budget>div:not(#dealDistribution),html body #app #viewDeals #dealCard>.deal-budget>p{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:0!important;padding:0!important}
+html body #app #viewDeals #dealDistribution{display:block!important;background:transparent;color:#0E1B45;border:0;padding:0;margin:0;min-width:0;font-size:var(--t7);line-height:1.5}
 html body #app #viewDeals #dealDistribution span{color:#53617C!important}
-html body #app #viewDeals #dealDistribution .dd-title{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 8px;font-size:13px;font-weight:600}
-html body #app #viewDeals #dealDistribution .dd-title small{font-size:12px;font-weight:400;color:#53617C}
-html body #app #viewDeals #dealDistribution svg{display:block;width:100%;height:auto;overflow:visible;margin-top:8px}
-html body #app #viewDeals #dealDistribution .dd-note{display:block!important;color:#53617C!important;font-size:12px!important;line-height:1.5!important;margin:6px 0 0!important;font-weight:400}
-html body #app #viewDeals #dealDistribution .dd-axis{display:flex;justify-content:space-between;font-size:12px;color:#53617C}
-html body #app #viewDeals #dealDistribution .dd-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;margin-top:6px}
-html body #app #viewDeals #dealDistribution .dd-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;background:#2458FF}
-html body #app #viewDeals #dealDistribution .dd-legend .dd-over{background:#69758A}
-html body #app #viewDeals #dealDistribution .dd-views{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-html body #app #viewDeals #dealDistribution .dd-views button{min-height:44px;padding:8px 12px;border:1px solid #DCE2EC;border-radius:10px;background:#fff;color:#53617C;font:inherit}
-html body #app #viewDeals #dealDistribution .dd-views button[aria-pressed="true"]{background:#E8EEFF;color:#1945D1;border-color:#A4B8FA;font-weight:600}
-html body #app #viewDeals #dealDistribution .dd-views button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
-html body #app #viewDeals #dealDistribution .dd-chart{max-width:680px;margin-inline:auto}
-html body #app #viewDeals #dealDistribution .dd-method{margin-top:4px}
-html body #app #viewDeals #dealDistribution .dd-method summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;cursor:pointer;list-style:none;font-size:12px;color:#53617C}
+html body #app #viewDeals #dealDistribution .dd-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3)}
+html body #app #viewDeals #dealDistribution .dd-head small{display:block;font-size:var(--t7);color:#53617C;font-weight:400}
+html body #app #viewDeals #dealDistribution .dd-head small i{font-style:normal;white-space:nowrap}
+html body #app #viewDeals #dealDistribution .dd-head strong{display:block;margin-top:2px;font-size:var(--t3)!important;font-weight:700;color:#0E1B45!important;letter-spacing:-.02em}
+html body #app #viewDeals #dealDistribution .dd-head strong b{color:#2458FF;font-weight:700}
+html body #app #viewDeals #dealDistribution .dd-region{flex:none;min-height:var(--tap);padding:0 var(--sp-4);border:1px solid #DCE2EC;border-radius:var(--r-m);background:#F6F8FC;color:#0E1B45;font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}
+html body #app #viewDeals #dealDistribution .dd-region[aria-expanded="true"]{background:#E8EEFF;color:#1945D1;border-color:#A4B8FA}
+html body #app #viewDeals #dealDistribution .dd-region:focus-visible,html body #app #viewDeals #dealDistribution .dd-method summary:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+html body #app #viewDeals #dealDistribution .dd-strip{position:relative;margin-top:var(--sp-5)}
+html body #app #viewDeals #dealDistribution .dd-mark{position:absolute;top:-22px;transform:translateX(-50%);padding:0 var(--sp-2);border-radius:var(--r-s);background:#2458FF;color:#fff!important;font-size:var(--t7);font-weight:700;line-height:1.5;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body #app #viewDeals #dealDistribution .dd-mark.is-left{transform:none}
+html body #app #viewDeals #dealDistribution .dd-mark.is-right{transform:translateX(-100%)}
+html body #app #viewDeals #dealDistribution .dd-strip svg{display:block;width:100%;height:auto;overflow:visible}
+html body #app #viewDeals #dealDistribution .dd-axis{display:flex;justify-content:space-between;margin-top:2px}
+html body #app #viewDeals #dealDistribution .dd-axis span,html body #app #viewDeals #dealDistribution .dd-note,html body #app #viewDeals #dealDistribution .dd-note span{color:#53617C!important;font-size:var(--t7)!important}
+html body #app #viewDeals #dealDistribution .dd-note{display:block!important;margin:var(--sp-2) 0 0!important;line-height:1.5!important;font-weight:400}
+html body #app #viewDeals #dealDistribution .dd-method{margin-top:var(--sp-1)}
+html body #app #viewDeals #dealDistribution .dd-method summary{display:flex;align-items:center;justify-content:space-between;min-height:var(--tap);cursor:pointer;list-style:none;font-size:var(--t7);color:#53617C}
 html body #app #viewDeals #dealDistribution .dd-method summary::-webkit-details-marker{display:none}
-html body #app #viewDeals #dealDistribution .dd-method summary::after{content:'＋';font-size:16px}
+html body #app #viewDeals #dealDistribution .dd-method summary::after{content:'＋';font-size:var(--t5)}
 html body #app #viewDeals #dealDistribution .dd-method[open] summary::after{content:'−'}
-html body #app #viewDeals #dealDistribution .dd-method summary:focus-visible{outline:2px solid #2458FF;outline-offset:2px;border-radius:4px}
-@media(max-width:370px){html body #app #viewDeals #dealDistribution{padding-inline:18px;margin-inline:-18px}}
+html body #app #viewDeals #dealDistribution .dd-legend{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-top:var(--sp-1)}
+html body #app #viewDeals #dealDistribution .dd-legend span{color:#0E1B45!important;font-size:var(--t7)}
+html body #app #viewDeals #dealDistribution .dd-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:var(--sp-1);background:#2458FF}
+html body #app #viewDeals #dealDistribution .dd-legend .dd-over{background:#8792A8}
+html body #app #viewDeals #dealDistribution .dd-bars{display:block;width:100%;height:auto;margin-top:var(--sp-3)}
+@media(max-width:370px){html body #app #viewDeals #dealCard>.deal-budget{padding-inline:var(--sp-4)!important}}
+/* 넓은 화면에서 띠가 폭을 따라 커지지 않게 — 모바일과 같은 크기로 가운데 */
+@media(min-width:600px){html body #app #viewDeals #dealDistribution .dd-strip{max-width:440px;margin-inline:auto}}
+/* v185: 지역 변경은 띠의 버튼이 연다 — 기존 줄(요약)은 접고, 열렸을 때만 칩 묶음을 보인다 */
+html body #app #viewDeals #dealRegions>summary{display:none!important}
+html body #app #viewDeals #dealRegions:not([open]){display:none!important}
+html body #app #viewDeals #dealRegions[open]{margin:0 0 var(--sp-3)!important}
+/* v185: 정렬 칸 + 필터 버튼 한 줄. 필터 접힘 줄은 버튼이 대신한다 */
+html body #app #viewDeals #dealTools{order:5;display:flex;align-items:center;gap:var(--sp-2);margin:0 0 var(--sp-3)}
+html body #app #viewDeals #dealTools #sortSeg{order:0!important;flex:1 1 auto;min-width:0;display:grid!important;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;margin:0!important;padding:4px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important}
+html body #app #viewDeals #dealTools #sortSeg button{min-height:40px;padding:0 var(--sp-1)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t6)!important;box-shadow:none!important;white-space:nowrap}
+html body #app #viewDeals #dealTools #sortSeg button::after,html body #app #viewDeals #dealTools #sortSeg button::before{content:none!important}
+html body #app #viewDeals #dealTools #sortSeg button.is-on{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}
+html body #app #viewDeals #dealFilterBtn{order:1;flex:none;min-height:48px;padding:0 var(--sp-4);border:1px solid #DCE2EC;border-radius:var(--r-m);background:#fff;color:#0E1B45;font:inherit;font-size:var(--t6);font-weight:700;white-space:nowrap;cursor:pointer}
+html body #app #viewDeals #dealFilterBtn b{margin-left:var(--sp-1);color:#2458FF}
+html body #app #viewDeals #dealFilterBtn[aria-expanded="true"]{background:#E8EEFF;color:#1945D1;border-color:#A4B8FA}
+html body #app #viewDeals #dealFilterBtn[aria-expanded="true"] b{color:#1945D1}
+html body #app #viewDeals #dealFilterBtn:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+html body #app #viewDeals #dealCard>.deal-filter-fold{order:6!important}
+html body #app #viewDeals #dealCard>.deal-filter-fold>summary{display:none!important}
+html body #app #viewDeals #dealCard>.deal-filter-fold:not([open]){display:none!important}
+html body #app #viewDeals #dealCard>#dealSortNote{order:6}
+/* v186: 목록·지도 전환도 정렬 칸과 같은 트랙 모양으로(두 가지 세그먼트 모양이 섞이지 않게). 곳 수 줄과 한 줄에 선다(320 포함). */
+html body #app #viewDeals .deal-headrow{margin:var(--sp-1) 0 var(--sp-2)!important;flex-wrap:nowrap!important;align-items:center;gap:var(--sp-2)}
+html body #app #viewDeals .deal-headrow>#dealLead{flex:1 1 0!important;min-width:0}
+html body #app #viewDeals #dealViewBar{margin:0!important}
+html body #app #viewDeals #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;gap:2px;padding:4px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important}
+html body #app #viewDeals #dealViewBar .deal-switch button{min-width:56px;min-height:40px;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t6)!important;font-weight:400!important;box-shadow:none!important}
+html body #app #viewDeals #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}
+html body #app #viewDeals #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+@media(max-width:370px){html body #app #viewDeals #dealTools #sortSeg button{font-size:var(--t7)!important}html body #app #viewDeals #dealFilterBtn{padding:0 var(--sp-3)}}
 html body #app #viewDeals .dealbox .deal-sum{font-size:13px;font-weight:400;line-height:1.6;color:#53617C;margin-block:12px 8px}
 html body #app #viewDeals .dealbox>.dealrow .v{font-weight:500}
 html body #app #viewDeals .deal-afford .da-h{font-weight:600}
 html body #app #viewDeals .deal-afford .da-gap{font-weight:600}
-html body #app #viewDeals #sortSeg button:not(.is-on){font-weight:400!important}
 </style><script>function distributionModel(items,budget,pass){
  const prices=items.filter(x=>Number.isFinite(x.amountMan)&&x.amountMan>0&&(!pass||pass(x))).map(x=>x.amountMan);
  const n=prices.length,under=prices.filter(p=>p<=budget).length;
@@ -9768,36 +9807,152 @@ function renderDealDistribution(priceMan){
  let box=document.getElementById('dealDistribution');
  if(!box){box=document.createElement('section');box.id='dealDistribution';box.setAttribute('aria-label','조회 거래 가격 분포');budgetCard.appendChild(box);}
  const methodOpen=!!box.querySelector('.dd-method[open]');
+ const regions=document.getElementById('dealRegions');
+ const scope=esc(typeof dealScopeLabel==='function'?dealScopeLabel():'')+' · <i>최근 '+(DEAL.months||3)+'개월</i>';
+ const head=big=>'<div class="dd-head"><div><small>'+scope+'</small><strong>'+big+'</strong></div><button type="button" class="dd-region" data-dd-region aria-controls="dealRegions" aria-expanded="'+(!!(regions&&regions.open))+'">지역 변경</button></div>';
  if(DEAL.status==='loading'||DEAL.status==='error'){
-  box.textContent=DEAL.status==='loading'?'거래 분포를 불러오는 중이에요.':'거래 분포를 불러오지 못했어요.';return;
+  box.innerHTML=head(DEAL.status==='loading'?'거래를 불러오는 중이에요':'거래를 불러오지 못했어요');return;
  }
  const budget=typeof LASTVIEW==='object'&&LASTVIEW&&LASTVIEW.price>0?Math.floor(LASTVIEW.price/10000):priceMan;
  const model=distributionModel(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null);
  const money=v=>formatWon(Math.round(v)*10000);
- if(!Number.isFinite(budget)||budget<=0){box.textContent='예상 집값을 계산하면 거래 분포를 볼 수 있어요.';return;}
- if(!model.bins){box.textContent=model.n?'조건에 맞는 거래가 '+model.n+'건이라 분포를 표시하지 않아요.':'조건에 맞는 거래가 없어 분포를 표시하지 않아요.';return;}
- const dotMode=!box.dataset||box.dataset.mode!=='bars';
+ if(!Number.isFinite(budget)||budget<=0){box.innerHTML=head('실거래')+'<p class="dd-note">예상 집값을 계산하면 거래 분포를 볼 수 있어요.</p>';return;}
+ if(!model.bins){box.innerHTML=head('예상 집값 이하 <b>'+model.under+'건</b>')+'<p class="dd-note">'+(model.n?'조건에 맞는 거래가 '+model.n+'건이라 분포를 표시하지 않아요.':'조건에 맞는 거래가 없어 분포를 표시하지 않아요.')+'</p>';return;}
  const dots=distributionDots(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null,model);
- const height=dotMode?dots.height:132,base=height-14;
+ /* 띠 높이를 고정한다 — 같은 가격대가 몰리면 4단까지 쌓고 그 위는 겹친다(개수는 문장·자세히에 있다) */
+ const CAP=4,base=36,mx=12+model.marker*336;
  const moneyShort=v=>{const e=v/10000;return Number(e.toFixed(1))+'억';};
- const bars=model.bins.map((b,i)=>{
-  const x=15+i*28,h=b.under/model.peak*64,o=b.over/model.peak*64,total=b.under+b.over;
-  return '<g><title>'+money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12)+' · '+total+'건</title><rect x="'+x+'" y="'+(base-h)+'" width="21" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(base-h-o)+'" width="21" height="'+o+'" rx="2" fill="#69758A"/><text x="'+(x+10.5)+'" y="'+(base-h-o-5)+'" text-anchor="middle" font-size="10" fill="#53617C">'+total+'</text></g>';
- }).join('');
- const points=dots.points.map(p=>'<circle cx="'+p.x+'" cy="'+(base-5-p.level*8)+'" r="3" fill="'+(p.amount<=budget?'#2458FF':'#69758A')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
- const mx=12+model.marker*336;
+ const points=dots.points.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+(base-5-Math.min(p.level,CAP-1)*8)+'" r="3.5" fill="'+(p.amount<=budget?'#2458FF':'#8792A8')+'" fill-opacity="'+(p.level>=CAP-1?'.75':'1')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
+ const shade='<path d="M12 4H'+mx.toFixed(1)+'V'+base+'H12Z" fill="#2458FF" fill-opacity=".06"/>';
  const summary='조회 거래 '+model.n+'건 중 예상 집값 이하 '+model.under+'건, 초과 '+(model.n-model.under)+'건';
- const modeNote=dotMode?'점 1개 = 거래 1건 · 구간 안 최근 '+dots.points.length+'건':'막대 위 숫자 = 해당 가격 구간의 거래 건수';
- box.innerHTML='<div class="dd-title">거래 가격 분포<small>최근 '+DEAL.months+'개월 · '+model.n+'건</small></div>'
-  +'<div class="dd-views" role="group" aria-label="가격 분포 보기"><button type="button" data-distribution-mode="dots" aria-pressed="'+dotMode+'">거래별 가격</button><button type="button" data-distribution-mode="bars" aria-pressed="'+(!dotMode)+'">구간별 건수</button></div>'
-  +'<p class="dd-note">'+modeNote+'</p><div class="dd-chart">'
-  +'<svg viewBox="0 0 360 '+height+'" role="img" aria-label="'+summary+' · '+modeNote+'"><title>'+summary+'</title><line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+(dotMode?points:bars)+'<line x1="'+mx+'" x2="'+mx+'" y1="32" y2="'+base+'" stroke="#0E1B45" stroke-width="1.5" stroke-dasharray="3 2"/><text x="180" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#0E1B45">내 예상 집값 '+money(budget)+'</text></svg>'
+ const dotNote='점 1개 = 거래 1건 · 구간 안 최근 '+dots.points.length+'건 · 같은 가격대가 많으면 점이 겹쳐요';
+ const pct=model.marker*100,side=pct<22?' is-left':pct>78?' is-right':'';
+ const mark='<span class="dd-mark'+side+'" style="left:'+(pct<22?0:pct>78?100:pct).toFixed(1)+'%">내 예상 집값 '+money(budget)+'</span>';
+ const bars=model.bins.map((b,i)=>{
+  const x=15+i*28,h=b.under/model.peak*56,o=b.over/model.peak*56,total=b.under+b.over,bb=74;
+  return '<g><title>'+money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12)+' · '+total+'건</title><rect x="'+x+'" y="'+(bb-h)+'" width="21" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(bb-h-o)+'" width="21" height="'+o+'" rx="2" fill="#8792A8"/><text x="'+(x+10.5)+'" y="'+(bb-h-o-4)+'" text-anchor="middle" font-size="10" fill="#53617C">'+total+'</text></g>';
+ }).join('');
+ box.innerHTML=head('예상 집값 이하 <b>'+model.under+'건</b>')
+  +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 360 '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
   +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span><span>'+moneyShort((model.lo+model.hi)/2)+'</span><span>'+moneyShort(model.hi)+'</span></div></div>'
   +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')
-  +'<p class="dd-note">표시 구간 전체 '+model.shown+'건'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
-  +'<div class="dd-legend" aria-label="범위 밖 거래를 포함한 전체 집계"><span>전체 거래 기준</span><span><i></i>예상 집값 이하 '+model.under+'건</span><span><i class="dd-over"></i>초과 '+(model.n-model.under)+'건</span></div>'
-  +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>그래프 집계 기준</summary><p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 그래프는 예상 집값의 약 50~150% 구간만 표시하며, 범위 밖 거래도 전체 건수와 예상 집값 이하·초과 집계에는 포함합니다. 거래별 가격은 구간 안 최근 60건까지 점으로 표시합니다. 구간별 건수는 해당 구간의 모든 거래를 셉니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다.</p></details>';
+  +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>분포 자세히 · 집계 기준</summary>'
+  +'<div class="dd-legend" aria-label="범위 밖 거래를 포함한 전체 집계"><span>전체 거래 기준 '+model.n+'건</span><span><i></i>예상 집값 이하 '+model.under+'건</span><span><i class="dd-over"></i>초과 '+(model.n-model.under)+'건</span></div>'
+  +'<p class="dd-note">표시 구간('+moneyShort(model.lo)+'~'+moneyShort(model.hi)+') '+model.shown+'건'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
+  +'<p class="dd-note">'+dotNote+'</p>'
+  +'<svg class="dd-bars" viewBox="0 0 360 80" role="img" aria-label="가격 구간별 거래 건수"><line x1="12" x2="348" y1="74" y2="74" stroke="#DCE2EC"/>'+bars+'</svg>'
+  +'<p class="dd-note">막대 위 숫자 = 해당 가격 구간의 거래 건수</p>'
+  +'<p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 그래프는 예상 집값의 약 50~150% 구간만 표시하며, 범위 밖 거래도 전체 건수와 예상 집값 이하·초과 집계에는 포함합니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다. 아래 목록은 단지별 최근 거래라 건수가 다릅니다.</p></details>';
 }
-document.addEventListener('click',function(e){const b=e.target.closest('#dealDistribution [data-distribution-mode]');if(!b)return;const box=document.getElementById('dealDistribution');box.dataset.mode=b.dataset.distributionMode;renderDealDistribution(DEAL.lastPrice);box.querySelector('[data-distribution-mode="'+b.dataset.distributionMode+'"]').focus();});
-document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});</script></body>
+function dealTools(){
+ const card=document.getElementById('dealCard'),seg=document.getElementById('sortSeg'),fold=card&&card.querySelector(':scope>.deal-filter-fold');
+ if(!card||!seg||!fold)return;
+ let row=document.getElementById('dealTools');
+ if(!row){
+  row=document.createElement('div');row.id='dealTools';row.className='deal-tools';
+  seg.before(row);row.appendChild(seg);
+  const btn=document.createElement('button');btn.type='button';btn.id='dealFilterBtn';
+  btn.setAttribute('aria-controls','dealFilterBox');btn.setAttribute('aria-expanded',String(fold.open));
+  row.appendChild(btn);
+  const box=document.getElementById('dealFilterBox');
+  if(box)new MutationObserver(dealTools).observe(box,{subtree:true,attributes:true,attributeFilter:['aria-pressed']});
+ }
+ const btn=document.getElementById('dealFilterBtn');
+ const on=[...card.querySelectorAll('#dealChips [aria-pressed="true"],#dealUnitFilter [data-min-units][aria-pressed="true"]')].filter(b=>b.dataset.minUnits!=='0').length;
+ const label='필터'+(on?' <b>'+on+'</b>':'');
+ if(btn.innerHTML!==label)btn.innerHTML=label;
+ btn.setAttribute('aria-label',on?'필터 '+on+'개 적용됨':'필터');
+ btn.setAttribute('aria-expanded',String(fold.open));
+}
+document.addEventListener('click',function(e){const r=e.target.closest('#dealDistribution [data-dd-region]');if(r){const d=document.getElementById('dealRegions');if(!d)return;d.open=!d.open;r.setAttribute('aria-expanded',String(d.open));return;}const f=e.target.closest('#dealFilterBtn');if(f){const d=document.querySelector('#dealCard>.deal-filter-fold');if(!d)return;d.open=!d.open;f.setAttribute('aria-expanded',String(d.open));}});
+document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});
+document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v184-design">
+/* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
+html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{grid-column:1;grid-row:1;min-width:0;font-size:var(--t-card)!important;font-weight:600}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{grid-column:1;grid-row:2;min-width:0;font-size:var(--t7)!important}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt{grid-column:2;grid-row:1;justify-self:end;font-size:var(--t4)!important;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-budget-gap{grid-column:2;grid-row:2;justify-self:end;margin:0!important}
+/* 단지명·위치는 말줄임 대신 줄바꿈(320 실측에서 「성수롯데…」로 잘림) — 이름이 판단 근거라 자르지 않는다 */
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:keep-all}
+
+/* ① 실거래 목록 — 같은 두 줄 구성. 「거래 상세」 펼침은 셋째 줄 전체 폭 */
+html body #app #viewDeals #dealList .dealwrap>.deal{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center}
+html body #app #viewDeals #dealList .dealwrap>.deal>.nm{grid-column:1;grid-row:1;min-width:0;font-size:var(--t5)!important;font-weight:600}
+html body #app #viewDeals #dealList .dealwrap>.deal>.amt{grid-column:2;grid-row:1;justify-self:end;margin:0!important;font-size:var(--t4)!important;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body #app #viewDeals #dealList .dealwrap>.deal>.deal-meta{grid-column:1;grid-row:2;min-width:0;margin:0!important}
+html body #app #viewDeals #dealList .dealwrap>.deal>.budget-gap{grid-column:2;grid-row:2;justify-self:end;margin:0!important}
+html body #app #viewDeals #dealList .dealwrap>.deal>.deal-expand{grid-column:1/-1;grid-row:3;justify-self:start}
+html body #app #viewDeals #dealList .dealwrap>.deal>.budget-gap:empty{display:none}
+
+/* ① 차이 칩 — 말머리는 화면에서만 접는다(읽기 도구는 「예상 집값보다 N 낮음」 전체를 읽는다) */
+html body #app #heroDeals .hd-budget-gap,html body #app #viewDeals #dealList .deal>.budget-gap{font-size:0!important;line-height:0;white-space:nowrap}
+html body #app #heroDeals .hd-budget-gap .budget-delta,html body #app #viewDeals #dealList .deal>.budget-gap .budget-delta{display:inline-block;font-size:var(--t7)!important;line-height:1.5;font-weight:600;padding:1px var(--sp-2);border-radius:var(--r-s);white-space:nowrap}
+html body #app #heroDeals .budget-delta.is-under,html body #app #viewDeals #dealList .deal .budget-delta.is-under{color:var(--v-success);background:var(--v-success-soft)}
+html body #app #heroDeals .budget-delta.is-over,html body #app #viewDeals #dealList .deal .budget-delta.is-over{color:var(--v-coral,#b8443c);background:#FBEFEE}
+html body #app #heroDeals .budget-delta.is-equal,html body #app #viewDeals #dealList .deal .budget-delta.is-equal{color:var(--v-muted,#5f6b7d);background:#F1F3F7}
+
+/* ② 상위 목록이 보일 때만 「N건 중 M건」 문장과 비율 막대를 숨긴다 */
+html body #app #viewAnswer #easyMarket:has(#heroDeals:not([hidden]) li[data-key]) #marketRatio{display:none!important}
+
+/* 좁은 화면(320~374): 가격 글자를 한 단 낮춰 이름 칸을 넓힌다 — 가격 자체는 자르지 않는다 */
+@media (max-width:374px){
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt,html body #app #viewDeals #dealList .dealwrap>.deal>.amt{font-size:var(--t-card)!important}
+/* 위치·면적 줄은 셋째 줄 전체 폭으로 — 「84.9 / ㎡」처럼 단위가 끊기지 않게 */
+html body #app #viewAnswer #heroDeals .hd-list li[data-key]{grid-template-rows:auto auto auto!important}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{grid-row:1/3;align-self:start}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{grid-column:1/-1;grid-row:3}
+html body #app #viewDeals #dealList .dealwrap>.deal>.nm{grid-row:1/3;align-self:start}
+html body #app #viewDeals #dealList .dealwrap>.deal>.deal-meta{grid-column:1/-1;grid-row:3}
+html body #app #viewDeals #dealList .dealwrap>.deal>.deal-expand{grid-row:4}
+}
+html body #app #viewDeals #dealList .dealbox{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:var(--sp-2) 0 0!important}
+html body #app #viewDeals #dealList .dealbox .deal-sum{margin:0 0 var(--sp-1)!important;color:#53617C!important;font-size:var(--t7)!important}
+html body #app #viewDeals #dealList .dealbox .deal-range{margin:0 0 var(--sp-3)!important;color:#0E1B45!important;font-size:var(--t7)!important;font-weight:600!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford{background:#F6F8FC!important;border:0!important;border-radius:var(--r-m)!important;padding:var(--sp-3) var(--sp-4)!important;margin:0 0 var(--sp-3)!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow{padding:var(--sp-1) 0!important;font-size:var(--t6)!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow .k{color:#53617C!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow .v{color:#0E1B45!important;font-weight:600!important;font-variant-numeric:tabular-nums}
+html body #app #viewDeals #dealList .dealbox>.dealrow{padding:var(--sp-2) 0!important;border-top:1px solid #DCE2EC;font-size:var(--t6)!important}
+html body #app #viewDeals #dealList .dealbox>.dealrow .k{color:#53617C!important}
+html body #app #viewDeals #dealList .dealbox>.dealrow .v{color:#0E1B45!important;font-weight:500;font-variant-numeric:tabular-nums}
+html body #app #viewDeals #dealList .dealbox>.deal-naver{margin-top:var(--sp-1)!important}
+/* ③ 상단 바 가격 */
+html body #app .appbar .barprice{display:none}
+html body #app .appbar.is-price-pinned .barprice{display:inline-flex;align-items:baseline;gap:var(--sp-2);min-width:0;margin-right:auto;font-size:var(--t-card);font-weight:700;color:var(--v-blue,#2458FF);white-space:nowrap;font-variant-numeric:tabular-nums}
+html body #app .appbar.is-price-pinned .barprice small{font-size:var(--t7);font-weight:500;color:var(--v-sub,#53617C)}
+html body #app .appbar.is-price-pinned #barLabel{display:none}
+</style>
+<script id="v184-price-pin">
+/* ③ 결과 집값 카드가 위로 사라지면 상단 바에 가격을 띄운다. 계산하지 않고 화면 글자를 옮겨 적는다. */
+(function(){
+  var bar = document.querySelector('.appbar'), slot = document.getElementById('barPrice');
+  var head = document.querySelector('#fundingOverview > .rhead'), src = document.getElementById('easyPrice');
+  if(!bar || !slot || !head || !src || !('IntersectionObserver' in window)) return;
+  function copy(){
+    var t = (src.textContent || '').replace(/\s+/g, ' ').trim();
+    slot.innerHTML = '';
+    var k = document.createElement('small'); k.textContent = '살 수 있는 집값';
+    var v = document.createElement('span'); v.textContent = t;
+    slot.append(k, v);
+    return t;
+  }
+  function set(on){
+    on = !!on && !!copy();
+    bar.classList.toggle('is-price-pinned', on);
+    slot.hidden = !on;
+  }
+  new IntersectionObserver(function(es){
+    var e = es[es.length - 1];
+    /* 숨은 화면(실거래 목록·입력)에서는 사각형이 0이라 top<0 이 되지 않는다 → 켜지지 않는다 */
+    set(!e.isIntersecting && e.boundingClientRect.bottom < 0 && head.offsetParent !== null);
+  }, {rootMargin: '-48px 0px 0px 0px'}).observe(head);
+  new MutationObserver(function(){ if(bar.classList.contains('is-price-pinned')) copy(); })
+    .observe(src, {childList:true, characterData:true, subtree:true});
+  /* 결과 화면을 벗어나면(목록·입력으로 이동) 즉시 끈다 */
+  new MutationObserver(function(){ if(head.offsetParent === null) set(false); })
+    .observe(document.getElementById('result') || document.body, {attributes:true, subtree:true, attributeFilter:['hidden','class']});
+})();
+</script></body>
 </html>
