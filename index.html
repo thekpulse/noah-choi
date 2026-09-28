@@ -9699,7 +9699,18 @@ html body #app #viewDeals .dealbox .dealrow .k{flex:1 1 120px;overflow-wrap:anyw
 html body #app #viewDeals .dealbox .dealrow .v{min-width:0;max-width:100%;margin-left:auto;text-align:right;white-space:normal;overflow-wrap:anywhere}
 html body #app #viewDeals .deal-afford .da-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
 html body #app #viewDeals .deal-afford .da-h span{margin-left:0}
+/* v181: selected controls and detail surfaces from Claude 11a. */
+html body #app #viewDeals .dealbox{background:#F6F8FC;border:1px solid #DCE2EC;border-radius:14px;padding:14px;min-width:0}
+html body #app #viewDeals #sortSeg{gap:4px;flex-wrap:wrap}
+html body #app #viewDeals #sortSeg button{min-height:44px;border-radius:10px}
+html body #app #viewDeals #sortSeg button.is-on{background:#E8EEFF;color:#1945D1;border-color:#A4B8FA;font-weight:600}
+html body #app #viewDeals #sortSeg button:focus-visible,html body #app #viewDeals .deal-filter-fold>summary:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+html body #app #viewDeals .deal-filter-fold>summary{min-height:44px}
+html body #app #viewDeals .deal-filter-fold[open]>summary{color:#1945D1}
+html body #app #easyMarket .plot-legend{display:none!important}
 </style><style id="deal-distribution-style">
+/* v180: distribution belongs to the transactions screen only. */
+html body #app #easyMarket #marketChartFold,html body #app #easyMarket #easyMarketRows,html body #app #easyMarket #plotLab,html body #app #easyMarket #plotNone,html body #app #easyMarket #plotDetail,html body #app #easyMarket #marketMethod{display:none!important}
 html body #app #viewDeals #dealDistribution{display:block!important;background:#fff;color:#0E1B45;border-top:1px solid #DCE2EC;padding:12px 21px;margin:10px -21px -12px;border-radius:0;min-width:0;font-size:13px;line-height:1.5}
 html body #app #viewDeals #dealDistribution span{color:#53617C!important}
 html body #app #viewDeals #dealDistribution .dd-title{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 8px;font-size:13px;font-weight:600}
@@ -9726,13 +9737,14 @@ html body #app #viewDeals #sortSeg button:not(.is-on){font-weight:400!important}
  const prices=items.filter(x=>Number.isFinite(x.amountMan)&&x.amountMan>0&&(!pass||pass(x))).map(x=>x.amountMan);
  const n=prices.length,under=prices.filter(p=>p<=budget).length;
  if(n<3||!Number.isFinite(budget)||!(budget>0))return {n,under};
- let min=budget,max=budget;
- prices.forEach(p=>{min=Math.min(min,p);max=Math.max(max,p);});
- const pad=Math.max((max-min)*.06,100);
- const lo=Math.max(0,min-pad),hi=max+pad;
+ // Keep the readable axis around the user's budget; never discard outside trades.
+ const step=budget>=10000?5000:Math.max(1,Math.ceil(budget/10));
+ const lo=Math.max(0,Math.floor(budget*.5/step)*step),hi=Math.ceil(budget*1.5/step)*step;
+ const below=prices.filter(p=>p<lo).length,above=prices.filter(p=>p>hi).length;
+ const visible=prices.filter(p=>p>=lo&&p<=hi);
  const bins=Array.from({length:12},()=>({under:0,over:0}));
- prices.forEach(p=>{const i=Math.min(11,Math.floor((p-lo)/(hi-lo)*12));bins[i][p<=budget?'under':'over']++;});
- return {n,under,lo,hi,bins,peak:Math.max(...bins.map(b=>b.under+b.over)),marker:(budget-lo)/(hi-lo)};
+ visible.forEach(p=>{const i=Math.min(11,Math.floor((p-lo)/(hi-lo)*12));bins[i][p<=budget?'under':'over']++;});
+ return {n,under,lo,hi,below,above,shown:visible.length,bins,peak:Math.max(1,...bins.map(b=>b.under+b.over)),marker:(budget-lo)/(hi-lo)};
 }
 function renderDealDistribution(priceMan){
  const budgetCard=document.querySelector('#dealCard .deal-budget');
@@ -9746,18 +9758,22 @@ function renderDealDistribution(priceMan){
  const budget=typeof LASTVIEW==='object'&&LASTVIEW&&LASTVIEW.price>0?Math.floor(LASTVIEW.price/10000):priceMan;
  const model=distributionModel(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null);
  const money=v=>formatWon(Math.round(v)*10000);
+ if(!Number.isFinite(budget)||budget<=0){box.textContent='예상 집값을 계산하면 거래 분포를 볼 수 있어요.';return;}
  if(!model.bins){box.textContent=model.n?'조건에 맞는 거래가 '+model.n+'건이라 분포를 표시하지 않아요.':'조건에 맞는 거래가 없어 분포를 표시하지 않아요.';return;}
  const bars=model.bins.map((b,i)=>{
   const x=2+i*25,h=b.under/model.peak*48,o=b.over/model.peak*48;
-  return '<rect x="'+x+'" y="'+(66-h)+'" width="19" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(66-h-o)+'" width="19" height="'+o+'" rx="2" fill="#69758A"/>';
+  const range=money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12);
+  return '<g><title>'+range+' · '+(b.under+b.over)+'건</title><rect x="'+x+'" y="'+(66-h)+'" width="19" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(66-h-o)+'" width="19" height="'+o+'" rx="2" fill="#69758A"/></g>';
  }).join('');
  const mx=model.marker*300,tx=Math.max(36,Math.min(264,mx));
  const summary='조회 거래 '+model.n+'건 중 예상 집값 이하 '+model.under+'건, 초과 '+(model.n-model.under)+'건';
  box.innerHTML='<div class="dd-title">거래 가격 분포<small>최근 '+DEAL.months+'개월 · '+model.n+'건</small></div>'
   +'<svg viewBox="0 0 300 76" role="img" aria-label="'+summary+'"><title>'+summary+'</title>'+bars+'<line x1="'+mx+'" x2="'+mx+'" y1="20" y2="68" stroke="#0E1B45" stroke-width="1.5" stroke-dasharray="3 2"/><text x="'+tx+'" y="13" text-anchor="middle" font-size="11" fill="#0E1B45">내 예상 집값</text></svg>'
   +'<div class="dd-axis"><span>'+money(model.lo)+'</span><span>'+money(model.hi)+'</span></div>'
-  +'<div class="dd-legend"><span><i></i>예상 집값 이하 '+model.under+'건</span><span><i class="dd-over"></i>초과 '+(model.n-model.under)+'건</span></div>'
-  +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>막대 높이 = 거래 수 · 집계 기준</summary><p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다.</p></details>';
+  +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')
+  +'<p class="dd-note">예상 집값 주변 '+model.shown+'건 표시'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
+  +'<div class="dd-legend" aria-label="범위 밖 거래를 포함한 전체 집계"><span>전체 거래 기준</span><span><i></i>예상 집값 이하 '+model.under+'건</span><span><i class="dd-over"></i>초과 '+(model.n-model.under)+'건</span></div>'
+  +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>막대 높이 = 거래 수 · 집계 기준</summary><p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 그래프는 예상 집값의 약 50~150% 구간만 표시하며, 범위 밖 거래도 전체 건수와 예상 집값 이하·초과 집계에는 포함합니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다.</p></details>';
 }
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});</script></body>
 </html>
