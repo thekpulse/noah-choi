@@ -3550,7 +3550,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
     
         
     <div class="rview" id="viewAnswer">
-<section class="budget-overview" id="fundingOverview" aria-label="주택 구입 예산"><header class="rhead">
+<section class="budget-overview" id="priceOverview" aria-label="예상 집값"><header class="rhead">
 <div class="easy-money-row price-answer"><span>살 수 있는 집값 <small class="estimate-tag">예상</small></span><strong id="easyPrice">—</strong><em class="easy-row-pct" id="easyPricePct"></em></div>
       
 
@@ -3577,42 +3577,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
       
       
       
-    </header>    <div class="budget-summary"><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
-      <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p></div><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span>포함된 부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true"></b></button>        </div><section class="easy-card easy-balance" id="easyBalance" aria-labelledby="easyUseTitle">
-      
-      
-      <h2 id="easyUseTitle" class="sr-only">총 필요 금액의 마련 방법</h2>
-      <div class="easy-money-rows">
-        
-        
-
-      </div>
-      <div class="easy-stack" aria-hidden="true"><i class="house" id="easyUseHouse"></i><i class="cost" id="easyUseCost"></i></div>
-
-      <div class="easy-divider" hidden></div>
-
-      
-      
-      
-      <div class="ratio">
-        <div class="rbar" aria-hidden="true"><i id="easyFundCash"></i><s id="easyFundLoan"></s></div>
-        <div class="rlab">
-          <div><p class="t">사용할 현금<em id="easyCashPct"></em></p><p class="n"><strong id="easyCash">—</strong></p></div>
-          <div><p class="t">주택담보대출<em id="easyLoanPct"></em></p><p class="n"><strong id="easyLoan">—</strong></p></div>
-        </div>
-      </div>
-      <div class="cash-remainder"><span id="cashRemainderLabel">비용을 낸 뒤 남는 현금</span><strong id="cashRemainder">—</strong></div>
-      <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 남겨 두고 입력하세요.</p>
-      
-      <button class="disc disc-head" id="loanCutToggle" aria-expanded="false" aria-controls="loanCutBox" hidden>
-        <span class="k">대출을 줄여 보기</span><span class="v" id="loanCutV"></span><span class="caret" aria-hidden="true"></span></button>
-      <div class="ratesim" id="loanCutBox" hidden>
-        <input type="range" id="loanCutRange" min="0" max="0" step="100" value="0" aria-label="줄일 대출 금액">
-        <div class="range-ends" id="loanCutEnds" aria-hidden="true"><span>0원</span><span id="loanCutMax"></span></div>
-        <p class="tile-s" id="loanCutNote"></p>
-      </div>
-      
-    </section></section><div class="paywrap" id="payTile">
+    </header></section><div class="paywrap" id="payTile">
       <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
       <div class="ans-row">
         <p class="ans-v" id="tileMonthly"></p>
@@ -3657,7 +3622,42 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
         <p class="mt" id="plotDmt"></p>
       </div>
     </section>
-    <p class="ans-note" id="ansNote"></p>
+    <section class="budget-overview" id="fundingOverview" aria-label="주택 구입 예산">    <div class="budget-summary"><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
+      <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p></div><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span>포함된 부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true"></b></button>        </div><section class="easy-card easy-balance" id="easyBalance" aria-labelledby="easyUseTitle">
+      
+      
+      <h2 id="easyUseTitle" class="sr-only">총 필요 금액의 마련 방법</h2>
+      <div class="easy-money-rows">
+        
+        
+
+      </div>
+      <div class="easy-stack" aria-hidden="true"><i class="house" id="easyUseHouse"></i><i class="cost" id="easyUseCost"></i></div>
+
+      <div class="easy-divider" hidden></div>
+
+      
+      
+      
+      <div class="ratio">
+        <div class="rbar" aria-hidden="true"><i id="easyFundCash"></i><s id="easyFundLoan"></s></div>
+        <div class="rlab">
+          <div><p class="t">사용할 현금<em id="easyCashPct"></em></p><p class="n"><strong id="easyCash">—</strong></p></div>
+          <div><p class="t">주택담보대출<em id="easyLoanPct"></em></p><p class="n"><strong id="easyLoan">—</strong></p></div>
+        </div>
+      </div>
+      <div class="cash-remainder"><span id="cashRemainderLabel">비용을 낸 뒤 남는 현금</span><strong id="cashRemainder">—</strong></div>
+      <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 남겨 두고 입력하세요.</p>
+      
+      <button class="disc disc-head" id="loanCutToggle" aria-expanded="false" aria-controls="loanCutBox" hidden>
+        <span class="k">대출을 줄여 보기</span><span class="v" id="loanCutV"></span><span class="caret" aria-hidden="true"></span></button>
+      <div class="ratesim" id="loanCutBox" hidden>
+        <input type="range" id="loanCutRange" min="0" max="0" step="100" value="0" aria-label="줄일 대출 금액">
+        <div class="range-ends" id="loanCutEnds" aria-hidden="true"><span>0원</span><span id="loanCutMax"></span></div>
+        <p class="tile-s" id="loanCutNote"></p>
+      </div>
+      
+    </section></section><p class="ans-note" id="ansNote"></p>
     
     <div class="card" id="reasonCard">
     <button class="disc quiet" id="limitToggle" aria-expanded="false" aria-controls="limitBox">
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v173 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v174 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9615,6 +9615,64 @@ html body #app #viewAnswer{grid-template-rows:min-content 1fr;row-gap:var(--sp-4
 html body #app #viewAnswer>#fundingOverview{grid-column:1;grid-row:1}
 html body #app #viewAnswer>#payTile{grid-column:1;grid-row:2}
 html body #app #viewAnswer>#easyMarket{grid-column:2;grid-row:1/span 2}
+}
+</style><style id="v174-design">
+:root{--v-bg:#EFF2F8;--v-ink:#0E1B45;--v-sub:#53617C;--v-muted:#62708A;--v-line:#DCE2EC;--v-line-strong:#A4AFC3;--v-blue:#2458FF;--v-blue-deep:#1945D1;--v-blue-soft:#E8EEFF}
+html body,html body #app{background:#EFF2F8;color:#0E1B45}
+html body #app .funnel .cond-lead{color:#0E1B45;letter-spacing:-.035em}
+html body #app .funnel .entry-sub{color:#53617C}
+html body #app .funnel #crows{background:transparent;border:0;border-radius:0;box-shadow:none;padding:0!important}
+html body #app .funnel #crows>.crow,html body #app .funnel #crows>.inline-money,html body #app .funnel #crows>.main-no-loan{background:#fff;border-left:1px solid #DCE2EC!important;border-right:1px solid #DCE2EC!important;padding-left:20px!important;padding-right:20px!important;margin:0!important}
+html body #app .funnel #crows>.crow{min-height:56px!important}
+html body #app .funnel #crows>.crow[data-mode="region"]{border-top:1px solid #DCE2EC;border-radius:20px 20px 0 0}
+html body #app .funnel #crows>.crow[data-mode="house"]{border-bottom:1px solid #DCE2EC;border-radius:0 0 20px 20px}
+html body #app .funnel #crows>.inline-money:has(#main-cash){margin-top:12px!important;border-top:1px solid #DCE2EC;border-radius:20px 20px 0 0;padding-top:18px!important}
+html body #app .funnel #crows>:last-child{border-bottom:1px solid #DCE2EC!important;border-radius:0 0 20px 20px;padding-bottom:16px!important}
+html body #app .funnel #crows .inline-money-field{background:#F6F8FC;border-radius:12px;border-color:#C7D0E0}
+html body #app .funnel #crows .inline-money-field:focus-within{background:#fff;border-color:#2458FF;box-shadow:inset 0 0 0 1px #2458FF,0 0 0 3px #E8EEFF}
+html body #app .funnel #crows .inline-help{color:#53617C!important}
+html body #app #ctaBtn:not(:disabled){background:#2458FF;border-color:#2458FF;box-shadow:none;border-radius:14px}
+html body #app #ctaBtn:not(:disabled):active{background:#1945D1}
+html body #app #viewAnswer{gap:12px}
+html body #app #viewAnswer>#priceOverview,html body #app #viewAnswer>#fundingOverview,html body #app #viewAnswer>#payTile,html body #app #viewAnswer>#easyMarket{min-width:0;margin:0;border-radius:22px;box-shadow:none;grid-column:auto;grid-row:auto}
+html body #app #viewAnswer>#priceOverview{border:1px solid #2458FF;background:#2458FF;overflow:hidden}
+html body #app #viewAnswer #priceOverview>.rhead{background:#2458FF!important;padding:24px 22px!important;border:0!important}
+html body #app #viewAnswer #priceOverview .price-answer{row-gap:12px}
+html body #app #viewAnswer #priceOverview #easyPrice{font-size:clamp(34px,10.7vw,48px)!important;line-height:1.15;letter-spacing:-.04em;max-width:100%}
+html body #app #viewAnswer #priceOverview .estimate-tag{background:#FFFFFF24;color:#fff;border-color:#FFFFFF50}
+html body #app #viewAnswer>#fundingOverview,html body #app #viewAnswer>#payTile,html body #app #viewAnswer>#easyMarket{background:#fff;border:1px solid #DCE2EC}
+html body #app #viewAnswer>#payTile{padding:18px 20px}
+html body #app #viewAnswer #payTile .ans-k{color:#53617C}
+html body #app #viewAnswer #payTile .ans-v{color:#0E1B45}
+html body #app #viewAnswer #fundingOverview>.budget-summary{padding:20px 20px 8px}
+html body #app #viewAnswer #fundingOverview>#easyBalance{padding:0 20px 16px}
+html body #app #viewAnswer #fundingOverview .budget-total{border:0;align-items:baseline}
+html body #app #viewAnswer #fundingOverview #heroAmount{color:#0E1B45}
+html body #app #viewAnswer #fundingOverview #easyCostOpen{border-radius:10px;background:#F6F8FC;padding:8px 10px;gap:8px;min-height:44px}
+html body #app #viewAnswer #easyFundCash{background:#0E1B45}
+html body #app #viewAnswer #easyFundLoan{background:#2458FF}
+html body #app #viewAnswer #marketOpen{background:#0E1B45;color:#fff;border:1px solid #0E1B45;border-radius:14px;min-height:52px;padding:14px 16px}
+html body #app #viewAnswer #marketOpen:active{background:#203566}
+html body #app #viewAnswer #marketOpen .chev-r{border-color:currentColor}
+html body #app #viewDeals #dealList{background:#fff;border:1px solid #DCE2EC;border-radius:20px;box-shadow:none}
+html body #app #viewDeals .deal .nm{color:#0E1B45;line-height:1.45}
+html body #app #viewDeals .deal .amt{color:#0E1B45}
+html body #app #viewDeals .deal-meta{color:#53617C}
+html body #app #viewDeals .deal-switch{background:#E3E8F2;border-radius:12px}
+html body #app #viewDeals .deal-switch button[aria-selected="true"]{background:#fff;color:#1945D1;box-shadow:none}
+html body #app #viewDeals #dealRegions{border-color:#DCE2EC;background:#fff;border-radius:16px}
+@media(max-width:370px){
+html body #app .funnel #crows>.crow,html body #app .funnel #crows>.inline-money,html body #app .funnel #crows>.main-no-loan{padding-left:16px!important;padding-right:16px!important}
+html body #app #viewAnswer #priceOverview>.rhead{padding:22px 16px!important}
+html body #app #viewAnswer #fundingOverview>.budget-summary{padding-inline:16px}
+html body #app #viewAnswer #fundingOverview>#easyBalance,html body #app #viewAnswer>#payTile{padding-inline:16px}
+}
+@media(min-width:960px){
+html body #app #viewAnswer{grid-template-rows:auto auto auto;align-items:start;gap:16px}
+html body #app #viewAnswer>#priceOverview{grid-column:1;grid-row:1}
+html body #app #viewAnswer>#payTile{grid-column:1;grid-row:2}
+html body #app #viewAnswer>#easyMarket{grid-column:2;grid-row:1/span 2}
+html body #app #viewAnswer>#fundingOverview{grid-column:1/-1;grid-row:3}
 }
 </style></body>
 </html>
