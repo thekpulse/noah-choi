@@ -9715,12 +9715,17 @@ html body #app #viewDeals #dealDistribution{display:block!important;background:#
 html body #app #viewDeals #dealDistribution span{color:#53617C!important}
 html body #app #viewDeals #dealDistribution .dd-title{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 8px;font-size:13px;font-weight:600}
 html body #app #viewDeals #dealDistribution .dd-title small{font-size:12px;font-weight:400;color:#53617C}
-html body #app #viewDeals #dealDistribution svg{display:block;width:100%;height:86px;overflow:visible;margin-top:6px}
+html body #app #viewDeals #dealDistribution svg{display:block;width:100%;height:auto;overflow:visible;margin-top:8px}
 html body #app #viewDeals #dealDistribution .dd-note{display:block!important;color:#53617C!important;font-size:12px!important;line-height:1.5!important;margin:6px 0 0!important;font-weight:400}
 html body #app #viewDeals #dealDistribution .dd-axis{display:flex;justify-content:space-between;font-size:12px;color:#53617C}
 html body #app #viewDeals #dealDistribution .dd-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;margin-top:6px}
 html body #app #viewDeals #dealDistribution .dd-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;background:#2458FF}
 html body #app #viewDeals #dealDistribution .dd-legend .dd-over{background:#69758A}
+html body #app #viewDeals #dealDistribution .dd-views{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+html body #app #viewDeals #dealDistribution .dd-views button{min-height:44px;padding:8px 12px;border:1px solid #DCE2EC;border-radius:10px;background:#fff;color:#53617C;font:inherit}
+html body #app #viewDeals #dealDistribution .dd-views button[aria-pressed="true"]{background:#E8EEFF;color:#1945D1;border-color:#A4B8FA;font-weight:600}
+html body #app #viewDeals #dealDistribution .dd-views button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+html body #app #viewDeals #dealDistribution .dd-chart{max-width:680px;margin-inline:auto}
 html body #app #viewDeals #dealDistribution .dd-method{margin-top:4px}
 html body #app #viewDeals #dealDistribution .dd-method summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;cursor:pointer;list-style:none;font-size:12px;color:#53617C}
 html body #app #viewDeals #dealDistribution .dd-method summary::-webkit-details-marker{display:none}
@@ -9746,6 +9751,17 @@ html body #app #viewDeals #sortSeg button:not(.is-on){font-weight:400!important}
  visible.forEach(p=>{const i=Math.min(11,Math.floor((p-lo)/(hi-lo)*12));bins[i][p<=budget?'under':'over']++;});
  return {n,under,lo,hi,below,above,shown:visible.length,bins,peak:Math.max(1,...bins.map(b=>b.under+b.over)),marker:(budget-lo)/(hi-lo)};
 }
+function distributionDots(items,budget,pass,model){
+ const date=x=>(Number(x.y)||0)*10000+(Number(x.m)||0)*100+(Number(x.d)||0);
+ const rows=items.filter(x=>Number.isFinite(x.amountMan)&&x.amountMan>=model.lo&&x.amountMan<=model.hi&&(!pass||pass(x))).slice().sort((a,b)=>date(b)-date(a)).slice(0,60);
+ const placed=[];
+ for(const row of rows){
+  const x=12+(row.amountMan-model.lo)/(model.hi-model.lo)*336;
+  let level=0;while(placed.some(p=>p.level===level&&Math.abs(p.x-x)<8))level++;
+  placed.push({x,level,amount:row.amountMan,name:row.name||'',date:[row.y,row.m,row.d].filter(Boolean).join('.')});
+ }
+ return {points:placed,height:Math.max(112,52+(Math.max(0,...placed.map(p=>p.level))+1)*8)};
+}
 function renderDealDistribution(priceMan){
  const budgetCard=document.querySelector('#dealCard .deal-budget');
  if(!budgetCard)return;
@@ -9760,20 +9776,28 @@ function renderDealDistribution(priceMan){
  const money=v=>formatWon(Math.round(v)*10000);
  if(!Number.isFinite(budget)||budget<=0){box.textContent='예상 집값을 계산하면 거래 분포를 볼 수 있어요.';return;}
  if(!model.bins){box.textContent=model.n?'조건에 맞는 거래가 '+model.n+'건이라 분포를 표시하지 않아요.':'조건에 맞는 거래가 없어 분포를 표시하지 않아요.';return;}
+ const dotMode=!box.dataset||box.dataset.mode!=='bars';
+ const dots=distributionDots(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null,model);
+ const height=dotMode?dots.height:132,base=height-14;
+ const moneyShort=v=>{const e=v/10000;return Number(e.toFixed(1))+'억';};
  const bars=model.bins.map((b,i)=>{
-  const x=2+i*25,h=b.under/model.peak*48,o=b.over/model.peak*48;
-  const range=money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12);
-  return '<g><title>'+range+' · '+(b.under+b.over)+'건</title><rect x="'+x+'" y="'+(66-h)+'" width="19" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(66-h-o)+'" width="19" height="'+o+'" rx="2" fill="#69758A"/></g>';
+  const x=15+i*28,h=b.under/model.peak*64,o=b.over/model.peak*64,total=b.under+b.over;
+  return '<g><title>'+money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12)+' · '+total+'건</title><rect x="'+x+'" y="'+(base-h)+'" width="21" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(base-h-o)+'" width="21" height="'+o+'" rx="2" fill="#69758A"/><text x="'+(x+10.5)+'" y="'+(base-h-o-5)+'" text-anchor="middle" font-size="10" fill="#53617C">'+total+'</text></g>';
  }).join('');
- const mx=model.marker*300,tx=Math.max(36,Math.min(264,mx));
+ const points=dots.points.map(p=>'<circle cx="'+p.x+'" cy="'+(base-5-p.level*8)+'" r="3" fill="'+(p.amount<=budget?'#2458FF':'#69758A')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
+ const mx=12+model.marker*336;
  const summary='조회 거래 '+model.n+'건 중 예상 집값 이하 '+model.under+'건, 초과 '+(model.n-model.under)+'건';
+ const modeNote=dotMode?'점 1개 = 거래 1건 · 구간 안 최근 '+dots.points.length+'건':'막대 위 숫자 = 해당 가격 구간의 거래 건수';
  box.innerHTML='<div class="dd-title">거래 가격 분포<small>최근 '+DEAL.months+'개월 · '+model.n+'건</small></div>'
-  +'<svg viewBox="0 0 300 76" role="img" aria-label="'+summary+'"><title>'+summary+'</title>'+bars+'<line x1="'+mx+'" x2="'+mx+'" y1="20" y2="68" stroke="#0E1B45" stroke-width="1.5" stroke-dasharray="3 2"/><text x="'+tx+'" y="13" text-anchor="middle" font-size="11" fill="#0E1B45">내 예상 집값</text></svg>'
-  +'<div class="dd-axis"><span>'+money(model.lo)+'</span><span>'+money(model.hi)+'</span></div>'
+  +'<div class="dd-views" role="group" aria-label="가격 분포 보기"><button type="button" data-distribution-mode="dots" aria-pressed="'+dotMode+'">거래별 가격</button><button type="button" data-distribution-mode="bars" aria-pressed="'+(!dotMode)+'">구간별 건수</button></div>'
+  +'<p class="dd-note">'+modeNote+'</p><div class="dd-chart">'
+  +'<svg viewBox="0 0 360 '+height+'" role="img" aria-label="'+summary+' · '+modeNote+'"><title>'+summary+'</title><line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+(dotMode?points:bars)+'<line x1="'+mx+'" x2="'+mx+'" y1="32" y2="'+base+'" stroke="#0E1B45" stroke-width="1.5" stroke-dasharray="3 2"/><text x="180" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#0E1B45">내 예상 집값 '+money(budget)+'</text></svg>'
+  +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span><span>'+moneyShort((model.lo+model.hi)/2)+'</span><span>'+moneyShort(model.hi)+'</span></div></div>'
   +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')
-  +'<p class="dd-note">예상 집값 주변 '+model.shown+'건 표시'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
+  +'<p class="dd-note">표시 구간 전체 '+model.shown+'건'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
   +'<div class="dd-legend" aria-label="범위 밖 거래를 포함한 전체 집계"><span>전체 거래 기준</span><span><i></i>예상 집값 이하 '+model.under+'건</span><span><i class="dd-over"></i>초과 '+(model.n-model.under)+'건</span></div>'
-  +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>막대 높이 = 거래 수 · 집계 기준</summary><p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 그래프는 예상 집값의 약 50~150% 구간만 표시하며, 범위 밖 거래도 전체 건수와 예상 집값 이하·초과 집계에는 포함합니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다.</p></details>';
+  +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>그래프 집계 기준</summary><p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준입니다. 그래프는 예상 집값의 약 50~150% 구간만 표시하며, 범위 밖 거래도 전체 건수와 예상 집값 이하·초과 집계에는 포함합니다. 거래별 가격은 구간 안 최근 60건까지 점으로 표시합니다. 구간별 건수는 해당 구간의 모든 거래를 셉니다. 같은 단지의 거래도 각각 셉니다. 지도 이동으로 추가한 거래는 포함하지 않습니다.</p></details>';
 }
+document.addEventListener('click',function(e){const b=e.target.closest('#dealDistribution [data-distribution-mode]');if(!b)return;const box=document.getElementById('dealDistribution');box.dataset.mode=b.dataset.distributionMode;renderDealDistribution(DEAL.lastPrice);box.querySelector('[data-distribution-mode="'+b.dataset.distributionMode+'"]').focus();});
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});</script></body>
 </html>
