@@ -3804,7 +3804,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
 
 
 
-<div class="sheet-back" id="whyBack" hidden></div>
+<div class="sheet-back" id="cmpBack" hidden></div><div class="sheet" id="cmpSheet" role="dialog" aria-modal="true" aria-labelledby="cmpTitle" hidden><header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="cmpTitle">단지 비교</h2><button type="button" class="why-dismiss" id="cmpClose" aria-label="닫기"></button></header><div id="cmpBody"></div></div><div class="sheet-back" id="whyBack" hidden></div>
 <div class="sheet" id="whySheet" role="dialog" aria-modal="true" aria-labelledby="whyTitle" hidden>
   <header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="whyTitle">계산 상세</h2><button type="button" class="why-dismiss" aria-label="닫기" onclick="closeSheet()"></button></header>
   <p id="costAdjustmentNote">비용을 바꿔도 집값은 그대로고, 필요한 현금만 달라져요.</p><div class="cost-impact" aria-live="polite">
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v199 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v200 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6715,7 +6715,7 @@ function dealBox(x, i){
   const head = [yearFull(x.buildYear), units ? comma(units) + '세대' : '', count]
     .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0')).join('\u00a0· ');
   return `<div class="costbox dealbox" id="dealBox${i}">`
-       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x)
+       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x) + (typeof cmpBtnHtml === 'function' ? cmpBtnHtml(x) : '')
        + shown.map(n => {
            const k = [dealDate(n), oneArea ? '' : (areaParts(n.areaM2) || {}).m2, floorText(n.floor)]
              .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0').replace(/(\d)㎡/g, '$1\u2060㎡')).join('\u00a0· ');
@@ -9898,7 +9898,7 @@ function dealTools(){
 }
 document.addEventListener('click',function(e){const r=e.target.closest('#dealDistribution [data-dd-region]');if(r){const d=document.getElementById('dealRegions');if(!d)return;d.open=!d.open;r.setAttribute('aria-expanded',String(d.open));return;}const f=e.target.closest('#dealFilterBtn');if(f){const d=document.querySelector('#dealCard>.deal-filter-fold');if(!d)return;d.open=!d.open;f.setAttribute('aria-expanded',String(d.open));}});
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});
-document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v199-dd-method">html body #app #viewDeals #dealDistribution .dd-group{margin:0 0 var(--sp-3)}html body #app #viewDeals #dealDistribution .dd-group+.dd-group{padding-top:var(--sp-3);border-top:1px solid var(--v-line)}html body #app #viewDeals #dealDistribution .dd-sub{display:block!important;margin:0!important;font-size:var(--t7)!important;font-weight:700;line-height:1.5!important;color:#0E1B45}html body #app #viewDeals #dealDistribution .dd-group .dd-bars{margin-top:var(--sp-2)}html body #app #viewDeals #dealDistribution .dd-insight{margin-top:var(--sp-2);font-size:var(--t5);font-weight:600;line-height:1.5;color:#0E1B45;letter-spacing:-.01em}html body #app #viewDeals #dealDistribution .dd-insight b{color:var(--v-blue);font-weight:700}html body #app #viewDeals #dealDistribution .dd-insight i{font-style:normal;white-space:nowrap}html body #app #viewDeals #dealDistribution .dd-insight+.dd-strip{margin-top:40px}html body #app #viewDeals #dealDistribution .dd-axis{position:relative}html body #app #viewDeals #dealDistribution .dd-axis .dd-med{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;color:#0E1B45!important;font-weight:600}</style><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v184-design">
+document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v199-dd-method">html body #app #viewDeals #dealDistribution .dd-group{margin:0 0 var(--sp-3)}html body #app #viewDeals #dealDistribution .dd-group+.dd-group{padding-top:var(--sp-3);border-top:1px solid var(--v-line)}html body #app #viewDeals #dealDistribution .dd-sub{display:block!important;margin:0!important;font-size:var(--t7)!important;font-weight:700;line-height:1.5!important;color:#0E1B45}html body #app #viewDeals #dealDistribution .dd-group .dd-bars{margin-top:var(--sp-2)}html body #app #viewDeals #dealDistribution .dd-insight{margin-top:var(--sp-2);font-size:var(--t5);font-weight:600;line-height:1.5;color:#0E1B45;letter-spacing:-.01em}html body #app #viewDeals #dealDistribution .dd-insight b{color:var(--v-blue);font-weight:700}html body #app #viewDeals #dealDistribution .dd-insight i{font-style:normal;white-space:nowrap}html body #app #viewDeals #dealDistribution .dd-insight+.dd-strip{margin-top:40px}html body #app #viewDeals #dealDistribution .dd-axis{position:relative}html body #app #viewDeals #dealDistribution .dd-axis .dd-med{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;color:#0E1B45!important;font-weight:600}</style><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v200-compare">html body .cmp-save{margin:8px 0 12px}html body .cmp-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;padding:0 12px;border:1px solid var(--v-line);border-radius:12px;background:#fff;color:#0E1B45;font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}html body .cmp-btn i{font-style:normal;color:var(--v-blue)}html body .cmp-btn[aria-pressed="true"]{background:var(--v-blue-soft);border-color:#A4B8FA;color:var(--v-blue-deep)}html body .cmp-btn:focus-visible,html body #cmpBar:focus-visible,html body #cmpSheet .cmp-rm:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}html body .cmp-msg{display:block;margin-top:4px;font-size:var(--t7);line-height:1.5;color:#53617C}html body .cmp-msg:empty{display:none}html body #app #viewDeals #cmpBar{order:7;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin:0 0 8px;padding:0 14px;border:0;border-radius:12px;background:var(--v-blue-soft);color:var(--v-blue-deep);font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}html body #app #viewDeals #cmpBar[hidden]{display:none!important}html body #app #viewDeals #cmpBar b{font-weight:700}html body #app #viewDeals #cmpBar span{display:inline-flex;align-items:center;gap:4px;font-weight:400}html body #cmpSheet{background:#fff}html body #cmpSheet .why-sheet-header{position:sticky;top:-18px;z-index:8;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--v-line);margin:-18px -22px 16px;padding:14px 22px}html body #cmpSheet #cmpTitle{flex:1;margin:0!important;font-size:22px!important;font-weight:700;line-height:1.35!important;letter-spacing:-.025em;color:#0E1B45}html body #cmpSheet .why-dismiss{position:relative;flex:none;width:44px;height:44px;min-width:44px;margin:0;padding:0;border:0;border-radius:var(--r-s);background:transparent;color:#465262;font-size:0;cursor:pointer}html body #cmpSheet .why-dismiss::before,html body #cmpSheet .why-dismiss::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;border-radius:1px;background:currentColor;transform:rotate(45deg)}html body #cmpSheet .why-dismiss::after{transform:rotate(-45deg)}html body #cmpSheet .why-dismiss:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}html body #cmpSheet #cmpBody{padding:0 0 calc(24px + env(safe-area-inset-bottom))}html body #cmpSheet .cmp-wrap{overflow-x:auto;margin:0 -4px}html body #cmpSheet table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:var(--t7);line-height:1.5;font-variant-numeric:tabular-nums}html body #cmpSheet th,html body #cmpSheet td{padding:10px 4px!important;border:0!important;border-bottom:1px solid var(--v-line)!important;background:none!important;text-align:left!important;vertical-align:top!important;word-break:keep-all;overflow-wrap:anywhere;font-size:var(--t7)!important;line-height:1.5!important}html body #cmpSheet col.cmp-k{width:76px}html body #cmpSheet tbody th{color:#53617C;font-weight:400;overflow-wrap:normal}html body #cmpSheet td{color:#0E1B45;font-weight:600}html body #cmpSheet td small,html body #cmpSheet thead small{display:block;color:#53617C;font-weight:400}html body #cmpSheet thead th{padding-top:0!important;border-bottom:2px solid #0E1B45!important;color:#0E1B45}html body #cmpSheet thead b{display:block;font-size:var(--t6);font-weight:700;line-height:1.4}html body #cmpSheet .cmp-rm{margin-top:6px;min-height:32px;padding:0 10px;border:1px solid var(--v-line);border-radius:8px;background:#fff;color:#53617C;font:inherit;font-size:var(--t7);cursor:pointer}html body #cmpSheet tr.cmp-sec th{padding-top:20px!important;color:#0E1B45;font-weight:700}html body #cmpSheet .budget-delta.is-over,html body #cmpSheet .cmp-short{color:#B8443C}html body #cmpSheet .budget-delta.is-under{color:var(--v-blue-deep)}html body #cmpSheet .cmp-note{margin:12px 0 0;font-size:var(--t7);line-height:1.6;color:#53617C}</style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{grid-column:1;grid-row:1;min-width:0;font-size:var(--t-card)!important;font-weight:600}
@@ -10011,5 +10011,98 @@ html body #app .appbar.is-price-pinned #barLabel{display:none}
   new MutationObserver(function(){ if(head.offsetParent === null) set(false); })
     .observe(document.getElementById('result') || document.body, {attributes:true, subtree:true, attributeFilter:['hidden','class']});
 })();
-</script><script>/* v197 */(function(){var l=document.getElementById('dealLead'),t=document.getElementById('dealList');if(l&&t&&l.parentElement!==t.parentElement)t.before(l);})();</script><script>/* v198 */(function(){var b=document.getElementById('dealViewBar'),r=document.querySelector('.appbar .barrow1');if(b&&r&&b.parentElement!==r)r.appendChild(b);})();</script></body>
+</script><script>/* v197 */(function(){var l=document.getElementById('dealLead'),t=document.getElementById('dealList');if(l&&t&&l.parentElement!==t.parentElement)t.before(l);})();</script><script>/* v198 */(function(){var b=document.getElementById('dealViewBar'),r=document.querySelector('.appbar .barrow1');if(b&&r&&b.parentElement!==r)r.appendChild(b);})();</script><script>/* v200 비교함 */
+var CMP_KEY='yk-compare-v1',CMP_MAX=3;
+function cmpLoad(){try{var v=JSON.parse(localStorage.getItem(CMP_KEY)||'[]');return Array.isArray(v)?v.filter(function(s){return s&&typeof s.k==='string'&&Number(s.amountMan)>0&&typeof s.name==='string';}).slice(0,CMP_MAX):[];}catch(e){return [];}}
+function cmpStore(list){try{var t=JSON.stringify(list);localStorage.setItem(CMP_KEY,t);return localStorage.getItem(CMP_KEY)===t;}catch(e){return false;}}
+function cmpSnap(x){return {k:dealSameKey(x),name:String(x.name||''),dong:String(x.dong||''),lawd:String(x.lawd||''),areaM2:Number(x.areaM2)||null,amountMan:Number(x.amountMan)||0,y:x.y,m:x.m,d:x.d,floor:x.floor==null?null:x.floor,buildYear:x.buildYear==null?null:x.buildYear};}
+function cmpLabel(on){return on?'<i aria-hidden="true">★</i>비교함에 담김':'<i aria-hidden="true">☆</i>비교함에 담기';}
+function cmpBtnHtml(x){
+ if(!x||!(Number(x.amountMan)>0))return '';
+ var s=cmpSnap(x),on=cmpLoad().some(function(v){return v.k===s.k;});
+ return '<div class="cmp-save"><button type="button" class="cmp-btn" data-cmp-key="'+esc(s.k)+'" data-cmp="'+esc(JSON.stringify(s))+'" aria-pressed="'+on+'">'+cmpLabel(on)+'</button><span class="cmp-msg" role="status" aria-live="polite"></span></div>';
+}
+function cmpSync(){
+ var list=cmpLoad(),keys=list.map(function(v){return v.k;});
+ document.querySelectorAll('.cmp-btn').forEach(function(b){var on=keys.indexOf(b.dataset.cmpKey)>=0;if(b.getAttribute('aria-pressed')!==String(on)){b.setAttribute('aria-pressed',String(on));b.innerHTML=cmpLabel(on);}});
+ var bar=document.getElementById('cmpBar');
+ if(!bar){var lead=document.getElementById('dealLead'),card=document.getElementById('dealCard');if(!lead||!card)return;bar=document.createElement('button');bar.type='button';bar.id='cmpBar';bar.setAttribute('aria-haspopup','dialog');lead.before(bar);}
+ bar.hidden=!list.length;
+ bar.innerHTML='<b>★ 비교함 '+list.length+'곳</b><span>비교표 보기<span aria-hidden="true">›</span></span>';
+}
+function cmpToggle(b){
+ var list=cmpLoad(),k=b.dataset.cmpKey,at=-1,msg=b.parentNode.querySelector('.cmp-msg');
+ list.forEach(function(v,i){if(v.k===k)at=i;});
+ if(at>=0)list.splice(at,1);
+ else{
+  if(list.length>=CMP_MAX){if(msg)msg.textContent='3곳까지 담을 수 있어요. 비교표에서 하나를 빼면 더 담을 수 있어요.';return;}
+  var s;try{s=JSON.parse(b.dataset.cmp);}catch(e){return;}
+  list.push(s);
+ }
+ if(!cmpStore(list)){if(msg)msg.textContent='이 브라우저에서는 비교함을 저장할 수 없어요.';return;}
+ if(msg)msg.textContent='';
+ if(at<0&&typeof track==='function')track('compare_save',{count:list.length});
+ cmpSync();
+ if(!document.getElementById('cmpSheet').hidden)cmpRender();
+}
+function cmpRender(){
+ var body=document.getElementById('cmpBody');if(!body)return;
+ var list=cmpLoad();
+ if(!list.length){body.innerHTML='<p class="cmp-note">비교함이 비어 있어요. 거래 상세에서 「비교함에 담기」를 누르면 여기에 모여요.</p>';return;}
+ var won=function(m){return formatWon(m*10000);};
+ var cols=list.map(function(s){
+  var f=typeof dealAfford==='function'?dealAfford(s.amountMan):null;
+  var gu=typeof dealGu==='function'?dealGu(s.lawd):'';
+  var a=typeof areaParts==='function'?areaParts(s.areaM2):null;
+  var u=typeof unitsOf==='function'?unitsOf(s.lawd,s.name,s.dong):null;
+  var gap=typeof dealBudgetGapHtml==='function'?dealBudgetGapHtml(s.amountMan,DEAL&&DEAL.lastPrice).replace('예상 집값보다 ',''):'';
+  return {s:s,f:f,where:((gu?gu+' ':'')+(s.dong||'')).trim(),
+   price:won(s.amountMan)+'<small>'+esc([dealDate(s),floorText(s.floor)].filter(Boolean).join(' · '))+'</small>',
+   area:a?(a.py?esc(a.py)+'<small>'+esc(a.m2)+'</small>':esc(a.m2)):'—',
+   year:esc(yearFull(s.buildYear)||'—'),units:u>0?comma(u)+'세대':'미확인',gap:gap||'—'};
+ });
+ var anyF=cols.some(function(c){return c.f;});
+ var row=function(k,fn){return '<tr><th scope="row">'+k+'</th>'+cols.map(function(c){return '<td>'+fn(c)+'</td>';}).join('')+'</tr>';};
+ var sec=function(t){return '<tr class="cmp-sec"><th scope="rowgroup" colspan="'+(cols.length+1)+'">'+t+'</th></tr>';};
+ body.innerHTML='<div class="cmp-wrap"><table><colgroup><col class="cmp-k">'+cols.map(function(){return '<col>';}).join('')+'</colgroup>'
+  +'<thead><tr><th scope="col"><span class="sr-only">항목</span></th>'+cols.map(function(c){return '<th scope="col"><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small><button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기">빼기</button></th>';}).join('')+'</tr></thead><tbody>'
+  +row('거래가',function(c){return c.price;})
+  +row('평형',function(c){return c.area;})
+  +row('준공',function(c){return c.year;})
+  +row('세대수',function(c){return c.units;})
+  +row('예상 집값과 차이',function(c){return c.gap;})
+  +(anyF?sec('이 가격으로 사면 · 부대비용 포함')
+   +row('필요한 현금',function(c){return c.f?won(c.f.C):'—';})
+   +row('주택담보대출',function(c){return c.f?(c.f.L>0?won(c.f.L):'없음'):'—';})
+   +row('월 상환액',function(c){return c.f&&c.f.L>0?won(c.f.M):'—';})
+   +row('내 현금 기준',function(c){if(!c.f)return '—';var g=c.f.gap;return g>0?'<span class="cmp-short">'+won(g)+' 부족</span>':g<0?won(-g)+' 여유':'0원';}):'')
+  +'</tbody></table></div>'
+  +(list.length<2?'<p class="cmp-note">단지를 하나 더 담으면 나란히 비교할 수 있어요.</p>':'')
+  +(anyF?'':'<p class="cmp-note">계산 결과가 있으면 필요한 현금·대출도 함께 보여요.</p>')
+  +'<p class="cmp-note">※ 거래가는 비교함에 담을 때의 실거래입니다.<br>※ 금액은 지금 입력한 조건으로 계산한 참고용 예상치입니다.<br>※ 담은 단지는 이 기기의 브라우저에만 저장됩니다.</p>';
+}
+function cmpOpen(){cmpRender();if(typeof track==='function')track('compare_open',{count:cmpLoad().length});openSheet('cmp');}
+(function(){
+ if(typeof SHEETS==='object'&&SHEETS)SHEETS.cmp=['cmpSheet','cmpBack','cmpClose'];
+ var back=document.getElementById('cmpBack'),close=document.getElementById('cmpClose');
+ if(back)back.onclick=function(){closeSheet('cmp');};
+ if(close)close.onclick=function(){closeSheet('cmp');};
+ document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('.cmp-btn');if(b){e.preventDefault();e.stopPropagation();cmpToggle(b);return;}
+  if(e.target.closest&&e.target.closest('#cmpBar')){e.preventDefault();cmpOpen();return;}
+  var r=e.target.closest&&e.target.closest('[data-cmp-remove]');
+  if(r){e.preventDefault();var k=r.dataset.cmpRemove,list=cmpLoad().filter(function(v){return v.k!==k;});if(cmpStore(list)){cmpSync();cmpRender();var sh=document.getElementById('cmpSheet');if(!list.length)closeSheet('cmp');else if(sh)sh.focus({preventScroll:true});}}
+ },true);
+ document.addEventListener('keydown',function(e){
+  var sh=document.getElementById('cmpSheet');if(!sh||sh.hidden)return;
+  if(e.key==='Escape'){e.preventDefault();closeSheet('cmp');return;}
+  if(e.key!=='Tab')return;
+  var c=[].slice.call(sh.querySelectorAll('button,a[href],[tabindex]')).filter(function(el){return !el.disabled&&el.tabIndex>=0&&el.getClientRects().length;});
+  if(!c.length)return;var first=c[0],last=c[c.length-1];
+  if(e.shiftKey&&(document.activeElement===first||document.activeElement===sh)){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+ });
+ document.addEventListener('deals:ready',cmpSync);
+ cmpSync();
+})();</script></body>
 </html>
