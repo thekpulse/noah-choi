@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v195 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v196 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5159,8 +5159,8 @@ function ownDrawer(){
     + `</div>` + dispose + `</div>`;
 }
 function houseEchoText(){
-  if(S.houseStatus === 'first') return '집을 가져본 적이 없는 경우예요.';
-  if(S.houseStatus === 'none') return '예전에 집이 있었지만 지금은 없는 경우예요.';
+  if(S.houseStatus === 'first') return '나와 세대원 모두 집을 가져본 적이 없는 경우예요.';
+  if(S.houseStatus === 'none') return '나와 세대원 모두 지금은 집이 없는 경우예요.';
   if(S.houseStatus !== 'multi') return '';
   /* 🔴 v25.0 — 「중과」를 무조건 말하지 않습니다. **비조정지역에서 2주택은 중과가 아닙니다.** */
   if(S.ownCount === 1 && S.disposePlan)
