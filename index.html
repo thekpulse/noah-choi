@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v197 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v198 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6710,7 +6710,7 @@ function dealBox(x, i){
   const shown = all.slice(0, DEAL.boxRows);
   const oneArea = new Set(all.map(n => (n.areaM2 == null ? null : Number(n.areaM2)))).size === 1;
   const count = `이 단지 최근 ${DEAL.months}개월 ${all.length}건`
-              + (all.length > shown.length ? ` 중 ${shown.length}건` : '');
+              + (all.length > shown.length ? ` · 최근 ${shown.length}건 표시` : '');
   const units = DEAL.units ? unitsOf(x.lawd, x.name, x.dong) : null;
   const head = [yearFull(x.buildYear), units ? comma(units) + '세대' : '', count]
     .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0')).join('\u00a0· ');
@@ -9145,7 +9145,7 @@ body #viewDeals .yk-map-stage{isolation:isolate}
     else if (DEAL.status === 'empty' || (DEAL.status === 'ready' && DEAL.lastPrice > 0 && typeof splitDeals === 'function')) {
       const groups = DEAL.status === 'empty' ? { under: [], over: [] } : splitDeals(DEAL.items || [], DEAL.lastPrice);
       const n = groups.under.length + (DEAL.over ? groups.over.length : 0);
-      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (scope ? '\u00a0· <span class="hc-nw">' + esc(scope) + '</span>' : '') + '\u00a0· <span class="hc-nw">최근 ' + m + '개월</span>';
+      html = (n ? '현재 조건에 맞는 실거래 <b>' + n + '곳</b>' : ((DEAL.items || []).length ? '선택한 가격·단지 조건에 맞는 거래 없음' : '최근 실거래 없음')) + (extra ? '\u00a0· <span class="hc-nw">' + esc(scope) + '</span>' : '') + '\u00a0· <span class="hc-nw">최근 ' + m + '개월</span>';
     }
     const go = DEAL.status === 'ready' || DEAL.status === 'empty';   /* v121 ① — 실거래 화면으로 */
 
@@ -9812,7 +9812,7 @@ function distributionDots(items,budget,pass,model){
  const placed=[];
  for(const row of rows){
   const x=12+(row.amountMan-model.lo)/(model.hi-model.lo)*336;
-  let level=0;while(placed.some(p=>p.level===level&&Math.abs(p.x-x)<8))level++;
+  let level=0;while(placed.some(p=>p.level===level&&Math.abs(p.x-x)<9))level++;/* v198: 반지름 4 → 간격 9 */
   placed.push({x,level,amount:row.amountMan,name:row.name||'',date:[row.y,row.m,row.d].filter(Boolean).join('.')});
  }
  return {points:placed,height:Math.max(112,52+(Math.max(0,...placed.map(p=>p.level))+1)*8)};
@@ -9826,7 +9826,7 @@ function renderDealDistribution(priceMan){
  const regions=document.getElementById('dealRegions');
  const scope=esc(typeof dealScopeLabel==='function'?dealScopeLabel():'')+' · <i>최근 '+(DEAL.months||3)+'개월</i>';
  const wideNote=((DEAL.status==='ready'||DEAL.status==='empty')&&DEAL.wide&&!(DEAL.compareCodes||[]).length)?'<p class="dd-note dd-scope">맞는 거래가 적어 인근 지역까지 넓혔어요.</p>':'';
- const head=big=>'<div class="dd-head"><div><small>'+scope+'</small><strong>'+big+'</strong></div><button type="button" class="dd-region" data-dd-region aria-controls="dealRegions" aria-expanded="'+(!!(regions&&regions.open))+'">지역 변경</button></div>';
+ const head=big=>'<div class="dd-head'+(big?'':' is-plain')+'"><div><small>'+scope+'</small>'+(big?'<strong>'+big+'</strong>':'')+'</div><button type="button" class="dd-region" data-dd-region aria-controls="dealRegions" aria-expanded="'+(!!(regions&&regions.open))+'">지역 변경</button></div>';
  if(DEAL.status==='loading'||DEAL.status==='error'){
   box.innerHTML=head(DEAL.status==='loading'?'거래를 불러오는 중이에요':'거래를 불러오지 못했어요');return;
  }
@@ -9837,9 +9837,10 @@ function renderDealDistribution(priceMan){
  if(!model.bins){box.innerHTML=head('예상 집값 이하 <b>'+model.under+'건</b>')+'<p class="dd-note">'+(model.n?'조건에 맞는 거래가 '+model.n+'건이라 분포를 표시하지 않아요.':'조건에 맞는 거래가 없어 분포를 표시하지 않아요.')+'</p>'+wideNote;return;}
  const dots=distributionDots(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null,model);
  /* 띠 높이를 고정한다 — 같은 가격대가 몰리면 4단까지 쌓고 그 위는 겹친다(개수는 문장·자세히에 있다) */
- const CAP=4,base=36,mx=12+model.marker*336;
+ /* v198 — 띠를 키운다(오너 「압축해 놓은 느낌」): 4단·8 간격·반지름 3.5 → 6단·10 간격·반지름 4. 띠 높이 약 33px → 약 58px(390 폭). */
+ const CAP=6,base=66,mx=12+model.marker*336;
  const moneyShort=v=>{const e=v/10000;return Number(e.toFixed(1))+'억';};
- const points=dots.points.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+(base-5-Math.min(p.level,CAP-1)*8)+'" r="3.5" fill="'+(p.amount<=budget?'#2458FF':'#8792A8')+'" fill-opacity="'+(p.level>=CAP-1?'.75':'1')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
+ const points=dots.points.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+(base-6-Math.min(p.level,CAP-1)*10)+'" r="4" fill="'+(p.amount<=budget?'#2458FF':'#8792A8')+'" fill-opacity="'+(p.level>=CAP-1?'.75':'1')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
  const shade='<path d="M12 4H'+mx.toFixed(1)+'V'+base+'H12Z" fill="#2458FF" fill-opacity=".06"/>';
  const summary='조회 거래 '+model.n+'건 중 예상 집값 이하 '+model.under+'건, 초과 '+(model.n-model.under)+'건';
  const dotNote='점 하나가 거래 1건이고, 최근 '+dots.points.length+'건까지 보여요.';
@@ -9849,7 +9850,7 @@ function renderDealDistribution(priceMan){
   const x=15+i*28,h=b.under/model.peak*56,o=b.over/model.peak*56,total=b.under+b.over,bb=74;
   return '<g><title>'+money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12)+' · '+total+'건</title><rect x="'+x+'" y="'+(bb-h)+'" width="21" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(bb-h-o)+'" width="21" height="'+o+'" rx="2" fill="#8792A8"/><text x="'+(x+10.5)+'" y="'+(bb-h-o-4)+'" text-anchor="middle" font-size="10" fill="#53617C">'+total+'</text></g>';
  }).join('');
- box.innerHTML=head('예상 집값 이하 <b>'+model.under+'건</b>')
+ box.innerHTML=head('')
   +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 360 '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
   +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span><span>'+moneyShort(model.hi)+'</span></div></div>'
   +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')+wideNote
@@ -9883,7 +9884,7 @@ function dealTools(){
 }
 document.addEventListener('click',function(e){const r=e.target.closest('#dealDistribution [data-dd-region]');if(r){const d=document.getElementById('dealRegions');if(!d)return;d.open=!d.open;r.setAttribute('aria-expanded',String(d.open));return;}const f=e.target.closest('#dealFilterBtn');if(f){const d=document.querySelector('#dealCard>.deal-filter-fold');if(!d)return;d.open=!d.open;f.setAttribute('aria-expanded',String(d.open));}});
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});
-document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v184-design">
+document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{grid-column:1;grid-row:1;min-width:0;font-size:var(--t-card)!important;font-weight:600}
@@ -9996,5 +9997,5 @@ html body #app .appbar.is-price-pinned #barLabel{display:none}
   new MutationObserver(function(){ if(head.offsetParent === null) set(false); })
     .observe(document.getElementById('result') || document.body, {attributes:true, subtree:true, attributeFilter:['hidden','class']});
 })();
-</script><script>/* v197 */(function(){var l=document.getElementById('dealLead'),t=document.getElementById('dealList');if(l&&t&&l.parentElement!==t.parentElement)t.before(l);})();</script></body>
+</script><script>/* v197 */(function(){var l=document.getElementById('dealLead'),t=document.getElementById('dealList');if(l&&t&&l.parentElement!==t.parentElement)t.before(l);})();</script><script>/* v198 */(function(){var b=document.getElementById('dealViewBar'),r=document.querySelector('.appbar .barrow1');if(b&&r&&b.parentElement!==r)r.appendChild(b);})();</script></body>
 </html>
