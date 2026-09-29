@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v188 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v192 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5161,7 +5161,7 @@ function houseEchoText(){
     return `종전 집을 ${POLICY.dispose.years}년 안에 팔면 무주택과 같은 기준이에요. 못 팔면 차액을 다시 내요.`;
   return S.ownCount >= 2
     ? '2주택 이상 기준이며, 세금은 주택 수·지역마다 달라요.'
-    : '집이 있으면 대출 한도가 줄어요. 취득세는 규제지역에서만 중과돼요.';
+    : '집이 있으면 한도가 줄고, 취득세는 규제지역에서만 중과돼요.';
 }
 /* 지금 고른 pick — 갈리는 시는 구를 고르기 전에도 「시를 골랐다」는 상태가 필요합니다. */
 const openPick = () => {
@@ -5174,12 +5174,12 @@ function regionPane(){
   if(!S.group) return '';
   const z = S.sgg ? zoneFromSgg(S.sgg) : null;
   const tag = (z && z !== 'other' && S.group !== 'seoul') ? `<div class="tip${z==='reg' ? ' info' : ''}">${
-      z==='reg' ? '<b>규제지역이에요.</b> 대출 비율이 낮게 적용되고, 집값 구간별 상한도 적용돼요.'
+      z==='reg' ? '<b>규제지역이에요.</b><br>대출 비율이 낮고 집값 구간별 상한이 있어요.'
     : z==='metro' ? '<b>수도권이에요.</b> 집값 구간에 따라 대출 상한이 적용돼요.'
     : ''}</div>` : '';
   let inner='';
   if(S.group==='seoul') inner = `<p class="pane-title">자치구 선택</p>`
-    + `<div class="tip info"><b>서울은 전 구역이 규제지역이에요.</b> 대출 비율이 낮게 적용되고, 집값 구간별 상한도 적용돼요.</div>`
+    + `<div class="tip info"><b>서울은 전 구역이 규제지역이에요.</b><br>대출 비율이 낮고 집값 구간별 상한이 있어요.</div>`
     + tagGrid(picksOf(SEOUL), false, '');
   else if(S.group==='metro'){
     inner = `<p class="pane-title">시·도 선택</p><div class="sidoscroll">` +
@@ -5831,7 +5831,7 @@ function bindingTip(c, price){
     return `<b>이 조건에서는 주택담보대출이 나오지 않아요.</b> 지금 금액은 전부 현금으로 마련해야 하는 돈이에요.`;
   }
   if(c.binding==='DSR'||c.binding==='DTI')
-    return `<b>소득 기준 한도가 적용됐어요.</b> 연 소득의 40%를 연간 상환액 한도로 적용했어요. ${S.debtMonthly ? '기존 대출로 매달 갚는 '+comma(S.debtMonthly)+'만원도 함께 계산했어요.' : '기존 대출이 있다면 조건에 함께 넣을 수 있어요.'}`;
+    return `<b>소득 기준(DSR) 한도가 적용됐어요.</b><br>연 상환액이 소득의 40% 안인 금액이에요.${S.debtMonthly ? '<br>기존 대출 월 '+comma(S.debtMonthly)+'만원도 포함했어요.' : ''}`;
   if(c.binding==='구간한도')
     return `<b>집값 구간별 대출 상한을 적용했어요.</b>`;
   if(c.binding==='LTV'){
@@ -6549,7 +6549,7 @@ function dealLine(x, priceMan, hot, i){
   const gap = budgetGap ? '<span class="budget-gap">' + dealBudgetGapHtml(x.amountMan, priceMan) + '</span>' : '';
   return `<div class="dealwrap">`
        + `<button type="button" class="deal" data-deal="${i}" aria-expanded="false" aria-controls="dealBox${i}">`
-       + `<span class="nm">${esc(x.name)}</span>`
+       + `<span class="nm">${esc(x.name).replace(/\(([^()]*)\)/g, '\u200b<span class="nw">($1)</span>')}</span>`
        + `<span class="amt">${formatWon(x.amountMan*10000)}</span>`
        + `<span class="deal-meta">${sub}</span>${gap}<span class="deal-expand">거래 상세 <span class="caret" aria-hidden="true"></span></span></button>`
        + dealBox(x, i) + `</div>`;
@@ -8763,9 +8763,9 @@ window.addEventListener('resize',measure);measure();})();
     const top = all.slice(0, SHOW);
     const rows = top.map((x, i) => {
       const gu = (typeof dealGu === 'function') ? dealGu(x.lawd) : '';
-      const m2 = Number(x.areaM2) > 0 ? `전용 ${x.areaM2}㎡` : '';
-      const where = [[gu, x.dong].filter(Boolean).join(' '), m2].filter(Boolean).join(' · ');
-      return `<li data-key="${esc(dealSameKey(x))}"><button type="button" class="hd-hit" aria-label="${esc(x.name)} ${esc(formatWon(x.amountMan * 10000))}, 거래 상세 보기"></button><span class="hd-nm" title="${esc(x.name)}">${withMap ? `<i class="hd-no" aria-hidden="true">${i+1}</i>` : ''}${esc(x.name)}</span>`
+      const m2 = Number(x.areaM2) > 0 ? `전용 ${x.areaM2}\u2060㎡` : '';
+      const where = [[gu, x.dong].filter(Boolean).join(' '), m2].filter(Boolean).map(s => s.replace(/ /g, '\u00a0')).join('\u00a0· ');
+      return `<li data-key="${esc(dealSameKey(x))}"><button type="button" class="hd-hit" aria-label="${esc(x.name)} ${esc(formatWon(x.amountMan * 10000))}, 거래 상세 보기"></button><span class="hd-nm" title="${esc(x.name)}">${withMap ? `<i class="hd-no" aria-hidden="true">${i+1}</i>` : ''}<span class="hd-nm-t">${esc(x.name).replace(/\(([^()]*)\)/g, '\u200b<span class="nw">($1)</span>')}</span></span>`
            + `<span class="hd-sub">${esc(where)}</span>`
            + `<strong class="hd-amt">${esc(formatWon(x.amountMan * 10000))}</strong><span class="hd-budget-gap">${dealBudgetGapHtml(x.amountMan, priceMan)}</span></li>`;
     }).join('');
@@ -9874,7 +9874,11 @@ html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{grid-column:
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt{grid-column:2;grid-row:1;justify-self:end;font-size:var(--t4)!important;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-budget-gap{grid-column:2;grid-row:2;justify-self:end;margin:0!important}
 /* 단지명·위치는 말줄임 대신 줄바꿈(320 실측에서 「성수롯데…」로 잘림) — 이름이 판단 근거라 자르지 않는다 */
-html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-start;gap:0;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:keep-all;overflow-wrap:anywhere}
+html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm>.hd-no{flex:none;margin-top:2px!important;vertical-align:0!important}
+/* v190 — 단지명 괄호 묶음(「(101동~105동)」)은 한 덩어리 */
+html body #app #heroDeals .hd-nm-t{min-width:0}
+html body #app #heroDeals .hd-nm-t .nw,html body #app #viewDeals #dealList .deal>.nm .nw{white-space:nowrap}
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:keep-all}
 
 /* ① 실거래 목록 — 같은 두 줄 구성. 「거래 상세」 펼침은 셋째 줄 전체 폭 */
@@ -9929,6 +9933,16 @@ html body #app #viewAnswer #easyMarket>#resultScopeNote{order:2;margin:2px 0 0!i
 html body #app #viewAnswer #easyMarket>#heroDeals{order:3}
 html body #app #viewAnswer #easyMarket>#marketRatio{order:4}
 html body #app #viewAnswer #easyMarket>#marketOpen{order:9}
+html body #app #viewDeals #dealMapDetail .deal-afford{background:#F6F8FC!important;border:0!important;border-radius:var(--r-m)!important;padding:var(--sp-3) var(--sp-4)!important;margin:var(--sp-3) 0!important;box-shadow:none!important}
+html body #app #viewDeals #dealMapDetail .deal-afford .dealrow{padding:var(--sp-1) 0!important;font-size:var(--t6)!important;border:0!important}
+html body #app #viewDeals #dealMapDetail .deal-afford .dealrow .k{color:#53617C!important}
+html body #app #viewDeals #dealMapDetail .deal-afford .dealrow .v{color:#0E1B45!important;font-weight:600!important}
+html body #app #viewDeals #dealMapDetail .costbox.dealbox{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:var(--sp-2) 0 0!important}
+html body #app #viewDeals #dealMapDetail .costbox.dealbox .deal-sum{margin:0 0 var(--sp-1)!important;color:#53617C!important;font-size:var(--t7)!important}
+html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow{padding:var(--sp-2) 0!important;border-top:1px solid #DCE2EC;font-size:var(--t6)!important}
+html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow .k{color:#53617C!important}
+html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow .v{color:#0E1B45!important;font-weight:500;font-variant-numeric:tabular-nums}
+@media (max-width:374px){html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow{font-size:var(--t7)!important}}
 /* ③ 상단 바 가격 */
 html body #app .appbar .barprice{display:none}
 html body #app .appbar.is-price-pinned .barprice{display:inline-flex;align-items:baseline;gap:var(--sp-2);min-width:0;margin-right:auto;font-size:var(--t-card);font-weight:700;color:var(--v-blue,#2458FF);white-space:nowrap;font-variant-numeric:tabular-nums}
