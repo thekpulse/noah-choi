@@ -3724,7 +3724,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
         <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예상 집값</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button><button type="button" data-range="custom" aria-pressed="false" aria-expanded="false" aria-controls="dealMapRangeStep">직접</button><button type="button" class="yk-range-back" data-back aria-label="±10·20·30% 고르기로 돌아가기" hidden>‹</button><span class="yk-range-step" id="dealMapRangeStep" role="group" aria-label="직접 정한 가격 범위" hidden><button type="button" data-step="-10" aria-label="가격 범위 10% 줄이기">−</button><output id="dealMapRangeVal" aria-live="polite">±40%</output><button type="button" data-step="10" aria-label="가격 범위 10% 늘리기">+</button></span></div>
         <p class="yk-legend" id="dealMapLegend" hidden><span><i class="fit"></i>내 예상 집값 이하</span><span><i class="near"></i><b data-near></b></span><span><i class="over"></i>그보다 높음</span></p>
-        <p class="deal-map-note" id="dealMapNote" hidden>구·동 알약 금액은 그 지역 최근 거래가의 중앙값이에요(면적이 섞여 있어요). 색은 내 예상 집값과 비교한 것이에요.</p>
+        <p class="deal-map-note" id="dealMapNote" hidden>알약 금액은 면적 구분 없는 최근 거래가 중앙값이에요.</p>
         <p class="deal-map-miss" id="dealMapMiss" hidden></p>
       </div>
       
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v192 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v193 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5018,6 +5018,12 @@ const LAST = STEPS.length - 1;
 const visible = () => S.noLoan ? [0,2] : [0,1,2];
 const posOf = i => visible().indexOf(i);
 const HOUSE = { first:'생애최초', none:'무주택', multi:'1주택 이상' };
+/* v193 — 화면에 쓰는 주택 보유 이름(입력 줄 · 상단 바 · 공유 이미지). 계산은 S.houseStatus · S.ownCount 를 그대로 본다 */
+function houseLabel(){
+  if(S.houseStatus !== 'multi') return HOUSE[S.houseStatus] || '';
+  if(S.ownCount >= 2) return '2주택 이상';
+  return '1주택' + (S.disposePlan ? ' · 처분 예정' : '');
+}
 
 function singleMoneyCard(val, label, helper){
   const readable = eokEcho(val);   /* 🔴 v37.2 — 억 단위일 때만(위 `eokEcho`) */
@@ -5224,7 +5230,7 @@ function answeredVal(id){
   if(id==='income') return (S.income ? formatWon(man(S.income)) : '미입력')
     + (S.debtMonthly ? ' · 갚는 대출 월 ' + comma(S.debtMonthly) + '만원' : '');
   if(id==='region'){
-    const h = HOUSE[S.houseStatus] + (S.houseStatus==='multi' ? (S.ownCount>=2?' (2채 이상)':' (1채)') : '');
+    const h = houseLabel();
     return (regionLabel()||'—') + ' · ' + h;
   }
   return '';
@@ -5232,9 +5238,7 @@ function answeredVal(id){
 const CROWS = [
   { k:'매수 지역',       step:2, mode:'region', get:() => S.sgg ? regionLabel() + (dealCompareCodes().length > lawdCodesOf(S.sgg).length ? ' 외 '+DEAL.compareCodes.length+'곳' : '') : '' },
   { k:'보유 주택',       step:2, mode:'house', get:() => S.houseStatus
-      ? HOUSE[S.houseStatus]
-        + (S.houseStatus==='multi' ? (S.ownCount>=2?' (2채 이상)':' (1채)') : '')
-        + (S.ownCount === 1 && S.disposePlan ? ' (처분 예정)' : '') : '' },
+      ? houseLabel() : '' },
   { k:'모아둔 현금',     step:0, mode:'cash', get:() => S.cash ? formatWon(man(S.cash)) : '' },
   { k:'연 소득',        step:1, mode:'income', get:() => S.noLoan ? '' : (S.income ? formatWon(man(S.income)) : '') },
   { k:'갚고 있는 대출',   step:1, mode:'debt', get:() => S.noLoan ? '' : (S.debtMonthly ? '월 ' + comma(S.debtMonthly) + '만원' : '없음') },
@@ -6914,7 +6918,7 @@ function renderOutlinks(price){
 function renderReport(v){
   /* ⏹ v25.51 — 위와 같은 이유로 `headline`·`isOverride`를 안 받습니다(원칙 47). */
   const { c } = v;
-  $('rCond').textContent = `${regionLabel()} · ${HOUSE[S.houseStatus]}`;
+  $('rCond').textContent = `${regionLabel()} · ${typeof houseLabel === 'function' ? houseLabel() : HOUSE[S.houseStatus]}`;
   /* 🔴 v26.0 — 화면 머리와 **같이** 움직였습니다(위 근거는 `heroLabel` 자리). */
   $('rLabel').innerHTML = '살 수 있는 집값<span class="r-est">예상</span>';   /* v129 — 화면 머리와 같은 알약 */
   $('rAmount').innerHTML = richWon(heroFigures(c, v.price).P * 10000);
@@ -7182,7 +7186,7 @@ function paintRBar(){
   if(wm) wm.hidden = onResult;
   if(tc) tc.hidden = !onResult || RVIEW !== 'answer';
   if(bl) bl.textContent = !onResult ? ''
-    : RVIEW === 'answer' ? `${regionLabel()} · ${HOUSE[S.houseStatus]}`
+    : RVIEW === 'answer' ? `${regionLabel()} · ${typeof houseLabel === 'function' ? houseLabel() : HOUSE[S.houseStatus]}`
     : RVIEW === 'deals'  ? '내 예산에 맞는 실거래'
     : '확인할 것';
 }
@@ -8299,7 +8303,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const note = byId('dealMapNote'); if (note) note.hidden = level === 'deal';
     if (legend) legend.hidden = level === 'deal';
     if (level !== 'deal' && activeLabel) { activeLabel.classList.remove('is-active'); activeLabel = null; if (detail) detail.hidden = true; }
-    if (level === 'deal') declutter();
+    if (level === 'deal') declutter(); else if (typeof declutterGroups === 'function') declutterGroups(level);
   }
   function setLayer(next) {
     layer = next === 'area' ? 'area' : 'deal';
@@ -8312,6 +8316,19 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
   function labelOrder(a, b) {
     const budget = (typeof DEAL === 'object' && DEAL && DEAL.lastPrice) || Infinity;
     return ((a.amountMan > budget) - (b.amountMan > budget)) || (b.amountMan - a.amountMan);
+  }
+  /* v193 — 동·구 알약 겹침 정리: 거래 건수 많은 알약부터 남기고, 겹치는 알약은 숨긴다(확대하면 다시 계산) */
+  function declutterGroups(level) {
+    const shown = groupMarkers.filter((g) => g.group.level === level && !g.button.hidden);
+    shown.forEach((g) => g.button.classList.remove('is-crowd'));
+    const boxes = shown.map((g) => ({ g, r: g.button.getBoundingClientRect() }))
+      .sort((x, y) => (y.g.group.count - x.g.group.count) || (x.g.group.price - y.g.group.price));
+    const kept = []; const PAD = 2;
+    boxes.forEach(({ g, r }) => {
+      if (!r.width) return;
+      if (kept.some((k) => r.left < k.right + PAD && r.right > k.left - PAD && r.top < k.bottom + PAD && r.bottom > k.top - PAD)) g.button.classList.add('is-crowd');
+      else kept.push(r);
+    });
   }
   function declutter() {
     const labels = overlays.map((m) => m.__ykLabel).filter((b) => b && b.isConnected);
@@ -9866,7 +9883,7 @@ function dealTools(){
 }
 document.addEventListener('click',function(e){const r=e.target.closest('#dealDistribution [data-dd-region]');if(r){const d=document.getElementById('dealRegions');if(!d)return;d.open=!d.open;r.setAttribute('aria-expanded',String(d.open));return;}const f=e.target.closest('#dealFilterBtn');if(f){const d=document.querySelector('#dealCard>.deal-filter-fold');if(!d)return;d.open=!d.open;f.setAttribute('aria-expanded',String(d.open));}});
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});
-document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v184-design">
+document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{grid-column:1;grid-row:1;min-width:0;font-size:var(--t-card)!important;font-weight:600}
