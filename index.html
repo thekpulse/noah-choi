@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v198 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v199 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9665,10 +9665,10 @@ html body #app #viewAnswer #fundingOverview>#easyBalance{padding:0 20px 16px}
 html body #app #viewAnswer #fundingOverview .budget-total{border:0;align-items:baseline}
 html body #app #viewAnswer #fundingOverview #heroAmount{color:#0E1B45}
 html body #app #viewAnswer #fundingOverview #easyCostOpen{border-radius:10px;background:#F6F8FC;padding:8px 10px;gap:8px;min-height:44px}
-html body #app #viewAnswer #easyFundCash{background:#0E1B45}
-html body #app #viewAnswer #easyFundLoan{background:#2458FF}
-html body #app #viewAnswer #marketOpen{background:#0E1B45;color:#fff;border:1px solid #0E1B45;border-radius:14px;min-height:52px;padding:14px 16px}
-html body #app #viewAnswer #marketOpen:active{background:#203566}
+html body #app #viewAnswer #easyFundCash{background:var(--v-blue)}
+html body #app #viewAnswer #easyFundLoan{background:#A4B8FA;background:color-mix(in srgb,var(--v-blue) 40%,#fff)}
+html body #app #viewAnswer #marketOpen{background:var(--v-blue-soft);color:var(--v-blue-deep);border:1px solid var(--v-blue-soft);border-radius:14px;min-height:52px;padding:14px 16px}
+html body #app #viewAnswer #marketOpen:active{background:#D5E0FF;background:color-mix(in srgb,var(--v-blue) 16%,#fff)}
 html body #app #viewAnswer #marketOpen .chev-r{border-color:currentColor}
 html body #app #viewDeals #dealList{background:#fff;border:1px solid #DCE2EC;border-radius:20px;box-shadow:none}
 html body #app #viewDeals .deal .nm{color:#0E1B45;line-height:1.45}
@@ -9692,8 +9692,8 @@ html body #app #viewAnswer>#easyMarket{grid-column:2;grid-row:1/span 2}
 }
 /* v175: screenshot corrections, without changing map positions or calculations. */
 html body #app .funnel #crows>.main-no-loan,html body #app .funnel #crows>.main-no-loan:has(input:checked){background:#fff!important;border-top:1px solid #E8ECF3!important}
-html body #app #easyBalance:not(.cash-only) .rlab>div:first-child .t::before{background:#0E1B45}
-html body #app #easyBalance:not(.cash-only) .rlab>div:last-child .t::before{background:#2458FF}
+html body #app #easyBalance:not(.cash-only) .rlab>div:first-child .t::before{background:var(--v-blue)}
+html body #app #easyBalance:not(.cash-only) .rlab>div:last-child .t::before{background:#A4B8FA;background:color-mix(in srgb,var(--v-blue) 40%,#fff)}
 html body #app #viewDeals #dealViewBar{margin-block:8px;gap:8px}
 html body #app #viewDeals .deal-switch button{min-height:44px;padding:8px 18px}
 html body #app #viewDeals .deal-filter-fold{margin-block:4px 8px}
@@ -9796,6 +9796,8 @@ html body #app #viewDeals .deal-afford .da-gap{font-weight:600}
 </style><script>function distributionModel(items,budget,pass){
  const prices=items.filter(x=>Number.isFinite(x.amountMan)&&x.amountMan>0&&(!pass||pass(x))).map(x=>x.amountMan);
  const n=prices.length,under=prices.filter(p=>p<=budget).length;
+ /* v199 — 중간값(전체 거래 기준 · 범위 밖 포함). 짝수면 가운데 두 값의 평균 */
+ const sorted=prices.slice().sort((x,y)=>x-y),median=n?(n%2?sorted[(n-1)/2]:(sorted[n/2-1]+sorted[n/2])/2):NaN;
  if(n<3||!Number.isFinite(budget)||!(budget>0))return {n,under};
  // Keep the readable axis around the user's budget; never discard outside trades.
  const step=budget>=10000?5000:Math.max(1,Math.ceil(budget/10));
@@ -9804,7 +9806,7 @@ html body #app #viewDeals .deal-afford .da-gap{font-weight:600}
  const visible=prices.filter(p=>p>=lo&&p<=hi);
  const bins=Array.from({length:12},()=>({under:0,over:0}));
  visible.forEach(p=>{const i=Math.min(11,Math.floor((p-lo)/(hi-lo)*12));bins[i][p<=budget?'under':'over']++;});
- return {n,under,lo,hi,below,above,shown:visible.length,bins,peak:Math.max(1,...bins.map(b=>b.under+b.over)),marker:(budget-lo)/(hi-lo)};
+ return {n,under,lo,hi,below,above,shown:visible.length,bins,peak:Math.max(1,...bins.map(b=>b.under+b.over)),marker:(budget-lo)/(hi-lo),median};
 }
 function distributionDots(items,budget,pass,model){
  const date=x=>(Number(x.y)||0)*10000+(Number(x.m)||0)*100+(Number(x.d)||0);
@@ -9850,17 +9852,29 @@ function renderDealDistribution(priceMan){
   const x=15+i*28,h=b.under/model.peak*56,o=b.over/model.peak*56,total=b.under+b.over,bb=74;
   return '<g><title>'+money(model.lo+(model.hi-model.lo)*i/12)+'~'+money(model.lo+(model.hi-model.lo)*(i+1)/12)+' · '+total+'건</title><rect x="'+x+'" y="'+(bb-h)+'" width="21" height="'+h+'" rx="2" fill="#2458FF"/><rect x="'+x+'" y="'+(bb-h-o)+'" width="21" height="'+o+'" rx="2" fill="#8792A8"/><text x="'+(x+10.5)+'" y="'+(bb-h-o-4)+'" text-anchor="middle" font-size="10" fill="#53617C">'+total+'</text></g>';
  }).join('');
+ const tenth=Math.floor(model.under/model.n*10);
+ const insight=model.under===0?'내 예상 집값 이하 거래가 없어요'
+  :model.under===model.n?'모든 거래가 내 예상 집값 이하예요'
+  :tenth===0?'거래 10건 중 <b>1건 미만</b>이 <i>내 예상 집값 이하예요</i>'
+  :'거래 10건 중 <b>'+tenth+'건</b>이 <i>내 예상 집값 이하예요</i>';
+ const medPct=Number.isFinite(model.median)?(model.median-model.lo)/(model.hi-model.lo)*100:NaN;
+ const medTag=medPct>=18&&medPct<=82?'<span class="dd-med" style="left:'+medPct.toFixed(1)+'%">중간값 '+moneyShort(model.median)+'</span>':'';
+ const medLine=medTag?'<line x1="'+(12+medPct/100*336).toFixed(1)+'" x2="'+(12+medPct/100*336).toFixed(1)+'" y1="'+(base-4)+'" y2="'+(base+2)+'" stroke="#53617C" stroke-width="1.5"/>':'';
  box.innerHTML=head('')
-  +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 360 '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
-  +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span><span>'+moneyShort(model.hi)+'</span></div></div>'
+  +'<div class="dd-insight">'+insight+'</div>'
+  +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 360 '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+medLine+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
+  +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span>'+medTag+'<span>'+moneyShort(model.hi)+'</span></div></div>'
   +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')+wideNote
   +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>분포 자세히 · 집계 기준</summary>'
+  +'<div class="dd-group"><p class="dd-sub">집계 대상</p>'
   +'<div class="dd-legend" aria-label="범위 밖 거래를 포함한 전체 집계"><span>전체 거래 기준 '+model.n+'건</span><span><i></i>예상 집값 이하 '+model.under+'건</span><span><i class="dd-over"></i>초과 '+(model.n-model.under)+'건</span></div>'
-  +'<p class="dd-note">표시 구간('+moneyShort(model.lo)+'~'+moneyShort(model.hi)+') '+model.shown+'건'+(model.below?' · 범위 아래 '+model.below+'건':'')+(model.above?' · 범위 위 '+model.above+'건':'')+'</p>'
-  +'<p class="dd-note">'+dotNote+'</p>'
+  +'<p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준이에요. 맨 위 비율(내림)과 중간값도 이 거래로 셌어요.</p></div>'
+  +'<div class="dd-group"><p class="dd-sub">그래프 범위</p>'
+  +'<p class="dd-note">예상 집값의 약 50~150%('+moneyShort(model.lo)+'~'+moneyShort(model.hi)+')만 그려요.<br>그래프 안 '+model.shown+'건'+((model.below+model.above)?' · 그래프 밖 '+(model.below+model.above)+'건(전체 건수에 포함)':'')+'</p>'
   +'<svg class="dd-bars" viewBox="0 0 360 80" role="img" aria-label="가격 구간별 거래 건수"><line x1="12" x2="348" y1="74" y2="74" stroke="#DCE2EC"/>'+bars+'</svg>'
-  +'<p class="dd-note">막대 위 숫자는 그 가격대의 거래 건수예요.</p>'
-  +'<p class="dd-note">'+esc(dealScopeLabel())+' · 면적·준공·세대수 조건 적용<br>가격 제한 없이 조회된 거래 기준이에요.<br>그래프는 예상 집값의 약 50~150%만 그려요.<br>범위 밖 거래도 건수에는 넣어요.<br>같은 단지 거래도 한 건씩 세요.<br>지도를 옮겨 더한 거래는 빼요.<br>아래 목록은 단지별 최근 거래라 건수가 달라요.</p></details>';
+  +'<p class="dd-note">막대 위 숫자는 그 가격대의 거래 건수예요.<br>위 띠는 '+dotNote+'</p></div>'
+  +'<div class="dd-group"><p class="dd-sub">목록·지도와 다른 점</p>'
+  +'<p class="dd-note">분포는 같은 단지 거래도 한 건씩 세고, 지도를 옮겨 더한 거래는 빼요.<br>아래 목록은 단지별 최근 거래라 숫자가 달라요.</p></div></details>';
 }
 function dealTools(){
  const card=document.getElementById('dealCard'),seg=document.getElementById('sortSeg'),fold=card&&card.querySelector(':scope>.deal-filter-fold');
@@ -9884,7 +9898,7 @@ function dealTools(){
 }
 document.addEventListener('click',function(e){const r=e.target.closest('#dealDistribution [data-dd-region]');if(r){const d=document.getElementById('dealRegions');if(!d)return;d.open=!d.open;r.setAttribute('aria-expanded',String(d.open));return;}const f=e.target.closest('#dealFilterBtn');if(f){const d=document.querySelector('#dealCard>.deal-filter-fold');if(!d)return;d.open=!d.open;f.setAttribute('aria-expanded',String(d.open));}});
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});
-document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v184-design">
+document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v199-dd-method">html body #app #viewDeals #dealDistribution .dd-group{margin:0 0 var(--sp-3)}html body #app #viewDeals #dealDistribution .dd-group+.dd-group{padding-top:var(--sp-3);border-top:1px solid var(--v-line)}html body #app #viewDeals #dealDistribution .dd-sub{display:block!important;margin:0!important;font-size:var(--t7)!important;font-weight:700;line-height:1.5!important;color:#0E1B45}html body #app #viewDeals #dealDistribution .dd-group .dd-bars{margin-top:var(--sp-2)}html body #app #viewDeals #dealDistribution .dd-insight{margin-top:var(--sp-2);font-size:var(--t5);font-weight:600;line-height:1.5;color:#0E1B45;letter-spacing:-.01em}html body #app #viewDeals #dealDistribution .dd-insight b{color:var(--v-blue);font-weight:700}html body #app #viewDeals #dealDistribution .dd-insight i{font-style:normal;white-space:nowrap}html body #app #viewDeals #dealDistribution .dd-insight+.dd-strip{margin-top:40px}html body #app #viewDeals #dealDistribution .dd-axis{position:relative}html body #app #viewDeals #dealDistribution .dd-axis .dd-med{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;color:#0E1B45!important;font-weight:600}</style><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
 html body #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{grid-column:1;grid-row:1;min-width:0;font-size:var(--t-card)!important;font-weight:600}
