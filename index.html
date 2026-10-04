@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v202 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v203 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9919,6 +9919,38 @@ html body #exportPreview img{flex-shrink:1;min-height:0;object-fit:contain;borde
 html body #exportPreview p,html body #exportPreview button{flex-shrink:0}
 html body #exportPreview button:focus-visible{outline:3px solid #8FAEFF;outline-offset:4px}
 @media(max-height:500px){html body #exportPreview{justify-content:flex-start}html body #exportPreview img{max-height:55svh;flex-shrink:0}}
+</style><style id="v203-design">
+html body #app #viewDeals button#cmpBar{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px;border:1px solid #BDCCFA;border-radius:var(--r-m);background:#F3F6FF;text-align:left}
+html body #app #viewDeals #cmpBar .cmp-bar-head{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%}
+html body #app #viewDeals #cmpBar b{display:flex;align-items:center;gap:6px;color:#0E1B45;font-size:var(--t6)}
+html body #app #viewDeals #cmpBar em{font-size:var(--t7);font-weight:600;font-style:normal;color:var(--v-blue-deep);font-variant-numeric:tabular-nums}
+html body #app #viewDeals #cmpBar .cmp-bar-action{display:flex;gap:8px;color:var(--v-blue-deep);font-size:var(--t6);font-weight:600;white-space:nowrap}
+html body #app #viewDeals #cmpBar i{font-style:normal}
+html body #app #viewDeals #cmpBar .cmp-bar-items{display:flex;flex-wrap:wrap;gap:6px;width:100%;min-width:0}
+html body #app #viewDeals #cmpBar .cmp-item{display:inline-flex;max-width:100%;min-width:0;gap:6px;padding:5px 8px;background:#fff;border:1px solid #DCE4F5;border-radius:var(--r-s);color:#465262;font-size:var(--t7);font-weight:500;line-height:1.5}
+html body #app #viewDeals #cmpBar .cmp-item>span{display:block;min-width:0;overflow-wrap:anywhere;white-space:normal}
+html body #app #viewDeals #cmpBar .cmp-item>i{flex:none;align-self:flex-start;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-top:1px;border-radius:4px;background:var(--v-blue-soft);color:var(--v-blue-deep);font-size:var(--t8);font-weight:700}
+html body #app #viewDeals #cmpBar:active{background:#E8EEFF}
+html body #cmpSheet tr.cmp-group th{padding:20px 0 0!important;color:#0E1B45;font-size:var(--t6)!important;font-weight:700!important;letter-spacing:-.02em}
+html body #cmpSheet tbody tr.cmp-group:first-child th{padding-top:8px!important}
+html body #cmpSheet .cmp-lead{border-radius:var(--r-m);padding:16px}
+html body #cmpSheet .cmp-lead small{opacity:1;color:#E8EEFF}
+html body #cmpSheet .cmp-lead span{margin-top:6px;font-size:var(--t3);font-weight:700;line-height:1.35;letter-spacing:-.02em}
+html body #cmpSheet .cmp-card.is-least{box-shadow:none;border:2px solid var(--v-blue);padding:9px 9px 11px}
+html body #cmpSheet .cmp-note{padding-top:12px;border-top:1px solid var(--v-line)}
+html body #reportCard .report-head{align-items:flex-start!important}
+html body #reportCard .report-cond{max-width:56%;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:keep-all;overflow-wrap:anywhere}
+html body #reportCard .report-label{margin-top:20px!important}
+html body #reportCard .report-amount{line-height:1.25!important;letter-spacing:-.025em!important}
+html body #reportCard .report-body{padding:20px 24px!important}
+html body #reportCard .rs-total{margin-top:10px!important;padding:14px 16px!important;border:1px solid #DCE4F5;border-radius:14px;background:#F3F6FF;align-items:center!important;flex-wrap:wrap;gap:4px 12px!important}
+html body #reportCard .rs-total .rs-k{font-size:14px!important;font-weight:600!important}
+html body #reportCard .rs-total .rs-v{font-size:24px!important;color:#1848D6!important;line-height:1.35!important;max-width:100%;white-space:normal!important;overflow-wrap:anywhere}
+html body #reportCard #rDeals .d{border-bottom:1px solid #E1E5EB!important;padding:12px 0!important}
+html body #reportCard #rDeals .d:last-child{border-bottom:0!important;padding-bottom:0!important}
+html body #reportCard #rDeals .d .n{font-size:16px!important;line-height:1.5!important}
+html body #reportCard #rDeals .d .a{margin-top:6px!important;gap:4px 12px!important}
+html body #reportCard .report-cta{border-radius:14px!important}
 </style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
@@ -10043,13 +10075,18 @@ function cmpBtnHtml(x){
  var s=cmpSnap(x),on=cmpLoad().some(function(v){return v.k===s.k;});
  return '<div class="cmp-save"><button type="button" class="cmp-btn" data-cmp-key="'+esc(s.k)+'" data-cmp="'+esc(JSON.stringify(s))+'" aria-pressed="'+on+'">'+cmpLabel(on)+'</button><span class="cmp-msg" role="status" aria-live="polite"></span></div>';
 }
+function cmpBarHtml(list){
+ var names=list.map(function(s,i){return '<span class="cmp-item"><i aria-hidden="true">'+(i+1)+'</i><span>'+esc(s.name)+'</span></span>';}).join('');
+ return '<span class="cmp-bar-head"><b>비교함 <em>'+list.length+'/3</em></b><span class="cmp-bar-action">'+(list.length>1?list.length+'곳 비교하기':'비교표 보기')+'<i aria-hidden="true">›</i></span></span><span class="cmp-bar-items">'+names+'</span>';
+}
 function cmpSync(){
  var list=cmpLoad(),keys=list.map(function(v){return v.k;});
  document.querySelectorAll('.cmp-btn').forEach(function(b){var on=keys.indexOf(b.dataset.cmpKey)>=0;if(b.getAttribute('aria-pressed')!==String(on)){b.setAttribute('aria-pressed',String(on));b.innerHTML=cmpLabel(on);}});
  var bar=document.getElementById('cmpBar');
  if(!bar){var lead=document.getElementById('dealLead'),card=document.getElementById('dealCard');if(!lead||!card)return;bar=document.createElement('button');bar.type='button';bar.id='cmpBar';bar.setAttribute('aria-haspopup','dialog');lead.before(bar);}
  bar.hidden=!list.length;
- bar.innerHTML='<b>★ 비교함 '+list.length+'곳</b><span>비교표 보기<span aria-hidden="true">›</span></span>';
+ bar.innerHTML=cmpBarHtml(list);
+ bar.setAttribute('aria-label','비교함 '+list.length+'곳: '+list.map(function(s){return s.name;}).join(', ')+'. 비교표 보기');
 }
 function cmpToggle(b){
  var list=cmpLoad(),k=b.dataset.cmpKey,at=-1,msg=b.parentNode.querySelector('.cmp-msg');
@@ -10087,22 +10124,23 @@ function cmpRender(){
  if(cols.length>1&&withF.length===cols.length){var mn=Math.min.apply(null,withF.map(function(c){return c.f.C;}));least=withF.filter(function(c){return c.f.C===mn;});if(least.length===cols.length)least=[];}
  var isLeast=function(c){return least.indexOf(c)>=0;};
  var n=cols.length+0;
+ var group=function(label){return '<tr class="cmp-group"><th colspan="'+n+'">'+label+'</th></tr>';};
  var krow=function(k,sub){return '<tr class="cmp-k"><th scope="rowgroup" colspan="'+n+'">'+k+(sub?'<small>'+sub+'</small>':'')+'</th></tr>';};
  var vrow=function(cls,fn){return '<tr class="cmp-v'+(cls?' '+cls:'')+'">'+cols.map(function(c){return '<td headers="'+c.id+'"'+(cls==='cmp-hero'&&isLeast(c)?' class="is-least"':'')+'>'+fn(c)+'</td>';}).join('')+'</tr>';};
  var lead=least.length?'<div class="cmp-lead" role="note"><small>필요한 현금이 가장 적은 곳 · 부대비용 포함</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><span>'+won(least[0].f.C)+'</span></div>':'';
  body.innerHTML=lead+'<table><colgroup>'+cols.map(function(){return '<col>';}).join('')+'</colgroup>'
   +'<thead><tr>'+cols.map(function(c,i){return '<th scope="col" id="'+c.id+'"><div class="cmp-card'+(isLeast(c)?' is-least':'')+'"><span class="cmp-no" aria-hidden="true">'+(i+1)+'</span><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small>'+(c.spec?'<small>'+esc(c.spec)+'</small>':'')+'<button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기"></button></div></th>';}).join('')+'</tr></thead><tbody>'
-  +(withF.length?krow('필요한 현금','부대비용 포함 · 내 현금과 비교')
+  +(withF.length?group('구입 자금')+krow('필요한 현금','부대비용 포함 · 내 현금과 비교')
    +vrow('cmp-hero',function(c){if(!c.f)return '—';var g=c.f.gap;return won(c.f.C)+'<br><span class="cmp-pill '+(g>0?'is-short':'is-spare')+'">'+(g>0?won(g)+' 부족':g<0?won(-g)+' 여유':'추가 현금 0원')+'</span>';})
    +krow('주택담보대출')+vrow('',function(c){return c.f?(c.f.L>0?won(c.f.L):'없음'):'—';})
    +krow('월 상환액')+vrow('',function(c){return c.f&&c.f.L>0?won(c.f.M):'—';}):'')
-  +krow('거래가','담을 때의 거래')+vrow('',function(c){return c.price;})
+  +group('단지 정보')+krow('거래가','담을 때의 거래')+vrow('',function(c){return c.price;})
   +krow('예상 집값과 차이')+vrow('',function(c){return c.gap;})
   +krow('세대수')+vrow('',function(c){return c.units;})
   +'</tbody></table>'
   +(list.length<2?'<p class="cmp-note">단지를 하나 더 담으면 나란히 비교할 수 있어요.</p>':'')
   +(withF.length?'':'<p class="cmp-note">계산 결과가 있으면 필요한 현금·대출도 함께 보여요.</p>')
-  +'<p class="cmp-note">※ 거래가는 비교함에 담을 때의 실거래입니다.<br>※ 금액은 지금 입력한 조건으로 계산한 참고용 예상치입니다.<br>※ 담은 단지는 이 기기의 브라우저에만 저장됩니다.</p>';
+  +'<p class="cmp-note">※ 거래가는 비교함에 담을 때의 실거래입니다.<br>※ 금액은 지금 입력한 조건으로 계산한 참고용 예상치입니다.<br>※ 대출 주선·알선·중개 아님.<br>※ 담은 단지는 이 기기의 브라우저에만 저장됩니다.</p>';
  cmpQueueAlignment();
 }
 function cmpAlignCardRows(){
