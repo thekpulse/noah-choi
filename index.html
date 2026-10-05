@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v206 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v207 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -9890,6 +9890,7 @@ function renderDealDistribution(priceMan){
   +'<div class="dd-insight">'+insight+'</div>'
   +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 360 '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+medLine+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
   +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span>'+medTag+'<span>'+moneyShort(model.hi)+'</span></div></div>'
+  +'<p class="dd-scope-note">전체 '+model.n+'건 중 예상 집값 이하 '+model.under+'건<br>점은 표시 구간의 최근 '+dots.points.length+'건 · 겹친 점이 있어요.</p>'
   +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')+wideNote
   +'<details class="dd-method"'+(methodOpen?' open':'')+'><summary>분포 자세히 · 집계 기준</summary>'
   +'<div class="dd-group"><p class="dd-sub">집계 대상</p>'
@@ -10034,6 +10035,15 @@ html body #app #viewAnswer .minigrid{width:100%;max-width:480px;justify-self:cen
 html body #app #rdock .dockrow{width:100%;max-width:480px;margin-left:auto;margin-right:auto}
 }
 @media(max-width:374px){html body #app #viewDeals #dealMapPanel .cmp-map-toolbar{padding:12px;gap:8px}}
+</style><style id="v207-mobile-review">
+html body #app #viewAnswer #easyBalance:not(.cash-only) .rlab{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}
+html body #app #viewAnswer #easyBalance .rlab>div{min-width:0;width:auto!important}
+html body #app #viewDeals #dealMapPanel:has(#dealMapDetail:not([hidden]) .cmp-map-actions) .cmp-map-toolbar{display:none!important}
+html body #cmpSheet tr.cmp-column-names th{position:sticky;top:calc(var(--cmp-heading-height,72px) - 18px);z-index:7;background:#fff!important;padding:8px 0!important;border-bottom:1px solid var(--v-line)!important;vertical-align:middle!important;font-size:var(--t7)!important;font-weight:700;line-height:1.4!important}
+html body #cmpSheet tr.cmp-column-names th span{display:block;padding:0 4px;overflow-wrap:anywhere}
+html body #app #viewDeals .dd-scope-note{margin:12px 0 0;font-size:var(--t8);line-height:1.6;color:#53617C;word-break:keep-all}
+html body #cmpSheet .cmp-naver{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:8px 6px;margin-top:12px;border:1px solid var(--v-line);border-radius:12px;color:var(--v-blue-deep);background:#F6F8FC;text-decoration:none;font-size:var(--t7);line-height:1.5;word-break:keep-all}
+html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}
 </style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
@@ -10213,7 +10223,7 @@ function cmpRender(){
  var vrow=function(cls,fn){return '<tr class="cmp-v'+(cls?' '+cls:'')+'">'+cols.map(function(c){return '<td headers="'+c.id+'"'+(cls==='cmp-hero'&&isLeast(c)?' class="is-least"':'')+'>'+fn(c)+'</td>';}).join('')+'</tr>';};
  var lead=least.length?'<div class="cmp-lead" role="note"><small>필요한 현금이 가장 적은 곳 · 부대비용 포함</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><span>'+won(least[0].f.C)+'</span></div>':'';
  body.innerHTML=lead+'<table><colgroup>'+cols.map(function(){return '<col>';}).join('')+'</colgroup>'
-  +'<thead><tr>'+cols.map(function(c,i){return '<th scope="col" id="'+c.id+'"><div class="cmp-card'+(isLeast(c)?' is-least':'')+'"><span class="cmp-no" aria-hidden="true">'+(i+1)+'</span><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small>'+(c.spec?'<small>'+esc(c.spec)+'</small>':'')+'<button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기"></button></div></th>';}).join('')+'</tr></thead><tbody>'
+  +'<thead><tr>'+cols.map(function(c,i){return '<th scope="col" id="'+c.id+'"><div class="cmp-card'+(isLeast(c)?' is-least':'')+'"><span class="cmp-no" aria-hidden="true">'+(i+1)+'</span><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small>'+(c.spec?'<small>'+esc(c.spec)+'</small>':'')+'<button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기"></button></div></th>';}).join('')+'</tr></thead><tbody><tr class="cmp-column-names">'+cols.map(function(c){return '<th scope="col"><span>'+esc(c.s.name)+'</span></th>';}).join('')+'</tr>'
   +(withF.length?group('구입 자금')+krow('필요한 현금','부대비용 포함 · 내 현금과 비교')
    +vrow('cmp-hero',function(c){if(!c.f)return '—';var g=c.f.gap;return won(c.f.C)+'<br><span class="cmp-pill '+(g>0?'is-short':'is-spare')+'">'+(g>0?won(g)+' 부족':g<0?won(-g)+' 여유':'추가 현금 0원')+'</span>';})
    +krow('주택담보대출')+vrow('',function(c){return c.f?(c.f.L>0?won(c.f.L):'없음'):'—';})
@@ -10221,6 +10231,7 @@ function cmpRender(){
   +group('단지 정보')+krow('거래가','담을 때의 거래')+vrow('',function(c){return c.price;})
   +krow('예상 집값과 차이')+vrow('',function(c){return c.gap;})
   +krow('세대수')+vrow('',function(c){return c.units;})
+  +vrow('cmp-search',function(c){return typeof dealNaverUrl==='function'?'<a class="cmp-naver" href="'+esc(dealNaverUrl(c.s))+'" target="_blank" rel="noopener noreferrer" aria-label="'+esc(c.s.name)+' 네이버에서 찾기, 새 창">네이버에서 찾기 <span aria-hidden="true">↗</span></a>':'—';})
   +'</tbody></table>'
   +(list.length<2?'<p class="cmp-note">단지를 하나 더 담으면 나란히 비교할 수 있어요.</p>':'')
   +(withF.length?'':'<p class="cmp-note">계산 결과가 있으면 필요한 현금·대출도 함께 보여요.</p>')
@@ -10229,6 +10240,8 @@ function cmpRender(){
 }
 function cmpAlignCardRows(){
  var sheet=document.getElementById('cmpSheet');if(!sheet||sheet.hidden)return;
+ var heading=sheet.querySelector('.why-sheet-header');
+ if(heading)sheet.style.setProperty('--cmp-heading-height',heading.getBoundingClientRect().height+'px');
  var cards=[].slice.call(sheet.querySelectorAll('.cmp-card'));
  ['b','small'].forEach(function(selector){
   var cells=cards.map(function(c){return c.querySelector(selector);}).filter(Boolean);
