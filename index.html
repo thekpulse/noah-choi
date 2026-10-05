@@ -3489,7 +3489,40 @@ html body .funnel .crows .main-no-loan input:checked::before{transform:translate
 html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){html body .funnel .crows .main-no-loan input,html body .funnel .crows .main-no-loan input::before{transition:none}}
 </style>
-</head>
+<style id="v212-conditions">/* Preview only after the first result. Existing entry fields and budget colour stay intact. */
+html body.yk208 #app .lc-preview{position:sticky;top:calc(var(--v208-bar-height,64px) + 8px);z-index:20;margin:0 0 20px;padding:16px 20px;border:1px solid #465262;border-radius:20px;background:#192332;color:#fff;box-shadow:none}
+html body.yk208 #app .lc-preview[hidden],html body.yk208 #app .lc-saved[hidden],html body.yk208 #app .lc-range-wrap[hidden]{display:none!important}
+html body.yk208 #app .lc-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+html body.yk208 #app .lc-heading h2{margin:0;font-size:14px;line-height:1.5;font-weight:500;color:#CDD4DE}
+html body.yk208 #app .lc-reset{flex:none;min-height:44px;margin:-6px -8px -6px 0;padding:8px;border:0;border-radius:10px;background:transparent;color:#D8E3FF;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+html body.yk208 #app .lc-reset:disabled{color:#A9B3C1;cursor:default}
+html body.yk208 #app .lc-value{display:block;min-height:44px;margin:4px 0;font-size:32px;font-weight:700;line-height:1.3;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html body.yk208 #app .lc-preview[data-pending="true"] .lc-value{font-size:24px}
+html body.yk208 #app .lc-delta{margin:4px 0 0;color:#CDD4DE;font-size:13px;line-height:1.6;min-height:21px}
+html body.yk208 #app .lc-saved{margin:16px 0 20px;padding:16px 20px;background:#fff;border:1px solid #E1E5EB;border-radius:16px}
+html body.yk208 #app .lc-saved h2{margin:0;font-size:14px;font-weight:600;line-height:1.5}
+html body.yk208 #app .lc-saved p{margin:4px 0 12px;font-size:12px;line-height:1.6;color:#5F6B7D}
+html body.yk208 #app .lc-saved ul{list-style:none;padding:0;margin:0}
+html body.yk208 #app .lc-saved li{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #E1E5EB;font-size:13px;line-height:1.6}
+html body.yk208 #app .lc-saved li span{min-width:0;flex:1;overflow-wrap:anywhere}
+html body.yk208 #app .lc-saved li b{flex:none;max-width:56%;text-align:right;color:#1848D6;font-size:13px;font-weight:600}
+html body.yk208 #app .lc-saved li b.lc-short{color:#B5530F}
+html body.yk208 #app .lc-range-wrap{grid-column:1/-1;width:100%;min-width:0;margin:8px 0 0}
+html body.yk208 #app .lc-range{display:block;width:100%;height:44px;margin:0;padding:0;border:0!important;border-radius:0!important;box-shadow:none!important;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;touch-action:pan-y}
+html body.yk208 #app .lc-range::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(to right,#1F5BFF var(--lc-fill),#D6DCE5 var(--lc-fill))}
+html body.yk208 #app .lc-range::-moz-range-track{height:4px;border-radius:4px;background:#D6DCE5}
+html body.yk208 #app .lc-range::-moz-range-progress{height:4px;background:#1F5BFF}
+html body.yk208 #app .lc-range::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;margin-top:-10px;border:2px solid #1F5BFF;border-radius:50%;background:#fff}
+html body.yk208 #app .lc-range::-moz-range-thumb{width:20px;height:20px;border:2px solid #1F5BFF;border-radius:50%;background:#fff}
+html body.yk208 #app .lc-range-scale{display:flex;justify-content:space-between;gap:12px;color:#5F6B7D;font-size:12px;line-height:1.5}
+html body.yk208 #app .lc-range:focus-visible,html body.yk208 #app .lc-reset:focus-visible{outline:2px solid #1F5BFF;outline-offset:2px}
+html body.yk208 #app .lc-sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+html body.yk208 #app .lc-legal{margin:16px 0 0;color:#5F6B7D;font-size:12px;line-height:1.6}
+html body.yk208 #app .lc-legal[hidden]{display:none!important}
+html body.yk208 #app[data-v208-tab="conditions"] .funnel .entry-sub{margin-bottom:16px!important}
+@media(max-width:374px){html body.yk208 #app .lc-preview,html body.yk208 #app .lc-saved{padding:14px 16px}html body.yk208 #app .lc-value{font-size:28px}}
+@media(max-height:600px){html body.yk208 #app .lc-preview{position:static}}
+</style></head>
 <body>
 
 <div class="app" id="app">
@@ -4945,7 +4978,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v211 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v212 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11294,6 +11327,135 @@ var before = cmpRender;
 cmpRender = function(){ var r = before.apply(this, arguments); sync(); return r; };
 sync();
 window.__cmpReportHtml = cardHtml;   /* 검사용 — 카드 내용만 만들고 내보내지 않음 */
+})();
+</script><script>/* v212 conditions */
+(function(){
+'use strict';
+const el=id=>document.getElementById(id),app=el('app'),funnel=el('funnel');
+if(!app||!funnel)return;
+const card=document.createElement('section');card.className='lc-preview';card.hidden=true;card.setAttribute('aria-labelledby','lcTitle');
+card.innerHTML='<div class="lc-heading"><h2 id="lcTitle">이 조건의 예상 집값</h2><button type="button" class="lc-reset" title="이 화면에 들어올 때의 현금·소득으로 되돌리기">금액 되돌리기</button></div><output class="lc-value" id="lcPrice" aria-live="off">—</output><p class="lc-delta" id="lcDelta"></p>';
+const saved=document.createElement('section');saved.className='lc-saved';saved.hidden=true;
+saved.innerHTML='<h2>담은 단지의 현금 차이</h2><p>담을 때 거래가 · 지금 입력한 조건 기준</p><ul></ul>';
+const status=document.createElement('span');status.className='lc-sr';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+const anchor=funnel.querySelector('.entry-sub');anchor.after(card,status);
+const legal=document.createElement('p');legal.className='lc-legal';legal.hidden=true;legal.textContent='참고용 계산 결과 · 대출 주선·알선·중개 아님';
+el('crows').after(saved,legal);
+let entered=false,original=null,referencePrice=null,frame=0,serial=0,signature='',pending=null,inflight=false,worker=null,workerFailed=false,fallbackTimer=0,announceTimer=0;
+const active=()=>app.dataset.v208Tab==='conditions'&&!funnel.hidden;
+function schedule(){if(!frame)frame=requestAnimationFrame(paint);}
+function invalidate(){serial++;signature='';pending=null;clearTimeout(fallbackTimer);clearTimeout(announceTimer);status.textContent='';}
+function say(text){clearTimeout(announceTimer);announceTimer=setTimeout(()=>{if(active())status.textContent=text;},350);}
+function installRanges(){
+ for(const key of ['cash','income']){
+  const input=el('main-'+key);if(!input)continue;
+  let wrap=input.closest('.inline-money').querySelector('.lc-range-wrap');
+  if(!wrap&&!active())continue;
+  if(!wrap){
+   wrap=document.createElement('div');wrap.className='lc-range-wrap';
+   const range=document.createElement('input');range.type='range';range.className='lc-range';range.min='0';range.step='1';range.dataset.lcKey=key;
+   range.setAttribute('aria-label',(key==='cash'?'집에 쓸 현금':'연 소득')+' 조절');
+   range.setAttribute('aria-describedby',key+'-help');
+   const scale=document.createElement('div');scale.className='lc-range-scale';scale.setAttribute('aria-hidden','true');scale.innerHTML='<span>0원</span><span></span>';
+   wrap.append(range,scale);input.closest('.inline-money').append(wrap);
+   range.addEventListener('input',()=>{input.value=range.value;input.dispatchEvent(new Event('input',{bubbles:true}));});
+  }
+  wrap.hidden=!active();
+  const range=wrap.querySelector('input'),value=Number(S[key])||0;
+  // Grow only for typed amounts; dragging never changes the track beneath the pointer.
+  const max=Math.min(9999999,Math.max(Number(range.max)||0,key==='cash'?100000:30000,Math.ceil(value/10000)*10000));
+  range.max=String(max);range.value=String(value);range.setAttribute('aria-valuetext',value?formatWon(man(value)):'0원');
+  range.style.setProperty('--lc-fill',(value/max*100)+'%');wrap.lastElementChild.lastElementChild.textContent=formatWon(man(max));
+ }
+}
+function renderSaved(){
+ const items=typeof cmpLoad==='function'?cmpLoad():[];
+ saved.hidden=!active()||!allReady()||!items.length;
+ if(saved.hidden)return;
+ const list=saved.querySelector('ul');list.replaceChildren();
+ for(const item of items){
+  const f=dealAfford(item.amountMan);if(!f)continue;
+  const row=document.createElement('li'),name=document.createElement('span'),value=document.createElement('b');
+  name.textContent=item.name;value.classList.toggle('lc-short',f.gap>0);
+  value.textContent=f.gap===0?'추가 현금 0원':formatWon(man(Math.abs(f.gap)))+(f.gap>0?' 부족':' 여유');
+  row.append(name,value);list.append(row);
+ }
+}
+function deliver(job,price){
+ if(job.id!==serial||!active())return;
+ if(!Number.isFinite(price)||price<0){signature='';card.dataset.pending='true';el('lcPrice').textContent='미리보기를 불러오지 못했어요';el('lcDelta').textContent='아래 결과 보기에서 계산할 수 있어요.';return;}
+ const shown=Math.floor(price/10000)*10000,delta=referencePrice==null?0:shown-referencePrice;
+ card.dataset.pending='false';el('lcPrice').textContent=formatWon(shown);el('lcPrice').dataset.price=String(shown);
+ el('lcDelta').textContent=delta===0?'취득세 등 부대비용을 반영했어요.':('수정 전보다 '+formatWon(Math.abs(delta))+(delta>0?' 증가':' 감소'));
+ say('예상 집값 '+formatWon(shown));
+}
+function fallback(job){
+ clearTimeout(fallbackTimer);fallbackTimer=setTimeout(()=>{
+  if(job.id!==serial||!active())return;
+  try{deliver(job,solveMaxPrice(job.cash,job.base));}catch(e){deliver(job,NaN);}
+ },180);
+}
+function startWorker(){
+ if(worker||workerFailed)return;
+ try{
+  // Reuse the SAME locked engine text. No copied formulas, policy table or network request.
+  const marker='/* ══════════ ENGINE END';
+  const source=Array.from(document.scripts).map(s=>s.textContent).find(s=>s.includes(marker)&&s.includes('function solveMaxPrice('));
+  if(!source)throw Error('engine unavailable');
+  const code=source.slice(0,source.indexOf(marker))+'\nself.onmessage=function(e){const j=e.data;try{self.postMessage({id:j.id,price:solveMaxPrice(j.cash,j.base)});}catch(error){self.postMessage({id:j.id,failed:true});}};';
+  const url=URL.createObjectURL(new Blob([code],{type:'application/javascript'}));
+  try{worker=new Worker(url);}finally{URL.revokeObjectURL(url);}
+  worker.onmessage=e=>{
+   inflight=false;const d=e.data;
+   if(d.failed){worker.terminate();worker=null;workerFailed=true;if(pending)fallback(pending);return;}
+   deliver({id:d.id},d.price);
+   if(pending&&pending.id!==d.id)pump();
+  };
+  worker.onerror=e=>{e.preventDefault();worker.terminate();worker=null;workerFailed=true;inflight=false;if(pending)fallback(pending);};
+ }catch(e){workerFailed=true;}
+}
+function pump(){
+ if(!pending)return;
+ startWorker();
+ if(worker){if(!inflight){inflight=true;worker.postMessage(pending);}}
+ else fallback(pending);
+}
+function paint(){
+ frame=0;const on=active();card.hidden=!on;legal.hidden=!on;
+ if(!on){saved.hidden=true;if(entered)invalidate();entered=false;original=null;installRanges();return;}
+ if(!entered){entered=true;original={cash:S.cash,income:S.income};referencePrice=typeof LASTVIEW==='object'&&LASTVIEW?Math.floor(LASTVIEW.price/10000)*10000:null;signature='';}
+ anchor.textContent='금액을 바꾸면 예상 집값도 함께 바뀌어요.';
+ installRanges();renderSaved();
+ card.querySelector('button').disabled=S.cash===original.cash&&S.income===original.income;
+ if(!allReady()){
+  invalidate();card.dataset.pending='true';el('lcPrice').textContent='입력한 조건을 확인해 주세요';el('lcPrice').removeAttribute('data-price');el('lcDelta').textContent='비어 있는 항목을 채우면 예상 집값이 나와요.';return;
+ }
+ const base=ctx(),cash=man(S.cash),key=JSON.stringify([cash,base]);
+ if(signature===key)return;
+ signature=key;const job={id:++serial,cash,base};pending=job;
+ card.dataset.pending='true';el('lcPrice').textContent='계산 중…';el('lcPrice').removeAttribute('data-price');el('lcDelta').textContent='입력한 조건으로 다시 계산하고 있어요.';
+ pump();
+}
+card.querySelector('button').onclick=()=>{
+ if(!original)return;
+ S.cash=original.cash;S.income=original.income;
+ renderAnswered();syncCta();schedule();
+};
+const originalCta=syncCta;
+syncCta=function(){
+ const result=originalCta.apply(this,arguments);
+ if(active()&&allReady()){
+  const notice=el('v208Status');
+  if(notice&&notice.textContent==='입력이 필요한 항목을 확인해 주세요.')notice.hidden=true;
+ }
+ // Reject an old worker response as soon as input changes, before the next frame.
+ if(active()&&signature!==JSON.stringify([man(S.cash),ctx()])){
+  invalidate();card.dataset.pending='true';el('lcPrice').removeAttribute('data-price');el('lcPrice').textContent='계산 중…';
+ }
+ schedule();return result;
+};
+new MutationObserver(schedule).observe(app,{attributes:true,attributeFilter:['data-v208-tab']});
+schedule();
 })();
 </script></body>
 </html>
