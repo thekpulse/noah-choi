@@ -3719,7 +3719,7 @@ html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8F
         </div>
       </div>
       <div class="deal-map-panel" id="dealMapPanel" hidden>
-        <div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
+        <div class="cmp-map-toolbar"><p>단지를 누르면 비교함에 담을 수 있어요.</p><button type="button" class="cmp-map-open" data-cmp-open aria-haspopup="dialog" disabled>비교표 보기 · 0</button></div><div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
         <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예상 집값</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button><button type="button" data-range="custom" aria-pressed="false" aria-expanded="false" aria-controls="dealMapRangeStep">직접</button><button type="button" class="yk-range-back" data-back aria-label="±10·20·30% 고르기로 돌아가기" hidden>‹</button><span class="yk-range-step" id="dealMapRangeStep" role="group" aria-label="직접 정한 가격 범위" hidden><button type="button" data-step="-10" aria-label="가격 범위 10% 줄이기">−</button><output id="dealMapRangeVal" aria-live="polite">±40%</output><button type="button" data-step="10" aria-label="가격 범위 10% 늘리기">+</button></span></div>
@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v203 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v204 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -8007,7 +8007,18 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       wrap.innerHTML = dealBox(deal, 'Map').replace('class="costbox dealbox"', 'class="costbox dealbox open"').replace(/<p class="deal-range">[\s\S]*?<\/p>/, '');
       const afford = wrap.querySelector('.deal-afford');   /* v111 — 「이 가격으로 사면」은 선택 거래 바로 밑(시트에서 가장 먼저 읽을 다음 질문) */
       if (afford) pick.after(afford);
+      const save = wrap.querySelector('.cmp-save');
+      if(save){
+        const actions=document.createElement('div');actions.className='cmp-map-actions';
+        const compare=document.createElement('button');compare.type='button';compare.className='cmp-map-open';
+        compare.setAttribute('data-cmp-open','');compare.setAttribute('aria-haspopup','dialog');
+        compare.disabled=true;compare.textContent='비교표 보기 · 0';
+        actions.append(save,compare);
+        detail.querySelector('.yk-sheet-head').after(actions);
+      }
       detail.append(...wrap.childNodes);
+      if(typeof cmpSync==='function')cmpSync();
+      detail.scrollTop=0;
     }
     sheetGrowSync();   /* v124 */
     h.focus({ preventScroll: true });
@@ -9951,6 +9962,17 @@ html body #reportCard #rDeals .d:last-child{border-bottom:0!important;padding-bo
 html body #reportCard #rDeals .d .n{font-size:16px!important;line-height:1.5!important}
 html body #reportCard #rDeals .d .a{margin-top:6px!important;gap:4px 12px!important}
 html body #reportCard .report-cta{border-radius:14px!important}
+</style><style id="v204-map-compare">
+html body #app #viewDeals .cmp-map-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0 12px}
+html body #app #viewDeals .cmp-map-toolbar p{margin:0;min-width:0;color:#53617C;font-size:var(--t7);line-height:1.5;word-break:keep-all}
+html body #app #viewDeals .cmp-map-open{flex:none;min-height:44px;padding:0 12px;border:1px solid var(--v-blue);border-radius:var(--r-s);background:var(--v-blue);color:#fff;font:inherit;font-size:var(--t7);font-weight:600;line-height:1.4;cursor:pointer;white-space:nowrap}
+html body #app #viewDeals .cmp-map-open:disabled{background:#F1F3F7;border-color:var(--v-line);color:#53617C;cursor:default;opacity:1}
+html body #app #viewDeals .cmp-map-open:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
+html body #app #viewDeals #dealMapDetail .cmp-map-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:8px;padding:8px 0 12px;border-bottom:1px solid var(--v-line);margin:0 0 8px}
+html body #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-save{min-width:0;margin:0}
+html body #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-btn{min-height:44px;padding:6px;font-size:var(--t7);border-color:#A4B8FA;color:var(--v-blue-deep);border-radius:var(--r-s);line-height:1.4}
+html body #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-map-open{width:100%;padding:6px;font-size:var(--t7)}
+html body #app #viewDeals #dealMapDetail .cmp-msg{font-size:var(--t7);word-break:keep-all}
 </style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
@@ -10081,6 +10103,7 @@ function cmpBarHtml(list){
 }
 function cmpSync(){
  var list=cmpLoad(),keys=list.map(function(v){return v.k;});
+ document.querySelectorAll('[data-cmp-open]').forEach(function(b){b.disabled=!list.length;b.textContent='비교표 보기 · '+list.length;b.setAttribute('aria-label',list.length?'비교함 '+list.length+'곳 비교표 보기':'단지를 담으면 비교표를 볼 수 있어요');});
  document.querySelectorAll('.cmp-btn').forEach(function(b){var on=keys.indexOf(b.dataset.cmpKey)>=0;if(b.getAttribute('aria-pressed')!==String(on)){b.setAttribute('aria-pressed',String(on));b.innerHTML=cmpLabel(on);}});
  var bar=document.getElementById('cmpBar');
  if(!bar){var lead=document.getElementById('dealLead'),card=document.getElementById('dealCard');if(!lead||!card)return;bar=document.createElement('button');bar.type='button';bar.id='cmpBar';bar.setAttribute('aria-haspopup','dialog');lead.before(bar);}
@@ -10167,7 +10190,7 @@ function cmpOpen(){cmpRender();if(typeof track==='function')track('compare_open'
  if(close)close.onclick=function(){closeSheet('cmp');};
  document.addEventListener('click',function(e){
   var b=e.target.closest&&e.target.closest('.cmp-btn');if(b){e.preventDefault();e.stopPropagation();cmpToggle(b);return;}
-  if(e.target.closest&&e.target.closest('#cmpBar')){e.preventDefault();cmpOpen();return;}
+  if(e.target.closest&&e.target.closest('#cmpBar,[data-cmp-open]')){e.preventDefault();cmpOpen();return;}
   var r=e.target.closest&&e.target.closest('[data-cmp-remove]');
   if(r){e.preventDefault();var k=r.dataset.cmpRemove,list=cmpLoad().filter(function(v){return v.k!==k;});if(cmpStore(list)){cmpSync();cmpRender();var sh=document.getElementById('cmpSheet');if(!list.length)closeSheet('cmp');else if(sh)sh.focus({preventScroll:true});}}
  },true);
