@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v210 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v211 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10044,6 +10044,42 @@ html body #cmpSheet tr.cmp-column-names th span{display:block;padding:0 4px;over
 html body #app #viewDeals .dd-scope-note{margin:12px 0 0;font-size:var(--t8);line-height:1.6;color:#53617C;word-break:keep-all}
 html body #cmpSheet .cmp-naver{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:8px 6px;margin-top:12px;border:1px solid var(--v-line);border-radius:12px;color:var(--v-blue-deep);background:#F6F8FC;text-decoration:none;font-size:var(--t7);line-height:1.5;word-break:keep-all}
 html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}
+</style><style id="v211-compare-share">/* v211 — 비교 결과 이미지 카드 · 비교 아래 행동 줄. 글자 12·13·14·16·19·24 · 모서리 10·14·20 · 행간 1.3·1.6 */
+.cmp-page .cs-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 16px 16px}
+.cmp-page .cs-actions[hidden],.cmp-page .cs-actions [hidden]{display:none!important}
+.cmp-page .cs-actions button{flex:1 1 160px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;margin:0;padding:0 14px;border-radius:14px;font:inherit;font-size:16px;font-weight:600;line-height:1.3;cursor:pointer}
+.cmp-page .cs-add{border:1px dashed #A9B6C8;background:#fff;color:#1848D6}
+.cmp-page .cs-save{border:0;background:#1F5BFF;color:#fff}
+.cmp-page .cs-save[disabled]{opacity:.6;cursor:default}
+.cmp-page .cs-save svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cmp-page .cs-actions button:focus-visible{outline:2px solid #1F5BFF;outline-offset:2px}
+#cmpReportCard{width:440px;border:1px solid #E1E5EB;border-radius:20px;overflow:hidden;background:#fff;color:#192332;letter-spacing:-.02em;word-break:keep-all}
+#cmpReportCard,#cmpReportCard *{font-variant-numeric:normal!important;box-sizing:border-box}
+#cmpReportCard p{margin:0}
+#cmpReportCard .cs-top{padding:22px 24px 24px;background:#192332;color:#fff}
+#cmpReportCard .cs-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#cmpReportCard .cs-brand{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;line-height:1.3;color:#DCE6F4}
+#cmpReportCard .cs-mark{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:10px;background:#fff}
+#cmpReportCard .cs-date{font-size:12px;line-height:1.3;color:#CDD4DE}
+#cmpReportCard .cs-cond{margin-top:12px;font-size:13px;line-height:1.6;color:#CDD4DE}
+#cmpReportCard .cs-lead-k{margin-top:12px;font-size:13px;line-height:1.3;color:#CDD4DE}
+#cmpReportCard .cs-lead{margin-top:4px;font-size:24px;font-weight:700;line-height:1.3;color:#fff}
+#cmpReportCard .cs-lead-v{margin-top:2px;font-size:19px;font-weight:600;line-height:1.3;color:#A9C1FF}
+#cmpReportCard .cs-body{padding:8px 24px 20px}
+#cmpReportCard .cs-row{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid #E1E5EB}
+#cmpReportCard .cs-no{display:inline-flex;align-items:center;justify-content:center;flex:none;width:24px;height:24px;border-radius:999px;background:#192332;color:#fff;font-size:13px;font-weight:700;line-height:1}
+#cmpReportCard .cs-row.is-least .cs-no{background:#1F5BFF}
+#cmpReportCard .cs-main{flex:1;min-width:0}
+#cmpReportCard .cs-name{font-size:16px;font-weight:700;line-height:1.3}
+#cmpReportCard .cs-sub,#cmpReportCard .cs-deal{margin-top:2px;font-size:13px;line-height:1.6;color:#5F6B7D}
+#cmpReportCard .cs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;padding:10px 12px;border-radius:14px;background:#F6F7F9}
+#cmpReportCard .cs-grid p{font-size:14px;font-weight:600;line-height:1.3}
+#cmpReportCard .cs-grid span{display:block;margin-bottom:4px;font-size:12px;font-weight:400;color:#5F6B7D}
+#cmpReportCard .cs-grid b{font-weight:600;color:#1848D6}
+#cmpReportCard .cs-grid b.is-short{color:#B5530F}
+#cmpReportCard .cs-foot{display:flex;flex-direction:column;gap:6px;padding-top:14px}
+#cmpReportCard .cs-wm{font-size:13px;font-weight:700;color:#192332}
+#cmpReportCard .cs-nt{white-space:pre-line;font-size:12px;line-height:1.6;color:#5F6B7D}
 </style><style id="v210-trend">/* v210 — 거래가 흐름. 글자 12·13·14·16 · 모서리 10·14 · 행간 1.3·1.6 (스케일 안).
    선·점 주황 #E06A12(흰 바탕 3.37:1 · 그래픽 3:1 이상) · 주황 글자 #B5530F(4.99:1) · 파랑 #1F5BFF(5.25:1). */
 .dealbox .trend{margin:12px 0 4px;border:1px solid #E1E5EB;border-radius:14px;background:#fff;overflow:hidden}
@@ -10157,6 +10193,27 @@ html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);out
 .ct-view .tr-retry{min-height:44px;margin:6px 0 0;padding:0 12px;border:1px solid #D6DCE5;border-radius:10px;background:#fff;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .ct-view .tr-notes{margin:10px 0 0;padding:0 0 0 16px;font-size:12px;line-height:1.6;color:#5F6B7D}
 .ct-view .tr-notes .tr-retry{min-height:32px;margin:2px 0 0;font-size:13px}
+/* v211 — 비교 추이 달 고르기 */
+.ct-view .ct-plot{touch-action:pan-y;cursor:ew-resize;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.ct-view .ct-plot:focus-visible{outline:2px solid #1F5BFF;outline-offset:4px}
+.ct-view .tr-guide{stroke:#192332;stroke-width:1;stroke-opacity:.5}
+.ct-view .ct-sel{stroke:#fff;stroke-width:2.5}
+.ct-view .ct-hint{margin:8px 0 0;font-size:13px;line-height:1.6;color:#1848D6}
+.ct-view .ct-month{margin-top:10px;padding:12px;border-radius:14px;background:#F6F7F9}
+.ct-view .tr-mhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ct-view .tr-mhead p{margin:0;font-size:14px;font-weight:600;line-height:1.3;color:#192332;font-variant-numeric:tabular-nums}
+.ct-view .tr-now{flex:none;min-height:32px;margin:0;padding:0 10px;border:1px solid #D6DCE5;border-radius:10px;background:#fff;color:#1848D6;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.ct-view .ct-month ul{margin:6px 0 0;padding:0;list-style:none}
+.ct-view .ct-month li{display:flex;gap:10px;padding:8px 0;border-top:1px solid #E1E5EB}
+.ct-view .ct-month li:first-child{border-top:0}
+.ct-view .ct-month li i{display:inline-flex;align-items:center;justify-content:center;flex:none;width:20px;height:20px;border-radius:999px;color:#fff;font-size:12px;font-style:normal;font-weight:700;line-height:1}
+.ct-view .ct-month li>div{min-width:0}
+.ct-view .ct-mname{margin:0;font-size:13px;line-height:1.3;color:#5F6B7D}
+.ct-view .ct-mval{margin:2px 0 0;font-size:14px;line-height:1.3;color:#465262;font-variant-numeric:tabular-nums}
+.ct-view .ct-mval b{font-size:16px;color:#192332}
+.ct-view .ct-msub{margin:2px 0 0;font-size:12px;line-height:1.6;color:#5F6B7D}
+.ct-view .ct-msub .is-under{color:#1848D6;font-weight:600}
+.ct-view .ct-msub .is-over{color:#B5530F;font-weight:600}
 </style><style id="v208-shell">/* Design 13: charcoal budget, quiet white surfaces and persistent navigation. */
 html body.yk208{--v-bg:#F6F7F9;--v-ink:#192332;--v-sub:#465262;--v-muted:#5F6B7D;--v-line:#E1E5EB;--v-blue:#1F5BFF;--v-blue-deep:#1848D6;--v-blue-soft:#EDF2FF;background:#F6F7F9;color:#192332}
 html body.yk208 #app{background:#F6F7F9;color:#192332}
@@ -10677,7 +10734,7 @@ function trendTicks(lo, hi){
 }
 function trendShort(man){
   if(man < 10000) return man.toLocaleString('ko-KR') + '만';
-  return String(Math.round(man / 100) / 100).replace(/\.?0+$/, '') + '억';
+  return String(Math.round(man / 100) / 100) + '억';
 }
 var TREND_P = { l:6, r:6, t:10, b:10 };
 function trendFrame(vals, budgetMan, n, W, H){
@@ -11033,9 +11090,13 @@ function paint(){
     var badges = g.lines.map(function(L, i){
       if(!L.end) return '';
       return '<span class="ct-badge" style="left:calc((100% - 44px) * ' + (Math.round(L.end.x / g.W * 1000) / 1000) + ');top:' + (Math.round(L.end.y / g.H * 1000) / 10) + '%;background:' + COLORS[i] + '" aria-hidden="true">' + (i + 1) + '</span>'; }).join('');
-    chart = '<div class="tr-plot ct-plot" role="img" aria-label="' + esc(all.map(function(a, i){ return (i + 1) + '번 ' + a.s.name + (a.series.last ? ' 최근 월 중간값 ' + formatWon(a.series.last.median * 10000) : ' 거래 없음'); }).join(', ')) + '">'
-      + trendSvgFrame(g, inner) + badges + '</div>' + trendXLabels(all[0].series.rows)
-      + '<div class="tr-legend">' + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span><span><i class="ct-key-over"></i>예상 집값 위</span>' : '') + '</div>';
+    var sel = CT.sel != null && CT.sel < g.n ? CT.sel : ctDefaultSel(all);
+    CT.view = { all:all, g:g, budget:budget, sel:sel };
+    chart = '<div class="tr-plot ct-plot" tabindex="0" role="slider" aria-label="달 고르기 · 좌우 화살표" aria-valuemin="1" aria-valuemax="' + g.n + '" aria-valuenow="' + (sel + 1) + '" aria-valuetext="' + esc(ctMonthText(all, sel)) + '" data-ct-plot>'
+      + trendSvgFrame(g, inner + '<g class="ct-selg">' + ctSelSvg(g, sel) + '</g>') + badges + '</div>' + trendXLabels(all[0].series.rows)
+      + '<div class="tr-legend">' + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span><span><i class="ct-key-over"></i>예상 집값 위</span>' : '') + '</div>'
+      + '<p class="ct-hint">차트를 누르거나 옆으로 끌면 그 달 단지별 중간값이 아래에 나와요.</p>'
+      + ctMonthHtml(all, sel, budget);
   } else chart = '<p class="ct-msg">최근 ' + span + '개월 동안 조회된 같은 면적 거래가 없습니다.</p>';
   var rows = '<ol class="ct-list">' + all.map(function(a, i){
     var s = a.series, ap = typeof areaParts === 'function' ? areaParts(a.s.areaM2) : null, over = 0;
@@ -11056,6 +11117,69 @@ function paint(){
   notes.push('국토교통부 실거래가 · 해제·토지임대부 거래 제외');
   view.innerHTML = head + lead + chart + rows + '<ul class="tr-notes">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>';
 }
+/* ── 달 고르기(단지 상세와 같은 동작) ── */
+function ctCx(g, i){ var cw = (g.W - g.P.l - g.P.r) / g.n; return Math.round((g.P.l + i * cw + cw / 2) * 10) / 10; }
+function ctDefaultSel(all){
+  var n = all[0].series.rows.length;
+  for(var i = n - 1; i >= 0; i--) if(all.some(function(a){ return a.series.rows[i] && a.series.rows[i].median != null; })) return i;
+  return n - 1;
+}
+function ctSelSvg(g, sel){
+  var x = ctCx(g, sel);
+  return '<line class="tr-guide" x1="' + x + '" x2="' + x + '" y1="0" y2="' + g.H + '"/>'
+    + g.lines.map(function(L, i){ var p = L.meds.filter(function(m){ return m.i === sel; })[0];
+        return p ? '<circle class="ct-sel" style="fill:' + COLORS[i] + '" cx="' + p.x + '" cy="' + p.y + '" r="5.5"/>' : ''; }).join('');
+}
+function ctRowText(r){ return !r || !r.ok ? '조회 실패' : !r.deals.length ? '거래 없음' : formatWon(r.median * 10000); }
+function ctMonthText(all, sel){
+  return trendYm(all[0].series.rows[sel].ymd) + ' · ' + all.map(function(a, i){ return (i + 1) + '번 ' + ctRowText(a.series.rows[sel]); }).join(' · ');
+}
+function ctMonthHtml(all, sel, budget){
+  var last = ctDefaultSel(all);
+  var back = sel !== last ? '<button type="button" class="tr-now" data-ct-sel="' + last + '">최근 달로</button>' : '';
+  var items = all.map(function(a, i){
+    var r = a.series.rows[sel], v, sub = '';
+    if(!r || !r.ok) v = '조회 실패';
+    else if(!r.deals.length) v = '거래 없음';
+    else {
+      v = '<b>' + trendWon(r.median) + '</b>';
+      var d = budget ? r.median - budget : null;
+      sub = '거래 ' + r.deals.length + '건' + (d == null ? '' : d === 0 ? ' · 예상 집값과 같음' : ' · 예상 집값보다 <span class="' + (d > 0 ? 'is-over' : 'is-under') + '">' + trendWon(Math.abs(d)) + (d > 0 ? ' 높음' : ' 낮음') + '</span>');
+    }
+    return '<li><i style="background:' + COLORS[i] + '" aria-hidden="true">' + (i + 1) + '</i><div><p class="ct-mname">' + esc(a.s.name) + '</p><p class="ct-mval">' + v + '</p>' + (sub ? '<p class="ct-msub">' + sub + '</p>' : '') + '</div></li>';
+  }).join('');
+  return '<div class="ct-month"><div class="tr-mhead"><p>' + trendYm(all[0].series.rows[sel].ymd) + ' 월 중간값</p>' + back + '</div><ul>' + items + '</ul></div>';
+}
+function ctSelect(i){
+  var V = CT.view; if(!V) return;
+  i = Math.max(0, Math.min(V.g.n - 1, i)); if(i === V.sel) return;
+  V.sel = i; CT.sel = i;
+  var plot = view.querySelector('[data-ct-plot]'); if(!plot) return;
+  plot.querySelector('.ct-selg').innerHTML = ctSelSvg(V.g, i);
+  plot.setAttribute('aria-valuenow', String(i + 1)); plot.setAttribute('aria-valuetext', ctMonthText(V.all, i));
+  var m = view.querySelector('.ct-month'); if(m) m.outerHTML = ctMonthHtml(V.all, i, V.budget);
+}
+function ctIndexAt(plot, clientX){
+  var V = CT.view, svg = plot.querySelector('.tr-svg'); if(!V || !svg) return null;
+  var r = svg.getBoundingClientRect(), cw = (V.g.W - V.g.P.l - V.g.P.r) / V.g.n;
+  return trendIndexAt((clientX - r.left) / r.width * V.g.W, V.g.P, cw, V.g.n);
+}
+var CT_DRAG = null;
+view.addEventListener('pointerdown', function(e){
+  var plot = e.target.closest('[data-ct-plot]'); if(!plot) return;
+  var i = ctIndexAt(plot, e.clientX); if(i == null) return;
+  CT_DRAG = { id:e.pointerId, plot:plot };
+  try{ plot.setPointerCapture(e.pointerId); }catch(err){}
+  ctSelect(i);
+});
+view.addEventListener('pointermove', function(e){ if(CT_DRAG && e.pointerId === CT_DRAG.id){ var i = ctIndexAt(CT_DRAG.plot, e.clientX); if(i != null) ctSelect(i); } });
+['pointerup', 'pointercancel'].forEach(function(t){ view.addEventListener(t, function(e){ if(CT_DRAG && e.pointerId === CT_DRAG.id) CT_DRAG = null; }); });
+view.addEventListener('keydown', function(e){
+  var plot = e.target.closest('[data-ct-plot]'); if(!plot || !CT.view) return;
+  var cur = CT.view.sel, n = CT.view.g.n;
+  var to = e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? cur - 1 : e.key === 'ArrowRight' || e.key === 'ArrowUp' ? cur + 1 : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : null;
+  if(to == null) return; e.preventDefault(); ctSelect(to);
+});
 function load(lawds, span){
   Promise.all(lawds.map(function(l){
     return Promise.all(trendYmds(span).map(function(y){ return trendFetchMonth(l, y); })).then(function(ms){ TREND.last.set('ct:' + l + '#' + span, ms); });
@@ -11063,7 +11187,8 @@ function load(lawds, span){
 }
 view.addEventListener('click', function(e){
   var b = e.target.closest('button'); if(!b) return;
-  if(b.hasAttribute('data-ct-span')){ var s = Number(b.getAttribute('data-ct-span')); if(TREND_SPANS.indexOf(s) >= 0 && s !== CT.span){ CT.span = s; paint(); } }
+  if(b.hasAttribute('data-ct-span')){ var s = Number(b.getAttribute('data-ct-span')); if(TREND_SPANS.indexOf(s) >= 0 && s !== CT.span){ CT.span = s; CT.sel = null; paint(); } }
+  else if(b.hasAttribute('data-ct-sel')){ ctSelect(Number(b.getAttribute('data-ct-sel'))); var p = view.querySelector('[data-ct-plot]'); if(p) p.focus({ preventScroll:true }); }
   else if(b.hasAttribute('data-ct-retry')){ list().forEach(function(x){ TREND.last.delete('ct:' + x.lawd + '#' + CT.span); }); paint(); }
 });
 seg.addEventListener('click', function(e){
@@ -11076,6 +11201,99 @@ seg.addEventListener('click', function(e){
 var before = cmpRender;
 cmpRender = function(){ var r = before.apply(this, arguments); sync(); return r; };
 sync();
+})();
+</script><script>/* v211 compare share */
+(function(){
+var sheet = document.getElementById('cmpSheet'), body = document.getElementById('cmpBody');
+if(!sheet || !body || typeof cmpRender !== 'function') return;
+var trend = document.getElementById('cmpTrend');
+var bar = document.createElement('div');
+bar.className = 'cs-actions'; bar.hidden = true;
+bar.innerHTML = '<button type="button" class="cs-add" data-v208-go="map"></button>'
+  + '<button type="button" class="cs-save" data-cs-save><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg>비교 결과 이미지로 저장</button>';
+(trend || body).parentNode.insertBefore(bar, (trend || body).nextSibling);
+var wrap = document.createElement('div');
+wrap.className = 'reportwrap'; wrap.setAttribute('aria-hidden', 'true');   /* 기존 화면 검사가 .reportwrap 은 화면 밖 카드로 건너뜀 */
+wrap.innerHTML = '<div class="cs-card" id="cmpReportCard"></div>';
+document.body.appendChild(wrap);
+
+function won(m){ return formatWon(m * 10000); }
+function today(){ var d = new Date(); return d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate(); }
+/* 비교표(cmpRender)와 같은 규칙: 2곳 이상 · 모두 계산됨 · 필요한 현금 최소가 전부 같지 않을 때만 */
+function leastOf(cols){
+  if(cols.length < 2 || !cols.every(function(c){ return c.f; })) return [];
+  var mn = Math.min.apply(null, cols.map(function(c){ return c.f.C; }));
+  var l = cols.filter(function(c){ return c.f.C === mn; });
+  return l.length === cols.length ? [] : l;
+}
+function cardHtml(list){
+  var cols = list.map(function(s){ return { s:s, f:typeof dealAfford === 'function' ? dealAfford(s.amountMan) : null }; });
+  var least = leastOf(cols);
+  var budget = typeof trendBudgetMan === 'function' ? trendBudgetMan() : null;
+  var cond = [typeof regionLabel === 'function' ? regionLabel() : '', typeof houseLabel === 'function' ? houseLabel() : ''].filter(Boolean).join(' · ');
+  var head = '<div class="cs-top"><div class="cs-head"><p class="cs-brand"><span class="cs-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#1F5BFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/></svg></span>영끌계산기</p><p class="cs-date">' + today() + '</p></div>'
+    + '<p class="cs-cond">' + esc(cond) + (budget ? ' · 예상 집값 ' + won(budget) : '') + '</p>'
+    + (least.length ? '<p class="cs-lead-k">필요한 현금이 가장 적은 곳 · 부대비용 포함</p><p class="cs-lead">' + least.map(function(c){ return esc(c.s.name); }).join(' · ') + '</p><p class="cs-lead-v">' + won(least[0].f.C) + '</p>'
+                   : '<p class="cs-lead-k">단지 비교 · ' + list.length + '곳</p>') + '</div>';
+  var rows = cols.map(function(c, i){
+    var s = c.s, a = typeof areaParts === 'function' ? areaParts(s.areaM2) : null, gu = typeof dealGu === 'function' ? dealGu(s.lawd) : '';
+    var sub = [((gu ? gu + ' ' : '') + (s.dong || '')).trim(), a ? (a.py || a.m2) : '', typeof yearFull === 'function' ? yearFull(s.buildYear) : ''].filter(Boolean).join(' · ');
+    var g = c.f ? c.f.gap : null;
+    var bal = g == null ? '' : g > 0 ? '<b class="is-short">' + won(g) + ' 부족</b>' : g < 0 ? '<b>' + won(-g) + ' 여유</b>' : '<b>추가 현금 0원</b>';
+    return '<div class="cs-row' + (least.indexOf(c) >= 0 ? ' is-least' : '') + '"><span class="cs-no">' + (i + 1) + '</span><div class="cs-main">'
+      + '<p class="cs-name">' + esc(s.name) + '</p><p class="cs-sub">' + esc(sub) + '</p>'
+      + '<p class="cs-deal">거래가 ' + won(s.amountMan) + (typeof dealDate === 'function' && dealDate(s) ? ' · ' + dealDate(s) : '') + '</p>'
+      + (c.f ? '<div class="cs-grid"><p><span>필요한 현금</span>' + won(c.f.C) + '</p><p><span>내 현금 대비</span>' + bal + '</p><p><span>주택담보대출</span>' + (c.f.L > 0 ? won(c.f.L) : '없음') + '</p></div>' : '')
+      + '</div></div>';
+  }).join('');
+  var foot = '<div class="cs-foot"><span class="cs-wm">영끌계산기</span><span class="cs-nt">※ 입력 조건에 따른 참고용 예상치입니다. 필요한 현금은 부대비용 포함.\n※ 거래가는 비교함에 담을 때의 실거래입니다.\n※ 대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.</span></div>';
+  return head + '<div class="cs-body">' + rows + foot + '</div>';
+}
+function sync(){
+  var n = typeof cmpLoad === 'function' ? cmpLoad().length : 0;
+  bar.hidden = !n;
+  var add = bar.querySelector('.cs-add');
+  add.hidden = n >= 3;
+  add.textContent = '+ 단지 더 담기 · ' + n + '/3';
+}
+async function saveCompare(btn){
+  var list = typeof cmpLoad === 'function' ? cmpLoad() : [];
+  if(!list.length || exportBusy) return;
+  exportBusy = true;
+  btn.disabled = true; btn.setAttribute('aria-busy', 'true');
+  exportStatus('비교 결과 이미지를 만들고 있어요.');
+  try{
+    var card = document.getElementById('cmpReportCard');
+    card.innerHTML = cardHtml(list);
+    await ensureHtml2canvas();
+    if(typeof html2canvas !== 'function') throw Error('Image renderer unavailable');
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    var canvas = await html2canvas(card, { backgroundColor:null, scale:3, useCORS:true });
+    var blob = await new Promise(function(r){ canvas.toBlob(r, 'image/png'); });
+    if(!blob) throw Error('Empty image');
+    var file = new File([blob], '영끌계산기-단지비교.png', { type:'image/png' });
+    var inApp = isInAppBrowser(navigator.userAgent);
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      try{ await navigator.share({ files:[file] }); exportStatus('이미지를 내보냈어요.'); track('compare_save', { method:'share' }); return; }
+      catch(e){ if(e && e.name === 'AbortError'){ exportStatus('이미지 저장을 취소했어요.'); return; } }
+    }
+    if(inApp){
+      showExportPreview(canvas.toDataURL('image/png'), btn);
+      var st = document.getElementById('exportStatus'); if(st) st.hidden = true;
+      track('compare_save', { method:'preview' }); return;
+    }
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    exportStatus('이미지를 내려받았어요.'); track('compare_save', { method:'download' });
+  }catch(e){ console.error(e); exportStatus('이미지를 만들지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.'); }
+  finally{ exportBusy = false; btn.disabled = false; btn.removeAttribute('aria-busy'); }
+}
+bar.addEventListener('click', function(e){ var b = e.target.closest('[data-cs-save]'); if(b) saveCompare(b); });
+var before = cmpRender;
+cmpRender = function(){ var r = before.apply(this, arguments); sync(); return r; };
+sync();
+window.__cmpReportHtml = cardHtml;   /* 검사용 — 카드 내용만 만들고 내보내지 않음 */
 })();
 </script></body>
 </html>
