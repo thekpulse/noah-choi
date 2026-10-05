@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v209 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v210 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -6715,7 +6715,7 @@ function dealBox(x, i){
   const head = [yearFull(x.buildYear), units ? comma(units) + '세대' : '', count]
     .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0')).join('\u00a0· ');
   return `<div class="costbox dealbox" id="dealBox${i}">`
-       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x) + (typeof cmpBtnHtml === 'function' ? cmpBtnHtml(x) : '')
+       + `<p class="deal-sum">${esc(head)}</p>` + dealRangeLine(x, all) + dealAffordHtml(x) + (typeof cmpBtnHtml === 'function' ? cmpBtnHtml(x) : '') + (typeof trendBlockHtml === 'function' ? trendBlockHtml(x) : '')
        + shown.map(n => {
            const k = [dealDate(n), oneArea ? '' : (areaParts(n.areaM2) || {}).m2, floorText(n.floor)]
              .filter(Boolean).map(s => String(s).replace(/ /g, '\u00a0').replace(/(\d)㎡/g, '$1\u2060㎡')).join('\u00a0· ');
@@ -10044,6 +10044,119 @@ html body #cmpSheet tr.cmp-column-names th span{display:block;padding:0 4px;over
 html body #app #viewDeals .dd-scope-note{margin:12px 0 0;font-size:var(--t8);line-height:1.6;color:#53617C;word-break:keep-all}
 html body #cmpSheet .cmp-naver{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:8px 6px;margin-top:12px;border:1px solid var(--v-line);border-radius:12px;color:var(--v-blue-deep);background:#F6F8FC;text-decoration:none;font-size:var(--t7);line-height:1.5;word-break:keep-all}
 html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}
+</style><style id="v210-trend">/* v210 — 거래가 흐름. 글자 12·13·14·16 · 모서리 10·14 · 행간 1.3·1.6 (스케일 안).
+   선·점 주황 #E06A12(흰 바탕 3.37:1 · 그래픽 3:1 이상) · 주황 글자 #B5530F(4.99:1) · 파랑 #1F5BFF(5.25:1). */
+.dealbox .trend{margin:12px 0 4px;border:1px solid #E1E5EB;border-radius:14px;background:#fff;overflow:hidden}
+.dealbox .trend-open{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;width:100%;min-height:44px;box-sizing:border-box;margin:0;padding:10px 40px 10px 14px;border:0;background:transparent;color:#192332;font:inherit;font-size:16px;font-weight:600;line-height:1.3;text-align:left;cursor:pointer;position:relative}
+.dealbox .trend-open small{font-size:13px;font-weight:400;color:#5F6B7D}
+.dealbox .trend-open::after{content:'';position:absolute;right:16px;top:50%;width:7px;height:7px;margin-top:-6px;border-right:2px solid #5F6B7D;border-bottom:2px solid #5F6B7D;transform:rotate(45deg)}
+.dealbox .trend-open[aria-expanded="true"]::after{margin-top:-2px;transform:rotate(-135deg)}
+.dealbox .trend-open:focus-visible,.dealbox .trend button:focus-visible,.dealbox .tr-table summary:focus-visible{outline:2px solid #1F5BFF;outline-offset:-2px}
+.dealbox .trend-body{padding:0 14px 14px;border-top:1px solid #E1E5EB}
+.dealbox .trend-body[hidden]{display:none}
+.dealbox .tr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-top:12px}
+.dealbox .tr-k{margin:0;font-size:14px;font-weight:600;line-height:1.3;color:#192332}
+.dealbox .tr-k span{display:block;margin-top:2px;font-size:13px;font-weight:400;color:#5F6B7D}
+.dealbox .tr-seg{flex:none;display:flex;gap:2px;padding:3px;border-radius:10px;background:#EEF1F4}
+.dealbox .tr-seg button,.dealbox .tr-areas button{min-height:32px;margin:0;padding:0 10px;border:0;border-radius:10px;background:transparent;color:#465262;font:inherit;font-size:13px;font-weight:600;line-height:1.3;cursor:pointer}
+.dealbox .tr-seg button[aria-pressed="true"]{background:#fff;color:#192332;box-shadow:0 1px 2px rgba(25,35,50,.12)}
+.dealbox .tr-areas{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.dealbox .tr-areas button{border:1px solid #D6DCE5;background:#fff}
+.dealbox .tr-areas button[aria-pressed="true"]{border-color:#1848D6;background:#EDF2FF;color:#1848D6}
+.dealbox .tr-sum{margin:10px 0 0;font-size:14px;line-height:1.6;color:#465262;font-variant-numeric:tabular-nums}
+.dealbox .tr-sum b{color:#192332;font-weight:700}
+.dealbox .tr-sum span{color:#465262}
+.dealbox .tr-plot{position:relative;margin-top:12px;padding-right:44px;touch-action:pan-y;cursor:ew-resize;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.dealbox .tr-plot:focus-visible{outline:2px solid #1F5BFF;outline-offset:4px}
+.dealbox .tr-svg{display:block;width:100%;height:auto;overflow:visible}
+.dealbox .tr-grid{stroke:#EEF1F4;stroke-width:1}
+.dealbox .tr-dot{fill:#1F5BFF;fill-opacity:.32}
+.dealbox .tr-dot.is-over{fill:#E06A12;fill-opacity:.4}
+.dealbox .tr-budget{stroke:#192332;stroke-width:1.5;stroke-dasharray:4 4}
+.dealbox .tr-line{fill:none;stroke:#1F5BFF;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.dealbox .tr-line.is-over{stroke:#E06A12}
+.dealbox .tr-med{fill:#1F5BFF;stroke:#fff;stroke-width:1.5}
+.dealbox .tr-med.is-over{fill:#E06A12}
+.dealbox .tr-y,.ct-view .tr-y{position:absolute;right:0;transform:translateY(-50%);width:40px;text-align:right;font-size:12px;line-height:1.3;color:#5F6B7D;font-variant-numeric:tabular-nums;pointer-events:none}
+.dealbox .tr-x{margin-right:44px;display:flex;justify-content:space-between;margin-top:4px;font-size:12px;line-height:1.3;color:#5F6B7D;font-variant-numeric:tabular-nums}
+.dealbox .tr-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12px;line-height:1.3;color:#465262}
+.dealbox .tr-legend span{display:inline-flex;align-items:center;gap:6px}
+.dealbox .tr-key-dot{width:7px;height:7px;border-radius:50%;background:#1F5BFF;opacity:.5}
+.dealbox .tr-key-line{width:16px;height:3px;border-radius:2px;background:#1F5BFF}
+.dealbox .tr-key-budget{width:16px;border-top:2px dashed #192332}
+.dealbox .tr-fact{margin:8px 0 0;font-size:14px;line-height:1.6;color:#465262}
+.dealbox .tr-fact b{color:#B5530F;font-weight:700}
+.dealbox .tr-msg{margin:12px 0 0;font-size:14px;line-height:1.6;color:#465262}
+.dealbox .tr-retry{min-height:44px;margin:6px 0 0;padding:0 12px;border:1px solid #D6DCE5;border-radius:10px;background:#fff;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.dealbox .tr-notes{margin:10px 0 0;padding:0 0 0 16px;font-size:12px;line-height:1.6;color:#5F6B7D}
+.dealbox .tr-notes .tr-retry{min-height:32px;margin:2px 0 0;font-size:13px}
+.dealbox .tr-table{margin-top:8px;font-size:13px;line-height:1.6;color:#465262}
+.dealbox .tr-table summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:#1848D6;font-weight:600}
+.dealbox .tr-table table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.dealbox .tr-table th,.dealbox .tr-table td{padding:4px 0;border-bottom:1px solid #EEF1F4;text-align:right;font-weight:400}
+.dealbox .tr-table th[scope="row"],.dealbox .tr-table thead th:first-child{text-align:left}
+.dealbox .tr-table thead th{color:#5F6B7D;font-size:12px}
+
+/* v210 — 달 고르기(차트 누르기·끌기 · 좌우 화살표) */
+.dealbox .tr-guide{stroke:#192332;stroke-width:1;stroke-opacity:.5}
+.dealbox .tr-sel{fill:#1F5BFF;stroke:#fff;stroke-width:2.5}
+.dealbox .tr-sel.is-over{fill:#E06A12}
+.dealbox .tr-hint{margin:8px 0 0;font-size:13px;line-height:1.6;color:#1848D6}
+.dealbox .tr-month{margin-top:10px;padding:12px;border-radius:14px;background:#F6F7F9}
+.dealbox .tr-mhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dealbox .tr-mhead p{margin:0;font-size:14px;font-weight:600;line-height:1.3;color:#192332;font-variant-numeric:tabular-nums}
+.dealbox .tr-now{flex:none;min-height:32px;margin:0;padding:0 10px;border:1px solid #D6DCE5;border-radius:10px;background:#fff;color:#1848D6;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.dealbox .tr-calc{margin:8px 0 0;font-size:14px;line-height:1.6;color:#465262}
+.dealbox .tr-calc b{color:#1848D6;font-weight:700}
+.dealbox .tr-calc b.is-short{color:#B5530F}
+.dealbox .tr-calc small{display:block;font-size:12px;color:#5F6B7D}
+.dealbox .tr-deals{margin:8px 0 0;padding:0;list-style:none}
+.dealbox .tr-deals li{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid #E1E5EB;font-size:13px;line-height:1.6;color:#465262;font-variant-numeric:tabular-nums}
+.dealbox .tr-deals b{font-weight:600;color:#192332}
+/* v210 — 비교 「추이」 */
+.cmp-page .ct-seg{display:flex;gap:2px;margin:0 16px 12px;padding:3px;border-radius:14px;background:#EEF1F4}
+.cmp-page .ct-seg[hidden],.cmp-page .ct-view[hidden]{display:none!important}
+.cmp-page .ct-seg button{flex:1;min-height:44px;margin:0;border:0;border-radius:10px;background:transparent;color:#465262;font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+.cmp-page .ct-seg button[aria-pressed="true"]{background:#fff;color:#192332;box-shadow:0 1px 2px rgba(25,35,50,.12)}
+.cmp-page .ct-seg button:focus-visible,.ct-view button:focus-visible{outline:2px solid #1F5BFF;outline-offset:-2px}
+.ct-view{margin:0 16px 16px;padding:16px;border:1px solid #E1E5EB;border-radius:20px;background:#fff;color:#192332}
+.ct-view .ct-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ct-view .ct-k{margin:0;font-size:16px;font-weight:700;line-height:1.3}
+.ct-view .ct-k span{display:block;margin-top:2px;font-size:13px;font-weight:400;color:#5F6B7D}
+.ct-view .tr-seg{flex:none;display:flex;gap:2px;padding:3px;border-radius:10px;background:#EEF1F4}
+.ct-view .tr-seg button{min-height:32px;margin:0;padding:0 10px;border:0;border-radius:10px;background:transparent;color:#465262;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.ct-view .tr-seg button[aria-pressed="true"]{background:#fff;color:#192332;box-shadow:0 1px 2px rgba(25,35,50,.12)}
+.ct-view .ct-lead{margin-top:12px;padding:12px 14px;border-radius:14px;background:#192332;color:#fff}
+.ct-view .ct-lead small{display:block;font-size:12px;line-height:1.3;color:#CDD4DE}
+.ct-view .ct-lead b{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:16px;line-height:1.3}
+.ct-view .ct-lead span{display:block;margin-top:2px;font-size:14px;color:#fff;font-variant-numeric:tabular-nums}
+.ct-view .ct-lead i,.ct-view .ct-list i,.ct-view .ct-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;width:20px;height:20px;border-radius:999px;color:#fff;font-size:12px;font-style:normal;font-weight:700;line-height:1}
+.ct-view .ct-lead i{box-shadow:0 0 0 2px #fff}
+.ct-view .tr-plot{position:relative;margin-top:14px;padding-right:44px}
+.ct-view .tr-svg{display:block;width:100%;height:auto;overflow:visible}
+.ct-view .tr-grid{stroke:#EEF1F4;stroke-width:1}
+.ct-view .tr-budget{stroke:#192332;stroke-width:1.5;stroke-dasharray:4 4}
+.ct-view .ct-over{fill:#E06A12;fill-opacity:.08}
+.ct-view .ct-line{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ct-view .ct-med{stroke:#fff;stroke-width:1.2}
+.ct-view .ct-badge{position:absolute;transform:translate(-50%,-140%);box-shadow:0 0 0 2px #fff;pointer-events:none}
+.ct-view .tr-x{margin-right:44px;display:flex;justify-content:space-between;margin-top:4px;font-size:12px;line-height:1.3;color:#5F6B7D;font-variant-numeric:tabular-nums}
+.ct-view .tr-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12px;line-height:1.3;color:#465262}
+.ct-view .tr-legend span{display:inline-flex;align-items:center;gap:6px}
+.ct-view .tr-key-budget{width:16px;border-top:2px dashed #192332}
+.ct-view .ct-key-over{width:14px;height:10px;border-radius:3px;background:rgba(224,106,18,.18)}
+.ct-view .ct-list{margin:14px 0 0;padding:0;list-style:none}
+.ct-view .ct-list li{display:flex;gap:10px;padding:12px 0;border-top:1px solid #E1E5EB}
+.ct-view .ct-list li>div{min-width:0}
+.ct-view .ct-name{margin:0;font-size:16px;font-weight:600;line-height:1.3}
+.ct-view .ct-name small{margin-left:6px;font-size:13px;font-weight:400;color:#5F6B7D}
+.ct-view .ct-change{margin:4px 0 0;font-size:14px;line-height:1.6;color:#465262;font-variant-numeric:tabular-nums}
+.ct-view .ct-change b{color:#192332}
+.ct-view .ct-count{margin:2px 0 0;font-size:13px;line-height:1.6;color:#5F6B7D}
+.ct-view .ct-msg{margin:12px 0 0;font-size:14px;line-height:1.6;color:#465262}
+.ct-view .tr-retry{min-height:44px;margin:6px 0 0;padding:0 12px;border:1px solid #D6DCE5;border-radius:10px;background:#fff;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.ct-view .tr-notes{margin:10px 0 0;padding:0 0 0 16px;font-size:12px;line-height:1.6;color:#5F6B7D}
+.ct-view .tr-notes .tr-retry{min-height:32px;margin:2px 0 0;font-size:13px}
 </style><style id="v208-shell">/* Design 13: charcoal budget, quiet white surfaces and persistent navigation. */
 html body.yk208{--v-bg:#F6F7F9;--v-ink:#192332;--v-sub:#465262;--v-muted:#5F6B7D;--v-line:#E1E5EB;--v-blue:#1F5BFF;--v-blue-deep:#1848D6;--v-blue-soft:#EDF2FF;background:#F6F7F9;color:#192332}
 html body.yk208 #app{background:#F6F7F9;color:#192332}
@@ -10516,6 +10629,453 @@ syncDistributionToggle();
 const priceLabel=document.querySelector('#fundingOverview .price-answer>span');if(priceLabel)priceLabel.innerHTML='내 조건으로 예상한 집값 <small class="estimate-tag">참고용</small>';
 if(el('restartBtn'))el('restartBtn').onclick=restart;
 sync();if(started)record(current(),true);
+})();
+</script><script>/* v210 trend */
+
+/* ── 순수 함수(검사가 vm 으로 직접 실행) ─────────────────────────────── */
+var TREND_SPANS = [12, 24];
+var TREND_PAGE = 1000;   /* api/apt-price.js 의 numOfRows. 총건수가 이보다 크면 그 달은 일부만 받은 것 */
+
+function trendYmds(n, now){
+  var d = now || new Date(), out = [];
+  for(var i = n - 1; i >= 0; i--){ var t = new Date(d.getFullYear(), d.getMonth() - i, 1); out.push(t.getFullYear() * 100 + (t.getMonth() + 1)); }
+  return out;   /* 오래된 달 → 이번 달 */
+}
+function trendMedian(values){
+  var v = values.slice().sort(function(a, b){ return a - b; }), n = v.length;
+  if(!n) return null;
+  var h = Math.floor(n / 2);
+  /* 짝수 개면 가운데 둘의 평균. 만원 아래는 올림 — 값을 낮게 보이게 하는 쪽(유리한 쪽)으로 깎지 않습니다. */
+  return n % 2 ? v[h] : Math.ceil((v[h - 1] + v[h]) / 2);
+}
+function trendYm(ymd){ return Math.floor(ymd / 100) + '.' + String(ymd % 100).padStart(2, '0'); }
+/* months: [{ymd, ok, items, total}] (오래된 달부터). x: {name,dong,lawd}. area: 전용㎡(숫자). */
+function trendSeries(months, x, area){
+  var key = (x.name || '') + '|' + (x.dong || '') + '|' + (x.lawd || '');
+  var same = function(n){ return ((n.name || '') + '|' + (n.dong || '') + '|' + (x.lawd || '')) === key; };
+  var areas = {}, rows = months.map(function(m){
+    var mine = m.ok ? (m.items || []).filter(same) : [];
+    mine.forEach(function(n){ if(n.areaM2 != null && Number.isFinite(Number(n.areaM2))) areas[Number(n.areaM2)] = (areas[Number(n.areaM2)] || 0) + 1; });
+    var deals = mine.filter(function(n){ return Number(n.areaM2) === Number(area) && Number(n.amountMan) > 0 && n.y && n.m; })
+      .map(function(n){ return { y:n.y, m:n.m, d:n.d || null, floor:n.floor || null, amountMan:Number(n.amountMan) }; })
+      .sort(function(a, b){ return (a.d || 0) - (b.d || 0); });
+    return { ymd:m.ymd, ok:!!m.ok, capped:!!(m.ok && Number(m.total) > TREND_PAGE), total:m.ok && Number.isFinite(Number(m.total)) ? Number(m.total) : null,
+      deals:deals, median:trendMedian(deals.map(function(n){ return n.amountMan; })) };
+  });
+  var count = rows.reduce(function(s, r){ return s + r.deals.length; }, 0);
+  var withData = rows.filter(function(r){ return r.median != null; });
+  return { rows:rows, count:count, first:withData[0] || null, last:withData[withData.length - 1] || null,
+    areas:Object.keys(areas).map(Number).sort(function(a, b){ return a - b; }),
+    failed:rows.filter(function(r){ return !r.ok; }), capped:rows.filter(function(r){ return r.capped; }) };
+}
+function trendTicks(lo, hi){
+  var steps = [500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000, 100000], range = hi - lo, step = steps[steps.length - 1];
+  for(var i = 0; i < steps.length; i++){ if(range / steps[i] <= 4){ step = steps[i]; break; } }
+  var out = [];
+  for(var t = Math.ceil(lo / step) * step; t <= hi; t += step) out.push(t);
+  return out;
+}
+function trendShort(man){
+  if(man < 10000) return man.toLocaleString('ko-KR') + '만';
+  return String(Math.round(man / 100) / 100).replace(/\.?0+$/, '') + '억';
+}
+var TREND_P = { l:6, r:6, t:10, b:10 };
+function trendFrame(vals, budgetMan, n, W, H){
+  var P = TREND_P;
+  var hasBudget = Number.isFinite(budgetMan) && budgetMan > 0;
+  var all = hasBudget ? vals.concat([budgetMan]) : vals;
+  var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+  var pad = Math.max((hi - lo) * 0.12, hi * 0.02);
+  lo = Math.max(0, lo - pad); hi = hi + pad;
+  var cw = (W - P.l - P.r) / n;
+  var r1 = function(v){ return Math.round(v * 10) / 10; };
+  var y = function(v){ return r1(P.t + (hi - v) / (hi - lo) * (H - P.t - P.b)); };
+  return { P:P, n:n, cw:cw, W:W, H:H, lo:lo, hi:hi, y:y, r1:r1, hasBudget:hasBudget,
+    cx:function(i){ return r1(P.l + i * cw + cw / 2); },
+    budgetY:hasBudget ? y(budgetMan) : null,
+    ticks:trendTicks(lo, hi).map(function(v){ return { v:v, y:y(v), label:trendShort(v) }; }) };
+}
+/* 중간값 점들을 선 조각으로. 거래 없는 달·실패한 달에서 끊습니다(사이를 지어내지 않음). */
+function trendSegs(rows, F, budgetMan){
+  var segs = [], cur = null, meds = [];
+  rows.forEach(function(r, i){
+    if(r.median != null){
+      var pt = { i:i, x:F.cx(i), y:F.y(r.median), over:F.hasBudget && r.median > budgetMan, ymd:r.ymd };
+      meds.push(pt);
+      if(cur) cur.push(pt); else { cur = [pt]; segs.push(cur); }
+    } else cur = null;
+  });
+  return { meds:meds, segs:segs.filter(function(s){ return s.length > 1; }) };
+}
+/* 좌표만 만듭니다. 그리는 쪽(trendChartHtml)과 검사가 같은 값을 봅니다. */
+function trendGeometry(series, budgetMan, W, H){
+  var vals = [];
+  series.rows.forEach(function(r){ r.deals.forEach(function(d){ vals.push(d.amountMan); }); });
+  if(!vals.length) return null;
+  var F = trendFrame(vals, budgetMan, series.rows.length, W, H), dots = [];
+  series.rows.forEach(function(r, i){
+    var x0 = F.P.l + i * F.cw;
+    r.deals.forEach(function(d){
+      var day = Math.min(31, Math.max(1, d.d || 15));
+      dots.push({ x:F.r1(x0 + F.cw * (day - 0.5) / 31), y:F.y(d.amountMan), over:F.hasBudget && d.amountMan > budgetMan });
+    });
+  });
+  var L = trendSegs(series.rows, F, budgetMan);
+  return { W:W, H:H, P:F.P, cw:F.cw, n:F.n, lo:F.lo, hi:F.hi, budgetY:F.budgetY, dots:dots, meds:L.meds, segs:L.segs, ticks:F.ticks, cx:series.rows.map(function(r, i){ return F.cx(i); }) };
+}
+/* 비교 추이: 여러 단지를 같은 틀에. 월 목록이 같아야 합니다(같은 기간으로 부름). */
+function trendMultiGeometry(list, budgetMan, W, H){
+  var vals = [], n = 0;
+  list.forEach(function(s){ n = Math.max(n, s.rows.length); s.rows.forEach(function(r){ if(r.median != null) vals.push(r.median); }); });
+  if(!vals.length || !n) return null;
+  var F = trendFrame(vals, budgetMan, n, W, H);
+  return { W:W, H:H, P:F.P, n:n, budgetY:F.budgetY, ticks:F.ticks,
+    lines:list.map(function(s){ var L = trendSegs(s.rows, F, budgetMan); return { meds:L.meds, segs:L.segs, end:L.meds[L.meds.length - 1] || null }; }) };
+}
+/* 고른 달 → 화면 위 x(뷰박스 좌표)에서 달 번호로 */
+function trendIndexAt(xv, P, cw, n){ return Math.max(0, Math.min(n - 1, Math.floor((xv - P.l) / cw))); }
+/* 처음 고를 달: 거래가 있는 마지막 달 */
+function trendDefaultSel(series){ for(var i = series.rows.length - 1; i >= 0; i--) if(series.rows[i].median != null) return i; return series.rows.length - 1; }
+
+/* ── 화면 ──────────────────────────────────────────────────────────── */
+var TREND = { months:new Map(), pending:new Map(), view:new Map(), snap:new Map(), last:new Map(), seq:0 };
+/* last — 단지·기간별로 마지막에 받은 결과(실패한 달 포함). 실패는 months 캐시에 안 넣으므로, 면적을 바꾸거나 목록이 다시 그려질 때 이 값으로 그립니다. */
+function trendMonthsFor(key, span){
+  var snap = TREND.snap.get(key);
+  return TREND.last.get(key + '#' + span) || (snap ? trendCached(snap.lawd, span) : null);
+}
+
+function trendBudgetMan(){
+  if(typeof LASTVIEW === 'object' && LASTVIEW && Number.isFinite(LASTVIEW.price) && LASTVIEW.price > 0) return Math.floor(LASTVIEW.price / 10000);
+  var f = typeof DEAL === 'object' && DEAL ? Number(DEAL.lastPrice) : NaN;
+  return Number.isFinite(f) && f > 0 ? f : null;
+}
+function trendWon(man){ return formatWon(man * 10000).replace(/ /g, '\u00a0'); }
+function trendFetchMonth(lawd, ymd){
+  var k = lawd + ':' + ymd;
+  if(TREND.months.has(k)) return Promise.resolve(TREND.months.get(k));
+  if(TREND.pending.has(k)) return TREND.pending.get(k);
+  var p = fetch('/api/apt-price?lawd=' + encodeURIComponent(lawd) + '&ymd=' + ymd)
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(j){
+      /* ok:false·응답 없음은 실패 — 「거래 없음」이 아닙니다. 실패는 담아 두지 않아 다시 부를 수 있습니다. */
+      var ok = !!j && j.ok !== false && Array.isArray(j.items || j);
+      var m = { ymd:ymd, ok:ok, items:ok ? (Array.isArray(j) ? j : j.items) : [], total:ok && j.total != null ? Number(j.total) : null };
+      if(ok) TREND.months.set(k, m);
+      TREND.pending.delete(k);
+      return m;
+    });
+  TREND.pending.set(k, p);
+  return p;
+}
+function trendCached(lawd, span){
+  var out = [], ymds = trendYmds(span);
+  for(var i = 0; i < ymds.length; i++){ var m = TREND.months.get(lawd + ':' + ymds[i]); if(!m) return null; out.push(m); }
+  return out;
+}
+function trendSvgFrame(g, inner){
+  return '<svg class="tr-svg" viewBox="0 0 ' + g.W + ' ' + g.H + '" aria-hidden="true" focusable="false">'
+    + g.ticks.map(function(t){ return '<line class="tr-grid" x1="0" x2="' + g.W + '" y1="' + t.y + '" y2="' + t.y + '"/>'; }).join('')
+    + inner + '</svg>'
+    + g.ticks.map(function(t){ return '<span class="tr-y" style="top:' + (Math.round(t.y / g.H * 1000) / 10) + '%">' + t.label + '</span>'; }).join('');
+}
+function trendClipPair(id, g){
+  if(g.budgetY == null) return '';
+  return '<defs><clipPath id="' + id + 'a"><rect x="0" y="-20" width="' + g.W + '" height="' + (g.budgetY + 20) + '"/></clipPath>'
+    + '<clipPath id="' + id + 'b"><rect x="0" y="' + g.budgetY + '" width="' + g.W + '" height="' + (g.H - g.budgetY + 20) + '"/></clipPath></defs>';
+}
+function trendPath(seg){ return seg.map(function(p, i){ return (i ? 'L' : 'M') + p.x + ' ' + p.y; }).join(''); }
+function trendXLabels(rows){
+  var mid = rows[Math.floor((rows.length - 1) / 2)];
+  return '<div class="tr-x" aria-hidden="true"><span>' + trendYm(rows[0].ymd) + '</span><span>' + trendYm(mid.ymd) + '</span><span>' + trendYm(rows[rows.length - 1].ymd) + '</span></div>';
+}
+/* 달 하나의 읽기 문장(슬라이더 aria-valuetext 와 패널 머리가 같은 말) */
+function trendMonthText(r){
+  if(!r.ok) return trendYm(r.ymd) + ' · 조회 실패';
+  if(!r.deals.length) return trendYm(r.ymd) + ' · 거래 없음';
+  return trendYm(r.ymd) + ' · 거래 ' + r.deals.length + '건 · 중간값 ' + formatWon(r.median * 10000);
+}
+function trendChartHtml(series, budgetMan, sel){
+  var g = trendGeometry(series, budgetMan, 326, 150);
+  if(!g) return '';
+  var id = 'trc' + (++TREND.seq), lines = g.segs.map(trendPath).join('');
+  var gx = g.cx[sel], selMed = g.meds.filter(function(p){ return p.i === sel; })[0];
+  var inner = trendClipPair(id, g)
+    + g.dots.map(function(d){ return '<circle class="tr-dot' + (d.over ? ' is-over' : '') + '" cx="' + d.x + '" cy="' + d.y + '" r="2.6"/>'; }).join('')
+    + (g.budgetY != null ? '<line class="tr-budget" x1="0" x2="' + g.W + '" y1="' + g.budgetY + '" y2="' + g.budgetY + '"/>' : '')
+    + (lines ? (g.budgetY != null ? '<path class="tr-line" d="' + lines + '" clip-path="url(#' + id + 'b)"/><path class="tr-line is-over" d="' + lines + '" clip-path="url(#' + id + 'a)"/>'
+                                  : '<path class="tr-line" d="' + lines + '"/>') : '')
+    + g.meds.map(function(p){ return '<circle class="tr-med' + (p.over ? ' is-over' : '') + '" cx="' + p.x + '" cy="' + p.y + '" r="3.4"/>'; }).join('')
+    + '<line class="tr-guide" x1="' + gx + '" x2="' + gx + '" y1="0" y2="' + g.H + '"/>'
+    + '<circle class="tr-sel' + (selMed && selMed.over ? ' is-over' : '') + '" cx="' + (selMed ? selMed.x : gx) + '" cy="' + (selMed ? selMed.y : 0) + '" r="5.5"' + (selMed ? '' : ' visibility="hidden"') + '/>';
+  var r = series.rows[sel];
+  return '<div class="tr-plot" tabindex="0" role="slider" aria-label="달 고르기 · 좌우 화살표" aria-valuemin="1" aria-valuemax="' + series.rows.length
+    + '" aria-valuenow="' + (sel + 1) + '" aria-valuetext="' + esc(trendMonthText(r)) + '" data-trend-plot>' + trendSvgFrame(g, inner) + '</div>' + trendXLabels(series.rows);
+}
+/* 고른 달 패널: 그 달 거래 · 중간값 · 지금 조건으로 그 가격이면(dealAfford — 계산 엔진 그대로) */
+function trendMonthHtml(series, sel){
+  var r = series.rows[sel], last = trendDefaultSel(series);
+  var back = sel !== last ? '<button type="button" class="tr-now" data-trend-sel="' + last + '">최근 달로</button>' : '';
+  var head = '<div class="tr-mhead"><p>' + esc(trendMonthText(r)) + '</p>' + back + '</div>';
+  if(!r.ok || !r.deals.length) return '<div class="tr-month">' + head + '</div>';
+  var f = typeof dealAfford === 'function' ? dealAfford(r.median) : null, calc = '';
+  if(f){
+    var bal = f.gap > 0 ? '현금 <b class="is-short">' + trendWon(f.gap) + ' 부족</b>' : f.gap < 0 ? '현금 <b>' + trendWon(-f.gap) + ' 여유</b>' : '추가 현금 0원';
+    calc = '<p class="tr-calc">이 중간값이면 필요한 현금 ' + trendWon(f.C) + ' · ' + bal + '<small>지금 조건(금리·규제·내 현금)으로 계산 · 부대비용 포함</small></p>';
+  }
+  var list = '<ul class="tr-deals">' + r.deals.slice().reverse().map(function(d){
+    return '<li><span>' + String(d.m).padStart(2, '0') + '.' + (d.d ? String(d.d).padStart(2, '0') : '··') + (d.floor ? ' · ' + d.floor + '층' : '') + '</span><b>' + trendWon(d.amountMan) + '</b></li>'; }).join('') + '</ul>';
+  return '<div class="tr-month">' + head + calc + list + '</div>';
+}
+function trendBodyHtml(snap, state, months){
+  var span = state.span, series = trendSeries(months, snap, state.area), budget = trendBudgetMan();
+  if(months.every(function(m){ return !m.ok; }))
+    return '<p class="tr-msg" role="status">거래를 불러오지 못했어요.</p><button type="button" class="tr-retry" data-trend-retry>다시 불러오기</button>';
+  var a = typeof areaParts === 'function' ? areaParts(state.area) : null;
+  var areaLabel = a ? [a.m2, a.py].filter(Boolean).join(' · ') : '전용 ' + state.area + '㎡';
+  var seg = '<div class="tr-seg" role="group" aria-label="기간">' + TREND_SPANS.map(function(s){
+    return '<button type="button" data-trend-span="' + s + '" aria-pressed="' + (s === span) + '">' + (s / 12) + '년</button>'; }).join('') + '</div>';
+  var chips = series.areas.length > 1 ? '<div class="tr-areas" role="group" aria-label="전용면적">' + series.areas.map(function(v){
+    return '<button type="button" data-trend-area="' + v + '" aria-pressed="' + (v === Number(state.area)) + '">' + v + '㎡</button>'; }).join('') + '</div>' : '';
+  var head = '<div class="tr-head"><p class="tr-k">' + esc(areaLabel) + '<span>최근 ' + span + '개월 거래 ' + series.count + '건</span></p>' + seg + '</div>' + chips;
+  if(!series.count) return head + '<p class="tr-msg">최근 ' + span + '개월 동안 조회된 이 면적 거래가 없습니다.</p>' + trendNotes(series, span);
+  var sum = '';
+  if(series.first && series.last && series.first !== series.last){
+    var diff = series.last.median - series.first.median;
+    sum = '<p class="tr-sum">월 중간값 ' + trendYm(series.first.ymd) + ' ' + trendWon(series.first.median) + ' → ' + trendYm(series.last.ymd) + ' <b>' + trendWon(series.last.median) + '</b>'
+      + (diff ? ' <span>(' + (diff > 0 ? '+' : '−') + trendWon(Math.abs(diff)) + ')</span>' : '') + '</p>';
+  } else if(series.last){
+    sum = '<p class="tr-sum">' + trendYm(series.last.ymd) + ' 월 중간값 <b>' + trendWon(series.last.median) + '</b></p>';
+  }
+  var sel = state.sel != null && state.sel < series.rows.length ? state.sel : trendDefaultSel(series);
+  var over = 0; series.rows.forEach(function(r){ r.deals.forEach(function(d){ if(budget && d.amountMan > budget) over++; }); });
+  var legend = '<div class="tr-legend"><span><i class="tr-key-dot"></i>거래 한 건</span><span><i class="tr-key-line"></i>월 중간값</span>'
+    + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span>' : '') + '</div>';
+  var fact = budget ? '<p class="tr-fact">예상 집값보다 높은 거래 <b>' + over + '건</b> / ' + series.count + '건 · 점선 위 주황</p>' : '';
+  var table = '<details class="tr-table"><summary>월별 건수 · 중간값</summary><table><thead><tr><th scope="col">월</th><th scope="col">건수</th><th scope="col">중간값</th></tr></thead><tbody>'
+    + series.rows.slice().reverse().map(function(r){
+        return '<tr><th scope="row">' + trendYm(r.ymd) + '</th><td>' + (r.ok ? r.deals.length + '건' : '조회 실패') + '</td><td>' + (r.median != null ? trendWon(r.median) : '—') + '</td></tr>'; }).join('')
+    + '</tbody></table></details>';
+  return head + sum + trendChartHtml(series, budget, sel) + legend + '<p class="tr-hint">차트를 누르거나 옆으로 끌면 그 달 거래가 아래에 나와요.</p>'
+    + trendMonthHtml(series, sel) + fact + trendNotes(series, span) + table;
+}
+function trendNotes(series, span){
+  var notes = [];
+  if(series.failed.length) notes.push(series.failed.map(function(r){ return trendYm(r.ymd); }).join(', ') + ' 조회 실패 — 그 달은 비워 두었습니다. <button type="button" class="tr-retry" data-trend-retry>다시 불러오기</button>');
+  series.capped.forEach(function(r){ notes.push(trendYm(r.ymd) + '은 구 전체 ' + r.total.toLocaleString('ko-KR') + '건 중 ' + TREND_PAGE.toLocaleString('ko-KR') + '건만 조회되어 이 단지 거래가 빠졌을 수 있습니다.'); });
+  notes.push('거래가 없는 달은 선을 잇지 않았습니다. 이번 달은 조회 시점까지 신고된 거래만 들어 있습니다.');
+  notes.push('국토교통부 실거래가 · 해제·토지임대부 거래 제외');
+  return '<ul class="tr-notes">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>';
+}
+function trendBlockHtml(x){
+  if(!x || !x.lawd || !x.name || !(Number(x.areaM2) > 0)) return '';
+  var key = dealSameKey(x);
+  if(!TREND.snap.has(key)) TREND.snap.set(key, { name:x.name, dong:x.dong || '', lawd:x.lawd, areaM2:Number(x.areaM2) });
+  var st = TREND.view.get(key), open = !!(st && st.open), body = '';
+  if(open){ var m = trendMonthsFor(key, st.span); body = m ? trendBodyHtml(TREND.snap.get(key), st, m) : '<p class="tr-msg" role="status">거래를 불러오는 중…</p>'; }
+  return '<div class="trend" data-trend-key="' + esc(key) + '"><button type="button" class="trend-open" data-trend-open aria-expanded="' + open + '">'
+    + '<span>거래가 흐름</span><small>같은 단지 · 같은 면적 · 최근 1–2년</small></button>'
+    + '<div class="trend-body"' + (open ? '' : ' hidden') + '>' + body + '</div></div>';
+}
+function trendBoxes(key){ return Array.prototype.filter.call(document.querySelectorAll('.trend[data-trend-key]'), function(b){ return b.getAttribute('data-trend-key') === key; }); }
+function trendPaint(key){
+  var st = TREND.view.get(key), snap = TREND.snap.get(key);
+  trendBoxes(key).forEach(function(box){
+    var btn = box.querySelector('[data-trend-open]'), body = box.querySelector('.trend-body');
+    var open = !!(st && st.open);
+    btn.setAttribute('aria-expanded', String(open));
+    body.hidden = !open;
+    if(!open) return;
+    var m = trendMonthsFor(key, st.span);
+    if(m){ body.innerHTML = trendBodyHtml(snap, st, m); body.removeAttribute('aria-busy'); }
+    else { body.setAttribute('aria-busy', 'true'); if(!body.querySelector('.tr-head')) body.innerHTML = '<p class="tr-msg" role="status">거래를 불러오는 중…</p>'; }
+  });
+}
+function trendLoad(key){
+  var st = TREND.view.get(key), snap = TREND.snap.get(key);
+  if(!st || !snap) return;
+  trendPaint(key);
+  var ymds = trendYmds(st.span), span = st.span;
+  Promise.all(ymds.map(function(y){ return trendFetchMonth(snap.lawd, y); })).then(function(ms){
+    TREND.last.set(key + '#' + span, ms);
+    var now = TREND.view.get(key);
+    if(!now || !now.open || now.span !== span) return;   /* 그새 닫았거나 기간을 바꿈 */
+    trendPaint(key);
+  });
+}
+/* 달 고르기 — 차트는 다시 그리지 않고(끄는 중 포인터를 놓치지 않게) 안내선·점·패널만 바꿉니다. */
+function trendSelect(key, idx){
+  var st = TREND.view.get(key), snap = TREND.snap.get(key); if(!st || !snap) return;
+  var m = trendMonthsFor(key, st.span); if(!m) return;
+  var series = trendSeries(m, snap, st.area), g = trendGeometry(series, trendBudgetMan(), 326, 150); if(!g) return;
+  idx = Math.max(0, Math.min(series.rows.length - 1, idx));
+  if(st.sel === idx) return;
+  st.sel = idx;
+  var med = g.meds.filter(function(p){ return p.i === idx; })[0], html = trendMonthHtml(series, idx);
+  trendBoxes(key).forEach(function(box){
+    var plot = box.querySelector('[data-trend-plot]'); if(!plot) return;
+    var line = plot.querySelector('.tr-guide'), dot = plot.querySelector('.tr-sel');
+    line.setAttribute('x1', g.cx[idx]); line.setAttribute('x2', g.cx[idx]);
+    dot.setAttribute('cx', med ? med.x : g.cx[idx]); dot.setAttribute('cy', med ? med.y : 0); dot.setAttribute('visibility', med ? 'visible' : 'hidden');   /* 거래 없는 달 — 점 숨김(밖으로 보내면 overflow:visible 로 위 문장에 찍힘) */
+    dot.setAttribute('class', 'tr-sel' + (med && med.over ? ' is-over' : ''));
+    plot.setAttribute('aria-valuenow', String(idx + 1)); plot.setAttribute('aria-valuetext', trendMonthText(series.rows[idx]));
+    var panel = box.querySelector('.tr-month'); if(panel) panel.outerHTML = html;
+  });
+}
+function trendPlotIndex(plot, clientX, key){
+  var st = TREND.view.get(key), svg = plot.querySelector('.tr-svg'); if(!st || !svg) return null;
+  var rect = svg.getBoundingClientRect(), n = st.span;
+  var P = TREND_P, cw = (326 - P.l - P.r) / n;
+  return trendIndexAt((clientX - rect.left) / rect.width * 326, P, cw, n);
+}
+var TREND_DRAG = null;
+document.addEventListener('pointerdown', function(e){
+  var plot = e.target && e.target.closest ? e.target.closest('[data-trend-plot]') : null; if(!plot) return;
+  var key = plot.closest('.trend').getAttribute('data-trend-key'), i = trendPlotIndex(plot, e.clientX, key);
+  if(i == null) return;
+  TREND_DRAG = { key:key, plot:plot, id:e.pointerId };
+  try{ plot.setPointerCapture(e.pointerId); }catch(err){}
+  trendSelect(key, i);
+});
+document.addEventListener('pointermove', function(e){
+  if(!TREND_DRAG || e.pointerId !== TREND_DRAG.id) return;
+  var i = trendPlotIndex(TREND_DRAG.plot, e.clientX, TREND_DRAG.key); if(i != null) trendSelect(TREND_DRAG.key, i);
+});
+['pointerup', 'pointercancel'].forEach(function(t){ document.addEventListener(t, function(e){ if(TREND_DRAG && e.pointerId === TREND_DRAG.id) TREND_DRAG = null; }); });
+document.addEventListener('keydown', function(e){
+  var plot = e.target && e.target.closest ? e.target.closest('[data-trend-plot]') : null; if(!plot) return;
+  var key = plot.closest('.trend').getAttribute('data-trend-key'), st = TREND.view.get(key); if(!st) return;
+  var cur = Number(plot.getAttribute('aria-valuenow')) - 1, n = Number(plot.getAttribute('aria-valuemax'));
+  var to = e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? cur - 1 : e.key === 'ArrowRight' || e.key === 'ArrowUp' ? cur + 1 : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : null;
+  if(to == null) return;
+  e.preventDefault(); trendSelect(key, to);
+});
+document.addEventListener('click', function(e){
+  var t = e.target && e.target.closest ? e.target : null; if(!t) return;
+  var box = t.closest('.trend[data-trend-key]'); if(!box) return;
+  var key = box.getAttribute('data-trend-key'), snap = TREND.snap.get(key); if(!snap) return;
+  var st = TREND.view.get(key) || { open:false, span:12, area:snap.areaM2, sel:null };
+  var b;
+  if((b = t.closest('[data-trend-open]'))){
+    st.open = !st.open; TREND.view.set(key, st);
+    if(st.open){ if(typeof track === 'function') track('trend_open', { span:String(st.span) }); trendLoad(key); } else trendPaint(key);
+  } else if((b = t.closest('[data-trend-span]'))){
+    var s = Number(b.getAttribute('data-trend-span')); if(TREND_SPANS.indexOf(s) < 0 || s === st.span) return;
+    st.span = s; st.sel = null; TREND.view.set(key, st);
+    if(typeof track === 'function') track('trend_span', { span:String(s) });
+    trendLoad(key);
+  } else if((b = t.closest('[data-trend-area]'))){
+    var a = Number(b.getAttribute('data-trend-area')); if(!(a > 0)) return;
+    st.area = a; st.sel = null; TREND.view.set(key, st); trendPaint(key);
+  } else if((b = t.closest('[data-trend-sel]'))){
+    trendSelect(key, Number(b.getAttribute('data-trend-sel')));
+    var p = box.querySelector('[data-trend-plot]'); if(p) p.focus({ preventScroll:true });
+  } else if(t.closest('[data-trend-retry]')){
+    trendLoad(key);
+  }
+});
+</script><script>/* v210 compare trend */
+(function(){
+var CT = { mode:'table', span:12, seq:0 };
+var sheet = document.getElementById('cmpSheet'), body = document.getElementById('cmpBody');
+if(!sheet || !body || typeof cmpRender !== 'function') return;
+var seg = document.createElement('div');
+seg.className = 'ct-seg'; seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', '비교 보기'); seg.hidden = true;
+seg.innerHTML = '<button type="button" data-ct-mode="table" aria-pressed="true">표</button><button type="button" data-ct-mode="trend" aria-pressed="false">추이</button>';
+var view = document.createElement('div');
+view.id = 'cmpTrend'; view.className = 'ct-view'; view.hidden = true;
+body.parentNode.insertBefore(seg, body);
+body.parentNode.insertBefore(view, body.nextSibling);
+
+function list(){ return (typeof cmpLoad === 'function' ? cmpLoad() : []).filter(function(s){ return s && s.lawd && s.name && Number(s.areaM2) > 0; }); }
+function sync(){
+  var n = typeof cmpLoad === 'function' ? cmpLoad().length : 0;
+  seg.hidden = !n;
+  if(!n) CT.mode = 'table';
+  seg.querySelectorAll('[data-ct-mode]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-ct-mode') === CT.mode)); });
+  body.hidden = CT.mode === 'trend';
+  view.hidden = CT.mode !== 'trend';
+  if(CT.mode === 'trend') paint();
+}
+var COLORS = ['#1F5BFF', '#192332', '#6D3FE0'];   /* 흰 바탕 5.25 · 15.6 · 6.2 : 1 */
+function monthsOf(lawd, span){ return TREND.last.get('ct:' + lawd + '#' + span) || trendCached(lawd, span); }
+function paint(){
+  var items = list(), span = CT.span;
+  if(!items.length){ view.innerHTML = '<p class="ct-msg">비교함에 담긴 단지가 없어요.</p>'; return; }
+  var lawds = items.map(function(s){ return s.lawd; }).filter(function(v, i, a){ return a.indexOf(v) === i; });
+  var ready = lawds.every(function(l){ return monthsOf(l, span); });
+  var spanSeg = '<div class="tr-seg ct-span" role="group" aria-label="기간">' + TREND_SPANS.map(function(s){
+    return '<button type="button" data-ct-span="' + s + '" aria-pressed="' + (s === span) + '">' + (s / 12) + '년</button>'; }).join('') + '</div>';
+  if(!ready){ view.innerHTML = '<div class="ct-head"><p class="ct-k">월 중간값 · 같은 면적</p>' + spanSeg + '</div><p class="ct-msg" role="status">거래를 불러오는 중…</p>'; load(lawds, span); return; }
+  var all = items.map(function(s){ return { s:s, series:trendSeries(monthsOf(s.lawd, span), s, Number(s.areaM2)) }; });
+  if(lawds.every(function(l){ return monthsOf(l, span).every(function(m){ return !m.ok; }); })){
+    view.innerHTML = '<p class="ct-msg" role="status">거래를 불러오지 못했어요.</p><button type="button" class="tr-retry" data-ct-retry>다시 불러오기</button>'; return;
+  }
+  var budget = trendBudgetMan(), g = trendMultiGeometry(all.map(function(a){ return a.series; }), budget, 326, 170);
+  var head = '<div class="ct-head"><p class="ct-k">월 중간값 · 같은 면적<span>번호 = 표 열 번호</span></p>' + spanSeg + '</div>';
+  var lead = '';
+  var both = all.filter(function(a){ return a.series.first && a.series.last && a.series.first !== a.series.last; });
+  if(all.length > 1 && both.length === all.length && both.every(function(a){ return a.series.first.ymd === both[0].series.first.ymd && a.series.last.ymd === both[0].series.last.ymd; })){
+    var d = both.map(function(a){ return a.series.last.median - a.series.first.median; }), mx = Math.max.apply(null, d);
+    var top = both.filter(function(a, i){ return d[i] === mx; });
+    if(top.length === 1) lead = '<div class="ct-lead" role="note"><small>' + trendYm(both[0].series.first.ymd) + ' → ' + trendYm(both[0].series.last.ymd) + ' 월 중간값 변화가 가장 큰 곳</small><b><i style="background:' + COLORS[items.indexOf(top[0].s)] + '">' + (items.indexOf(top[0].s) + 1) + '</i>' + esc(top[0].s.name) + '</b><span>' + (mx > 0 ? '+' : mx < 0 ? '−' : '') + trendWon(Math.abs(mx)) + '</span></div>';
+  }
+  var chart = '';
+  if(g){
+    var id = 'ctc' + (++CT.seq), inner = '';
+    if(g.budgetY != null) inner += '<rect class="ct-over" x="0" y="0" width="' + g.W + '" height="' + Math.max(0, g.budgetY) + '"/>'
+      + '<line class="tr-budget" x1="0" x2="' + g.W + '" y1="' + g.budgetY + '" y2="' + g.budgetY + '"/>';
+    g.lines.forEach(function(L, i){
+      inner += L.segs.map(function(sg){ return '<path class="ct-line" style="stroke:' + COLORS[i] + '" d="' + trendPath(sg) + '"/>'; }).join('')
+        + L.meds.map(function(p){ return '<circle class="ct-med" style="fill:' + COLORS[i] + '" cx="' + p.x + '" cy="' + p.y + '" r="3"/>'; }).join('');
+    });
+    var badges = g.lines.map(function(L, i){
+      if(!L.end) return '';
+      return '<span class="ct-badge" style="left:calc((100% - 44px) * ' + (Math.round(L.end.x / g.W * 1000) / 1000) + ');top:' + (Math.round(L.end.y / g.H * 1000) / 10) + '%;background:' + COLORS[i] + '" aria-hidden="true">' + (i + 1) + '</span>'; }).join('');
+    chart = '<div class="tr-plot ct-plot" role="img" aria-label="' + esc(all.map(function(a, i){ return (i + 1) + '번 ' + a.s.name + (a.series.last ? ' 최근 월 중간값 ' + formatWon(a.series.last.median * 10000) : ' 거래 없음'); }).join(', ')) + '">'
+      + trendSvgFrame(g, inner) + badges + '</div>' + trendXLabels(all[0].series.rows)
+      + '<div class="tr-legend">' + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span><span><i class="ct-key-over"></i>예상 집값 위</span>' : '') + '</div>';
+  } else chart = '<p class="ct-msg">최근 ' + span + '개월 동안 조회된 같은 면적 거래가 없습니다.</p>';
+  var rows = '<ol class="ct-list">' + all.map(function(a, i){
+    var s = a.series, ap = typeof areaParts === 'function' ? areaParts(a.s.areaM2) : null, over = 0;
+    s.rows.forEach(function(r){ r.deals.forEach(function(x){ if(budget && x.amountMan > budget) over++; }); });
+    var change = s.first && s.last && s.first !== s.last
+      ? '월 중간값 ' + trendYm(s.first.ymd) + ' ' + trendWon(s.first.median) + ' → ' + trendYm(s.last.ymd) + ' <b>' + trendWon(s.last.median) + '</b>'
+        + (s.last.median !== s.first.median ? ' (' + (s.last.median > s.first.median ? '+' : '−') + trendWon(Math.abs(s.last.median - s.first.median)) + ')' : '')
+      : s.last ? trendYm(s.last.ymd) + ' 월 중간값 <b>' + trendWon(s.last.median) + '</b>' : '이 기간 같은 면적 거래 없음';
+    return '<li><i style="background:' + COLORS[i] + '" aria-hidden="true">' + (i + 1) + '</i><div><p class="ct-name">' + esc(a.s.name) + '<small>' + esc(ap ? ap.m2 : '') + '</small></p>'
+      + '<p class="ct-change">' + change + '</p><p class="ct-count">거래 ' + s.count + '건' + (budget && s.count ? ' · 예상 집값보다 높은 거래 ' + over + '건' : '') + '</p></div></li>'; }).join('') + '</ol>';
+  /* 조회 실패·상한은 구 단위 사실 — 같은 구를 두 번 적지 않습니다. */
+  var notes = [], failed = {}, capped = {};
+  all.forEach(function(a){ a.series.failed.forEach(function(r){ failed[r.ymd] = 1; }); a.series.capped.forEach(function(r){ capped[r.ymd + ':' + r.total] = r; }); });
+  var fk = Object.keys(failed).sort();
+  if(fk.length) notes.push(fk.map(function(y){ return trendYm(+y); }).join(', ') + ' 일부 조회 실패 — 그 달은 비워 두었습니다. <button type="button" class="tr-retry" data-ct-retry>다시 불러오기</button>');
+  Object.keys(capped).forEach(function(k){ var r = capped[k]; notes.push(trendYm(r.ymd) + '은 구 전체 ' + r.total.toLocaleString('ko-KR') + '건 중 ' + TREND_PAGE.toLocaleString('ko-KR') + '건만 조회되어 거래가 빠졌을 수 있습니다.'); });
+  notes.push('담을 때의 전용면적과 같은 거래만 셉니다. 거래가 없는 달은 선을 잇지 않았습니다.');
+  notes.push('국토교통부 실거래가 · 해제·토지임대부 거래 제외');
+  view.innerHTML = head + lead + chart + rows + '<ul class="tr-notes">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>';
+}
+function load(lawds, span){
+  Promise.all(lawds.map(function(l){
+    return Promise.all(trendYmds(span).map(function(y){ return trendFetchMonth(l, y); })).then(function(ms){ TREND.last.set('ct:' + l + '#' + span, ms); });
+  })).then(function(){ if(CT.mode === 'trend' && CT.span === span) paint(); });
+}
+view.addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  if(b.hasAttribute('data-ct-span')){ var s = Number(b.getAttribute('data-ct-span')); if(TREND_SPANS.indexOf(s) >= 0 && s !== CT.span){ CT.span = s; paint(); } }
+  else if(b.hasAttribute('data-ct-retry')){ list().forEach(function(x){ TREND.last.delete('ct:' + x.lawd + '#' + CT.span); }); paint(); }
+});
+seg.addEventListener('click', function(e){
+  var b = e.target.closest('[data-ct-mode]'); if(!b) return;
+  var m = b.getAttribute('data-ct-mode'); if(m === CT.mode) return;
+  CT.mode = m;
+  if(m === 'trend' && typeof track === 'function') track('compare_trend', { count:String(list().length) });
+  sync();
+});
+var before = cmpRender;
+cmpRender = function(){ var r = before.apply(this, arguments); sync(); return r; };
+sync();
 })();
 </script></body>
 </html>
