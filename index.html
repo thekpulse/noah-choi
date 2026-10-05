@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v208 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v209 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10144,6 +10144,12 @@ html body.yk208 #app #cmpSheet.cmp-page .cmp-card.is-least{border-top-color:#1F5
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card b{font-size:13px;line-height:1.4;margin-top:8px;word-break:keep-all;overflow-wrap:anywhere}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-rm{top:-4px;right:-6px}
 html body.yk208 #app #barLabel:focus,html body.yk208 #app .cond-lead:focus{outline:none}
+
+/* v209: restore the user's original blue budget card. */
+html body.yk208 #app #viewAnswer #fundingOverview>.rhead{background:#2458FF!important}
+html body.yk208 #app #viewAnswer #fundingOverview .price-answer>span{color:#EDF2FF!important}
+html body.yk208 #app #viewAnswer #fundingOverview .estimate-tag{color:#fff!important;border-color:#FFFFFF80!important}
+html body.yk208 #app #v208DistributionToggle[hidden]{display:none!important}
 </style><style id="v184-design">
 /* ① 결과 카드 — 실거래 상위 목록: 왼쪽 이름·위치, 오른쪽 가격·차이 칩 */
 html body #app #viewAnswer #heroDeals .hd-list li[data-key]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;align-content:center!important;height:auto!important;min-height:64px;padding:var(--sp-2) 22px var(--sp-2) 0!important}
@@ -10492,8 +10498,21 @@ window.addEventListener('resize',sync);
 const compareObserver=new MutationObserver(function(){sync();});compareObserver.observe(el('cmpBody'),{childList:true});
 const saveObserver=new MutationObserver(function(){sync();});const cmpBar=el('cmpBar');if(cmpBar)saveObserver.observe(cmpBar,{childList:true,subtree:true,characterData:true});
 // Keep the compact map view focused on homes; the full distribution remains one tap away.
-const distribution=el('dealDistribution');
-if(distribution){const toggle=document.createElement('button');toggle.type='button';toggle.id='v208DistributionToggle';toggle.textContent='거래 분포 자세히';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','dealDistribution');distribution.after(toggle);toggle.onclick=()=>{const on=el('dealCard').classList.toggle('v208-distribution-open');toggle.setAttribute('aria-expanded',String(on));toggle.textContent=on?'거래 분포 접기':'거래 분포 자세히';};}
+function syncDistributionToggle(){
+ const distribution=el('dealDistribution');if(!distribution)return;
+ let toggle=el('v208DistributionToggle');
+ if(!toggle){
+  toggle=document.createElement('button');toggle.type='button';toggle.id='v208DistributionToggle';
+  toggle.setAttribute('aria-controls','dealDistribution');distribution.after(toggle);
+  toggle.onclick=()=>{el('dealCard').classList.toggle('v208-distribution-open');syncDistributionToggle();};
+ }
+ const open=el('dealCard').classList.contains('v208-distribution-open');
+ toggle.hidden=!distribution.querySelector('.dd-strip');
+ toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'거래 분포 접기':'거래 분포 자세히';
+}
+const originalDistribution=renderDealDistribution;
+renderDealDistribution=function(){const result=originalDistribution.apply(this,arguments);syncDistributionToggle();return result;};
+syncDistributionToggle();
 const priceLabel=document.querySelector('#fundingOverview .price-answer>span');if(priceLabel)priceLabel.innerHTML='내 조건으로 예상한 집값 <small class="estimate-tag">참고용</small>';
 if(el('restartBtn'))el('restartBtn').onclick=restart;
 sync();if(started)record(current(),true);
