@@ -4945,7 +4945,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v213 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v214 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10059,7 +10059,9 @@ html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);out
 #condPreview .cp-cmp span{font-weight:600}
 #condPreview .cp-cmp i{padding:0 8px;border-radius:999px;background:#fff;color:#1848D6;font-size:12px;font-style:normal;font-weight:700;line-height:1.6}
 #condPreview .cp-same{color:#DCE6FF}
-</style><style id="v211-compare-share">/* v211 — 비교 결과 이미지 카드 · 비교 아래 행동 줄. 글자 12·13·14·16·19·24 · 모서리 10·14·20 · 행간 1.3·1.6 */
+</style><style id="v211-compare-share">/* v211 — 비교 결과 이미지 카드 · 비교 아래 행동 줄.
+   v214 — 카톡 「일반 화질」은 긴 변을 줄이고 다시 압축해, 세로로 긴 카드의 12px 회색 글씨가 뭉개졌음(운영 캡처).
+   카드 글자를 한 단계씩 키우고(최소 13) 회색을 한 단계 진하게(#465262), 본문 굵기 500, 여백을 줄여 세로 길이를 억제. 글자 13·14·16·17·19·26 · 모서리 10·14·20 · 행간 1.3·1.6 */
 .cmp-page .cs-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 16px 16px}
 .cmp-page .cs-actions[hidden],.cmp-page .cs-actions [hidden]{display:none!important}
 .cmp-page .cs-actions button{flex:1 1 160px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;margin:0;padding:0 14px;border-radius:14px;font:inherit;font-size:16px;font-weight:600;line-height:1.3;cursor:pointer}
@@ -10071,30 +10073,30 @@ html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);out
 #cmpReportCard{width:440px;border:1px solid #E1E5EB;border-radius:20px;overflow:hidden;background:#fff;color:#192332;letter-spacing:-.02em;word-break:keep-all}
 #cmpReportCard,#cmpReportCard *{font-variant-numeric:normal!important;box-sizing:border-box}
 #cmpReportCard p{margin:0}
-#cmpReportCard .cs-top{padding:22px 24px 24px;background:#192332;color:#fff}
+#cmpReportCard .cs-top{padding:20px 24px 22px;background:#2458FF;color:#fff}   /* v214 — 홈과 같은 파랑 */
 #cmpReportCard .cs-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-#cmpReportCard .cs-brand{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;line-height:1.3;color:#DCE6F4}
+#cmpReportCard .cs-brand{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;line-height:1.3;color:#fff}
 #cmpReportCard .cs-mark{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:10px;background:#fff}
-#cmpReportCard .cs-date{font-size:12px;line-height:1.3;color:#CDD4DE}
-#cmpReportCard .cs-cond{margin-top:12px;font-size:13px;line-height:1.6;color:#CDD4DE}
-#cmpReportCard .cs-lead-k{margin-top:12px;font-size:13px;line-height:1.3;color:#CDD4DE}
-#cmpReportCard .cs-lead{margin-top:4px;font-size:24px;font-weight:700;line-height:1.3;color:#fff}
-#cmpReportCard .cs-lead-v{margin-top:2px;font-size:19px;font-weight:600;line-height:1.3;color:#A9C1FF}
-#cmpReportCard .cs-body{padding:8px 24px 20px}
-#cmpReportCard .cs-row{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid #E1E5EB}
-#cmpReportCard .cs-no{display:inline-flex;align-items:center;justify-content:center;flex:none;width:24px;height:24px;border-radius:999px;background:#192332;color:#fff;font-size:13px;font-weight:700;line-height:1}
+#cmpReportCard .cs-date{font-size:13px;font-weight:500;line-height:1.3;color:#E6EDFF}
+#cmpReportCard .cs-cond{margin-top:10px;font-size:14px;font-weight:500;line-height:1.6;color:#E6EDFF}
+#cmpReportCard .cs-lead-k{margin-top:10px;font-size:14px;font-weight:500;line-height:1.3;color:#E6EDFF}
+#cmpReportCard .cs-lead{margin-top:4px;font-size:26px;font-weight:700;line-height:1.3;color:#fff}
+#cmpReportCard .cs-lead-v{margin-top:2px;font-size:19px;font-weight:700;line-height:1.3;color:#fff}
+#cmpReportCard .cs-body{padding:4px 24px 18px}
+#cmpReportCard .cs-row{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #E1E5EB}
+#cmpReportCard .cs-no{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;height:26px;border-radius:999px;background:#192332;color:#fff;font-size:14px;font-weight:700;line-height:1}
 #cmpReportCard .cs-row.is-least .cs-no{background:#1F5BFF}
 #cmpReportCard .cs-main{flex:1;min-width:0}
-#cmpReportCard .cs-name{font-size:16px;font-weight:700;line-height:1.3}
-#cmpReportCard .cs-sub,#cmpReportCard .cs-deal{margin-top:2px;font-size:13px;line-height:1.6;color:#5F6B7D}
-#cmpReportCard .cs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;padding:10px 12px;border-radius:14px;background:#F6F7F9}
-#cmpReportCard .cs-grid p{font-size:14px;font-weight:600;line-height:1.3}
-#cmpReportCard .cs-grid span{display:block;margin-bottom:4px;font-size:12px;font-weight:400;color:#5F6B7D}
-#cmpReportCard .cs-grid b{font-weight:600;color:#1848D6}
+#cmpReportCard .cs-name{font-size:17px;font-weight:700;line-height:1.3}
+#cmpReportCard .cs-sub,#cmpReportCard .cs-deal{margin-top:2px;font-size:14px;font-weight:500;line-height:1.3;color:#465262}
+#cmpReportCard .cs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px;padding:10px 12px;border-radius:14px;background:#F6F7F9}
+#cmpReportCard .cs-grid p{font-size:14px;font-weight:700;line-height:1.3}   /* 16px 은 3칸에서 금액이 「17억 / 9,950만원」으로 쪼개짐 — 14px 굵게 */
+#cmpReportCard .cs-grid span{display:block;margin-bottom:4px;font-size:13px;font-weight:500;color:#465262}
+#cmpReportCard .cs-grid b{font-weight:700;color:#1848D6}
 #cmpReportCard .cs-grid b.is-short{color:#B5530F}
 #cmpReportCard .cs-foot{display:flex;flex-direction:column;gap:6px;padding-top:14px}
-#cmpReportCard .cs-wm{font-size:13px;font-weight:700;color:#192332}
-#cmpReportCard .cs-nt{white-space:pre-line;font-size:12px;line-height:1.6;color:#5F6B7D}
+#cmpReportCard .cs-wm{font-size:14px;font-weight:700;color:#192332}
+#cmpReportCard .cs-nt{white-space:pre-line;font-size:13px;font-weight:500;line-height:1.6;color:#465262}
 </style><style id="v210-trend">/* v210 — 거래가 흐름. 글자 12·13·14·16 · 모서리 10·14 · 행간 1.3·1.6 (스케일 안).
    선·점 주황 #E06A12(흰 바탕 3.37:1 · 그래픽 3:1 이상) · 주황 글자 #B5530F(4.99:1) · 파랑 #1F5BFF(5.25:1). */
 .dealbox .trend{margin:12px 0 4px;border:1px solid #E1E5EB;border-radius:14px;background:#fff;overflow:hidden}
@@ -10177,8 +10179,8 @@ html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);out
 .ct-view .tr-seg{flex:none;display:flex;gap:2px;padding:3px;border-radius:10px;background:#EEF1F4}
 .ct-view .tr-seg button{min-height:32px;margin:0;padding:0 10px;border:0;border-radius:10px;background:transparent;color:#465262;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .ct-view .tr-seg button[aria-pressed="true"]{background:#fff;color:#192332;box-shadow:0 1px 2px rgba(25,35,50,.12)}
-.ct-view .ct-lead{margin-top:12px;padding:12px 14px;border-radius:14px;background:#192332;color:#fff}
-.ct-view .ct-lead small{display:block;font-size:12px;line-height:1.3;color:#CDD4DE}
+.ct-view .ct-lead{margin-top:12px;padding:12px 14px;border-radius:14px;background:#2458FF;color:#fff}   /* v214 — 홈과 같은 파랑 */
+.ct-view .ct-lead small{display:block;font-size:12px;line-height:1.3;color:#E6EDFF}
 .ct-view .ct-lead b{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:16px;line-height:1.3}
 .ct-view .ct-lead span{display:block;margin-top:2px;font-size:14px;color:#fff;font-variant-numeric:tabular-nums}
 .ct-view .ct-lead i,.ct-view .ct-list i,.ct-view .ct-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;width:20px;height:20px;border-radius:999px;color:#fff;font-size:12px;font-style:normal;font-weight:700;line-height:1}
@@ -10277,10 +10279,11 @@ html body.yk208 #app #cmpSheet.cmp-page{position:static!important;inset:auto!imp
 html body.yk208 #app #cmpSheet.cmp-page>.why-sheet-header{position:static!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;min-height:0}
 html body.yk208 #app #cmpSheet.cmp-page #cmpTitle{font-size:24px!important;color:#192332!important}
 html body.yk208 #app #cmpSheet.cmp-page #cmpClose{display:none!important}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-lead{background:#192332;border:1px solid #192332;border-radius:20px;padding:20px;margin-bottom:16px}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-lead small{color:#CDD4DE;font-size:13px}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-lead b{font-size:22px;color:#9DB8FF;margin-top:6px}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-lead span{font-size:20px;margin-top:6px}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead{background:#2458FF;border:1px solid #2458FF;border-radius:20px;padding:20px;margin-bottom:16px}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead small{color:#E6EDFF;font-size:13px}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead b{font-size:22px;color:#fff;margin-top:6px}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead span{font-size:20px;margin-top:6px;color:#fff}
+/* v214 — 결론 카드를 홈 예상 집값 카드와 같은 파랑(#2458FF)으로(오너 요청 · v209 홈 복원과 맞춤). 흰 글자 5.36:1 · 보조 #E6EDFF 4.58:1 */
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card{border-radius:12px;background:#fff;padding:10px 8px}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card b{font-size:14px;color:#192332}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card small{font-size:12px;color:#5F6B7D}
