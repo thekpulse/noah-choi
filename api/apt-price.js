@@ -132,9 +132,9 @@ module.exports = async function handler(req, res){
      최대 24시간 그대로 나갑니다 — 「고쳤는데 지도가 여전히 비어 있다」로 보입니다.
      ⚠ 이 인스턴스 메모리 캐시는 배포하면 비워지지만, **살아 있는 인스턴스가 남아 있으면**
        그쪽은 옛 값을 계속 들고 있습니다. 판 번호가 그 경우를 막습니다. */
-  const key = 'v134:' + lawd + ':' + ymd;
+  const key = 'v210:' + lawd + ':' + ymd;   /* v210 — 캐시 값 모양이 {items,total}로 바뀌어 판 번호를 올림 */
   const hit = cacheGet(key);
-  if(hit) return res.status(200).json({ ok:true, cached:true, items:hit });
+  if(hit) return res.status(200).json({ ok:true, cached:true, items:hit.items, total:hit.total });
 
   const serviceKey = process.env.MOLIT_API_KEY;
   if(!serviceKey)
@@ -191,8 +191,13 @@ module.exports = async function handler(req, res){
         return fail('api-' + code);
 
       const items = parseItems(xml);
-      cacheSet(key, items, ymd);
-      return res.status(200).json({ ok:true, cached:false, items });
+      /* 🔴 v210 — **원본 총건수(totalCount)를 그대로 싣습니다.** 이 함수는 1쪽(numOfRows 1000)만 받습니다.
+         총건수가 1,000을 넘는 달은 거래 일부가 빠진 것이므로 화면이 그 달을 「일부만 조회」로 적습니다.
+         값은 국토부 응답의 <totalCount> 그대로입니다(계산·추정 없음). 없으면 null — 화면은 아무 말도 안 합니다. */
+      const totalRaw = parseInt(tag(xml, 'totalCount'), 10);
+      const total = Number.isFinite(totalRaw) ? totalRaw : null;
+      cacheSet(key, { items, total }, ymd);
+      return res.status(200).json({ ok:true, cached:false, items, total });
     }
     return fail(last);
   }catch(e){
