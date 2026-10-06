@@ -3547,6 +3547,91 @@ html body.yk208 #app #cmpSheet.cmp-page .hc-picked-label{display:block;margin-to
 #comparePriceDetails>summary:focus-visible{outline:2px solid #1F5BFF;outline-offset:-3px}
 html body.yk208 #app #comparePriceDetails #homeCompare{border:0;border-top:1px solid #E1E5EB;border-radius:0}
 #cmpSheet:has([data-ct-mode="trend"][aria-pressed="true"]) #comparePriceDetails{display:none}
+/* v219: the folded chart supplements the table instead of repeating it. */
+#comparePriceDetails .hc-head{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#homeCompare .hc-hint{margin:0 0 12px;font-size:12px;line-height:1.6;color:#465262}
+#homeCompare .hc-budget{margin-top:0}
+#homeCompare .hc-summary{margin-bottom:8px}
+#homeCompare .hc-info{padding-bottom:8px}
+#homeCompare .hc-meta{justify-content:flex-end}
+#homeCompare .hc-row:hover .hc-info b{color:#1848D6}
+</style><style id="v220-chart-design">/* v220: chart hierarchy and compact supporting details. */
+html body .dealbox .trend{border-radius:20px;border-color:#DDE3EC;margin-top:16px}
+html body .dealbox .trend-open{padding:16px 40px 16px 16px;font-size:17px;gap:6px}
+html body .dealbox .trend-open small{font-size:12px}
+html body .dealbox .trend-body{padding:0 16px 16px;border-top:1px solid #E8ECF2}
+html body .dealbox .tr-head,html body .ct-view .ct-head{padding-top:16px;gap:12px;align-items:center}
+html body .dealbox .tr-k{font-size:13px;line-height:1.5;font-weight:600}
+html body .dealbox .tr-k span,html body .ct-view .ct-k span{font-size:12px;line-height:1.5;margin-top:4px;color:#5F6B7D}
+html body .dealbox .tr-seg,html body .ct-view .tr-seg{padding:2px;background:#F3F5F8;border:1px solid #E1E5EB;border-radius:999px;gap:2px}
+html body .dealbox .tr-seg button,html body .ct-view .tr-seg button{min-height:36px;min-width:44px;border-radius:999px;padding:0 12px;font-size:13px}
+html body .dealbox .tr-seg button[aria-pressed="true"],html body .ct-view .tr-seg button[aria-pressed="true"]{box-shadow:none;background:#192332;color:#fff}
+html body .cmp-page .ct-seg{margin-inline:0;border:1px solid #E1E5EB;background:#F0F3F7}
+html body .cmp-page .ct-seg button[aria-pressed="true"]{box-shadow:none;border:1px solid #D6DCE5}
+html body .dealbox .tr-areas{gap:6px;margin-top:12px}
+html body .dealbox .tr-areas button{min-height:32px;font-size:12px;border-radius:999px;padding-inline:12px}
+html body .dealbox .tr-headline{margin:24px 0 16px;font-variant-numeric:tabular-nums}
+html body .dealbox .tr-headline p{margin:0;font-size:13px;line-height:1.5;font-weight:600;color:#465262}
+html body .dealbox .tr-headline p span{margin-left:6px;color:#5F6B7D;font-weight:400}
+html body .dealbox .tr-headline>strong{display:block;margin-top:6px;font-size:clamp(27px,8.4vw,36px);line-height:1.25;font-weight:700;letter-spacing:-.045em;color:#192332;overflow-wrap:anywhere}
+html body .dealbox .tr-headline>small{display:block;margin-top:6px;font-size:12px;color:#5F6B7D}
+html body .dealbox .tr-plot,html body .ct-view .tr-plot{margin-top:16px;padding-right:44px}
+html body .dealbox .tr-grid,html body .ct-view .tr-grid{stroke:#E5EAF1;stroke-dasharray:2 4;stroke-width:.8}
+html body .dealbox .tr-line,html body .ct-view .ct-line{stroke-width:2.3}
+html body .dealbox .tr-dot{fill-opacity:.2}
+html body .dealbox .tr-dot.is-over{fill-opacity:.28}
+html body .dealbox .tr-budget,html body .ct-view .tr-budget{stroke:#5F6B7D;stroke-width:1.2;stroke-dasharray:5 4}
+html body .dealbox .tr-guide,html body .ct-view .tr-guide{stroke:#5F6B7D;stroke-opacity:.4;stroke-dasharray:2 3}
+html body .ct-view .ct-over{fill-opacity:.045}
+html body .ct-view .ct-badge{display:none}
+html body .dealbox .tr-y,html body .ct-view .tr-y{font-size:12px;color:#647084}
+html body .dealbox .tr-x,html body .ct-view .tr-x{margin-top:8px;font-size:12px;color:#647084}
+html body .dealbox .tr-legend,html body .ct-view .tr-legend{gap:6px 12px;margin-top:16px;font-size:12px;line-height:1.6}
+html body .dealbox .tr-key-budget,html body .ct-view .tr-key-budget{border-color:#5F6B7D}
+html body .dealbox .tr-hint,html body .ct-view .ct-hint{margin:8px 0 16px;font-size:12px;color:#647084;line-height:1.6}
+html body .dealbox .tr-month{margin-top:16px;border:1px solid #E1E5EB;background:#F8FAFC;border-radius:16px;padding:14px}
+html body .dealbox .tr-mhead p{font-size:12px;line-height:1.6;color:#465262;font-weight:500}
+html body .dealbox .tr-calc{font-size:14px;line-height:1.7;margin-top:8px}
+html body .dealbox .tr-calc small{margin-top:6px;font-size:12px;line-height:1.6}
+html body .dealbox .tr-now,html body .ct-view .tr-now{border-radius:999px;min-height:36px;font-size:12px;padding:0 12px}
+html body .tr-records,html body .tr-period,html body .ct-period{margin-top:12px;border-top:1px solid #E1E5EB}
+html body .tr-records>summary,html body .tr-period>summary,html body .ct-period>summary{padding:14px 0;color:#465262;cursor:pointer;font-size:13px;font-weight:600;line-height:1.6}
+html body .tr-records>summary:focus-visible,html body .tr-period>summary:focus-visible,html body .ct-period>summary:focus-visible{outline:2px solid #1F5BFF;outline-offset:2px}
+html body .dealbox .tr-records .tr-deals{margin-top:0}
+html body .dealbox .tr-sum,html body .dealbox .tr-fact{font-size:13px;line-height:1.7;margin:0 0 10px}
+html body .dealbox .tr-notes,html body .ct-view .tr-notes{font-size:12px;line-height:1.7;margin-top:16px;color:#647084}
+html body .ct-view{margin:0 0 16px;padding:0 18px 18px;border-radius:20px;border-color:#DDE3EC}
+html body .ct-view .ct-k{font-size:17px;letter-spacing:-.025em}
+html body .ct-view .ct-month{margin:20px 0 0;padding:0;background:transparent;border-radius:0}
+html body .ct-view .tr-mhead{min-height:36px;align-items:center}
+html body .ct-view .tr-mhead p{font-size:12px;font-weight:600;color:#647084}
+html body .ct-view .ct-month ul{margin:8px 0 0}
+html body .ct-view .ct-month li{gap:8px;padding:12px 0;border-top:1px solid #E8ECF2;align-items:flex-start}
+html body .ct-view .ct-month li>i{width:20px;height:20px;font-size:12px;margin-top:3px}
+html body .ct-view .ct-month li>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:4px 10px;width:100%;min-width:0}
+html body .ct-view .ct-mname{font-size:13px;color:#192332;font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+html body .ct-view .ct-mval{margin:0;text-align:right;font-size:13px;line-height:1.4}
+html body .ct-view .ct-mval b{font-size:21px;line-height:1.25;font-weight:700;letter-spacing:-.035em;white-space:nowrap}
+html body .ct-view .ct-msub{grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:#647084}
+html body .ct-view .ct-lead{margin-top:20px;border-radius:16px;padding:16px}
+html body .ct-view .ct-lead small{font-size:12px;line-height:1.6}
+html body .ct-view .ct-lead b{font-size:16px;line-height:1.5;margin-top:8px}
+html body .ct-view .ct-lead span{font-size:26px;line-height:1.3;letter-spacing:-.035em;font-weight:700;margin-top:8px}
+html body .ct-view .ct-list{margin-top:0}
+html body .ct-view .ct-list li{padding:14px 0}
+html body .ct-view .ct-name{font-size:14px;line-height:1.5}
+html body .ct-view .ct-name small{display:block;margin:4px 0 0;font-size:12px}
+html body .ct-view .ct-change{font-size:13px;line-height:1.7}
+html body .ct-view .ct-count{font-size:12px}
+@media(max-width:374px){html body .ct-view{padding-inline:14px}
+html body .ct-view .ct-month li>div{grid-template-columns:1fr}
+html body .ct-view .ct-mval{text-align:left}
+html body .ct-view .ct-mval b{font-size:23px}
+html body .dealbox .tr-head{flex-wrap:wrap}
+html body .dealbox .tr-headline>strong{font-size:28px}}
+@media(min-width:960px){html body .ct-view{padding-inline:28px}
+html body .ct-view .ct-mval b{font-size:26px}
+html body .dealbox .tr-headline>strong{font-size:36px}}
 </style></head>
 <body>
 
@@ -5003,7 +5088,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v218 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v220 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10937,8 +11022,12 @@ function trendMonthText(r){
   if(!r.deals.length) return trendYm(r.ymd) + ' · 거래 없음';
   return trendYm(r.ymd) + ' · 거래 ' + r.deals.length + '건 · 중간값 ' + formatWon(r.median * 10000);
 }
+function trendHeadlineHtml(series, sel){
+  var r=series.rows[sel], value=!r.ok?'조회 실패':!r.deals.length?'거래 없음':trendWon(r.median);
+  return '<div class="tr-headline"><p>'+trendYm(r.ymd)+' <span>월 중간값</span></p><strong>'+esc(value)+'</strong><small>'+(r.ok?'거래 '+r.deals.length+'건':'이 달은 계산에서 제외')+'</small></div>';
+}
 function trendChartHtml(series, budgetMan, sel){
-  var g = trendGeometry(series, budgetMan, 326, 150);
+  var g = trendGeometry(series, budgetMan, 326, 210);
   if(!g) return '';
   var id = 'trc' + (++TREND.seq), lines = g.segs.map(trendPath).join('');
   var gx = g.cx[sel], selMed = g.meds.filter(function(p){ return p.i === sel; })[0];
@@ -10967,7 +11056,7 @@ function trendMonthHtml(series, sel){
   }
   var list = '<ul class="tr-deals">' + r.deals.slice().reverse().map(function(d){
     return '<li><span>' + String(d.m).padStart(2, '0') + '.' + (d.d ? String(d.d).padStart(2, '0') : '··') + (d.floor ? ' · ' + d.floor + '층' : '') + '</span><b>' + trendWon(d.amountMan) + '</b></li>'; }).join('') + '</ul>';
-  return '<div class="tr-month">' + head + calc + list + '</div>';
+  return '<div class="tr-month">' + head + calc + '<details class="tr-records"><summary>개별 거래 '+r.deals.length+'건</summary>'+list+'</details></div>';
 }
 function trendBodyHtml(snap, state, months){
   var span = state.span, series = trendSeries(months, snap, state.area), budget = trendBudgetMan();
@@ -10998,8 +11087,8 @@ function trendBodyHtml(snap, state, months){
     + series.rows.slice().reverse().map(function(r){
         return '<tr><th scope="row">' + trendYm(r.ymd) + '</th><td>' + (r.ok ? r.deals.length + '건' : '조회 실패') + '</td><td>' + (r.median != null ? trendWon(r.median) : '—') + '</td></tr>'; }).join('')
     + '</tbody></table></details>';
-  return head + sum + trendChartHtml(series, budget, sel) + legend + '<p class="tr-hint">차트를 누르거나 옆으로 끌면 그 달 거래가 아래에 나와요.</p>'
-    + trendMonthHtml(series, sel) + fact + trendNotes(series, span) + table;
+  return head + trendHeadlineHtml(series, sel) + trendChartHtml(series, budget, sel) + legend + '<p class="tr-hint">차트를 끌어 월별 가격을 확인하세요.</p>'
+    + trendMonthHtml(series, sel) + '<details class="tr-period"><summary>기간 전체 변화</summary>'+sum+fact+'</details>' + trendNotes(series, span) + table;
 }
 function trendNotes(series, span){
   var notes = [];
@@ -11049,7 +11138,7 @@ function trendLoad(key){
 function trendSelect(key, idx){
   var st = TREND.view.get(key), snap = TREND.snap.get(key); if(!st || !snap) return;
   var m = trendMonthsFor(key, st.span); if(!m) return;
-  var series = trendSeries(m, snap, st.area), g = trendGeometry(series, trendBudgetMan(), 326, 150); if(!g) return;
+  var series = trendSeries(m, snap, st.area), g = trendGeometry(series, trendBudgetMan(), 326, 210); if(!g) return;
   idx = Math.max(0, Math.min(series.rows.length - 1, idx));
   if(st.sel === idx) return;
   st.sel = idx;
@@ -11062,6 +11151,7 @@ function trendSelect(key, idx){
     dot.setAttribute('class', 'tr-sel' + (med && med.over ? ' is-over' : ''));
     plot.setAttribute('aria-valuenow', String(idx + 1)); plot.setAttribute('aria-valuetext', trendMonthText(series.rows[idx]));
     var panel = box.querySelector('.tr-month'); if(panel) panel.outerHTML = html;
+    var headline=box.querySelector('.tr-headline');if(headline)headline.outerHTML=trendHeadlineHtml(series,idx);
   });
 }
 function trendPlotIndex(plot, clientX, key){
@@ -11155,8 +11245,8 @@ function paint(){
   if(lawds.every(function(l){ return monthsOf(l, span).every(function(m){ return !m.ok; }); })){
     view.innerHTML = '<p class="ct-msg" role="status">거래를 불러오지 못했어요.</p><button type="button" class="tr-retry" data-ct-retry>다시 불러오기</button>'; return;
   }
-  var budget = trendBudgetMan(), g = trendMultiGeometry(all.map(function(a){ return a.series; }), budget, 326, 170);
-  var head = '<div class="ct-head"><p class="ct-k">월 중간값 · 같은 면적<span>번호 = 표 열 번호</span></p>' + spanSeg + '</div>';
+  var budget = trendBudgetMan(), g = trendMultiGeometry(all.map(function(a){ return a.series; }), budget, 326, 210);
+  var head = '<div class="ct-head"><p class="ct-k">거래가 흐름<span>같은 전용면적 · 월 중간값</span></p>' + spanSeg + '</div>';
   var lead = '';
   var both = all.filter(function(a){ return a.series.first && a.series.last && a.series.first !== a.series.last; });
   if(all.length > 1 && both.length === all.length && both.every(function(a){ return a.series.first.ymd === both[0].series.first.ymd && a.series.last.ymd === both[0].series.last.ymd; })){
@@ -11181,7 +11271,7 @@ function paint(){
     chart = '<div class="tr-plot ct-plot" tabindex="0" role="slider" aria-label="달 고르기 · 좌우 화살표" aria-valuemin="1" aria-valuemax="' + g.n + '" aria-valuenow="' + (sel + 1) + '" aria-valuetext="' + esc(ctMonthText(all, sel)) + '" data-ct-plot>'
       + trendSvgFrame(g, inner + '<g class="ct-selg">' + ctSelSvg(g, sel) + '</g>') + badges + '</div>' + trendXLabels(all[0].series.rows)
       + '<div class="tr-legend">' + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span><span><i class="ct-key-over"></i>예상 집값 위</span>' : '') + '</div>'
-      + '<p class="ct-hint">차트를 누르거나 옆으로 끌면 그 달 단지별 중간값이 아래에 나와요.</p>'
+      + '<p class="ct-hint">차트를 끌어 월별 가격을 비교하세요.</p>'
       + ctMonthHtml(all, sel, budget);
   } else chart = '<p class="ct-msg">최근 ' + span + '개월 동안 조회된 같은 면적 거래가 없습니다.</p>';
   var rows = '<ol class="ct-list">' + all.map(function(a, i){
@@ -11202,7 +11292,9 @@ function paint(){
   skipped().forEach(function(x){ notes.push((x.no + 1) + '번 ' + esc(x.s.name || '') + ': 전용면적 정보가 없어 추이에서 뺐습니다.'); });
   notes.push('담을 때의 전용면적과 같은 거래만 셉니다. 거래가 없는 달은 선을 잇지 않았습니다.');
   notes.push('국토교통부 실거래가 · 해제·토지임대부 거래 제외');
-  view.innerHTML = head + lead + chart + rows + '<ul class="tr-notes">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>';
+  view.innerHTML = head + chart + lead + '<details class="ct-period"><summary>기간 전체 변화 · 거래 건수</summary>'+rows+'</details>' + '<ul class="tr-notes">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>';
+  var selected=view.querySelector('.ct-month'), plot=view.querySelector('.ct-plot');
+  if(selected&&plot)plot.before(selected);
 }
 /* ── 달 고르기(단지 상세와 같은 동작) ── */
 function ctCx(g, i){ var cw = (g.W - g.P.l - g.P.r) / g.n; return Math.round((g.P.l + i * cw + cw / 2) * 10) / 10; }
@@ -11447,7 +11539,7 @@ window.__condPreview = CP;   /* 검사용 */
 const comparison=document.getElementById('cmpSheet');
 if(!comparison||typeof cmpLoad!=='function')return;
 const disclosure=document.createElement('details');disclosure.id='comparePriceDetails';disclosure.hidden=true;
-const summary=document.createElement('summary');summary.textContent='거래가와 예상 집값 위치 보기';disclosure.append(summary);
+const summary=document.createElement('summary');summary.textContent='예상 집값과 거래가 비교';disclosure.append(summary);
 const card=document.createElement('section');card.id='homeCompare';card.setAttribute('aria-labelledby','homeCompareTitle');
 disclosure.append(card);document.getElementById('cmpBody').after(disclosure);
 let last='';
@@ -11476,7 +11568,7 @@ function paint(){
  disclosure.hidden=!list.length;if(!list.length)disclosure.open=false;
  const key=JSON.stringify([list,price]);if(key===last)return;last=key;
  const won=n=>formatWon(n*10000);
- const head='<div class="hc-head"><h2 id="homeCompareTitle">담은 단지와 내 예산</h2><span>'+list.length+'/3곳</span></div>';
+ const head='<div class="hc-head"><h2 id="homeCompareTitle">거래가 비교</h2><span>'+list.length+'/3곳</span></div>';
  if(!list.length){card.innerHTML=head+'<p class="hc-empty">마음에 드는 단지를 담으면<br>내 예산과 거래가를 한눈에 비교할 수 있어요.</p><button type="button" class="hc-open" data-v208-go="map">단지 찾아 담기 <span aria-hidden="true">›</span></button>';return;}
  const valid=Number.isFinite(price)&&price>0;
  const peak=Math.max(valid?price:0,...list.map(s=>Number(s.amountMan)));
@@ -11487,16 +11579,15 @@ function paint(){
  const bp=pos(price);
  card.innerHTML=head+(valid?'<p class="hc-budget">내 예상 집값 <strong>'+esc(won(price))+'</strong></p>':'<p class="hc-empty">조건을 입력하면 내 예산선도 함께 보여요.</p>')
  +(valid?'<p class="hc-summary">예상 집값 이하 <b>'+within+'곳</b><span aria-hidden="true"> · </span>초과 <b>'+ (list.length-within)+'곳</b></p>':'')
- +'<div class="hc-axis" aria-hidden="true"><span>0원</span><span>'+esc(won(max))+'</span></div>'
+ +'<p class="hc-hint">단지를 누르면 비교표의 해당 열로 이동해요.</p><div class="hc-axis" aria-hidden="true"><span>0원</span><span>'+esc(won(max))+'</span></div>'
  +'<div class="hc-chart" style="--budget:'+bp+'%">'+(valid?'<div class="hc-line" aria-hidden="true"></div>':'')
- +list.map((s,i)=>{const p=Number(s.amountMan),diff=p-price;return '<button type="button" class="hc-row" data-hc-index="'+i+'" aria-label="'+esc(s.name)+' '+esc(won(p))+', '+esc(transactionInfo(s))+', '+esc(dealDate(s)||'거래일 정보 없음')+', 비교표에서 보기"><span class="hc-info"><b><i aria-hidden="true">'+(i+1)+'</i>'+esc(s.name)+'</b><strong>'+esc(won(p))+'</strong></span><span class="hc-spec">'+esc(transactionInfo(s))+'</span><span class="hc-track" aria-hidden="true"><span class="hc-fill" style="width:'+pos(p)+'%"></span><i class="hc-dot" style="left:'+pos(p)+'%"></i></span><span class="hc-meta"><span>'+esc([s.dong,dealDate(s)||'거래일 정보 없음'].filter(Boolean).join(' · '))+'</span>'+(valid?'<span class="'+(diff>0?'hc-over':'hc-under')+'">예상 집값보다 '+(diff===0?'차이 없음':esc(won(Math.abs(diff)))+' '+(diff>0?'높음':'낮음'))+'</span>':'')+'</span><span class="hc-row-link">비교표에서 보기 <i aria-hidden="true">›</i></span></button>';}).join('')+'</div>'
- +(list.length<3?'<button type="button" class="hc-add" data-v208-go="map">단지 더 담기 <span>'+list.length+'/3</span><i aria-hidden="true">＋</i></button>':'')
+ +list.map((s,i)=>{const p=Number(s.amountMan),diff=p-price;return '<button type="button" class="hc-row" data-hc-index="'+i+'" aria-label="'+esc(s.name)+' '+esc(won(p))+', '+esc(transactionInfo(s))+', '+esc(dealDate(s)||'거래일 정보 없음')+', 비교표에서 보기"><span class="hc-info"><b><i aria-hidden="true">'+(i+1)+'</i>'+esc(s.name)+'</b><strong>'+esc(won(p))+'</strong></span><span class="hc-track" aria-hidden="true"><span class="hc-fill" style="width:'+pos(p)+'%"></span><i class="hc-dot" style="left:'+pos(p)+'%"></i></span><span class="hc-meta">'+(valid?'<span class="'+(diff>0?'hc-over':'hc-under')+'">예상 집값보다 '+(diff===0?'차이 없음':esc(won(Math.abs(diff)))+' '+(diff>0?'높음':'낮음'))+'</span>':'')+'</span></button>';}).join('')+'</div>'
  +'<p class="hc-note">'+(valid?'파란 세로선은 내 예상 집값 · ':'')+'담을 때의 실거래 기준<br>실제 필요한 현금은 부대비용을 포함한 비교표에서 확인하세요.</p><button type="button" class="hc-open" data-v208-go="compare">비교표로 돌아가기 <span aria-hidden="true">›</span></button>';
 }
 card.addEventListener('click',e=>{
  const all=e.target.closest('[data-v208-go="compare"]');
  if(all){e.stopPropagation();disclosure.open=false;pickedKey=null;yk208Navigate('compare');
- const mode=document.querySelector('#cmpSheet [data-ct-mode="table"]');if(mode)mode.click();markPicked();window.scrollTo(0,0);return;}
+ const mode=document.querySelector('#cmpSheet [data-ct-mode="table"]');if(mode)mode.click();markPicked();window.scrollTo(0,0);const title=document.getElementById('cmpTitle');if(title){title.tabIndex=-1;title.focus({preventScroll:true});}return;}
  const row=e.target.closest('[data-hc-index]');if(!row)return;
  const chosen=cmpLoad()[Number(row.dataset.hcIndex)];if(!chosen)return;
  disclosure.open=false;pickedKey=chosen.k;yk208Navigate('compare');
@@ -11507,7 +11598,7 @@ card.addEventListener('click',e=>{
  const sheet=document.getElementById('cmpSheet'),bar=document.querySelector('.appbar');
  window.scrollTo(0,Math.max(0,sheet.getBoundingClientRect().top+window.scrollY-(bar?bar.getBoundingClientRect().height:64)-12));}
 });
-const oldCmpRender=cmpRender;cmpRender=function(){const r=oldCmpRender.apply(this,arguments);markPicked();return r;};
+const oldCmpRender=cmpRender;cmpRender=function(){const r=oldCmpRender.apply(this,arguments);paint();markPicked();return r;};
 const oldSync=cmpSync;cmpSync=function(){const r=oldSync.apply(this,arguments);paint();return r;};
 const oldShow=showResult;showResult=function(){const r=oldShow.apply(this,arguments);paint();return r;};
 window.addEventListener('storage',e=>{if(e.key===CMP_KEY||e.key===null){cmpSync();if(!document.getElementById('cmpSheet').hidden)cmpRender();}});
