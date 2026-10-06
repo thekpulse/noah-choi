@@ -3489,7 +3489,58 @@ html body .funnel .crows .main-no-loan input:checked::before{transform:translate
 html body .funnel .crows .main-no-loan input:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){html body .funnel .crows .main-no-loan input,html body .funnel .crows .main-no-loan input::before{transition:none}}
 </style>
-</head>
+<style id="v215-home-compare">/* v3's compact, readable saved-list chart. Blue result cards remain intentional. */
+html body.yk208 #app #homeCompare{padding:20px;border:1px solid #E1E5EB;border-radius:20px;background:#fff;min-width:0}
+#homeCompare .hc-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#homeCompare h2{margin:0;font-size:19px;line-height:1.4;letter-spacing:-.03em;color:#192332}
+#homeCompare .hc-head>span{font-size:12px;color:#5F6B7D;white-space:nowrap}
+#homeCompare .hc-budget{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:12px 0 20px;font-size:13px;color:#465262}
+#homeCompare .hc-budget strong{font-size:20px;color:#1848D6;font-variant-numeric:tabular-nums}
+#homeCompare .hc-chart{position:relative;isolation:isolate}
+#homeCompare .hc-line{position:absolute;left:var(--budget);top:0;bottom:0;width:2px;background:#1F5BFF;z-index:-1}
+#homeCompare .hc-row{display:block;width:100%;box-sizing:border-box;padding:12px 0;margin:0;border:0;border-bottom:1px solid #E1E5EB;border-radius:0;background:transparent;text-align:left;font:inherit;color:#192332;cursor:pointer}
+#homeCompare .hc-row:first-of-type{padding-top:0}
+#homeCompare .hc-info{display:flex;align-items:baseline;justify-content:space-between;gap:8px;background:#fff;padding-bottom:8px}
+#homeCompare .hc-info b{font-size:14px;line-height:1.5;overflow-wrap:anywhere;min-width:0}
+#homeCompare .hc-info i{display:inline-block;margin-right:6px;color:#5F6B7D;font-size:12px;font-style:normal}
+#homeCompare .hc-info strong{font-size:15px;line-height:1.5;white-space:nowrap;font-variant-numeric:tabular-nums}
+#homeCompare .hc-track{display:block;position:relative;height:18px;margin:0 0 6px}
+#homeCompare .hc-track:before{content:'';position:absolute;top:8px;left:0;right:0;height:2px;background:#E1E5EB;z-index:-2}
+#homeCompare .hc-fill{position:absolute;left:0;top:6px;height:6px;border-radius:3px;background:#BBC3CF;z-index:-2}
+#homeCompare .hc-dot{position:absolute;top:4px;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:#192332;box-shadow:0 0 0 2px #fff}
+#homeCompare .hc-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:3px 10px;background:#fff;font-size:12px;line-height:1.6;color:#5F6B7D}
+#homeCompare .hc-over{color:#A74300;font-weight:600}
+#homeCompare .hc-under{color:#465262;font-weight:600}
+#homeCompare .hc-note{margin:12px 0;font-size:12px;line-height:1.7;color:#5F6B7D;word-break:keep-all}
+#homeCompare .hc-open{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:48px;padding:12px 0 0;border:0;border-top:1px solid #E1E5EB;background:#fff;color:#1848D6;font:inherit;font-size:14px;font-weight:600;text-align:left;cursor:pointer}
+#homeCompare .hc-empty{margin:12px 0 20px;font-size:14px;line-height:1.7;color:#465262;word-break:keep-all}
+#homeCompare button:focus-visible{outline:2px solid #1F5BFF;outline-offset:3px;border-radius:4px}
+#homeCompare .hc-row:hover .hc-info b{text-decoration:underline;text-underline-offset:3px}
+.hc-empty-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:280px;margin:0 auto 24px}
+.hc-empty-slots span{display:flex;align-items:center;justify-content:center;min-height:72px;border:1px dashed #BBC3CF;border-radius:14px;color:#5F6B7D;font-size:14px;background:#F6F7F9}
+@media(max-width:374px){html body.yk208 #app #homeCompare{padding:16px}#homeCompare .hc-info{flex-wrap:wrap;gap:2px}#homeCompare .hc-info strong{margin-left:16px}}
+/* v216: explicit scale, count summary and visible next actions. */
+#homeCompare .hc-budget{margin-bottom:8px}
+#homeCompare .hc-summary{margin:0 0 20px;color:#465262;font-size:13px;line-height:1.6}
+#homeCompare .hc-summary b{color:#192332;font-weight:600}
+#homeCompare .hc-axis{display:flex;justify-content:space-between;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #E1E5EB;color:#5F6B7D;font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums}
+#homeCompare .hc-row-link{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:5px;background:#fff;color:#465262;font-size:12px;line-height:1.6}
+#homeCompare .hc-row-link i{font-style:normal;font-size:16px;line-height:1}
+#homeCompare .hc-add{display:flex;align-items:center;gap:8px;width:100%;min-height:48px;box-sizing:border-box;margin-top:12px;padding:10px 12px;border:1px dashed #BBC3CF;border-radius:12px;background:#F6F7F9;text-align:left;color:#192332;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+#homeCompare .hc-add span{color:#5F6B7D;font-size:12px;font-weight:400}
+#homeCompare .hc-add i{margin-left:auto;font-size:18px;font-style:normal;color:#465262}
+/* Keep budget ticks inside plots, away from names and action labels. */
+#homeCompare .hc-line{background:transparent}
+#homeCompare .hc-track:after{content:'';position:absolute;left:var(--budget);top:0;bottom:0;width:2px;background:#1F5BFF;z-index:1}
+#homeCompare .hc-chart:not(:has(.hc-line)) .hc-track:after{display:none}
+#homeCompare .hc-dot{z-index:2}
+/* v217: show the transaction conditions before interpreting its price. */
+#homeCompare .hc-info{padding-bottom:2px}
+#homeCompare .hc-spec{display:block;margin-bottom:8px;background:#fff;color:#465262;font-size:12px;line-height:1.6}
+html body.yk208 #app #cmpSheet.cmp-page .hc-picked .cmp-card{outline:2px solid #465262;outline-offset:-2px;border-radius:8px}
+html body.yk208 #app #cmpSheet.cmp-page td.hc-picked{background:#F6F7F9}
+html body.yk208 #app #cmpSheet.cmp-page .hc-picked-label{display:block;margin-top:6px;color:#465262;font-size:11px;font-weight:600;line-height:1.5}
+</style></head>
 <body>
 
 <div class="app" id="app">
@@ -4945,7 +4996,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v214 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v217 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -10595,6 +10646,7 @@ nav.innerHTML=tabs.map(([key,label])=>'<button type="button" data-v208-tab="'+ke
 app.append(nav);BEHIND.push('v208Nav');
 const status=document.createElement('p');status.id='v208Status';status.setAttribute('role','status');status.hidden=true;app.append(status);
 let active='home',started=!result.hidden||!!S.fromResult,busy=false;
+const tabScroll={home:0,map:0,compare:0,conditions:0};
 function clearStatus(){clearTimeout(status._timer);status.hidden=true;}
 function announce(message){status.textContent=message;status.hidden=false;clearTimeout(status._timer);status._timer=setTimeout(()=>status.hidden=true,4500);}
 function current(){return result.hidden?'conditions':RVIEW==='compare'?'compare':RVIEW==='deals'?'map':'home';}
@@ -10617,7 +10669,7 @@ function record(tab,replace){
 }
 function emptyState(){
  const body=el('cmpBody');if(cmpLoad().length||body.querySelector('.v208-empty'))return;
- body.innerHTML='<div class="v208-empty"><span class="v208-empty-mark" aria-hidden="true">'+icons.compare.replace(/^/,'<svg viewBox="0 0 24 24">')+'</svg></span><h2>어떤 집을 비교해 볼까요?</h2><p>지도나 목록에서 마음에 드는 단지를<br>최대 3곳까지 담아 보세요.</p><button type="button" class="v208-primary" data-v208-go="map">단지 찾아보기</button></div>';
+ body.innerHTML='<div class="v208-empty"><span class="v208-empty-mark" aria-hidden="true">'+icons.compare.replace(/^/,'<svg viewBox="0 0 24 24">')+'</svg></span><h2>어떤 집을 비교해 볼까요?</h2><div class="hc-empty-slots" aria-hidden="true"><span>1</span><span>2</span><span>3</span></div><p>지도나 목록에서 마음에 드는 단지를<br>최대 3곳까지 담아 보세요.<br>필요한 현금과 월 상환액을 나란히 비교해요.</p><button type="button" class="v208-primary" data-v208-go="map">단지 찾아보기</button></div>';
 }
 const originalSet=setRView,originalBar=paintRBar,originalRender=render,originalShow=showResult,originalRestart=restart,originalCmpRender=cmpRender;
 paintRBar=function(){originalBar();sync();};
@@ -10630,7 +10682,7 @@ setRView=function(v){
 };
 render=function(){originalRender();sync();};
 showResult=function(keep){clearStatus();originalShow(keep);sync();if(!busy)record(current(),true);};
-restart=function(){started=false;sheet.hidden=true;originalRestart();sync();try{history.replaceState(null,'',location.href);}catch(e){}};
+restart=function(){Object.keys(tabScroll).forEach(k=>tabScroll[k]=0);started=false;sheet.hidden=true;originalRestart();sync();try{history.replaceState(null,'',location.href);}catch(e){}};
 function compactCompare(){
  const table=sheet.querySelector('table');if(!table)return;
  const cards=Array.from(table.querySelectorAll('.cmp-card'));
@@ -10646,7 +10698,7 @@ cmpRender=function(){originalCmpRender();compactCompare();emptyState();sync();};
 function navigate(tab,fromHistory){
  if(!tabs.some(x=>x[0]===tab))return;
  if(!started&&result.hidden)return;
- clearStatus();const previous=current();busy=true;
+ clearStatus();const previous=current();tabScroll[previous]=window.scrollY;busy=true;
  try{
   if(tab==='conditions'){
    if(!result.hidden)el('toCondBtn').click();
@@ -10667,7 +10719,8 @@ function navigate(tab,fromHistory){
   }
   sync();
   if(!fromHistory&&previous!==current())record(current(),false);
-  window.scrollTo(0,0);
+  // Restore reading position; recalculation starts at the answer.
+  window.scrollTo(0,previous==='conditions'&&tab!=='conditions'?0:(tabScroll[current()]||0));
   const target=current()==='conditions'?intro:current()==='compare'?el('cmpTitle'):el('barLabel');
   if(target){target.tabIndex=-1;target.focus({preventScroll:true});}
  }finally{busy=false;sync();}
@@ -11379,6 +11432,77 @@ if(typeof closeSheet === 'function'){
 var fun = document.getElementById('funnel');
 if(fun && typeof MutationObserver === 'function') new MutationObserver(later).observe(fun, { attributes:true, attributeFilter:['hidden'] });
 window.__condPreview = CP;   /* 검사용 */
+})();
+</script><script>/* v3 flow: saved transaction prices and current budget share one scale.
+   Uses stored snapshots and the existing result; never infers affordability. */
+(function(){
+'use strict';
+const home=document.getElementById('viewAnswer');
+if(!home||typeof cmpLoad!=='function')return;
+const card=document.createElement('section');card.id='homeCompare';card.setAttribute('aria-labelledby','homeCompareTitle');
+const anchor=document.getElementById('easyMarket');
+if(anchor)anchor.before(card);else home.append(card);
+let last='';
+let pickedKey=null;
+function transactionInfo(s){
+ const area=areaParts(s.areaM2);
+ const floor=Number(s.floor);
+ const floorLabel=s.floor==null||s.floor===''||!Number.isFinite(floor)?'층 정보 없음':floor<0?'지하 '+Math.abs(floor)+'층':floor===0?'층 정보 없음':floor+'층';
+ return [area?area.m2:'면적 정보 없음',floorLabel].join(' · ');
+}
+function markPicked(){
+ const body=document.getElementById('cmpBody');if(!body)return;
+ body.querySelectorAll('.hc-picked').forEach(n=>n.classList.remove('hc-picked'));
+ body.querySelectorAll('.hc-picked-label').forEach(n=>n.remove());
+ const i=cmpLoad().findIndex(s=>s.k===pickedKey);
+ if(i<0){pickedKey=null;return;}
+ const id='cmpC'+i,h=document.getElementById(id);if(!h)return;
+ h.classList.add('hc-picked');
+ body.querySelectorAll('[headers="'+id+'"]').forEach(n=>n.classList.add('hc-picked'));
+ const label=document.createElement('span');label.className='hc-picked-label';label.textContent='홈에서 선택';
+ h.querySelector('.cmp-card').append(label);
+ cmpQueueAlignment();
+}
+function paint(){
+ const list=cmpLoad(),price=typeof LASTVIEW==='object'&&LASTVIEW?Math.floor(LASTVIEW.price/10000):0;
+ const key=JSON.stringify([list,price]);if(key===last)return;last=key;
+ const won=n=>formatWon(n*10000);
+ const head='<div class="hc-head"><h2 id="homeCompareTitle">담은 단지와 내 예산</h2><span>'+list.length+'/3곳</span></div>';
+ if(!list.length){card.innerHTML=head+'<p class="hc-empty">마음에 드는 단지를 담으면<br>내 예산과 거래가를 한눈에 비교할 수 있어요.</p><button type="button" class="hc-open" data-v208-go="map">단지 찾아 담기 <span aria-hidden="true">›</span></button>';return;}
+ const valid=Number.isFinite(price)&&price>0;
+ const peak=Math.max(valid?price:0,...list.map(s=>Number(s.amountMan)));
+ const step=Math.pow(10,Math.floor(Math.log10(peak)))/2;
+ const max=Math.ceil(peak*1.1/step)*step;
+ const within=valid?list.filter(s=>Number(s.amountMan)<=price).length:0;
+ const pos=n=>Math.max(0,Math.min(100,n/max*100));
+ const bp=pos(price);
+ card.innerHTML=head+(valid?'<p class="hc-budget">내 예상 집값 <strong>'+esc(won(price))+'</strong></p>':'<p class="hc-empty">조건을 입력하면 내 예산선도 함께 보여요.</p>')
+ +(valid?'<p class="hc-summary">예상 집값 이하 <b>'+within+'곳</b><span aria-hidden="true"> · </span>초과 <b>'+ (list.length-within)+'곳</b></p>':'')
+ +'<div class="hc-axis" aria-hidden="true"><span>0원</span><span>'+esc(won(max))+'</span></div>'
+ +'<div class="hc-chart" style="--budget:'+bp+'%">'+(valid?'<div class="hc-line" aria-hidden="true"></div>':'')
+ +list.map((s,i)=>{const p=Number(s.amountMan),diff=p-price;return '<button type="button" class="hc-row" data-hc-index="'+i+'" aria-label="'+esc(s.name)+' '+esc(won(p))+', '+esc(transactionInfo(s))+', '+esc(dealDate(s)||'거래일 정보 없음')+', 비교표에서 보기"><span class="hc-info"><b><i aria-hidden="true">'+(i+1)+'</i>'+esc(s.name)+'</b><strong>'+esc(won(p))+'</strong></span><span class="hc-spec">'+esc(transactionInfo(s))+'</span><span class="hc-track" aria-hidden="true"><span class="hc-fill" style="width:'+pos(p)+'%"></span><i class="hc-dot" style="left:'+pos(p)+'%"></i></span><span class="hc-meta"><span>'+esc([s.dong,dealDate(s)||'거래일 정보 없음'].filter(Boolean).join(' · '))+'</span>'+(valid?'<span class="'+(diff>0?'hc-over':'hc-under')+'">예상 집값보다 '+(diff===0?'차이 없음':esc(won(Math.abs(diff)))+' '+(diff>0?'높음':'낮음'))+'</span>':'')+'</span><span class="hc-row-link">비교표에서 보기 <i aria-hidden="true">›</i></span></button>';}).join('')+'</div>'
+ +(list.length<3?'<button type="button" class="hc-add" data-v208-go="map">단지 더 담기 <span>'+list.length+'/3</span><i aria-hidden="true">＋</i></button>':'')
+ +'<p class="hc-note">'+(valid?'파란 세로선은 내 예상 집값 · ':'')+'담을 때의 실거래 기준<br>실제 필요한 현금은 부대비용을 포함한 비교표에서 확인하세요.</p><button type="button" class="hc-open" data-v208-go="compare">필요한 현금·월 상환액 비교 <span aria-hidden="true">›</span></button>';
+}
+card.addEventListener('click',e=>{
+ const all=e.target.closest('[data-v208-go="compare"]');
+ if(all){e.stopPropagation();pickedKey=null;yk208Navigate('compare');
+ const mode=document.querySelector('#cmpSheet [data-ct-mode="table"]');if(mode)mode.click();markPicked();window.scrollTo(0,0);return;}
+ const row=e.target.closest('[data-hc-index]');if(!row)return;
+ const chosen=cmpLoad()[Number(row.dataset.hcIndex)];if(!chosen)return;
+ pickedKey=chosen.k;yk208Navigate('compare');
+ const tableMode=document.querySelector('#cmpSheet [data-ct-mode="table"]');if(tableMode)tableMode.click();
+ markPicked();
+ const h=document.getElementById('cmpC'+row.dataset.hcIndex);
+ if(h){h.tabIndex=-1;h.focus({preventScroll:true});
+ const sheet=document.getElementById('cmpSheet'),bar=document.querySelector('.appbar');
+ window.scrollTo(0,Math.max(0,sheet.getBoundingClientRect().top+window.scrollY-(bar?bar.getBoundingClientRect().height:64)-12));}
+});
+const oldCmpRender=cmpRender;cmpRender=function(){const r=oldCmpRender.apply(this,arguments);markPicked();return r;};
+const oldSync=cmpSync;cmpSync=function(){const r=oldSync.apply(this,arguments);paint();return r;};
+const oldShow=showResult;showResult=function(){const r=oldShow.apply(this,arguments);paint();return r;};
+window.addEventListener('storage',e=>{if(e.key===CMP_KEY||e.key===null){cmpSync();if(!document.getElementById('cmpSheet').hidden)cmpRender();}});
+paint();
 })();
 </script></body>
 </html>
