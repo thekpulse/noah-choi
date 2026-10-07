@@ -3632,6 +3632,14 @@ html body .dealbox .tr-headline>strong{font-size:28px}}
 @media(min-width:960px){html body .ct-view{padding-inline:28px}
 html body .ct-view .ct-mval b{font-size:26px}
 html body .dealbox .tr-headline>strong{font-size:36px}}
+/* v221 final pass: clear selected month action and a readable funding amount. */
+html body .dealbox .tr-value-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px}
+html body .dealbox .tr-value-head .tr-now{min-height:36px;white-space:nowrap}
+html body .dealbox .tr-calc{margin-top:0}
+html body .dealbox .tr-need{display:block;margin:4px 0;font-size:24px;font-weight:700;letter-spacing:-.035em;line-height:1.35;color:#192332}
+html body .dealbox .tr-balance{display:block;font-size:14px;line-height:1.6}
+html body .dealbox .tr-calc small{margin-top:10px}
+@media(max-width:374px){html body .dealbox .tr-value-head{flex-wrap:nowrap}html body .dealbox .tr-value-head p span{display:block;margin-left:0}html body .dealbox .tr-need{font-size:22px}}
 </style></head>
 <body>
 
@@ -5088,7 +5096,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v220 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v221 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -11024,7 +11032,8 @@ function trendMonthText(r){
 }
 function trendHeadlineHtml(series, sel){
   var r=series.rows[sel], value=!r.ok?'조회 실패':!r.deals.length?'거래 없음':trendWon(r.median);
-  return '<div class="tr-headline"><p>'+trendYm(r.ymd)+' <span>월 중간값</span></p><strong>'+esc(value)+'</strong><small>'+(r.ok?'거래 '+r.deals.length+'건':'이 달은 계산에서 제외')+'</small></div>';
+  var last=trendDefaultSel(series),back=sel!==last?'<button type="button" class="tr-now" data-trend-sel="'+last+'">최근 달로</button>':'';
+  return '<div class="tr-headline"><div class="tr-value-head"><p>'+trendYm(r.ymd)+' <span>월 중간값</span></p>'+back+'</div><strong>'+esc(value)+'</strong><small>'+(r.ok?'거래 '+r.deals.length+'건':'이 달은 계산에서 제외')+'</small></div>';
 }
 function trendChartHtml(series, budgetMan, sel){
   var g = trendGeometry(series, budgetMan, 326, 210);
@@ -11045,18 +11054,17 @@ function trendChartHtml(series, budgetMan, sel){
 }
 /* 고른 달 패널: 그 달 거래 · 중간값 · 지금 조건으로 그 가격이면(dealAfford — 계산 엔진 그대로) */
 function trendMonthHtml(series, sel){
-  var r = series.rows[sel], last = trendDefaultSel(series);
-  var back = sel !== last ? '<button type="button" class="tr-now" data-trend-sel="' + last + '">최근 달로</button>' : '';
-  var head = '<div class="tr-mhead"><p>' + esc(trendMonthText(r)) + '</p>' + back + '</div>';
+  var r = series.rows[sel];
+  var head = '<div class="tr-mhead"><p>' + esc(trendMonthText(r)) + '</p></div>';
   if(!r.ok || !r.deals.length) return '<div class="tr-month">' + head + '</div>';
   var f = typeof dealAfford === 'function' ? dealAfford(r.median) : null, calc = '';
   if(f){
     var bal = f.gap > 0 ? '현금 <b class="is-short">' + trendWon(f.gap) + ' 부족</b>' : f.gap < 0 ? '현금 <b>' + trendWon(-f.gap) + ' 여유</b>' : '추가 현금 0원';
-    calc = '<p class="tr-calc">이 중간값이면 필요한 현금 ' + trendWon(f.C) + ' · ' + bal + '<small>지금 조건(금리·규제·내 현금)으로 계산 · 부대비용 포함</small></p>';
+    calc = '<p class="tr-calc"><span>이 중간값이면 필요한 현금</span><strong class="tr-need">' + trendWon(f.C) + '</strong><span class="tr-balance">' + bal + '</span><small>지금 조건(금리·규제·내 현금)으로 계산 · 부대비용 포함</small></p>';
   }
   var list = '<ul class="tr-deals">' + r.deals.slice().reverse().map(function(d){
     return '<li><span>' + String(d.m).padStart(2, '0') + '.' + (d.d ? String(d.d).padStart(2, '0') : '··') + (d.floor ? ' · ' + d.floor + '층' : '') + '</span><b>' + trendWon(d.amountMan) + '</b></li>'; }).join('') + '</ul>';
-  return '<div class="tr-month">' + head + calc + '<details class="tr-records"><summary>개별 거래 '+r.deals.length+'건</summary>'+list+'</details></div>';
+  return '<div class="tr-month">' + calc + '<details class="tr-records"><summary>개별 거래 '+r.deals.length+'건</summary>'+list+'</details></div>';
 }
 function trendBodyHtml(snap, state, months){
   var span = state.span, series = trendSeries(months, snap, state.area), budget = trendBudgetMan();
@@ -11150,7 +11158,9 @@ function trendSelect(key, idx){
     dot.setAttribute('cx', med ? med.x : g.cx[idx]); dot.setAttribute('cy', med ? med.y : 0); dot.setAttribute('visibility', med ? 'visible' : 'hidden');   /* 거래 없는 달 — 점 숨김(밖으로 보내면 overflow:visible 로 위 문장에 찍힘) */
     dot.setAttribute('class', 'tr-sel' + (med && med.over ? ' is-over' : ''));
     plot.setAttribute('aria-valuenow', String(idx + 1)); plot.setAttribute('aria-valuetext', trendMonthText(series.rows[idx]));
-    var panel = box.querySelector('.tr-month'); if(panel) panel.outerHTML = html;
+    var panel = box.querySelector('.tr-month'), recordsOpen=!!(panel&&panel.querySelector('.tr-records[open]'));
+    if(panel)panel.outerHTML = html;
+    var records=box.querySelector('.tr-records');if(records&&recordsOpen)records.open=true;
     var headline=box.querySelector('.tr-headline');if(headline)headline.outerHTML=trendHeadlineHtml(series,idx);
   });
 }
