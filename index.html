@@ -3662,6 +3662,40 @@ html body button.cmp-save:active,html body button.tr-now:active{transform:scale(
  html body .dealbox .tr-x,html body .ct-view .tr-x{max-width:620px;margin-inline:auto;box-sizing:border-box}
 }
 @media(prefers-reduced-motion:reduce){html body button.cmp-save,html body button.tr-now,html body .tr-seg button{transition:none;transform:none!important}}
+</style><style id="v230-design">/* Same identity colors in the table, chart and exported card. Lowest cash is a separate label. */
+html body #app #cmpSheet .cmp-card .cmp-no{background:#1F5BFF}
+html body #app #cmpSheet th:nth-child(2) .cmp-card .cmp-no{background:#192332}
+html body #app #cmpSheet th:nth-child(3) .cmp-card .cmp-no{background:#5972AD}
+html body.yk208 #app #cmpSheet.cmp-page table .cmp-card.is-least{border-top-color:transparent}
+html body #app #cmpSheet .cmp-card.is-least b::after{content:'현금 최소';display:block;width:fit-content;margin-top:6px;border:1px solid #CAD3E2;border-radius:5px;padding:2px 5px;color:#43516A;background:#F5F7FA;font-size:10px;font-weight:600;line-height:1.5}
+html body #app #cmpSheet .cmp-lead .cmp-amount-label{display:block;font-style:normal;font-weight:400;font-size:12px;line-height:1.5;color:#E6EDFF;margin:12px 0 4px}
+html body #cmpReportCard .cs-row .cs-no{background:#1F5BFF}
+html body #cmpReportCard .cs-row:nth-child(2) .cs-no{background:#192332}
+html body #cmpReportCard .cs-row:nth-child(3) .cs-no{background:#5972AD}
+html body .ct-view .ct-head{margin-bottom:16px}
+html body .ct-view .ct-series-key{list-style:none;display:flex;flex-wrap:wrap;gap:8px 14px;padding:0;margin:0 0 22px}
+html body .ct-view .ct-series-key li{display:flex;align-items:center;gap:6px;max-width:100%;font-size:12px;color:#354258;line-height:1.5}
+html body .ct-view .ct-series-key i{display:inline-flex;align-items:center;justify-content:center;flex:none;width:18px;height:18px;border-radius:50%;color:white;font-size:10px;font-style:normal;font-weight:700}
+html body .ct-view .ct-series-key span{min-width:0;overflow-wrap:anywhere}
+html body .ct-view .ct-change{display:grid;gap:8px;margin:12px 0}
+html body .ct-view .ct-price-step{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:14px;line-height:1.5}
+html body .ct-view .ct-price-step small{font-size:11px;color:#667389}
+html body .ct-view .ct-delta{font-size:13px;color:#354258;font-weight:600}
+html body .ct-view .ct-count{font-size:12px;line-height:1.65}
+</style><style id="v231-design">/* Entry and result use the same house mark; financial card order and colors stay intact. */
+html body.yk208 #app[data-v208-tab="home"] .appbar #barLabel::before{content:"";background:#1F5BFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5 12 7l6 5.5'/%3E%3Cpath d='M8.5 11v6h7v-6'/%3E%3C/svg%3E") center/24px 24px no-repeat}
+html body.yk208 #app .funnel #ctaTodo{font-size:13px!important;line-height:1.6!important;color:#53617C;text-wrap:balance;margin:16px 0 10px!important}
+html body.yk208 #app #viewAnswer #restartBtn{min-height:44px;padding:10px 14px!important;border-radius:10px}
+html body.yk208 #app #condPreview .cp-d:not(:empty){margin-top:12px;line-height:1.6}
+html body.yk208 #app #condPreview .cp-prev{display:block;font-size:12px;color:#E6EDFF}
+html body.yk208 #app #condPreview .cp-change{display:block;margin-top:2px;font-size:20px;line-height:1.4;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+html body.yk208 #app #condPreview .cp-cmp{margin-top:14px;padding-top:12px}
+html body.yk208 #app #condPreview .cp-cmp li{line-height:1.7}
+html body.yk208 #app #v208Nav button,html body.yk208 #app #viewAnswer #easyCostOpen,html body.yk208 #app #viewAnswer #restartBtn{transition:background-color 140ms ease,border-color 140ms ease}
+html body.yk208 #app #v208Nav button:active,html body.yk208 #app #viewAnswer #restartBtn:active{background:#E4EAFA}
+html body.yk208 #app #viewAnswer #easyCostOpen:active{background:#EAF0FF}
+html body.yk208 #app #viewAnswer #restartBtn:focus-visible{outline:2px solid #1F5BFF;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){html body.yk208 #app #v208Nav button,html body.yk208 #app #viewAnswer #easyCostOpen,html body.yk208 #app #viewAnswer #restartBtn{transition:none}}
 </style></head>
 <body>
 
@@ -5118,7 +5152,7 @@ function lawdCodesOf(code){
      로그는 로그의 일이고 경계는 경계의 일입니다. 표식을 따로 둡니다.
    ⚠ 위쪽(엔진)은 DOM 없이 실행됩니다. 아래쪽(화면)은 실행하면 죽습니다.
    ⚠ 이 문자열은 파일에 **한 번만** 나와야 합니다 — 검사가 셉니다. */
-console.info(`영끌계산기 BUILD v223 · 정책 ${POLICY_ASOF}`);
+console.info(`영끌계산기 BUILD v231 · 정책 ${POLICY_ASOF}`);
 
 /* 제휴 링크 — 계약 확정 시 이 줄만 교체하세요. 비면 공개 검색으로 대체됩니다. */
 const PARTNER = { interior:'', moving:'' };
@@ -5899,7 +5933,7 @@ function syncCta(){
     if(left){
       const missing=[[!!S.sgg,'매수 지역'],[!!S.houseStatus,'주택 보유 여부'],[!!S.cash,'집에 쓸 현금']]
         .concat(S.noLoan?[]:[[!!S.income,'연 소득'],[S.debtMonthly!=null,'기존 대출 여부']]).filter(x=>!x[0]);
-      t.textContent=missing[0][1]+' 확인이 필요해요'+(missing.length>1?' · 남은 항목 '+missing.length+'개':'');
+      const todoActions={'매수 지역':'매수 지역을 선택해 주세요.','주택 보유 여부':'주택 보유 여부를 선택해 주세요.','집에 쓸 현금':'집에 쓸 현금을 입력해 주세요.','연 소득':'연 소득을 입력해 주세요.','기존 대출 여부':'기존 대출 여부를 선택해 주세요.'}; t.textContent=todoActions[missing[0][1]]||missing[0][1]+'을 확인해 주세요.';
     }
   })();
   b.textContent = S.fromResult ? '결과 보기' : '계산하기';
@@ -10690,7 +10724,7 @@ function cmpRender(){
  var group=function(label){return '<tr class="cmp-group"><th colspan="'+n+'">'+label+'</th></tr>';};
  var krow=function(k,sub){return '<tr class="cmp-k"><th scope="rowgroup" colspan="'+n+'">'+k+(sub?'<small>'+sub+'</small>':'')+'</th></tr>';};
  var vrow=function(cls,fn){return '<tr class="cmp-v'+(cls?' '+cls:'')+'">'+cols.map(function(c){return '<td headers="'+c.id+'"'+(cls==='cmp-hero'&&isLeast(c)?' class="is-least"':'')+'>'+fn(c)+'</td>';}).join('')+'</tr>';};
- var lead=least.length?'<div class="cmp-lead" role="note"><small>필요한 현금이 가장 적은 곳 · 부대비용 포함</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><span>'+won(least[0].f.C)+'</span></div>':'';
+ var lead=least.length?'<div class="cmp-lead" role="note"><small>필요한 현금이 가장 적은 곳 · 부대비용 포함</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><span><em class="cmp-amount-label">필요한 현금</em>'+won(least[0].f.C)+'</span></div>':'';
  body.innerHTML=lead+'<table><colgroup>'+cols.map(function(){return '<col>';}).join('')+'</colgroup>'
   +'<thead><tr>'+cols.map(function(c,i){return '<th scope="col" id="'+c.id+'"><div class="cmp-card'+(isLeast(c)?' is-least':'')+'"><span class="cmp-no" aria-hidden="true">'+(i+1)+'</span><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small>'+(c.spec?'<small>'+esc(c.spec)+'</small>':'')+'<button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기"></button></div></th>';}).join('')+'</tr></thead><tbody><tr class="cmp-column-names">'+cols.map(function(c){return '<th scope="col"><span>'+esc(c.s.name)+'</span></th>';}).join('')+'</tr>'
   +(withF.length?group('구입 자금')+krow('필요한 현금','부대비용 포함 · 내 현금과 비교')
@@ -11323,8 +11357,7 @@ function paint(){
     var s = a.series, ap = typeof areaParts === 'function' ? areaParts(a.s.areaM2) : null, over = 0;
     s.rows.forEach(function(r){ r.deals.forEach(function(x){ if(budget && x.amountMan > budget) over++; }); });
     var change = s.first && s.last && s.first !== s.last
-      ? '월 중간값 ' + trendYm(s.first.ymd) + ' ' + trendWon(s.first.median) + ' → ' + trendYm(s.last.ymd) + ' <b>' + trendWon(s.last.median) + '</b>'
-        + (s.last.median !== s.first.median ? ' (' + (s.last.median > s.first.median ? '+' : '−') + trendWon(Math.abs(s.last.median - s.first.median)) + ')' : '')
+      ? '<span class="ct-price-step"><small>' + trendYm(s.first.ymd) + ' 월 중간값</small>' + trendWon(s.first.median) + '</span><span class="ct-price-step"><small>' + trendYm(s.last.ymd) + ' 월 중간값</small><b>' + trendWon(s.last.median) + '</b></span><span class="ct-delta">기간 중 ' + (s.last.median > s.first.median ? '+' : s.last.median < s.first.median ? '−' : '') + trendWon(Math.abs(s.last.median - s.first.median)) + '</span>'
       : s.last ? trendYm(s.last.ymd) + ' 월 중간값 <b>' + trendWon(s.last.median) + '</b>' : '이 기간 같은 면적 거래 없음';
     return '<li><i style="background:' + COLORS[CT.no[i]] + '" aria-hidden="true">' + (CT.no[i] + 1) + '</i><div><p class="ct-name">' + esc(a.s.name) + '<small>' + esc(ap ? ap.m2 : '') + '</small></p>'
       + '<p class="ct-change">' + change + '</p><p class="ct-count">거래 ' + s.count + '건' + (budget && s.count ? ' · 예상 집값보다 높은 거래 ' + over + '건' : '') + '</p></div></li>'; }).join('') + '</ol>';
@@ -11336,7 +11369,8 @@ function paint(){
   Object.keys(capped).forEach(function(k){ var r = capped[k]; notes.push(trendYm(r.ymd) + '은 구 전체 ' + r.total.toLocaleString('ko-KR') + '건 중 ' + TREND_PAGE.toLocaleString('ko-KR') + '건만 조회되어 거래가 빠졌을 수 있습니다.'); });
   skipped().forEach(function(x){ notes.push((x.no + 1) + '번 ' + esc(x.s.name || '') + ': 전용면적 정보가 없어 추이에서 뺐습니다.'); });
   var method='<details class="tr-method"><summary>차트 읽는 방법 · 데이터 기준</summary><p>담을 때의 전용면적과 같은 거래만 셉니다. 거래 없는 달은 앞뒤 거래 월을 가는 점선으로 연결합니다. 점선은 실제 거래가나 추정값이 아닙니다. 조회 실패 구간은 연결하지 않습니다.</p><p>국토교통부 실거래가 · 해제·토지임대부 거래 제외</p></details>';
-  view.innerHTML = head + chart + '<details class="ct-period"><summary>기간 전체 변화 · 거래 건수</summary>'+lead+rows+'</details>' + (notes.length?'<ul class="tr-notes tr-alerts">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>':'')+method;
+  var keys = '<ol class="ct-series-key" aria-label="단지별 그래프 색상">' + all.map(function(a){ return '<li><i style="background:' + COLORS[a.s.__no] + '" aria-hidden="true">' + (a.s.__no + 1) + '</i><span>' + esc(a.s.name) + '</span></li>'; }).join('') + '</ol>';
+  view.innerHTML = head + keys + chart + '<details class="ct-period"><summary>기간 전체 변화 · 거래 건수</summary>'+lead+rows+'</details>' + (notes.length?'<ul class="tr-notes tr-alerts">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>':'')+method;
 }
 /* ── 달 고르기(단지 상세와 같은 동작) ── */
 function ctCx(g, i){ var cw = (g.W - g.P.l - g.P.r) / g.n; return Math.round((g.P.l + i * cw + cw / 2) * 10) / 10; }
@@ -11550,7 +11584,7 @@ function paint(){
   var diff = price - CP.base;
   box.querySelector('.cp-v').textContent = won(price);
   var d = box.querySelector('.cp-d');
-  d.textContent = diff ? '지난 계산 ' + won(CP.base) + '보다 ' + (diff > 0 ? '+' : '−') + won(Math.abs(diff)) : '지난 계산과 같음';
+  d.innerHTML = diff ? '<span class="cp-prev">지난 계산 ' + esc(won(CP.base)) + '보다 </span><strong class="cp-change">' + (diff > 0 ? '+' : '−') + esc(won(Math.abs(diff))) + '</strong>' : '지난 계산과 같음';
   d.className = 'cp-d' + (diff > 0 ? ' is-up' : diff < 0 ? ' is-down' : '');
   var list = typeof cmpLoad === 'function' ? cmpLoad() : [], changed = [];
   list.forEach(function(s){
