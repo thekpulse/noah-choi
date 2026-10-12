@@ -12065,5 +12065,53 @@ new MutationObserver(queue).observe(detail,{childList:true,attributes:true,attri
 if(typeof ResizeObserver==='function')new ResizeObserver(queue).observe(detail);
 window.addEventListener('resize',queue,{passive:true});queue();
 })();
-</script></body>
+</script>
+<style id="v243-polish">
+/* v243: monetary input has one focus perimeter, not a double blue ring. */
+html body #app .funnel #crows .inline-money-field:focus-within{
+ border:2px solid #2458FF!important;outline:none!important;outline-offset:0!important;
+ box-shadow:none!important;background:#FFF!important;
+}
+html body #app .funnel #crows .inline-money-field:focus-within input{outline:none!important;box-shadow:none!important}
+/* One horizontal interpretation line: supporting caption left, blue conversion right. */
+html body #app .funnel #crows>.inline-money{
+ display:grid!important;grid-template-columns:minmax(0,1fr) max-content!important;
+ column-gap:8px!important;align-items:start!important;
+}
+html body #app .funnel #crows>.inline-money>label,
+html body #app .funnel #crows>.inline-money>.inline-money-field{
+ grid-column:1/-1!important;
+}
+html body #app .funnel #crows>.inline-money>.inline-help{
+ grid-column:1!important;grid-row:3!important;min-width:0!important;
+ margin:5px 0 0!important;font-size:11px!important;line-height:1.5!important;
+ color:#63708A!important;overflow-wrap:break-word;
+}
+html body #app .funnel #crows>.inline-money>.inline-echo{
+ grid-column:2!important;grid-row:3!important;justify-self:end!important;
+ margin:5px 0 0!important;font-size:12px!important;line-height:1.5!important;
+ white-space:nowrap!important;text-align:right!important;color:#2458FF!important;
+}
+html body #app .funnel #crows>.inline-money>.inline-error{grid-column:1/-1!important;grid-row:4!important}
+/* Stronger content separation, restrained surface hierarchy. */
+html body #app #viewAnswer>#fundingOverview,
+html body #app #viewAnswer>#payTile,
+html body #app #viewAnswer>#easyMarket{border-color:#D5DDE9!important}
+html body #app #viewDeals #dealList{border-color:#D5DDE9!important}
+html body #app #viewDeals .deal:focus-visible,
+html body #app #viewDeals button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+/* Fixed navigation should not obscure the end of long result, comparison or map content. */
+html body.yk208 #app #viewDeals,
+html body.yk208 #app #viewAnswer{padding-bottom:max(108px,calc(92px + env(safe-area-inset-bottom)))!important}
+@media(max-width:600px){
+ html body #app .funnel #crows>.inline-money{column-gap:6px!important}
+ html body #app .funnel #crows>.inline-money>.inline-help{font-size:10.5px!important}
+ html body.yk208 #app #v208Nav{max-width:calc(100% - 20px)!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;border:1px solid #D6DCE5!important;border-radius:18px!important;box-shadow:none!important;padding-bottom:6px!important}
+}
+@media(max-width:360px){
+ html body #app .funnel #crows>.inline-money>.inline-help{font-size:10px!important;letter-spacing:-.035em}
+ html body #app .funnel #crows>.inline-money>.inline-echo{font-size:11px!important}
+}
+</style>
+</body>
 </html>
