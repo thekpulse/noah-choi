@@ -12968,11 +12968,11 @@ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll table{
 }
 @media(max-width:600px){
  html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll[data-cols="3"] table{
-   width:100%!important;min-width:510px!important;table-layout:fixed!important;
+   width:100%!important;min-width:0!important;table-layout:fixed!important;
  }
  html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll[data-cols="3"] table col{width:33.333%!important}
  html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll[data-cols="2"] table{
-   width:100%!important;min-width:350px!important;table-layout:fixed!important;
+   width:100%!important;min-width:0!important;table-layout:fixed!important;
  }
  html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll thead th{
    position:static!important;top:auto!important;
@@ -13109,56 +13109,7 @@ html body.yk208 #app #viewCompare .v255-compare-step:focus-visible{outline:2px s
    more.setAttribute('aria-label','단지 상세정보 아래로 더 보기');
    queue();
  }
- /* In a three-column comparison users may not realize the table scrolls.
-    Add previous/next controls without changing the comparison data or rendering. */
- const body=document.getElementById('cmpBody');
- if(!body||typeof cmpRender!=='function')return;
- function update(){
-   const wrapper=body.querySelector('.v253-compare-scroll');
-   const note=body.querySelector('.v253-compare-note');
-   if(!wrapper||!note)return;
-   const overflow=wrapper.scrollWidth>wrapper.clientWidth+3;
-   note.hidden=!overflow;
-   if(!overflow)return;
-   note.classList.add('v255-comparison-note');
-   let label=note.querySelector('.v255-scroll-label');
-   let steps=note.querySelector('.v255-compare-steps');
-   if(!steps){
-     note.replaceChildren();
-     label=document.createElement('span');label.className='v255-scroll-label';
-     label.textContent='좌우로 넘겨 비교하세요';
-     steps=document.createElement('span');steps.className='v255-compare-steps';
-     const add=(dir,glyph,name)=>{
-       const b=document.createElement('button');b.type='button';
-       b.className='v255-compare-step';b.dataset.step=String(dir);
-       b.textContent=glyph;b.setAttribute('aria-label',name);
-       b.addEventListener('click',()=>{
-         const cols=Number(wrapper.dataset.cols)||3;
-         const by=Math.max(140,Math.round(wrapper.scrollWidth/cols));
-         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-         wrapper.scrollBy({left:dir*by,behavior:reduced?'auto':'smooth'});
-       });
-       steps.append(b);
-     };
-     add(-1,'←','이전 단지 보기');add(1,'→','다음 단지 보기');
-     note.append(label,steps);
-   }
-   const prev=steps.querySelector('[data-step="-1"]');
-   const next=steps.querySelector('[data-step="1"]');
-   function refresh(){
-     prev.disabled=wrapper.scrollLeft<=2;
-     next.disabled=wrapper.scrollLeft>=wrapper.scrollWidth-wrapper.clientWidth-2;
-   }
-   if(!wrapper.__v255Bound){
-     wrapper.addEventListener('scroll',refresh,{passive:true});
-     wrapper.__v255Bound=true;
-   }
-   refresh();
- }
- const prev=cmpRender;
- cmpRender=function(){const r=prev.apply(this,arguments);requestAnimationFrame(()=>requestAnimationFrame(update));return r;};
- window.addEventListener('resize',()=>requestAnimationFrame(update),{passive:true});
- requestAnimationFrame(()=>requestAnimationFrame(update));
+
 })();
 </script>
 <style id="v256-spacing-flow">
@@ -13205,7 +13156,7 @@ html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
  function reveal(selector){
    clearTimeout(timer);
    timer=setTimeout(()=>{
-     if(funnel.hidden||app.dataset.v208Tab==='conditions')return;
+     if(funnel.hidden)return;
      if(document.activeElement?.matches('input,textarea,select'))return;
      const target=funnel.querySelector(selector);if(!target||!target.getClientRects().length)return;
      const rect=target.getBoundingClientRect(),header=document.querySelector('.appbar');
@@ -13216,7 +13167,7 @@ html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
    },320);
  }
  function afterMoney(input){
-   if(initial.get(input)!==''||!Number(input.value.replace(/\D/g,'')))return;
+   if(initial.get(input)===input.value||!Number(input.value.replace(/\D/g,'')))return;
    if(document.getElementById(input.dataset.money+'-error')?.textContent)return;
    initial.set(input,input.value);
    reveal(input.dataset.money==='cash'?(S.noLoan?'#ctaBtn':'.inline-money:has(#main-income)'):'[data-mode="debt"]');
@@ -13227,7 +13178,7 @@ html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
    afterMoney(e.target);
  });
  funnel.addEventListener('keydown',e=>{
-   if(e.key!=='Enter'||e.isComposing||!e.target.matches('[data-money]')||initial.get(e.target)!=='')return;
+   if(e.key!=='Enter'||e.isComposing||!e.target.matches('[data-money]'))return;
    e.preventDefault();e.stopImmediatePropagation();e.target.blur();
  },true);
  funnel.addEventListener('change',e=>{
@@ -13235,7 +13186,7 @@ html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
  });
  document.addEventListener('click',e=>{
    const row=e.target.closest('#crows [data-mode]');
-   if(row){sheetMode=row.dataset.mode;sheetFirst=sheetMode==='region'?!S.sgg:sheetMode==='house'?!S.houseStatus:sheetMode==='debt'?S.debtMonthly==null:false;}
+   if(row){sheetMode=row.dataset.mode;sheetFirst=['region','house','debt'].includes(sheetMode);}
    if(e.target.closest('#qClose')&&sheetFirst&&!document.getElementById('qClose').disabled){
      sheetFirst=false;reveal(sheetMode==='region'?'[data-mode="house"]':sheetMode==='house'?'.inline-money:has(#main-cash)':'#ctaBtn');
    }
@@ -13281,5 +13232,43 @@ html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary:focus-visible{outl
  queue();
 })();
 </script>
+<style id="v258-fit-and-rhythm">
+/* Restore simultaneous comparison: no minimum-width scroll table or arrows. */
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-note{display:none!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll{overflow:visible!important;border-radius:0!important}
+html body.yk208 #app #cmpSheet.cmp-page table{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;table-layout:fixed!important;border-spacing:5px 0!important}
+html body.yk208 #app #cmpSheet.cmp-page :is(th,td){min-width:0;overflow-wrap:anywhere}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-label256{position:static;width:auto;max-width:none;font-size:13px!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card b{font-size:13px!important;line-height:1.45!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card b{font-size:13px!important;line-height:1.45!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:14px!important;line-height:1.45!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{font-size:12px!important;padding:4px!important;overflow-wrap:anywhere}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-money-part234{display:inline;white-space:normal}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:18px!important;line-height:1.35!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property thead th{position:static!important}
+/* One scroll container, with a header and confirmation button outside it. */
+html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput){display:flex!important;flex-direction:column!important;box-sizing:border-box!important;overflow:hidden!important;height:min(88dvh,720px)!important;max-height:calc(100dvh - 16px)!important;padding:14px 18px max(12px,env(safe-area-inset-bottom))!important}
+html body.yk208 #qSheet:has(#regionSearchInput)>.q-sheet-header{flex:0 0 auto!important;margin:0 0 10px!important;padding:0 0 10px!important}
+html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput)>#qBox{flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:8px!important}
+html body.yk208 #qSheet:has(#regionSearchInput)>#qClose{position:static!important;flex:0 0 auto!important;min-height:48px!important;margin:8px 0 0!important}
+html body.yk208 #qSheet .region-search{margin:0 0 10px!important}
+html body.yk208 #qSheet .zonegrid{margin:0 0 10px!important;gap:6px!important}
+html body.yk208 #qSheet .input-compare>p{margin:4px 0 8px!important}
+html body.yk208 #qSheet #inputRegionStatus{margin:0 0 8px!important;padding:7px 10px!important;position:static!important}
+@media(max-width:600px){
+ html body.yk208 #app .funnel .v232-intro{margin-bottom:4px!important}
+ html body.yk208 #app .funnel .cond-lead{font-size:26px!important;line-height:1.25!important;margin-top:4px!important;margin-bottom:6px!important}
+ html body.yk208 #app .funnel .cond-lead br{display:none}
+ html body.yk208 #app .funnel .entry-sub{margin-top:0!important;margin-bottom:6px!important;font-size:13px!important;line-height:1.5!important}
+ html body.yk208 #app .funnel .v232-path{margin-top:6px!important;margin-bottom:6px!important}
+ html body.yk208 #app .funnel #crows>.inline-money{padding:7px 12px!important}
+ html body.yk208 #app .funnel #crows .inline-money-field{min-height:48px!important;margin-top:4px!important}
+ html body.yk208 #app .funnel #crows .inline-money-field input{font-size:26px!important;min-height:44px!important}
+ html body.yk208 #app .funnel #crows>.inline-money>label{font-size:14px!important}
+ html body.yk208 #app .funnel #crows>.inline-money>:is(.inline-help,.inline-echo){font-size:12px!important;line-height:1.5!important}
+ html body.yk208 #app .funnel #dock{margin-top:8px!important;padding-top:0!important}
+}
+@media(max-width:370px){html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:16px!important}}
+</style>
 </body>
 </html>
