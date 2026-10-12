@@ -4046,6 +4046,148 @@ html body.yk208 #app .funnel .inline-money-field:focus-within{
 }
 
 </style>
+<style id="yk-v250-stroke-system">
+/* v250 · Crisp stroke system — CSS only.
+   A complete 1px outline for each grouped card. Avoid box-shadows and 0.5px hairlines.
+   Do not alter calculation, map, data, navigation, typography or touch-target behaviour. */
+html body.yk208 #app {
+  --yk-stroke: #C9D3E3;
+  --yk-stroke-strong: #B9C5D8;
+  --yk-stroke-divider: #E0E6EF;
+  --yk-stroke-field: #C1CBDB;
+}
+/* REGION + HOUSE: one closed two-row card; the missing final border was the visual defect. */
+html body.yk208 #app .funnel #crows > .crow[data-mode="region"] {
+  box-sizing: border-box!important;
+  border: 1px solid var(--yk-stroke)!important;
+  border-bottom: 0!important;
+  border-radius: 18px 18px 0 0!important;
+  background: #fff!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+html body.yk208 #app .funnel #crows > .crow[data-mode="house"] {
+  box-sizing: border-box!important;
+  border: 1px solid var(--yk-stroke)!important;
+  border-top-color: var(--yk-stroke-divider)!important;
+  border-radius: 0 0 18px 18px!important;
+  background: #fff!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+/* MONEY: join the input, loan switch, income and debt rows without doubled edges. */
+html body.yk208 #app .funnel #crows > .inline-money:has(#main-cash) {
+  box-sizing: border-box!important;
+  border: 1px solid var(--yk-stroke)!important;
+  border-bottom: 0!important;
+  border-radius: 18px 18px 0 0!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+html body.yk208 #app .funnel #crows > .main-no-loan {
+  box-sizing: border-box!important;
+  border: 1px solid var(--yk-stroke)!important;
+  border-top-color: var(--yk-stroke-divider)!important;
+  border-bottom: 0!important;
+  border-radius: 0!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+html body.yk208 #app .funnel #crows > .inline-money:has(#main-income) {
+  box-sizing: border-box!important;
+  border-left: 1px solid var(--yk-stroke)!important;
+  border-right: 1px solid var(--yk-stroke)!important;
+  border-top: 0!important;
+  border-bottom: 0!important;
+  border-radius: 0!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+html body.yk208 #app .funnel #crows > .crow[data-mode="debt"] {
+  box-sizing: border-box!important;
+  border: 1px solid var(--yk-stroke)!important;
+  border-top: 0!important;
+  border-radius: 0 0 18px 18px!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+/* The no-mortgage state may hide subsequent rows, in which case the switch closes the card. */
+html body.yk208 #app .funnel #crows > .main-no-loan:has(#mainNoLoan:checked) {
+  border-bottom: 1px solid var(--yk-stroke)!important;
+  border-radius: 0 0 18px 18px!important;
+}
+html body.yk208 #app .funnel #crows > .inline-money:has(#main-income):last-child {
+  border-bottom: 1px solid var(--yk-stroke)!important;
+  border-radius: 0 0 18px 18px!important;
+}
+/* Input fields are one step more defined than their outer cards, with no faux glow. */
+html body.yk208 #app .funnel #crows .inline-money-field {
+  box-sizing: border-box!important;
+  border: 1px solid var(--yk-stroke-field)!important;
+  background: #F6F8FC!important;
+  border-radius: 12px!important;
+  box-shadow: none!important;
+  background-clip: padding-box;
+}
+html body.yk208 #app .funnel #crows .inline-money-field:focus-within {
+  border: 1px solid #2458FF!important;
+  background: #fff!important;
+  box-shadow: none!important;
+  outline: 2px solid rgba(36,88,255,.65)!important;
+  outline-offset: 1px!important;
+}
+/* On keyboard use a clearly delineated focus outline; do not change the border box width. */
+html body.yk208 #app .funnel #crows > .crow:focus-visible,
+html body.yk208 #app .funnel #crows > .main-no-loan:focus-within {
+  outline: 2px solid #2458FF!important;
+  outline-offset: 2px!important;
+  position: relative;
+  z-index: 1;
+}
+/* Financial result: crisp card perimeters; the blue primary result remains untouched. */
+html body.yk208 #app #viewAnswer :is(#fundingOverview,#payTile,#reasonCard) {
+  border-color: var(--yk-stroke)!important;
+  box-shadow: none!important;
+}
+html body.yk208 #app #viewAnswer :is(#easyCostOpen,.rlab>div,.ans-pct) {
+  border-color: var(--yk-stroke-divider)!important;
+}
+html body.yk208 #app #viewAnswer #easyCostOpen {
+  border-color: var(--yk-stroke)!important;
+  box-shadow: none!important;
+}
+/* Search and comparison: avoid pale, inconsistent borders without doubling list dividers. */
+html body.yk208 #app #viewDeals #dealCard,
+html body.yk208 #app #viewDeals :is(.deal-regions,.deal-map-panel,.yk-map-stage),
+html body.yk208 #app #cmpSheet :is(.cmp-card,.cmp-head,.cmp-summary) {
+  border-color: var(--yk-stroke)!important;
+  box-shadow: none!important;
+}
+html body.yk208 #app #viewDeals :is(.dealwrap,.deal-row,.deal-detail,.deal-regions summary),
+html body.yk208 #app #cmpSheet :is(.cmp-row,.cmp-cell) {
+  border-color: var(--yk-stroke-divider)!important;
+}
+html body.yk208 #app #viewDeals :is(.deal-switch,.deal-filter,.cmp-map-open),
+html body.yk208 #app #cmpSheet button {
+  border-color: var(--yk-stroke)!important;
+}
+/* Floating bottom navigation should have a single sharp perimeter, not a fuzzy halo. */
+html body.yk208 #app #v208Nav {
+  border: 1px solid var(--yk-stroke)!important;
+  box-shadow: none!important;
+  background: rgba(255,255,255,.98)!important;
+}
+@media (prefers-contrast: more) {
+  html body.yk208 #app { --yk-stroke:#A7B5C9; --yk-stroke-field:#8E9EB5; --yk-stroke-divider:#C1CCDB; }
+}
+/* Keep the switch's connector the same colour as the rest of the grouped edge. */
+html body.yk208 #app .funnel #crows > label.main-no-loan {
+  border-left-color: var(--yk-stroke)!important;
+  border-right-color: var(--yk-stroke)!important;
+  border-top-color: var(--yk-stroke-divider)!important;
+}
+
+</style>
 </head>
 <body>
 
