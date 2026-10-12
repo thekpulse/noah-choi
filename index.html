@@ -11135,8 +11135,8 @@ function cmpRender(){
  if(cols.length>1&&withF.length===cols.length){var mn=Math.min.apply(null,withF.map(function(c){return c.f.C;}));least=withF.filter(function(c){return c.f.C===mn;});if(least.length===cols.length)least=[];}
  var isLeast=function(c){return least.indexOf(c)>=0;};
  var n=cols.length+0;
- var group=function(label){return '<tr class="cmp-group"><th colspan="'+n+'">'+label+'</th></tr>';};
- var krow=function(k,sub){return '<tr class="cmp-k"><th scope="rowgroup" colspan="'+n+'">'+k+(sub?'<small>'+sub+'</small>':'')+'</th></tr>';};
+ var group=function(label){return '<tr class="cmp-group"><th colspan="'+n+'"><span class="cmp-label256">'+label+'</span></th></tr>';};
+ var krow=function(k,sub){return '<tr class="cmp-k"><th scope="rowgroup" colspan="'+n+'"><span class="cmp-label256">'+k+(sub?'<small>'+sub+'</small>':'')+'</span></th></tr>';};
  var vrow=function(cls,fn){return '<tr class="cmp-v'+(cls?' '+cls:'')+'">'+cols.map(function(c){return '<td headers="'+c.id+'"'+(cls==='cmp-hero'&&isLeast(c)?' class="is-least"':'')+'>'+fn(c)+'</td>';}).join('')+'</tr>';};
  var lead=least.length?'<div class="cmp-lead" role="note"><small>필요한 현금이 가장 적은 곳 · 부대비용 포함</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><span><em class="cmp-amount-label">필요한 현금</em>'+won(least[0].f.C)+'</span></div>':'';
  body.innerHTML=lead+'<table><colgroup>'+cols.map(function(){return '<col>';}).join('')+'</colgroup>'
@@ -13126,7 +13126,7 @@ html body.yk208 #app #viewCompare .v255-compare-step:focus-visible{outline:2px s
    if(!steps){
      note.replaceChildren();
      label=document.createElement('span');label.className='v255-scroll-label';
-     label.textContent='다른 단지도 살펴보세요';
+     label.textContent='좌우로 넘겨 비교하세요';
      steps=document.createElement('span');steps.className='v255-compare-steps';
      const add=(dir,glyph,name)=>{
        const b=document.createElement('button');b.type='button';
@@ -13159,6 +13159,126 @@ html body.yk208 #app #viewCompare .v255-compare-step:focus-visible{outline:2px s
  cmpRender=function(){const r=prev.apply(this,arguments);requestAnimationFrame(()=>requestAnimationFrame(update));return r;};
  window.addEventListener('resize',()=>requestAnimationFrame(update),{passive:true});
  requestAnimationFrame(()=>requestAnimationFrame(update));
+})();
+</script>
+<style id="v256-spacing-flow">
+/* Keep row labels visible inside their spanning cells during horizontal scroll. */
+html body.yk208 #app #cmpSheet.cmp-page .cmp-label256{display:block;position:sticky;left:0;width:max-content;max-width:calc(var(--cmp-viewport256,280px) - 16px);white-space:normal}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-group th{padding:8px 0 0!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-k th{padding:8px 0 4px!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead{padding:16px!important;margin-bottom:10px!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead .cmp-amount-label{margin-top:8px!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-note.v255-comparison-note{margin:6px 0 8px!important;gap:12px}
+html body.yk208 #app #viewCompare .v255-compare-step{border-radius:12px;background:#FFF;border-color:#D5DDE9;font-size:18px}
+html body.yk208 #app #viewCompare .v255-compare-step:disabled{opacity:.45;background:transparent}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-label256{color:#516077;font-weight:600;line-height:1.45}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-label256 small{display:block;margin:2px 0 0!important;font-size:11px!important;line-height:1.45!important;font-weight:400}
+html body.yk208 #app #cmpSheet.cmp-page .ct-seg{margin:10px 0 0!important;padding:0!important}
+html body.yk208 #app #cmpSheet.cmp-page .ct-seg button{min-height:48px!important;padding:10px 0!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property{margin-top:0!important;padding:0!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary{box-sizing:border-box;min-height:48px;padding:12px 0!important;line-height:24px!important}
+html body.yk208 #app #cmpSheet.cmp-page :is(.ct-seg button,.cmp-property>summary){font-size:14px!important;font-weight:600!important;color:#344257!important}
+html body.yk208 #app #cmpSheet.cmp-page #cmpFootnotes{margin:10px 0!important}
+html body.yk208 #app #cmpSheet.cmp-page #cmpFootnotes .cmp-note{margin:0!important;line-height:1.6!important}
+html body.yk208 #app #cmpSheet.cmp-page .cs-actions{margin:10px 0 8px!important}
+html body.yk208.v208-ready #app .copyright{padding-top:8px!important;padding-bottom:0!important}
+html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
+@media(max-width:600px){
+ html body.yk208 #app .funnel .v232-step{margin-top:8px!important;margin-bottom:4px!important}
+ html body.yk208 #app .funnel #crows>.inline-money{padding-top:8px!important;padding-bottom:8px!important}
+ html body.yk208 #app .funnel #crows>.inline-money>.inline-help,html body.yk208 #app .funnel #crows>.inline-money>.inline-echo{margin-top:3px!important;margin-bottom:0!important}
+ html body.yk208 #app .funnel #crows>.crow{min-height:52px!important;padding-top:10px!important;padding-bottom:10px!important}
+ html body.yk208 #app .funnel #crows>.main-no-loan{min-height:44px!important;padding-top:6px!important;padding-bottom:6px!important}
+ html body.yk208 #app:is([data-v208-tab="entry"],[data-v208-tab="conditions"]) .guide-nav:not([hidden]){margin-top:8px!important;padding-top:8px!important}
+}
+</style>
+<script id="v256-entry-flow">
+(function(){
+ 'use strict';
+ const app=document.getElementById('app'),funnel=document.getElementById('funnel');
+ if(!app||!funnel)return;
+ function compareWidth(){document.querySelectorAll('.v253-compare-scroll').forEach(w=>w.style.setProperty('--cmp-viewport256',w.clientWidth+'px'));}
+ const prior=cmpRender;
+ cmpRender=function(){const result=prior.apply(this,arguments);requestAnimationFrame(compareWidth);return result;};
+ window.addEventListener('resize',compareWidth,{passive:true});requestAnimationFrame(compareWidth);
+ const initial=new WeakMap();let sheetFirst=false,sheetMode='',timer=0;
+ function reveal(selector){
+   clearTimeout(timer);
+   timer=setTimeout(()=>{
+     if(funnel.hidden||app.dataset.v208Tab==='conditions')return;
+     if(document.activeElement?.matches('input,textarea,select'))return;
+     const target=funnel.querySelector(selector);if(!target||!target.getClientRects().length)return;
+     const rect=target.getBoundingClientRect(),header=document.querySelector('.appbar');
+     const top=Math.max(16,(header?.getBoundingClientRect().bottom||0)+12);
+     const bottom=(window.visualViewport?.height||innerHeight)-110;
+     if(rect.top>=top&&rect.bottom<=bottom)return;
+     window.scrollTo({top:Math.max(0,window.scrollY+rect.top-top),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+   },320);
+ }
+ function afterMoney(input){
+   if(initial.get(input)!==''||!Number(input.value.replace(/\D/g,'')))return;
+   if(document.getElementById(input.dataset.money+'-error')?.textContent)return;
+   initial.set(input,input.value);
+   reveal(input.dataset.money==='cash'?(S.noLoan?'#ctaBtn':'.inline-money:has(#main-income)'):'[data-mode="debt"]');
+ }
+ funnel.addEventListener('focusin',e=>{clearTimeout(timer);if(e.target.matches('[data-money]'))initial.set(e.target,e.target.value);});
+ funnel.addEventListener('focusout',e=>{
+   if(!e.target.matches('[data-money]')||e.relatedTarget)return;
+   afterMoney(e.target);
+ });
+ funnel.addEventListener('keydown',e=>{
+   if(e.key!=='Enter'||e.isComposing||!e.target.matches('[data-money]')||initial.get(e.target)!=='')return;
+   e.preventDefault();e.stopImmediatePropagation();e.target.blur();
+ },true);
+ funnel.addEventListener('change',e=>{
+   if(e.target.id==='mainNoLoan'&&e.target.checked&&S.cash>0)reveal('#ctaBtn');
+ });
+ document.addEventListener('click',e=>{
+   const row=e.target.closest('#crows [data-mode]');
+   if(row){sheetMode=row.dataset.mode;sheetFirst=sheetMode==='region'?!S.sgg:sheetMode==='house'?!S.houseStatus:sheetMode==='debt'?S.debtMonthly==null:false;}
+   if(e.target.closest('#qClose')&&sheetFirst&&!document.getElementById('qClose').disabled){
+     sheetFirst=false;reveal(sheetMode==='region'?'[data-mode="house"]':sheetMode==='house'?'.inline-money:has(#main-cash)':'#ctaBtn');
+   }
+ },true);
+ // Respect deliberate scrolling instead of moving the page after the user takes over.
+ ['touchstart','wheel'].forEach(type=>window.addEventListener(type,()=>clearTimeout(timer),{passive:true}));
+})();
+</script>
+<style id="v257-comparison-polish">
+/* Wrap currency only when the column needs it; avoid an unconditional blank line. */
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{display:flex;flex-wrap:wrap;align-content:flex-start;column-gap:.18em;min-height:0;line-height:1.35!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234 .cmp-money-part234{display:inline-block}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{margin-top:7px!important;padding:4px 6px!important;line-height:1.45!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card,
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card.is-least{border-radius:12px!important;box-shadow:none!important;padding:8px 7px!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card b{margin-top:6px!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary::-webkit-details-marker{display:none}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary::after{content:'';flex:none;width:8px;height:8px;margin-right:4px;border-right:2px solid #2458FF;border-bottom:2px solid #2458FF;transform:rotate(45deg)}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property[open]>summary::after{transform:rotate(225deg)}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary:focus-visible{outline:2px solid #2458FF;outline-offset:2px;border-radius:6px}
+</style>
+<script id="v257-amount-alignment">
+(function(){
+ 'use strict';
+ const body=document.getElementById('cmpBody');if(!body)return;
+ let frame=0,observed=null;
+ function align(){
+   frame=0;
+   const wrapper=body.querySelector('.v253-compare-scroll');
+   if(!wrapper||!wrapper.getClientRects().length)return;
+   if(observer&&observed!==wrapper){observer.disconnect();observer.observe(wrapper);observed=wrapper;}
+   const amounts=Array.from(wrapper.querySelectorAll('tr.cmp-hero td>.cmp-money234'));
+   amounts.forEach(e=>e.style.minHeight='0px');
+   const height=Math.ceil(Math.max(0,...amounts.map(e=>e.getBoundingClientRect().height)));
+   amounts.forEach(e=>e.style.minHeight=height+'px');
+ }
+ function queue(){if(!frame)frame=requestAnimationFrame(align);}
+ const observer=typeof ResizeObserver==='function'?new ResizeObserver(queue):null;
+ const previous=cmpRender;cmpRender=function(){const result=previous.apply(this,arguments);queue();return result;};
+ window.addEventListener('resize',queue,{passive:true});
+ if(document.fonts?.ready)document.fonts.ready.then(queue);
+ queue();
 })();
 </script>
 </body>
