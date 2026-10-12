@@ -12098,13 +12098,17 @@ function paintSaved(){
  const within=list.filter(s=>Number(s.amountMan)<=price).length;
  saved.querySelector('.sh233-summary').textContent=list.length+'곳 중 '+within+'곳이 예상 집값 이내예요.';
  const ol=saved.querySelector('ol');ol.replaceChildren();
+ const graphicMax260=Math.max(price,...list.map(s=>Number(s.amountMan)||0))*1.06;
+ saved.querySelector('.sh233-note').textContent='막대: 담을 때 거래가 · 세로선: 예상 집값. 부대비용은 비교표에서 확인해요.';
  list.forEach((s,index)=>{
   const li=document.createElement('li'),number=document.createElement('span'),body=document.createElement('div'),name=document.createElement('h3'),info=document.createElement('p'),difference=document.createElement('strong');
   number.className='sh233-number';number.textContent=String(index+1);name.textContent=s.name;
   const area=Number(s.areaM2);info.textContent=(area>0?area+'㎡ · ':'')+formatWon(Number(s.amountMan)*10000);
   const delta=Number(s.amountMan)-price;difference.className=delta>0?'is-over':'is-within';
   difference.textContent=delta===0?'예상 집값과 같음':'예상 집값보다 '+formatWon(Math.abs(delta)*10000)+' '+(delta>0?'높음':'낮음');
-  body.append(name,info,difference);li.append(number,body);ol.append(li);
+  const graphic=document.createElement('div');graphic.className='sh260-bar';graphic.setAttribute('role','img');graphic.setAttribute('aria-label','거래가 '+formatWon(Number(s.amountMan)*10000)+', 예상 집값 '+formatWon(price*10000));
+  const fill=document.createElement('i'),marker=document.createElement('span');fill.style.width=(Math.max(0,Number(s.amountMan))/graphicMax260*100)+'%';marker.style.left=(price/graphicMax260*100)+'%';graphic.append(fill,marker);
+  body.append(name,info,graphic,difference);li.append(number,body);ol.append(li);
  });
 }
 const oldShow=showResult;showResult=function(){const r=oldShow.apply(this,arguments);paintSaved();return r;};
@@ -13299,5 +13303,99 @@ html body.yk208 #qSheet #inputRegionStatus{margin:0 0 8px!important;padding:7px 
  normalize();
 })();
 </script>
+<style id="v260-visual-system">
+/* Graphic hierarchy: cobalt headline, tinted funding tiles, clear section symbols. */
+html body.yk208 #app{--yk-surface-blue:#F0F4FF;--yk-surface-slate:#F4F6FA}
+html body.yk208 #app #viewAnswer :is(#fundingOverview,#payTile,#easyMarket,#savedHomes233){border-radius:20px!important;border-color:#D6DFEC!important;box-shadow:none!important}
+html body.yk208 #app #viewAnswer #fundingOverview>.rhead{position:relative;background:#2458FF!important;border-bottom:0!important}
+html body.yk208 #app #viewAnswer #fundingOverview .estimate-tag{border:1px solid rgba(255,255,255,.48)!important;background:rgba(255,255,255,.12)!important;color:#FFF!important}
+html body.yk208 #app #viewAnswer #easyBalance .rbar{height:10px!important;border-radius:5px!important;overflow:hidden;background:#E7ECF5!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab{gap:10px!important;margin-top:12px!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab>div{background:#F0F4FF!important;border:1px solid #D9E3FF!important;border-radius:13px!important;padding:12px!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab>div+div{background:#F5F7FB!important;border-color:#E0E6EF!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab .t{font-size:12px!important;line-height:1.5!important;color:#53617C!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab .n{margin-top:8px!important;font-size:20px!important;line-height:1.35!important}
+html body.yk208 #app #viewAnswer #easyCostOpen{background:#FBF7EF!important;border:1px solid #E8DDCA!important;border-radius:12px!important;padding-inline:12px!important}
+html body.yk208 #app #viewAnswer #payTile{background:#F5F9F7!important;border-color:#D3E1D9!important;border-top:3px solid #75998A!important}
+html body.yk208 #app #viewAnswer .section-symbol{display:inline-flex!important;align-items:center;justify-content:center;width:30px!important;height:30px!important;flex:none;border-radius:9px;background:#EDF2FF!important;color:#2458FF!important}
+html body.yk208 #app #viewAnswer .section-symbol svg{width:19px!important;height:19px!important}
+html body.yk208 #app #viewAnswer #payTile .section-symbol{background:#E3EFE8!important;color:#396B57!important}
+html body.yk208 #app #viewAnswer #payTile .ans-pct{background:#E8F1EC!important;border:1px solid #D3E1D9!important;border-radius:12px!important;padding:8px 10px!important;color:#294D3E!important}
+html body.yk208 #app #viewAnswer #payTile .ans-pct .tile-k{color:#53617C!important}
+html body.yk208 #app #viewAnswer #savedHomes233{padding:18px!important;background:#F7F5FB!important;border-color:#DED8EB!important}
+html body.yk208 #app #savedHomes233>header{gap:8px}
+html body.yk208 #app #savedHomesTitle233{font-size:18px!important;line-height:1.4!important}
+html body.yk208 #app #savedHomesOpen233{font-size:12px!important;color:#625080!important}
+html body.yk208 #app #savedHomes233 .sh233-summary{margin:8px 0 12px!important;font-size:12px!important}
+html body.yk208 #app #savedHomes233 ol{display:grid;gap:8px}
+html body.yk208 #app #savedHomes233 li{padding:12px!important;gap:10px!important;border:1px solid #E0E7F2!important;border-radius:12px;background:#FFF}
+html body.yk208 #app #savedHomes233 li .sh233-number{width:24px;height:24px;border-radius:8px;background:#1F5BFF;color:#FFF}
+html body.yk208 #app #savedHomes233 li:nth-child(2) .sh233-number{background:#192332}
+html body.yk208 #app #savedHomes233 li:nth-child(3) .sh233-number{background:#5972AD}
+html body.yk208 #app #savedHomes233 li h3{font-size:14px!important;line-height:1.4!important}
+html body.yk208 #app #savedHomes233 li p{margin:3px 0 5px!important;font-size:12px!important}
+html body.yk208 #app #savedHomes233 li strong{font-size:12px!important;line-height:1.5!important}
+html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key]{padding-top:12px!important;padding-bottom:12px!important;border-bottom:1px solid #E8ECF3!important}
+html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key]:last-child{border-bottom:0!important}
+html body.yk208 #app #viewAnswer #marketOpen{background:#EDF2FF!important;border:1px solid #D9E3FF!important;border-radius:12px!important}
+/* Remove the outer frame around framed map controls. */
+html body.yk208 #app #viewDeals #dealCard{background:transparent!important;border:0!important;box-shadow:none!important}
+html body.yk208 #app #viewDeals #dealCard>.deal-regions{border:1px solid #D6DFEC!important;border-radius:18px!important;background:#FFF!important}
+html body.yk208 #app #viewDeals #dealMapPanel{background:#FFF!important;border:1px solid #D6DFEC!important;border-radius:18px!important;overflow:hidden}
+html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage{border:0!important;border-radius:12px!important}
+html body.yk208 #app #viewDeals #dealMapLegend{display:flex;flex-wrap:wrap;gap:7px 12px;font-size:12px!important;line-height:1.5!important}
+html body.yk208 #app #viewDeals #dealMapLegend[hidden]{display:none!important}
+html body.yk208 #app #viewDeals #dealMapLegend>span{display:inline-flex;gap:5px;align-items:center}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card{border-top:3px solid #1F5BFF!important}
+html body.yk208 #app #cmpSheet.cmp-page th:nth-child(2) .cmp-card{border-top-color:#192332!important}
+html body.yk208 #app #cmpSheet.cmp-page th:nth-child(3) .cmp-card{border-top-color:#5972AD!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card.is-least{background:#EDF2FF!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card.is-least b::after{border:0!important;background:#DEE8FF!important;color:#1848D6!important;border-radius:5px!important}
+@media(max-width:370px){html body.yk208 #app #viewAnswer #easyBalance .rlab .n{font-size:18px!important}}
+</style>
+<style id="v260-budget-graphic">
+html body.yk208 #app #savedHomes233 li>div{flex:1;min-width:0}
+html body.yk208 #app #savedHomes233 .sh260-bar{position:relative;height:6px;border-radius:3px;background:#E9EDF4;margin:10px 0 9px}
+html body.yk208 #app #savedHomes233 .sh260-bar i{display:block;height:100%;border-radius:3px;background:#1F5BFF}
+html body.yk208 #app #savedHomes233 li:nth-child(2) .sh260-bar i{background:#192332}
+html body.yk208 #app #savedHomes233 li:nth-child(3) .sh260-bar i{background:#5972AD}
+html body.yk208 #app #savedHomes233 .sh260-bar>span{position:absolute;top:-3px;height:12px;width:2px;background:#7F6A4C;transform:translateX(-1px);border-radius:1px}
+html body.yk208 #app #viewAnswer #fundingOverview>.rhead::after{content:'';position:absolute;right:16px;top:16px;width:56px;height:48px;pointer-events:none;opacity:.17;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 56' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M3 52h58M8 52V24L28 6l20 18v28M28 6v46M8 24h40M36 52V34h12M15 32h6v8h-6M36 16V6h20v46M49 15h3m-3 8h3m-3 8h3m-3 8h3'/%3E%3C/svg%3E") center/contain no-repeat}
+</style>
+<style id="v261-market-hierarchy">
+/* Map controls share one type and shape hierarchy; transaction values stay primary. */
+html body.yk208 #app #viewDeals #dealRegions>summary{gap:10px!important}
+html body.yk208 #app #viewDeals #dealRegionSummary{font-size:14px!important;line-height:1.5!important;font-weight:600!important;overflow-wrap:anywhere}
+html body.yk208 #app #viewDeals #dealRegions .region-edit{background:#EDF2FF!important;color:#1848D6!important;border:1px solid #D8E2FF!important;border-radius:11px!important;font-size:13px!important;min-height:44px!important}
+html body.yk208 #app #viewDeals #dealDistribution .dd-insight{font-size:15px!important;line-height:1.55!important;font-weight:600!important;letter-spacing:-.02em!important}
+html body.yk208 #app #viewDeals #dealDistribution .dd-insight b{font-size:22px!important;font-variant-numeric:tabular-nums;color:#2458FF!important}
+html body.yk208 #app #viewDeals #v208DistributionToggle{position:relative;padding:10px 24px 10px 0!important;min-height:44px!important}
+html body.yk208 #app #viewDeals #v208DistributionToggle::after{content:'';position:absolute;right:4px;top:16px;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+html body.yk208 #app #viewDeals #v208DistributionToggle[aria-expanded="true"]::after{transform:rotate(225deg);top:20px}
+html body.yk208 #app #viewDeals #sortSeg{background:#E9EDF5!important;border:1px solid #DDE4EF!important;border-radius:13px!important;padding:3px!important;gap:2px!important}
+html body.yk208 #app #viewDeals #sortSeg button{min-height:44px!important;border-radius:9px!important;font-size:13px!important;font-weight:600!important;color:#617087!important;box-shadow:none!important}
+html body.yk208 #app #viewDeals #sortSeg button.is-on{background:#FFF!important;color:#172744!important;border:1px solid #D8E0EC!important}
+html body.yk208 #app #viewDeals .deal-viewrow #dealViewBar .deal-switch{background:#E9EDF5!important;border:1px solid #DDE4EF!important;box-shadow:none!important;border-radius:12px!important}
+html body.yk208 #app #viewDeals .deal-viewrow #dealViewBar .deal-switch button{min-height:44px!important;font-size:13px!important;border-radius:8px!important;box-shadow:none!important}
+html body.yk208 #app #viewDeals .deal-viewrow #dealViewBar .deal-switch button[aria-selected="true"]{color:#1848D6!important;background:#FFF!important}
+html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar{padding:10px 12px!important;gap:10px!important;background:#F8FAFE!important;border-bottom:1px solid #E4EAF4!important}
+html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar>p{font-size:12px!important;line-height:1.5!important;color:#53617C!important;margin:0!important}
+html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-open{border-radius:11px!important;font-size:13px!important;min-height:44px!important;box-shadow:none!important}
+html body.yk208 #app #viewDeals #dealMapRange{padding:10px 12px!important;gap:5px!important;flex-wrap:wrap!important;border-top:1px solid #E4EAF4!important}
+html body.yk208 #app #viewDeals #dealMapRange>span:first-child{font-size:12px!important;color:#617087!important}
+html body.yk208 #app #viewDeals #dealMapRange>button{min-height:44px!important;font-size:13px!important;font-weight:600!important;border:1px solid #D6DEEB!important;border-radius:11px!important;background:#FFF!important;color:#53617C!important}
+html body.yk208 #app #viewDeals #dealMapRange>button[aria-pressed="true"]{background:#EDF2FF!important;color:#1848D6!important;border-color:#7797FF!important}
+html body.yk208 #app #viewDeals #dealMapLegend{padding:0 12px!important;margin:0 0 8px!important}
+html body.yk208 #app #viewDeals #dealMapNote{font-size:12px!important;line-height:1.55!important;padding:0 12px 12px!important;margin:0!important;color:#617087!important}
+html body.yk208 #app #viewDeals #dealList{border-color:#D6DFEC!important;border-radius:16px!important;overflow:hidden}
+html body.yk208 #app #viewDeals #dealList .dealwrap>.deal>.nm{font-size:15px!important;line-height:1.45!important;letter-spacing:-.02em!important}
+html body.yk208 #app #viewDeals #dealList .dealwrap>.deal>.amt{font-size:18px!important;line-height:1.45!important;font-variant-numeric:tabular-nums}
+html body.yk208 #app #viewDeals #dealList .dealwrap>.deal>.nm small{font-size:12px!important;line-height:1.5!important;color:#617087!important}
+html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{font-size:14px!important;line-height:1.45!important}
+html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt{font-size:18px!important;line-height:1.4!important}
+html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{font-size:12px!important;line-height:1.5!important}
+html body.yk208 #app #viewAnswer #heroDeals .budget-delta{font-size:12px!important;line-height:1.5!important;border-radius:7px!important;padding:3px 7px!important}
+@media(max-width:370px){html body.yk208 #app #viewDeals #dealMapRange{padding-inline:8px!important;gap:4px!important}html body.yk208 #app #viewDeals #dealMapRange>button{padding-inline:8px!important}}
+</style>
 </body>
 </html>
