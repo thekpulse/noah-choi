@@ -1003,16 +1003,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-offset:3px}
   border-top:1px solid var(--v-line);border-bottom:1px solid var(--v-line);background:#E7E7E3
 }
 .deal-map{width:100%;height:100%}
-.deal-map-detail{
-  position:absolute;right:14px;bottom:14px;left:14px;z-index:4;padding:16px 17px;border-radius:14px;
-  box-shadow:var(--v-shadow-float);
-}
-.deal-map-detail h3{margin:0;color:var(--v-ink);font-size:16px;font-weight:700;letter-spacing:-.025em}
-.deal-map-detail strong{
-  display:block;margin-top:4px;color:var(--v-ink);font-size:21px;font-weight:600;
-  letter-spacing:-.035em;font-variant-numeric:tabular-nums
-}
-.deal-map-detail p{margin:5px 0 0;color:var(--v-muted);font-size:12px;line-height:1.5}
 .yk-map-label{
   min-width:64px;padding:7px 9px 8px;border:1px solid rgba(255,255,255,.36);border-radius:8px;
   background:rgba(25,28,33,.91);box-shadow:0 7px 17px -10px rgba(15,17,20,.7);
@@ -1077,7 +1067,7 @@ input[type=range]::-moz-range-progress{background:var(--v-ink)}
   *,*::before,*::after{scroll-behavior:auto !important;transition-duration:.01ms !important;animation-duration:.01ms !important}
 }
 @media (prefers-reduced-transparency:reduce){
-  .appbar,.dock,.deal-map-detail,.yk-map-label{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--v-paper)}
+  .appbar,.dock,.yk-map-label{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--v-paper)}
   .yk-map-label{background:var(--v-ink)}
 }
 @media (prefers-contrast:more){
@@ -1177,7 +1167,7 @@ body{
 .dockrow .cta.back{}
 
 .sheet-title,#viewDeals .card-title,.nx-lead{font-weight:400}
-#viewDeals .deal .nm,#viewDeals .deal .amt,.deal-map-detail h3,.deal-map-detail strong{font-weight:600}
+#viewDeals .deal .nm,#viewDeals .deal .amt{font-weight:600}
 .yk-map-label.is-active{}
 
 @media (max-width:370px){
@@ -1337,7 +1327,6 @@ body{
 .deal-switch button[aria-selected=true]::after{}
 .app.bar-sort .appbar{height:calc(116px + env(safe-area-inset-top))}
 #viewDeals .costbox.dealbox{}
-.deal-map-detail{}
 .deal-map-status,#viewDeals .deal-note{font-size:12px;white-space:normal;word-break:keep-all}
 .easy-market-head{flex-wrap:wrap;gap:4px 12px}
 .easy-market-head span{overflow:visible;white-space:normal;word-break:keep-all}
@@ -1352,7 +1341,7 @@ body{
 #whySheet .costrow .amt:focus-within{outline-offset:2px}
 #whySheet .costrow .amt u{white-space:nowrap}
 @media(max-width:370px){#payTile .ans-pct{max-width:136px}.sheet,.qsheet,#whySheet{padding-left:20px;padding-right:20px}}
-@media(prefers-reduced-transparency:reduce){.sheet-actions,.deal-map-detail{background:#FFF}}
+@media(prefers-reduced-transparency:reduce){.sheet-actions{background:#FFF}}
 
 /* 결과의 예산을 실거래에서도 이어서 읽도록 한다. */
 .deal-budget{order:2}
@@ -1388,9 +1377,8 @@ html{}
 body,.app{}
 .app{}
 
-/* ── ④ 유리 제거 ─────────────────────────────────────────────────────── */
-.appbar,.app.hero-on .appbar,.dock,.sheet,.qsheet,#whySheet,.sheet-actions,
-.deal-map-detail,.yk-map-label{
+
+.appbar,.app.hero-on .appbar,.dock,.sheet,.qsheet,#whySheet,.sheet-actions,.yk-map-label{
   -webkit-backdrop-filter:none;backdrop-filter:none
 }
 .appbar{background:var(--v-paper);box-shadow:inset 0 -1px 0 var(--v-line)}
@@ -1601,13 +1589,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #viewDeals .deal .nm{}
 #viewDeals .deal .amt{}
 #easyMarket h2,#viewDeals .card-title{font-weight:700;color:var(--v-ink);letter-spacing:-.03em}
-.deal-map-detail{background:var(--v-paper);border:1px solid var(--v-line-strong)}
 .yk-map-label.is-active{background:var(--v-ink)}
 .yk-map-label.is-over{background:var(--v-coral)}
 
 /* ── 고대비 · 투명도 낮춤 환경 ───────────────────────────────────────── */
 @media(prefers-reduced-transparency:reduce){
-  .sheet-actions,.deal-map-detail,.appbar,.dock,.sheet,.qsheet{background:var(--v-paper)}
+  .sheet-actions,.appbar,.dock,.sheet,.qsheet{background:var(--v-paper)}
 }
 @media(prefers-contrast:more){
   .appbar,.dock{box-shadow:inset 0 0 0 1px var(--v-ink)}
@@ -3507,11 +3494,6 @@ html body #cmpSheet .ct-seg button{display:flex;align-items:center;justify-conte
 html body #cmpSheet .ct-seg button span{color:#1F5BFF;font-size:22px}
 html body #cmpSheet .ct-chevron{width:8px;height:8px;margin-right:4px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
 html body #cmpSheet [aria-expanded="true"] .ct-chevron{transform:rotate(225deg)}
-html body #cmpSheet .cmp-property{margin-top:16px;border-top:1px solid #E2E7EE}
-html body #cmpSheet .cmp-property>summary{padding:18px 0;font-size:15px;font-weight:600;cursor:pointer;color:#192332}
-html body #cmpSheet .cmp-property table{width:100%;table-layout:fixed;border-collapse:collapse}
-html body #cmpSheet .cmp-property .cmp-card{min-height:0!important;background:none!important;padding:8px 4px!important}
-html body #cmpSheet .cmp-property thead{position:static!important}
 html body #cmpSheet #cmpFootnotes{margin:16px 0}
 html body #cmpSheet #cmpFootnotes .cmp-note{font-size:12px;line-height:1.7;color:#5F6B7D}
 </style><style id="v223-design">/* 시안의 정보 위계: 핵심 숫자, 넓은 차트, 간결한 가격 행, 접힌 근거. */
@@ -3558,7 +3540,6 @@ html body .tr-method summary{cursor:pointer;padding:14px 0;font-size:13px;font-w
 html body .tr-method p{margin:0 0 10px}
 html body .tr-alerts{border-left:2px solid #D6DEE9;padding:0 0 0 14px!important;list-style:none;margin-top:16px!important}
 html body .tr-alerts li+li{margin-top:8px}
-html body #cmpSheet .cmp-property .cmp-card b{font-size:13px!important}
 html body button.cmp-save,html body button.tr-now,html body .tr-seg button{transition:background-color 160ms ease,color 160ms ease,transform 120ms ease}
 html body button.cmp-save:active,html body button.tr-now:active{transform:scale(.97)}
 @media(max-width:374px){
@@ -3754,11 +3735,6 @@ html body.yk208 #app .sh233-note{margin:2px 0 0;font-size:11px;line-height:1.7;c
 @media(min-width:960px){html body.yk208 #app #entryProgress233{margin-top:32px;max-width:300px}}
 @media(prefers-reduced-motion:reduce){html body.yk208 #app .ep233-track i{transition:none}}
 html body.yk208 #app .v232-intro:has(#entryProgress233) .v232-path{display:none}
-/* An explicit scroll affordance replaces the abruptly clipped map card ending. */
-html body.yk208 #app #viewDeals #dealMapDetail{}
-html body.yk208 #app #viewDeals #mapMore233{position:absolute;z-index:401;left:9px;right:9px;bottom:25px;display:flex;align-items:center;justify-content:center;margin:0;padding:8px 12px;border:0;border-radius:0 0 18px 18px;background:#fff;font:inherit;cursor:pointer}
-html body.yk208 #app #viewDeals #mapMore233[hidden]{display:none!important}
-html body.yk208 #app #viewDeals #mapMore233:focus-visible{outline:2px solid #2458FF;outline-offset:-4px}
 </style><style id="v234-reading">/* Give monetary units a stable hierarchy without shortening exact amounts. */
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card b{padding-right:0!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-rm{width:44px;height:44px;min-height:44px;border-radius:10px}
@@ -3774,10 +3750,6 @@ html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234+br{display:
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{display:block;margin-top:10px}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-money-part234 em{font-size:1em;margin-left:0}
 html body.yk208 #app #cmpSheet.cmp-page tr.cmp-k th small{display:block;margin:3px 0 0!important;font-size:11px!important;line-height:1.6}
-html body.yk208 #app #viewDeals #dealMapDetail .yk-sheet-head{z-index:3;border-bottom:1px solid #E6EAF1;padding-bottom:6px}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions{z-index:2;padding-block:10px!important}
-html body.yk208 #app #viewDeals #mapMore233{min-height:44px}
-html body.yk208 #app #viewDeals #dealMapDetail{padding-bottom:56px;scroll-padding-bottom:56px}
 @media(max-width:374px){
  html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:18px}
  html body.yk208 #app #cmpSheet.cmp-page .cmp-card b{font-size:13px!important}
@@ -8330,6 +8302,42 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
   const panel = byId('dealMapPanel');
   const mapNode = byId('dealMap');
   const detail = byId('dealMapDetail');
+  const sheetStage = detail && detail.parentElement;
+  let sheetBody = null;
+  let sheetActions = null;
+  const narrowSheet = window.matchMedia('(max-width:959px)');
+  function syncSheetViewport() {
+    if (!detail) return;
+    const view = byId('viewDeals');
+    const mobile = narrowSheet.matches;
+    const parent = mobile ? document.body : sheetStage;
+    if (parent && detail.parentElement !== parent) parent.append(detail);
+    const visible = !detail.hidden && view && !view.hidden;
+    document.body.classList.toggle('map-sheet-open', mobile && visible);
+    const vv = window.visualViewport;
+    const height = vv ? vv.height : window.innerHeight;
+    const bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+    const dock = byId('v208Nav');
+    const dockTop = dock && dock.getClientRects().length ? dock.getBoundingClientRect().top : bottom;
+    const inset = Math.max(8, window.innerHeight - Math.min(bottom, dockTop) + 8);
+    const available = Math.max(180, height - Math.max(0, bottom - dockTop) - 24);
+    detail.style.setProperty('--sheet-bottom', inset + 'px');
+    detail.style.setProperty('--sheet-preview', Math.round(available * .65) + 'px');
+    detail.style.setProperty('--sheet-expanded', Math.round(available * .92) + 'px');
+  }
+  window.addEventListener('resize', syncSheetViewport, {passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', syncSheetViewport, {passive:true});
+    window.visualViewport.addEventListener('scroll', syncSheetViewport, {passive:true});
+  }
+  if(detail) new MutationObserver(syncSheetViewport).observe(detail,{attributes:true,attributeFilter:['hidden']});
+  if(panel) new MutationObserver(() => {
+    if(panel.hidden && detail && !detail.hidden)closeSheet(false);
+  }).observe(panel,{attributes:true,attributeFilter:['hidden']});
+  if(byId('viewDeals')) new MutationObserver(() => {
+    if(byId('viewDeals').hidden && detail && !detail.hidden) closeSheet(false);
+    syncSheetViewport();
+  }).observe(byId('viewDeals'),{attributes:true,attributeFilter:['hidden']});
   const status = byId('dealMapStatus');
   const listTab = byId('dealListTab');
   const mapTab = byId('dealMapTab');
@@ -8530,18 +8538,28 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
   const nb = (t) => String(t).replace(/ /g, ' ');
   function sheetShell(title, onBack) {
     detail.replaceChildren();
+    sheetBody = document.createElement('div'); sheetBody.className = 'yk-sheet-body';
+    sheetBody.id = 'dealMapDetailBody'; sheetBody.tabIndex = 0;
+    sheetBody.setAttribute('aria-label',title+' 상세 내용');
+    sheetActions = document.createElement('div'); sheetActions.className = 'yk-sheet-footer';
+    sheetActions.hidden = true;
     const head = document.createElement('div'); head.className = 'yk-sheet-head';
     const h = document.createElement('h3'); h.textContent = title; h.tabIndex = -1;
     const x = document.createElement('button'); x.type = 'button'; x.className = 'yk-sheet-close'; x.setAttribute('aria-label', '닫기');
     x.addEventListener('click', () => closeSheet(true));
     const grow = document.createElement('button'); grow.type = 'button'; grow.className = 'yk-sheet-grow'; grow.hidden = true;   /* v124 */
     grow.addEventListener('click', () => setSheetFull(!detail.classList.contains('is-full')));
+    const handle = document.createElement('button'); handle.type='button'; handle.className='yk-sheet-handle';
+    handle.setAttribute('aria-label','상세 크게 보기'); handle.setAttribute('aria-controls','dealMapDetailBody');
+    handle.addEventListener('click',()=>setSheetFull(!detail.classList.contains('is-full')));
+    grow.setAttribute('aria-controls','dealMapDetailBody');
     head.append(h, grow, x);
-    detail.append(head);
+    detail.append(handle, head, sheetBody, sheetActions);
     detail.style.transition = 'none'; detail.classList.remove('is-full'); detail.scrollTop = 0;   /* 다른 단지로 바꿀 때 크게→절반을 애니메이션 없이(sheetPan 이 바로 잼) */
     requestAnimationFrame(() => requestAnimationFrame(() => { detail.style.transition = ''; }));
     setSheetFull(false);
     detail.hidden = false;
+    syncSheetViewport();
     detail.setAttribute('role', 'region');
     detail.setAttribute('aria-label', title + ' 상세');
     return h;
@@ -8555,22 +8573,27 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       if (!detail || detail.hidden || !detail.getClientRects().length) return;
       const bar = document.querySelector('#app .appbar');
       const safeTop = Math.max(0, bar ? bar.getBoundingClientRect().bottom : 0) + 12;
-      const top = detail.getBoundingClientRect().top;
-      if (top < safeTop) window.scrollBy({top: top - safeTop, behavior: 'instant'});
+      const bounds = detail.getBoundingClientRect();
+      const dock = byId('v208Nav');
+      const safeBottom = Math.min(window.innerHeight,dock && dock.getClientRects().length ? dock.getBoundingClientRect().top : window.innerHeight)-12;
+      if(bounds.top < safeTop)window.scrollBy({top:bounds.top-safeTop,behavior:'instant'});
+      else if(bounds.bottom > safeBottom && bounds.height <= safeBottom-safeTop)window.scrollBy({top:bounds.bottom-safeBottom,behavior:'instant'});
     }, 240);
   }
   function setSheetFull(on) {
     if (!detail) return;
-    if (!on) detail.scrollTop = 0;
+    if (!on && sheetBody) sheetBody.scrollTop = 0;
     detail.classList.toggle('is-full', !!on);
     if (on) revealSheetHeading();
+    const handle = detail.querySelector('.yk-sheet-handle');
+    if(handle){handle.setAttribute('aria-expanded',String(!!on));handle.setAttribute('aria-label',on?'상세 작게 보기':'상세 크게 보기');}
     const g = detail.querySelector('.yk-sheet-grow');
     if (g) { g.setAttribute('aria-expanded', on ? 'true' : 'false'); g.setAttribute('aria-label', on ? '상세 작게 보기' : '상세 크게 보기'); }
   }
   function sheetGrowSync() {
     if (!detail || detail.hidden) return;
     const g = detail.querySelector('.yk-sheet-grow'); if (!g) return;
-    g.hidden = !(detail.classList.contains('is-full') || detail.scrollHeight > detail.clientHeight + 2);
+    g.hidden = false;
   }
   /* v124 — 고른 단지를 시트 위 보이는 칸 가운데로(말풍선은 좌표 위로 선다 · BOTTOM_CENTER) */
   function sheetPan(position) {
@@ -8595,8 +8618,9 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if (!detail) return;
     const back = activeLabel;
     if (!detail.hidden && returnFocus && back && back.isConnected) back.focus({ preventScroll: true });
-    if (activeLabel && returnFocus) { activeLabel.classList.remove('is-active'); activeLabel = null; setTimeout(declutter, 0); }
+    // Keep the selected marker and map position when the sheet is dismissed.
     detail.hidden = true;
+    syncSheetViewport();
   }
   function areaSummary(all) {
     const by = new Map();
@@ -8630,7 +8654,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     pick.append(price, meta);
     const budgetGap = dealBudgetGap(deal.amountMan, DEAL.lastPrice);
     if (budgetGap) { const gapLine = document.createElement('p'); gapLine.className = 'map-budget-gap'; gapLine.innerHTML = dealBudgetGapHtml(deal.amountMan, DEAL.lastPrice); pick.append(gapLine); }
-    detail.append(pick);
+    sheetBody.append(pick);
     const key = typeof dealSameKey === 'function' ? dealSameKey(deal) : '';
     const all = mapPool().filter((n) => dealSameKey(n) === key);
     const sum = areaSummary(all); 
@@ -8648,11 +8672,12 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
         compare.setAttribute('data-cmp-open','');
         compare.disabled=true;compare.textContent='비교표 보기 · 0';
         actions.append(save,compare);
-        pick.after(actions);
+        sheetActions.append(actions); sheetActions.hidden=false;
       }
       const flow = wrap.querySelector('.trend');
       if(sum && flow) flow.after(sum); else if(sum) wrap.prepend(sum);
-      detail.append(...wrap.childNodes);
+      sheetBody.append(...wrap.childNodes);
+      const note=document.createElement('p');note.className='yk-sheet-note';note.textContent='입력 조건에 따른 참고용 예상치 · 대출 주선·알선·중개 아님';sheetBody.append(note);
       if(typeof cmpSync==='function')cmpSync();
       detail.scrollTop=0;
     }
@@ -8669,33 +8694,42 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const comparison = difference === null ? '' : difference === 0 ? '내 예상 집값과 같아요'
       : `내 예상 집값보다 ${fullPrice(Math.abs(difference))} ${difference < 0 ? '낮아요' : '높아요'}`;
     meta.textContent = `최근 ${DEAL.months}개월 거래 ${group.count}건` + (comparison ? ' · ' + comparison : '');
-    pick.append(price, meta); detail.append(pick);
+    pick.append(price, meta); sheetBody.append(pick);
     const inBudget = document.createElement('p'); inBudget.className = 'yk-area-fit';
     inBudget.textContent = group.items.length ? `예상 집값 범위에서 거래된 단지 ${group.items.length}곳` : '예상 집값 범위에서 거래된 단지가 없어요';
-    detail.append(inBudget);
+    sheetBody.append(inBudget);
     if (group.items.length) {
       const go = document.createElement('button'); go.type = 'button'; go.className = 'yk-sheet-go';
       go.textContent = '이 지역 단지 보기';
       go.addEventListener('click', () => { setLayer('deal'); pendingFloor = 'deal'; floor = null; closeSheet(false); zoomTo(group); renderLevel(); });
-      detail.append(go);
+      sheetBody.append(go);
     }
     h.focus({ preventScroll: true });
     revealSheetHeading();
   }
   if (layerBox) layerBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-layer]'); if (b) setLayer(b.dataset.layer); });
   if (detail) detail.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeSheet(true); } });
-  /* v124 — 시트 안을 읽으러 스크롤하면 크게 · 머리를 밀면 크게/작게/닫기 */
-  if (detail) {
-    detail.addEventListener('scroll', () => { if (!detail.hidden && !detail.classList.contains('is-full') && detail.scrollTop > 8) { setSheetFull(true); sheetGrowSync(); } }, { passive: true });
-    let sy = null;
-    detail.addEventListener('touchcancel', () => { sy = null; }, { passive: true });
-    detail.addEventListener('touchstart', (e) => { const t = e.target; sy = (t.closest && t.closest('.yk-sheet-head') && !t.closest('button')) ? e.touches[0].clientY : null; }, { passive: true });
-    detail.addEventListener('touchend', (e) => {
-      if (sy == null) return; const d = e.changedTouches[0].clientY - sy; sy = null;
-      const full = detail.classList.contains('is-full');
-      if (d < -30 && !full) { setSheetFull(true); sheetGrowSync(); }
-      else if (d > 30) { if (full) { detail.scrollTop = 0; setSheetFull(false); sheetGrowSync(); } else closeSheet(true); }
-    }, { passive: true });
+  /* The content scroll and header drag have distinct touch regions. */
+  if(detail){
+    let drag = null;
+    detail.addEventListener('pointerdown',e=>{
+      if(!e.isPrimary || e.button!==0 || !e.target.closest('.yk-sheet-handle,.yk-sheet-head') || e.target.closest('.yk-sheet-close,.yk-sheet-grow'))return;
+      drag={id:e.pointerId,y:e.clientY,x:e.clientX};
+      e.target.setPointerCapture(e.pointerId);
+    });
+    detail.addEventListener('pointerup',e=>{
+      if(!drag || drag.id!==e.pointerId)return;
+      const dy=e.clientY-drag.y,dx=e.clientX-drag.x;drag=null;
+      if(Math.abs(dy)<36 || Math.abs(dy)<Math.abs(dx))return;
+      if(e.target.closest('.yk-sheet-handle')){detail.dataset.suppressHandle='true';setTimeout(()=>delete detail.dataset.suppressHandle,0);}
+      if(dy<0)setSheetFull(true);
+      else if(detail.classList.contains('is-full'))setSheetFull(false);
+      else closeSheet(true);
+    });
+    detail.addEventListener('pointercancel',()=>{drag=null;});
+    detail.addEventListener('click',e=>{
+      if(detail.dataset.suppressHandle && e.target.closest('.yk-sheet-handle'))e.stopImmediatePropagation();
+    },true);
   }
 
   function addOverlay(deal, coordinate, positions, overlayRank) {
@@ -9586,14 +9620,6 @@ body #viewDeals .yk-legend i.near{background:#DCE6FF;box-shadow:inset 0 0 0 1px 
 body #viewDeals .yk-legend i.over{background:#5f6b7d}
 body #viewDeals .yk-legend b{font-weight:400}
 body #viewDeals .deal-map-miss{margin:var(--sp-2) var(--sp-3) var(--sp-3);font-size:13px;line-height:1.5;color:#5f6b7d;word-break:keep-all}
-body #viewDeals .deal-map-detail{position:absolute;left:8px;right:8px;bottom:8px;top:auto;z-index:400;max-height:72%;overflow:auto;overscroll-behavior:contain;margin:0;padding:4px 16px 16px;border:1px solid #e1e5eb;border-radius:16px;background:#fff;box-shadow:0 8px 24px -8px rgba(15,23,42,.35)}
-body #viewDeals .deal-map-detail[hidden]{display:none}
-body #viewDeals .yk-sheet-head{position:sticky;top:-4px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 -16px;padding:4px 4px 0 16px;background:#fff}
-body #viewDeals .yk-sheet-head h3{margin:0;min-width:0;color:#192332;font-size:17px;font-weight:700;line-height:1.35;word-break:keep-all;outline:0}
-body #viewDeals .yk-sheet-close{position:relative;flex:none;width:44px;height:44px;margin:0;padding:0;border:0;background:transparent;cursor:pointer}
-body #viewDeals .yk-sheet-close::before,body #viewDeals .yk-sheet-close::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:2px;margin:-1px 0 0 -7px;border-radius:1px;background:#5f6b7d;transform:rotate(45deg)}
-body #viewDeals .yk-sheet-close::after{transform:rotate(-45deg)}
-body #viewDeals .yk-sheet-close:focus-visible{outline:3px solid #8FAEFF;outline-offset:-4px;border-radius:12px}
 body #viewDeals .yk-pick{margin:0 0 10px}
 body #viewDeals .yk-pick strong{display:block;color:#192332;font-size:20px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums}
 body #viewDeals .yk-pick p{margin:2px 0 0;color:#5f6b7d;font-size:13px;line-height:1.5;word-break:keep-all}
@@ -9601,7 +9627,6 @@ body #viewDeals .yk-area{list-style:none;margin:0 0 10px;padding:0;border-top:1p
 body #viewDeals .yk-area li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;padding:8px 0;border-bottom:1px solid #e1e5eb;font-size:13px;line-height:1.5}
 body #viewDeals .yk-area span{color:#465262}
 body #viewDeals .yk-area b{color:#192332;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;margin-left:auto}
-body #viewDeals .deal-map-detail .costbox.dealbox{margin:0;padding:12px;border-radius:12px;background:#f6f7f9}
 body #viewDeals .yk-area-fit{margin:0 0 10px;color:#465262;font-size:14px;line-height:1.5}
 body #viewDeals .yk-sheet-go,body #viewDeals .deal-onmap{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:8px 0 0;padding:0 12px;border:1px solid #CFDCFF;border-radius:12px;background:#F2F5FF;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 body #viewDeals .yk-sheet-go:focus-visible,body #viewDeals .deal-onmap:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
@@ -9822,20 +9847,11 @@ html body #viewDeals .deal-budget span{color:#EDF2FF!important}
 html body #viewDeals .deal-budget strong{color:#fff!important}
 html body #viewDeals .deal-naver{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:4px;font-size:14px;font-weight:600;color:#1848D6;text-decoration:none}
 html body #viewDeals .deal-naver:focus-visible,html body #viewAnswer .deal-naver:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px;border-radius:8px}
-html body #viewDeals .deal-map-detail .deal-naver,html body .deal-map-detail .deal-naver{display:flex;align-items:center;justify-content:center;min-height:44px;font-size:14px;font-weight:600;color:#1848D6;text-decoration:none}
 html body #restartWrap .restartrow{display:flex!important;justify-content:center!important}
 html body #restartWrap .restart-cta,html body #viewNext .restart-cta{flex:none!important;display:block;width:auto!important;height:auto!important;min-height:44px;margin:4px auto 0!important;padding:0 12px!important;border:0!important;background:none!important;box-shadow:none!important;color:#5f6b7d!important;font-size:14px!important;text-decoration:underline;text-underline-offset:3px}
 </style>
-<style>/* v124 — 시트 절반 · 크게 */
-html body #viewDeals .deal-map-detail{max-height:48%;transition:max-height .2s ease}
-html body #viewDeals .deal-map-detail.is-full{}
-html body #viewDeals .yk-sheet-head h3{flex:1}
-html body #viewDeals .yk-sheet-grow{position:relative;flex:none;width:44px;height:44px;margin:0 -8px 0 0;padding:0;border:0;background:transparent;cursor:pointer}
-html body #viewDeals .yk-sheet-grow[hidden]{display:none}
-html body #viewDeals .yk-sheet-grow::before{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-2px 0 0 -4px;border-left:1.5px solid #5f6b7d;border-top:1.5px solid #5f6b7d;transform:rotate(45deg)}
-html body #viewDeals .yk-sheet-grow[aria-expanded="true"]::before{margin-top:-6px;transform:rotate(225deg)}
-html body #viewDeals .yk-sheet-grow:focus-visible{outline:3px solid #8FAEFF;outline-offset:-4px;border-radius:12px}
-@media (prefers-reduced-motion:reduce){html body #viewDeals .deal-map-detail{transition:none}}
+<style>
+@media (prefers-reduced-motion:reduce){}
 </style>
 <style>/* v125 — 크기 사다리 12·13·14·15·16·17·20·24·30·46 · 그린 꺾쇠 · 입력 설명 한 줄 */
 html body #viewAnswer .rhead #easyPrice .money-unit{font-size:24px}
@@ -9890,9 +9906,6 @@ html body .appbar .barback[hidden]{display:none!important}
 html body .appbar .barback::before{content:"";width:10px;height:10px;margin-left:4px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
 html body #viewDeals .deal-expand{font-weight:600!important}
 html body #rdockL,html body #rdockR{font-weight:600!important}
-html body #dealMapDetail .yk-sheet-head h3{font-size:16px!important;font-weight:600!important}
-html body #dealMapDetail .yk-pick strong{font-size:22px!important;font-weight:700!important}
-html body #dealMapDetail .deal-sum{font-size:13px!important}
 </style>
 <style>/* v129 — 버튼 갈래 · 안내 링크 */
 html body #viewAnswer #marketOpen{min-height:48px!important;height:48px!important;padding-block:0!important;box-sizing:border-box!important;border-radius:12px!important}
@@ -10022,8 +10035,6 @@ html body #app:not(.no-dock) .guide-nav:not([hidden]){}
 html body #app .guide-nav a{min-width:0;word-break:keep-all;text-align:center}
 @media(min-width:640px){html body #app:not(.no-dock) .guide-nav:not([hidden]){}}
 html body #app .guide-nav a:active{color:#1848D6!important;background:#F2F5FF;border-radius:8px}
-html body #dealMapDetail .yk-sheet-head h3{overflow-wrap:anywhere}
-html body #dealMapDetail .yk-sheet-close:active,html body #dealMapDetail .yk-sheet-grow:active{background:#F2F5FF;border-radius:12px}
 </style><style>/* v144 — compact two-row footer, never stretched across the app */
 html body #app:not(.no-dock) .guide-nav:not([hidden]){grid-template-columns:repeat(2,minmax(0,max-content));border-top:1px solid #E1E5EB}
 html body #app .guide-nav a{min-height:44px!important;font-weight:400!important;line-height:1.5;overflow-wrap:anywhere}
@@ -10548,7 +10559,7 @@ function dealTools(){
 }
 document.addEventListener('click',function(e){const r=e.target.closest('#dealDistribution [data-dd-region]');if(r){const d=document.getElementById('dealRegions');if(!d)return;d.open=!d.open;r.setAttribute('aria-expanded',String(d.open));return;}const f=e.target.closest('#dealFilterBtn');if(f){const d=document.querySelector('#dealCard>.deal-filter-fold');if(!d)return;d.open=!d.open;f.setAttribute('aria-expanded',String(d.open));}});
 document.addEventListener('deals:ready',function(){renderDealDistribution(DEAL.lastPrice);});
-document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v199-dd-method">html body #app #viewDeals #dealDistribution .dd-group{margin:0 0 var(--sp-3)}html body #app #viewDeals #dealDistribution .dd-group+.dd-group{padding-top:var(--sp-3);border-top:1px solid var(--v-line)}html body #app #viewDeals #dealDistribution .dd-sub{display:block!important;margin:0!important;font-size:var(--t7)!important;font-weight:700;line-height:1.5!important;color:#0E1B45}html body #app #viewDeals #dealDistribution .dd-group .dd-bars{margin-top:var(--sp-2)}html body #app #viewDeals #dealDistribution .dd-insight{margin-top:var(--sp-2);font-size:var(--t5);font-weight:600;line-height:1.5;color:#0E1B45;letter-spacing:-.01em}html body #app #viewDeals #dealDistribution .dd-insight b{color:var(--v-blue);font-weight:700}html body #app #viewDeals #dealDistribution .dd-insight i{font-style:normal;white-space:nowrap}html body #app #viewDeals #dealDistribution .dd-insight+.dd-strip{margin-top:40px}html body #app #viewDeals #dealDistribution .dd-axis{position:relative}html body #app #viewDeals #dealDistribution .dd-axis .dd-med{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;color:#0E1B45!important;font-weight:600}</style><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish">html body #viewDeals .deal-map-detail{bottom:24px}html body #viewDeals .deal-map-detail.is-full{max-height:calc(100% - 32px)}</style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v200-compare">html body .cmp-save{margin:8px 0 12px}html body .cmp-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;padding:0 12px;border:1px solid var(--v-line);border-radius:12px;background:#fff;color:#0E1B45;font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}html body .cmp-btn i{font-style:normal;color:var(--v-blue)}html body .cmp-btn[aria-pressed="true"]{background:var(--v-blue-soft);border-color:#A4B8FA;color:var(--v-blue-deep)}html body .cmp-btn:focus-visible,html body #cmpBar:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}html body .cmp-msg{display:block;margin-top:4px;font-size:var(--t7);line-height:1.5;color:#53617C}html body .cmp-msg:empty{display:none}html body #app #viewDeals #cmpBar{order:7;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin:0 0 8px;padding:0 14px;border:0;border-radius:12px;background:var(--v-blue-soft);color:var(--v-blue-deep);font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}html body #app #viewDeals #cmpBar[hidden]{display:none!important}html body #app #viewDeals #cmpBar b{font-weight:700}html body #app #viewDeals #cmpBar span{display:inline-flex;align-items:center;gap:4px;font-weight:400}html body #cmpSheet{background:#fff;overflow-x:hidden}html body #cmpSheet .why-sheet-header{position:sticky;top:-18px;z-index:8;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--v-line);margin:-18px -22px 16px;padding:14px 22px}html body #cmpSheet #cmpTitle{flex:1;margin:0!important;font-size:22px!important;font-weight:700;line-height:1.35!important;letter-spacing:-.025em;color:#0E1B45}html body #cmpSheet .why-dismiss{position:relative;flex:none;width:44px;height:44px;min-width:44px;margin:0;padding:0;border:0;border-radius:var(--r-s);background:transparent;color:#465262;font-size:0;cursor:pointer}html body #cmpSheet .why-dismiss::before,html body #cmpSheet .why-dismiss::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;border-radius:1px;background:currentColor;transform:rotate(45deg)}html body #cmpSheet .why-dismiss::after{transform:rotate(-45deg)}html body #cmpSheet .why-dismiss:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}html body #cmpSheet .cmp-lead{margin:0 0 16px;background:var(--v-blue);color:#fff}html body #cmpSheet .cmp-lead small{display:block;font-size:var(--t7);line-height:1.5}html body #cmpSheet .cmp-lead b{display:block;margin-top:2px;font-size:var(--t4);font-weight:700;line-height:1.4;letter-spacing:-.02em}html body #cmpSheet .cmp-lead span{display:block}html body #cmpSheet table{width:100%;border-collapse:separate;border-spacing:6px 0;margin:0 -6px;width:calc(100% + 12px);table-layout:fixed;font-variant-numeric:tabular-nums}html body #cmpSheet th,html body #cmpSheet td{padding:0!important;border:0!important;background:none!important;text-align:left!important;vertical-align:top!important;word-break:keep-all;overflow-wrap:anywhere;font-size:var(--t7)!important;line-height:1.5!important;color:#0E1B45}html body #cmpSheet thead th{height:1px;padding:0 0 10px!important}html body #cmpSheet .cmp-card{position:relative;box-sizing:border-box;height:100%;padding:10px 10px 12px;border:1px solid var(--v-line);background:#F6F8FC}html body #cmpSheet .cmp-card.is-least{border-color:var(--v-blue);background:#fff}html body #cmpSheet .cmp-no{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#0E1B45;color:#fff;font-size:var(--t8);font-weight:700;line-height:1}html body #cmpSheet .cmp-card.is-least .cmp-no{background:var(--v-blue)}html body #cmpSheet .cmp-card b{display:block;margin-top:6px;font-size:var(--t6);font-weight:700;line-height:1.4;letter-spacing:-.02em}html body #cmpSheet .cmp-card small{display:block;margin-top:2px;color:#53617C;font-size:var(--t8);line-height:1.5}html body #cmpSheet .cmp-rm{position:absolute;padding:0;border:0;border-radius:10px;background:transparent;color:#53617C;font-size:0;cursor:pointer}html body #cmpSheet .cmp-rm::before,html body #cmpSheet .cmp-rm::after{content:"";position:absolute;left:50%;top:50%;width:11px;margin:-1px 0 0 -6px;background:currentColor;transform:rotate(45deg)}html body #cmpSheet .cmp-rm::after{transform:rotate(-45deg)}html body #cmpSheet tr.cmp-k th{padding:14px 0 4px!important;color:#53617C;font-weight:400}html body #cmpSheet tr.cmp-k th small{margin-left:4px;color:#8792A8;font-size:var(--t8)}html body #cmpSheet tr.cmp-v td{padding:0 0 12px!important;border-bottom:1px solid var(--v-line)!important;font-weight:600}html body #cmpSheet tr.cmp-v td small{display:block;color:#53617C;font-weight:400;font-size:var(--t8)!important}html body #cmpSheet tr.cmp-hero td{font-size:var(--t4)!important;font-weight:700;line-height:1.35!important;letter-spacing:-.02em}html body #cmpSheet tr.cmp-hero td.is-least{color:var(--v-blue)}html body #cmpSheet .cmp-pill{display:inline-block;margin-top:6px;padding:2px 8px;font-size:var(--t8);font-weight:600;line-height:1.5;letter-spacing:0}html body #cmpSheet .cmp-pill.is-spare{background:var(--v-blue-soft);color:var(--v-blue-deep)}html body #cmpSheet .cmp-pill.is-short{background:#F1F3F7;color:#192332}html body #cmpSheet .budget-delta.is-over{color:#192332}html body #cmpSheet .budget-delta.is-under{color:var(--v-blue-deep)}@media(max-width:370px){html body #cmpSheet tr.cmp-hero td{font-size:var(--t5)!important}}html body #cmpSheet .cmp-note{margin:14px 0 0;font-size:var(--t7);line-height:1.6;color:#53617C}html body #cmpSheet .cmp-rm:focus-visible{outline:2px solid var(--v-blue);outline-offset:0}</style><style id="v201-view-row">html body #app #viewDeals #dealCard>.deal-viewrow{order:7;display:flex;align-items:center;gap:var(--sp-2);min-height:44px;margin:0 0 8px;padding:0 2px}html body #app #viewDeals #dealCard .deal-viewrow>#dealLead{flex:1 1 auto;min-width:0;margin:0!important;padding:0;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals #dealCard .deal-viewrow>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard .deal-viewrow>#dealMapStatus:not(:empty){display:block!important;flex:1 1 auto;min-width:0;margin:0!important;padding:0;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;padding:0!important;border:0!important;gap:0;background:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar[hidden]{display:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button{min-width:56px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button::after,html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button::before{content:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}</style><style id="v202-readability">
+document.addEventListener('deals:ready',function(){dealTools();});</script><style id="v199-dd-method">html body #app #viewDeals #dealDistribution .dd-group{margin:0 0 var(--sp-3)}html body #app #viewDeals #dealDistribution .dd-group+.dd-group{padding-top:var(--sp-3);border-top:1px solid var(--v-line)}html body #app #viewDeals #dealDistribution .dd-sub{display:block!important;margin:0!important;font-size:var(--t7)!important;font-weight:700;line-height:1.5!important;color:#0E1B45}html body #app #viewDeals #dealDistribution .dd-group .dd-bars{margin-top:var(--sp-2)}html body #app #viewDeals #dealDistribution .dd-insight{margin-top:var(--sp-2);font-size:var(--t5);font-weight:600;line-height:1.5;color:#0E1B45;letter-spacing:-.01em}html body #app #viewDeals #dealDistribution .dd-insight b{color:var(--v-blue);font-weight:700}html body #app #viewDeals #dealDistribution .dd-insight i{font-style:normal;white-space:nowrap}html body #app #viewDeals #dealDistribution .dd-insight+.dd-strip{margin-top:40px}html body #app #viewDeals #dealDistribution .dd-axis{position:relative}html body #app #viewDeals #dealDistribution .dd-axis .dd-med{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;color:#0E1B45!important;font-weight:600}</style><style id="v198-deals-card">html body #app #viewDeals #dealDistribution .dd-head.is-plain{align-items:center}html body #app #viewDeals #dealDistribution .dd-head.is-plain small{font-size:var(--t6);font-weight:600;color:#0E1B45;line-height:1.5}html body #app #viewDeals #dealDistribution .dd-head.is-plain small i{color:#53617C}html body #app #viewDeals #dealDistribution .dd-head.is-plain+.dd-strip{margin-top:40px}html body #app .appbar .barrow1{display:flex;align-items:center;gap:var(--sp-2)}html body #app .appbar .barrow1>#barLabel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html body #app .appbar #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;border:0;gap:0}html body #app .appbar #dealViewBar[hidden],html body #app:not(:has(#viewDeals:not([hidden]))) .appbar #dealViewBar{display:none!important}html body #app .appbar #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app .appbar #dealViewBar .deal-switch button{min-width:52px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app .appbar #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app .appbar #dealViewBar .deal-switch button::after,html body #app .appbar #dealViewBar .deal-switch button::before{content:none!important}html body #app .appbar #dealViewBar .deal-switch button:focus-visible{outline:2px solid #2458FF;outline-offset:2px}</style><style id="v197-deals-layout">html body #app #viewDeals #dealCard>.deal-budget{padding:20px 20px 4px!important}html body #app #viewDeals #dealDistribution .dd-strip{margin-top:44px}html body #app #viewDeals #dealDistribution .dd-mark{top:-28px}html body #app #viewDeals #dealDistribution .dd-axis{margin-top:6px}html body #app #viewDeals #dealDistribution .dd-method{margin-top:12px;border-top:1px solid var(--v-line)}html body #app #viewDeals .deal-headrow{margin:4px 0 8px!important}html body #app #viewDeals .deal-headrow:not(:has(#dealViewBar:not([hidden]))){display:none!important}html body #app #viewDeals #dealViewBar{flex:1 1 auto;width:100%}html body #app #viewDeals #dealViewBar .deal-switch{flex:1 1 auto;grid-auto-columns:1fr}html body #app #viewDeals #dealViewBar .deal-switch button{min-width:0}html body #app #viewDeals #dealCard>#dealLead{order:7;flex:none;margin:0 0 8px!important;padding:0 2px;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealLead{display:none!important}html body #app #viewDeals #dealCard>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard>#dealMapStatus:not(:empty){display:block!important;order:8;margin:0 0 8px!important;padding:0 2px;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealScopeNote{display:none!important}</style><style id="v195-polish"></style><style id="v193-polish">html body #viewDeals .yk-map-group.is-crowd{visibility:hidden}</style><style id="v200-compare">html body .cmp-save{margin:8px 0 12px}html body .cmp-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;padding:0 12px;border:1px solid var(--v-line);border-radius:12px;background:#fff;color:#0E1B45;font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}html body .cmp-btn i{font-style:normal;color:var(--v-blue)}html body .cmp-btn[aria-pressed="true"]{background:var(--v-blue-soft);border-color:#A4B8FA;color:var(--v-blue-deep)}html body .cmp-btn:focus-visible,html body #cmpBar:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}html body .cmp-msg{display:block;margin-top:4px;font-size:var(--t7);line-height:1.5;color:#53617C}html body .cmp-msg:empty{display:none}html body #app #viewDeals #cmpBar{order:7;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin:0 0 8px;padding:0 14px;border:0;border-radius:12px;background:var(--v-blue-soft);color:var(--v-blue-deep);font:inherit;font-size:var(--t6);font-weight:600;cursor:pointer}html body #app #viewDeals #cmpBar[hidden]{display:none!important}html body #app #viewDeals #cmpBar b{font-weight:700}html body #app #viewDeals #cmpBar span{display:inline-flex;align-items:center;gap:4px;font-weight:400}html body #cmpSheet{background:#fff;overflow-x:hidden}html body #cmpSheet .why-sheet-header{position:sticky;top:-18px;z-index:8;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--v-line);margin:-18px -22px 16px;padding:14px 22px}html body #cmpSheet #cmpTitle{flex:1;margin:0!important;font-size:22px!important;font-weight:700;line-height:1.35!important;letter-spacing:-.025em;color:#0E1B45}html body #cmpSheet .why-dismiss{position:relative;flex:none;width:44px;height:44px;min-width:44px;margin:0;padding:0;border:0;border-radius:var(--r-s);background:transparent;color:#465262;font-size:0;cursor:pointer}html body #cmpSheet .why-dismiss::before,html body #cmpSheet .why-dismiss::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;border-radius:1px;background:currentColor;transform:rotate(45deg)}html body #cmpSheet .why-dismiss::after{transform:rotate(-45deg)}html body #cmpSheet .why-dismiss:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}html body #cmpSheet .cmp-lead{margin:0 0 16px;background:var(--v-blue);color:#fff}html body #cmpSheet .cmp-lead small{display:block;font-size:var(--t7);line-height:1.5}html body #cmpSheet .cmp-lead b{display:block;margin-top:2px;font-size:var(--t4);font-weight:700;line-height:1.4;letter-spacing:-.02em}html body #cmpSheet .cmp-lead span{display:block}html body #cmpSheet table{width:100%;border-collapse:separate;border-spacing:6px 0;margin:0 -6px;width:calc(100% + 12px);table-layout:fixed;font-variant-numeric:tabular-nums}html body #cmpSheet th,html body #cmpSheet td{padding:0!important;border:0!important;background:none!important;text-align:left!important;vertical-align:top!important;word-break:keep-all;overflow-wrap:anywhere;font-size:var(--t7)!important;line-height:1.5!important;color:#0E1B45}html body #cmpSheet thead th{height:1px;padding:0 0 10px!important}html body #cmpSheet .cmp-card{position:relative;box-sizing:border-box;height:100%;padding:10px 10px 12px;border:1px solid var(--v-line);background:#F6F8FC}html body #cmpSheet .cmp-card.is-least{border-color:var(--v-blue);background:#fff}html body #cmpSheet .cmp-no{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#0E1B45;color:#fff;font-size:var(--t8);font-weight:700;line-height:1}html body #cmpSheet .cmp-card.is-least .cmp-no{background:var(--v-blue)}html body #cmpSheet .cmp-card b{display:block;margin-top:6px;font-size:var(--t6);font-weight:700;line-height:1.4;letter-spacing:-.02em}html body #cmpSheet .cmp-card small{display:block;margin-top:2px;color:#53617C;font-size:var(--t8);line-height:1.5}html body #cmpSheet .cmp-rm{position:absolute;padding:0;border:0;border-radius:10px;background:transparent;color:#53617C;font-size:0;cursor:pointer}html body #cmpSheet .cmp-rm::before,html body #cmpSheet .cmp-rm::after{content:"";position:absolute;left:50%;top:50%;width:11px;margin:-1px 0 0 -6px;background:currentColor;transform:rotate(45deg)}html body #cmpSheet .cmp-rm::after{transform:rotate(-45deg)}html body #cmpSheet tr.cmp-k th{padding:14px 0 4px!important;color:#53617C;font-weight:400}html body #cmpSheet tr.cmp-k th small{margin-left:4px;color:#8792A8;font-size:var(--t8)}html body #cmpSheet tr.cmp-v td{padding:0 0 12px!important;border-bottom:1px solid var(--v-line)!important;font-weight:600}html body #cmpSheet tr.cmp-v td small{display:block;color:#53617C;font-weight:400;font-size:var(--t8)!important}html body #cmpSheet tr.cmp-hero td{font-size:var(--t4)!important;font-weight:700;line-height:1.35!important;letter-spacing:-.02em}html body #cmpSheet tr.cmp-hero td.is-least{color:var(--v-blue)}html body #cmpSheet .cmp-pill{display:inline-block;margin-top:6px;padding:2px 8px;font-size:var(--t8);font-weight:600;line-height:1.5;letter-spacing:0}html body #cmpSheet .cmp-pill.is-spare{background:var(--v-blue-soft);color:var(--v-blue-deep)}html body #cmpSheet .cmp-pill.is-short{background:#F1F3F7;color:#192332}html body #cmpSheet .budget-delta.is-over{color:#192332}html body #cmpSheet .budget-delta.is-under{color:var(--v-blue-deep)}@media(max-width:370px){html body #cmpSheet tr.cmp-hero td{font-size:var(--t5)!important}}html body #cmpSheet .cmp-note{margin:14px 0 0;font-size:var(--t7);line-height:1.6;color:#53617C}html body #cmpSheet .cmp-rm:focus-visible{outline:2px solid var(--v-blue);outline-offset:0}</style><style id="v201-view-row">html body #app #viewDeals #dealCard>.deal-viewrow{order:7;display:flex;align-items:center;gap:var(--sp-2);min-height:44px;margin:0 0 8px;padding:0 2px}html body #app #viewDeals #dealCard .deal-viewrow>#dealLead{flex:1 1 auto;min-width:0;margin:0!important;padding:0;font-size:13px!important;line-height:1.6!important;text-align:left}html body #app #viewDeals #dealCard .deal-viewrow>#dealMapStatus{display:none!important}html body #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard .deal-viewrow>#dealMapStatus:not(:empty){display:block!important;flex:1 1 auto;min-width:0;margin:0!important;padding:0;text-align:left!important;font-size:13px;line-height:1.6;color:#53617C}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar{flex:none!important;width:auto!important;margin:0 0 0 auto!important;min-height:0;padding:0!important;border:0!important;gap:0;background:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar[hidden]{display:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px!important;border:0!important;border-radius:var(--r-m)!important;background:#E4E8F1!important;box-shadow:none!important;min-width:0}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button{min-width:56px!important;min-height:38px!important;padding:0 var(--sp-3)!important;border:0!important;border-radius:var(--r-s)!important;background:transparent!important;color:#53617C!important;font-size:var(--t7)!important;font-weight:400!important;box-shadow:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button[aria-selected="true"]{background:#fff!important;color:#0E1B45!important;font-weight:700!important;box-shadow:0 1px 2px rgba(14,27,69,.12)!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button::after,html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button::before{content:none!important}html body #app #viewDeals #dealCard .deal-viewrow #dealViewBar .deal-switch button:focus-visible{outline:2px solid var(--v-blue);outline-offset:2px}</style><style id="v202-readability">
 html body #cmpSheet .cmp-card b{padding-right:0;overflow-wrap:anywhere}
 html body #cmpSheet .cmp-card small{font-weight:400}
 html body #cmpSheet .cmp-card{border-radius:var(--r-s)}
@@ -10556,14 +10567,10 @@ html body #cmpSheet .cmp-rm{width:44px;height:44px;top:0;right:0}
 html body #cmpSheet .cmp-rm::before,html body #cmpSheet .cmp-rm::after{height:2px}
 html body #cmpSheet tr.cmp-hero td{font-variant-numeric:tabular-nums}
 html body #cmpSheet .cmp-pill{border-radius:var(--r-s)}
-html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-cash,
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow.da-cash{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 0!important}
-html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-cash .v,
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow.da-cash .v{font-size:var(--t3)!important;font-weight:700!important;line-height:1.4;color:var(--v-blue-deep)!important}
-html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-monthly,
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow.da-monthly{padding-top:12px!important;margin-top:8px;border-top:1px solid var(--v-line)}
-html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-monthly .v,
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow.da-monthly .v{font-size:var(--t5)!important;font-weight:700!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-cash{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 0!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-cash .v{font-size:var(--t3)!important;font-weight:700!important;line-height:1.4;color:var(--v-blue-deep)!important}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-monthly{padding-top:12px!important;margin-top:8px;border-top:1px solid var(--v-line)}
+html body #app #viewDeals #dealList .dealbox .deal-afford .dealrow.da-monthly .v{font-size:var(--t5)!important;font-weight:700!important}
 html body #exportPreview{box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain}
 html body #exportPreview img{flex-shrink:1;min-height:0;object-fit:contain;border-radius:var(--r-s)}
 html body #exportPreview p,html body #exportPreview button{flex-shrink:0}
@@ -10607,11 +10614,6 @@ html body #app #viewDeals .cmp-map-toolbar p{margin:0;min-width:0;color:#53617C;
 html body #app #viewDeals .cmp-map-open{flex:none;min-height:44px;padding:0 12px;border:1px solid var(--v-blue);border-radius:var(--r-s);background:var(--v-blue);color:#fff;font:inherit;font-size:var(--t7);font-weight:600;line-height:1.4;cursor:pointer;white-space:nowrap}
 html body #app #viewDeals .cmp-map-open:disabled{background:#F1F3F7;border-color:var(--v-line);color:#53617C;cursor:default;opacity:1}
 html body #app #viewDeals .cmp-map-open:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}
-html body #app #viewDeals #dealMapDetail .cmp-map-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:8px;padding:8px 0 12px;border-bottom:1px solid var(--v-line);margin:0 0 8px}
-html body #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-save{min-width:0;margin:0}
-html body #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-btn{min-height:44px;padding:6px;font-size:var(--t7);border-color:#A4B8FA;color:var(--v-blue-deep);border-radius:var(--r-s);line-height:1.4}
-html body #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-map-open{width:100%;padding:6px;font-size:var(--t7)}
-html body #app #viewDeals #dealMapDetail .cmp-msg{font-size:var(--t7);word-break:keep-all}
 </style><style id="v205-entry-result">
 html body #app .funnel .cond-lead{line-height:1.3!important;letter-spacing:-.035em;margin-bottom:0}
 html body #app .funnel .entry-sub{margin-top:12px!important;margin-bottom:24px!important;font-size:var(--t5)!important;line-height:1.6;color:#53617C}
@@ -10661,7 +10663,6 @@ html body #app #rdock .dockrow{width:100%;max-width:480px;margin-left:auto;margi
 </style><style id="v207-mobile-review">
 html body #app #viewAnswer #easyBalance:not(.cash-only) .rlab{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}
 html body #app #viewAnswer #easyBalance .rlab>div{min-width:0;width:auto!important}
-html body #app #viewDeals #dealMapPanel:has(#dealMapDetail:not([hidden]) .cmp-map-actions) .cmp-map-toolbar{display:none!important}
 html body #cmpSheet tr.cmp-column-names th{position:sticky;top:calc(var(--cmp-heading-height,72px) - 18px);z-index:7;background:#fff!important;padding:8px 0!important;border-bottom:1px solid var(--v-line)!important;vertical-align:middle!important;font-size:var(--t7)!important;font-weight:700;line-height:1.4!important}
 html body #cmpSheet tr.cmp-column-names th span{display:block;padding:0 4px;overflow-wrap:anywhere}
 html body #app #viewDeals .dd-scope-note{margin:12px 0 0;font-size:var(--t8);line-height:1.6;color:#53617C;word-break:keep-all}
@@ -10888,9 +10889,7 @@ html body.yk208 #app #viewAnswer #easyMarketTitle{}
 html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt{font-size:19px!important;color:#192332!important}
 html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-nm{color:#192332!important}
 html body.yk208 #app #viewDeals #dealMapPanel{border:1px solid #D6DCE5!important;border-radius:20px!important;overflow:hidden;background:#fff}
-html body.yk208 #app #viewDeals .yk-map-stage{border-radius:16px!important}
-html body.yk208 #app #viewDeals .deal-map-detail{background:#fff;border:1px solid #D6DCE5!important;border-radius:20px!important;box-shadow:none!important}
-html body.yk208 #app #viewDeals .deal-map-detail .da-box,html body.yk208 #app #viewDeals .deal-afford{background:#F6F7F9!important;border-radius:16px!important}
+html body.yk208 #app #viewDeals .yk-map-stage{border-radius:16px!important}html body.yk208 #app #viewDeals .deal-afford{background:#F6F7F9!important;border-radius:16px!important}
 html body.yk208 #app #viewDeals .cmp-map-open{border-radius:12px!important}
 html body.yk208 #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard:not(.v208-distribution-open) #dealDistribution .dd-strip,
 html body.yk208 #app #viewDeals:has(#dealMapPanel:not([hidden])) #dealCard:not(.v208-distribution-open) #dealDistribution .dd-scope-note,
@@ -11028,16 +11027,7 @@ html body #app #viewAnswer #easyMarket>#resultScopeNote{order:2;margin:2px 0 0!i
 html body #app #viewAnswer #easyMarket>#heroDeals{order:3}
 html body #app #viewAnswer #easyMarket>#marketRatio{order:4}
 html body #app #viewAnswer #easyMarket>#marketOpen{order:9}
-html body #app #viewDeals #dealMapDetail .deal-afford{background:#F6F8FC!important;border:0!important;border-radius:var(--r-m)!important;padding:var(--sp-3) var(--sp-4)!important;margin:var(--sp-3) 0!important;box-shadow:none!important}
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow{padding:var(--sp-1) 0!important;font-size:var(--t6)!important;border:0!important}
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow .k{color:#53617C!important}
-html body #app #viewDeals #dealMapDetail .deal-afford .dealrow .v{color:#0E1B45!important;font-weight:600!important}
-html body #app #viewDeals #dealMapDetail .costbox.dealbox{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:var(--sp-2) 0 0!important}
-html body #app #viewDeals #dealMapDetail .costbox.dealbox .deal-sum{margin:0 0 var(--sp-1)!important;color:#53617C!important;font-size:var(--t7)!important}
-html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow{padding:var(--sp-2) 0!important;border-top:1px solid #DCE2EC;font-size:var(--t6)!important}
-html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow .k{color:#53617C!important}
-html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow .v{color:#0E1B45!important;font-weight:500;font-variant-numeric:tabular-nums}
-@media (max-width:374px){html body #app #viewDeals #dealMapDetail .costbox.dealbox>.dealrow{font-size:var(--t7)!important}}
+@media (max-width:374px){}
 /* ③ 상단 바 가격 */
 html body #app .appbar .barprice{display:none}
 html body #app .appbar.is-price-pinned .barprice{display:inline-flex;align-items:baseline;gap:var(--sp-2);min-width:0;margin-right:auto;font-size:var(--t-card);font-weight:700;color:var(--v-blue,#2458FF);white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -11138,15 +11128,19 @@ function cmpRender(){
  var group=function(label){return '<tr class="cmp-group"><th colspan="'+n+'"><span class="cmp-label256">'+label+'</span></th></tr>';};
  var krow=function(k,sub){return '<tr class="cmp-k"><th scope="rowgroup" colspan="'+n+'"><span class="cmp-label256">'+k+(sub?'<small>'+sub+'</small>':'')+'</span></th></tr>';};
  var vrow=function(cls,fn){return '<tr class="cmp-v'+(cls?' '+cls:'')+'">'+cols.map(function(c){return '<td headers="'+c.id+'"'+(cls==='cmp-hero'&&isLeast(c)?' class="is-least"':'')+'>'+fn(c)+'</td>';}).join('')+'</tr>';};
- var lead=least.length?'<div class="cmp-lead" role="note"><small>필요한 현금이 가장 적은 곳 · 부대비용 포함</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><span><em class="cmp-amount-label">필요한 현금</em>'+won(least[0].f.C)+'</span></div>':'';
+ var others=cols.filter(function(c){return !isLeast(c)&&c.f;});
+ var extra=least.length&&others.length?Math.min.apply(null,others.map(function(c){return c.f.C;}))-least[0].f.C:0;
+ var lead=least.length?'<div class="cmp-lead" role="note"><small>입력 조건으로 비교한 구입 자금 · 참고용</small><b>'+least.map(function(c){return esc(c.s.name);}).join(' · ')+'</b><p class="cmp-insight262">그다음 단지보다 현금 <strong>'+won(extra)+'</strong> 덜 필요해요.</p></div>':'';
  body.innerHTML=lead+'<table><colgroup>'+cols.map(function(){return '<col>';}).join('')+'</colgroup>'
-  +'<thead><tr>'+cols.map(function(c,i){return '<th scope="col" id="'+c.id+'"><div class="cmp-card'+(isLeast(c)?' is-least':'')+'"><span class="cmp-no" aria-hidden="true">'+(i+1)+'</span><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small>'+(c.spec?'<small>'+esc(c.spec)+'</small>':'')+'<button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기"></button></div></th>';}).join('')+'</tr></thead><tbody><tr class="cmp-column-names">'+cols.map(function(c){return '<th scope="col"><span>'+esc(c.s.name)+'</span></th>';}).join('')+'</tr>'
+  +'<thead><tr>'+cols.map(function(c,i){return '<th scope="col" id="'+c.id+'"><div class="cmp-card'+(isLeast(c)?' is-least':'')+'"><span class="cmp-no" aria-hidden="true">'+(i+1)+'</span><b>'+esc(c.s.name)+'</b><small>'+esc(c.where)+'</small>'+'<button type="button" class="cmp-rm" data-cmp-remove="'+esc(c.s.k)+'" aria-label="'+esc(c.s.name)+' 비교함에서 빼기"></button></div></th>';}).join('')+'</tr></thead><tbody><tr class="cmp-column-names">'+cols.map(function(c){return '<th scope="col"><span>'+esc(c.s.name)+'</span></th>';}).join('')+'</tr>'
   +(withF.length?group('구입 자금')+krow('필요한 현금','부대비용 포함 · 내 현금과 비교')
    +vrow('cmp-hero',function(c){if(!c.f)return '—';var g=c.f.gap;return won(c.f.C)+'<br><span class="cmp-pill '+(g>0?'is-short':'is-spare')+'">'+(g>0?won(g)+' 부족':g<0?won(-g)+' 여유':'추가 현금 0원')+'</span>';})
    +krow('주택담보대출')+vrow('',function(c){return c.f?(c.f.L>0?won(c.f.L):'없음'):'—';})
    +krow('월 상환액')+vrow('',function(c){return c.f&&c.f.L>0?won(c.f.M):'—';}):'')
   +group('단지 정보')+krow('거래가','담을 때의 거래')+vrow('',function(c){return c.price;})
   +krow('예상 집값과 차이')+vrow('',function(c){return c.gap;})
+  +krow('전용면적')+vrow('',function(c){return c.s.areaM2>0?esc(String(c.s.areaM2))+'㎡':'미확인';})
+  +krow('준공연도')+vrow('',function(c){return esc(yearFull(c.s.buildYear)||'미확인');})
   +krow('세대수')+vrow('',function(c){return c.units;})
   +vrow('cmp-search',function(c){return typeof dealNaverUrl==='function'?'<a class="cmp-naver" href="'+esc(dealNaverUrl(c.s))+'" target="_blank" rel="noopener noreferrer" aria-label="'+esc(c.s.name)+' 네이버에서 찾기, 새 창">네이버에서 찾기 <span aria-hidden="true">↗</span></a>':'—';})
   +'</tbody></table>'
@@ -11262,7 +11256,7 @@ function compactCompare(){
  cards.forEach(card=>card.querySelectorAll('small').forEach(s=>s.remove()));
  const duplicate=table.querySelector('.cmp-column-names');if(duplicate)duplicate.remove();
  const tbody=table.querySelector('tbody'),search=tbody.querySelector('.cmp-search');
- const label=document.createElement('tr');label.className='cmp-k';const th=document.createElement('th');th.colSpan=cards.length;th.scope='rowgroup';th.textContent='지역 · 면적 · 준공';label.append(th);
+ const label=document.createElement('tr');label.className='cmp-k';const th=document.createElement('th');th.colSpan=cards.length;th.scope='rowgroup';th.textContent='지역';label.append(th);
  const values=document.createElement('tr');values.className='cmp-v';info.forEach((parts,i)=>{const td=document.createElement('td');td.setAttribute('headers','cmpC'+i);parts.forEach(t=>{const small=document.createElement('small');small.textContent=t;td.append(small)});values.append(td)});
  tbody.insertBefore(label,search);tbody.insertBefore(values,search);
 }
@@ -12022,31 +12016,6 @@ var fun = document.getElementById('funnel');
 if(fun && typeof MutationObserver === 'function') new MutationObserver(later).observe(fun, { attributes:true, attributeFilter:['hidden'] });
 window.__condPreview = CP;   /* 검사용 */
 })();
-</script><script>/* 구입 자금 표 → 가격 흐름 → 단지 상세. 표는 차트를 열어도 유지한다. */
-(function(){
- var previous=cmpRender;
- function organize(){
-  var body=document.getElementById('cmpBody'),view=document.getElementById('cmpTrend');
-  if(!body||!view)return;
-  var old=document.getElementById('cmpPropertyDetails');if(old)old.remove();
-  var oldNotes=document.getElementById('cmpFootnotes');if(oldNotes)oldNotes.remove();
-  var table=body.querySelector('table');if(!table)return;
-  var start=Array.from(table.querySelectorAll('.cmp-group')).find(function(r){return r.textContent.trim()==='단지 정보';});
-  if(!start)return;
-  var details=document.createElement('details');details.id='cmpPropertyDetails';details.className='cmp-property';
-  var summary=document.createElement('summary');summary.textContent='단지·거래 상세정보';details.append(summary);
-  var more=document.createElement('table'),head=table.querySelector('thead').cloneNode(true),rows=document.createElement('tbody');
-  head.querySelectorAll('button,small').forEach(function(e){e.remove();});
-  head.querySelectorAll('[id]').forEach(function(e){e.id+='Details';});
-  var row=start.nextElementSibling;start.remove();
-  while(row){var next=row.nextElementSibling;row.querySelectorAll('[headers]').forEach(function(c){c.setAttribute('headers',c.getAttribute('headers')+'Details');});rows.append(row);row=next;}
-  more.append(head,rows);details.append(more);view.after(details);
-  var notes=document.createElement('div');notes.id='cmpFootnotes';
-  body.querySelectorAll('.cmp-note').forEach(function(e){notes.append(e);});details.after(notes);
- }
- cmpRender=function(){var result=previous.apply(this,arguments);organize();return result;};
- organize();
-})();
 </script><script>(function(){
 'use strict';
 const app=document.getElementById('app'),home=document.getElementById('welcome232'),funnel=document.getElementById('funnel'),result=document.getElementById('result');
@@ -12116,19 +12085,7 @@ const oldCompareSync=cmpSync;cmpSync=function(){const r=oldCompareSync.apply(thi
 window.addEventListener('storage',e=>{if(e.key===CMP_KEY||e.key===null)paintSaved();});
 paintSaved();
 })();
-(function(){
-'use strict';
-const detail=document.getElementById('dealMapDetail');if(!detail)return;
-const more=document.createElement('button');more.type='button';more.id='mapMore233';more.hidden=true;more.textContent='아래 내용 더 보기 ↓';more.setAttribute('aria-controls','dealMapDetail');detail.after(more);
-let frame=0;
-function update(){frame=0;more.hidden=detail.hidden||!detail.getClientRects().length||detail.scrollHeight-detail.clientHeight-detail.scrollTop<=3;}
-function queue(){if(!frame)frame=requestAnimationFrame(update);}
-more.onclick=()=>detail.scrollBy({top:Math.max(100,detail.clientHeight*.65),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-detail.addEventListener('scroll',queue,{passive:true});
-new MutationObserver(queue).observe(detail,{childList:true,attributes:true,attributeFilter:['hidden','class']});
-if(typeof ResizeObserver==='function')new ResizeObserver(queue).observe(detail);
-window.addEventListener('resize',queue,{passive:true});queue();
-})();
+
 </script><script>(function(){
 'use strict';
 const sheet=document.getElementById('cmpSheet');if(!sheet)return;
@@ -12158,21 +12115,6 @@ function polish(){
  if(typeof cmpQueueAlignment==='function')cmpQueueAlignment();
 }
 const old=cmpRender;cmpRender=function(){const r=old.apply(this,arguments);polish();return r;};polish();
-const detail=document.getElementById('dealMapDetail');if(!detail)return;
-let frame=0;
-let observedHead=null;
-const headResize=typeof ResizeObserver==='function'?new ResizeObserver(queue):null;
-function measure(){
- frame=0;const head=detail.querySelector('.yk-sheet-head');
- if(head!==observedHead){if(headResize)headResize.disconnect();observedHead=head;if(headResize&&head)headResize.observe(head);}
- if(!head)return;
- const h=Math.max(0,Math.ceil(head.getBoundingClientRect().height)-4);
- detail.style.setProperty('--map-head234',h+'px');
-}
-function queue(){if(!frame)frame=requestAnimationFrame(measure);}
-new MutationObserver(queue).observe(detail,{childList:true,attributes:true,attributeFilter:['hidden','class']});
-if(typeof ResizeObserver==='function')new ResizeObserver(queue).observe(detail);
-window.addEventListener('resize',queue,{passive:true});queue();
 })();
 </script>
 <style id="v243-polish">
@@ -12567,7 +12509,6 @@ html body.yk208 #app #viewAnswer #heroDeals :is(.hd-nm,.hd-amt){line-height:1.45
 
 /* Real transaction list + map — charts, filter chips, rows and call to action. */
 html body.yk208 #app #viewDeals #dealCard{border-color:var(--yk-line)!important;border-radius:var(--yk-r-card)!important}
-html body.yk208 #app #viewDeals :is(.card-title,.deal-map-detail h2,.deal-map-detail h3){color:var(--yk-ink)!important;letter-spacing:-.028em!important;line-height:1.4!important}
 html body.yk208 #app #viewDeals .card-title{font-size:20px!important;font-weight:700!important}
 html body.yk208 #app #viewDeals :is(#dealScopeNote,#dealSortNote,#dealMapNote,.deal-map-note,.dd-method,.dd-scope-note){font-size:12.5px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewDeals :is(.deal-regions,.deal-budget,.deal-filter-fold){color:var(--yk-sub)}
@@ -12579,8 +12520,6 @@ html body.yk208 #app #viewDeals :is(.deal .meta,.deal .sub,.dealrow .k){font-siz
 html body.yk208 #app #viewDeals #dealDistribution :is(.dd-title,.dd-head){line-height:1.45!important;color:var(--yk-ink)!important}
 html body.yk208 #app #viewDeals .cmp-map-open{min-height:44px!important;background:var(--yk-blue)!important;border-color:var(--yk-blue)!important;color:#fff!important;font-size:14px!important;font-weight:700!important}
 html body.yk208 #app #viewDeals .cmp-map-open *{color:#fff!important}
-html body.yk208 #app #viewDeals :is(#mapMore233,#v208DistributionToggle){font-size:13px!important;font-weight:600!important;color:var(--yk-blue-dark)!important}
-html body.yk208 #app #viewDeals .deal-map-detail{border-color:var(--yk-line)!important}
 html body.yk208 #app #viewDeals :is(.deal-afford,.da-box,.dealbox){border-color:var(--yk-line)!important}
 
 /* Compare — protect the legibility of narrow columns and blue conclusion. */
@@ -12823,126 +12762,20 @@ html body.yk208 #cmpSheet button:focus-visible{
     --yk-stroke:#9EADC4;--yk-stroke-field:#879AB6;--yk-stroke-divider:#C3CFE0;
   }
 }
-
-
-
-
-/* v252: Map discovery → selected deal → save → compare.
-   Presentation only; existing transaction, financing, map and compare functions remain unchanged. */
-html body.yk208 #app #viewDeals #dealMapPanel:has(#dealMapDetail:not([hidden])) .cmp-map-toolbar{
-  display:none!important; /* The opened card already owns its comparison action. */
-}
-html body.yk208 #app #viewDeals #dealMapDetail .yk-sheet-head{
-  align-items:center!important;
-  gap:4px;
-  min-height:54px;
-  padding:4px 10px 4px 16px!important;
-  background:#fff;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .yk-sheet-head h3{
-  flex:1 1 auto;min-width:0;margin:0;
-  font-size:16px!important;line-height:1.4!important;font-weight:700!important;
-  letter-spacing:-.025em;word-break:keep-all;overflow-wrap:anywhere;
-}
-html body.yk208 #app #viewDeals #dealMapDetail :is(.yk-sheet-close,.yk-sheet-grow){
-  flex:0 0 44px;width:44px!important;height:44px!important;min-width:44px;min-height:44px;
-  display:inline-flex;align-items:center;justify-content:center;border-radius:12px;
-}
-html body.yk208 #app #viewDeals #dealMapDetail :is(.yk-sheet-close,.yk-sheet-grow)[hidden]{display:none!important}
-html body.yk208 #app #viewDeals #dealMapDetail :is(.yk-sheet-close,.yk-sheet-grow):focus-visible{
-  outline:2px solid #2458FF;outline-offset:0;
-}
-/* Price and transaction details lead the sheet, not two undifferentiated CTAs. */
-html body.yk208 #app #viewDeals #dealMapDetail>.yk-pick{
-  padding:12px 16px 8px!important;
-  margin:0!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail>.yk-pick>strong{
-  display:block;font-variant-numeric:tabular-nums;letter-spacing:-.032em;
-  line-height:1.22!important;overflow-wrap:anywhere;
-}
-html body.yk208 #app #viewDeals #dealMapDetail>.yk-pick>p{
-  margin:7px 0 0!important;line-height:1.5!important;
-}
-/* One primary action; only expose the compare action when something was saved. */
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  align-items:stretch!important;gap:8px!important;
-  margin:0 14px 5px!important;
-  padding:8px 0!important;
-  border-bottom:1px solid var(--yk-stroke-divider,#DCE2EC)!important;
-  position:relative!important;top:auto!important;
-  background:#fff!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions:has(.cmp-map-open:disabled){
-  grid-template-columns:minmax(0,1fr)!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-map-open:disabled{
-  display:none!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-save{display:block;min-width:0;margin:0!important}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions :is(.cmp-btn,.cmp-map-open){
-  display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:46px!important;
-  margin:0!important;padding:9px 7px!important;border:1px solid #AABADA!important;
-  border-radius:12px!important;box-shadow:none!important;white-space:normal;
-  font-size:13px!important;line-height:1.35!important;font-weight:650!important;
-  text-align:center;word-break:keep-all;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-btn[aria-pressed="false"]{
-  background:#2458FF!important;border-color:#2458FF!important;color:#fff!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-btn[aria-pressed="true"]{
-  background:#F0F4FF!important;border-color:#9AB1FF!important;color:#214CCF!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-map-open:not(:disabled){
-  background:#fff!important;border-color:#9AB1FF!important;color:#214CCF!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions:has(.cmp-btn[aria-pressed="true"]) .cmp-map-open:not(:disabled){
-  background:#2458FF!important;border-color:#2458FF!important;color:#fff!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions .cmp-msg:not(:empty){
-  display:block;margin:7px 0 0;font-size:12px;line-height:1.5;color:#516077;
-  word-break:keep-all;
-}
-html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions :is(.cmp-btn,.cmp-map-open):focus-visible{
-  outline:2px solid #2458FF!important;outline-offset:2px!important;
-}
-/* A softer affordance for the local scroll step. Keep map footer and nav separate. */
-html body.yk208 #app #viewDeals #mapMore233{
-  color:#214CCF!important;font-size:13px!important;font-weight:650!important;
-  border-top:1px solid #DCE2EC!important;box-shadow:none!important;
-}
-html body.yk208 #app #viewDeals #dealMapDetail{scroll-padding-top:62px!important}
 @media(max-width:374px){
-  html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions{gap:6px!important;margin-inline:10px!important}
-  html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions :is(.cmp-btn,.cmp-map-open){font-size:12px!important;padding-inline:5px!important}
-  html body.yk208 #app #viewDeals #dealMapDetail>.yk-pick{padding-inline:12px!important}
 }
 @media(prefers-reduced-motion:reduce){
-  html body.yk208 #app #viewDeals #dealMapDetail .cmp-map-actions :is(.cmp-btn,.cmp-map-open){transition:none!important}
 }
 /* The old 48% collapsed preview clipped the primary action behind the scroll cue. */
 @media(max-width:600px){
-  html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage #dealMapDetail:not(.is-full){max-height:78%!important}
 }
 @media(min-width:601px){
-  html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage #dealMapDetail:not(.is-full){max-height:65%!important}
 }
 
 
 
 /* v253 — desktop map stays usable alongside a selected property's details. */
 @media (min-width:960px){
- html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage #dealMapDetail{
-   left:auto!important;right:12px!important;bottom:12px!important;
-   width:min(420px,calc(100% - 24px))!important;max-width:calc(100% - 24px)!important;
-   max-height:calc(100% - 24px)!important;border:1px solid #C8D2E2!important;
-   border-radius:18px!important;box-shadow:none!important;
- }
- html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage #dealMapDetail.is-full{
-   max-height:calc(100% - 24px)!important;
- }
 }
 /* The unsaved comparison action needn't occupy half the map toolbar. */
 html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar [data-cmp-open]:disabled{display:none!important}
@@ -13045,20 +12878,6 @@ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll table{
 </script>
 
 <style id="v255-map-compare-controls">
-/* v255: Keep the scroll cue aligned to the open detail panel, not the whole map. */
-html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage #mapMore233{
-  position:absolute!important;right:auto!important;top:auto!important;
-  min-width:0!important;box-sizing:border-box!important;
-  min-height:44px!important;padding:8px 12px!important;
-  margin:0!important;border:1px solid var(--yk-stroke-divider,#DCE2EC)!important;
-  border-radius:0 0 14px 14px!important;background:#FFF!important;
-  box-shadow:none!important;color:#214CCF!important;
-  font-size:13px!important;line-height:1.4!important;font-weight:650!important;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage #mapMore233:focus-visible{
-  outline:2px solid #2458FF!important;outline-offset:-3px!important;
-}
 /* v255: Horizontal comparison is discoverable by touch and by explicit controls. */
 html body.yk208 #app #viewCompare #cmpBody>.v253-compare-note.v255-comparison-note{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -13130,9 +12949,6 @@ html body.yk208 #app #cmpSheet.cmp-page .cmp-label256{color:#516077;font-weight:
 html body.yk208 #app #cmpSheet.cmp-page .cmp-label256 small{display:block;margin:2px 0 0!important;font-size:11px!important;line-height:1.45!important;font-weight:400}
 html body.yk208 #app #cmpSheet.cmp-page .ct-seg{margin:10px 0 0!important;padding:0!important}
 html body.yk208 #app #cmpSheet.cmp-page .ct-seg button{min-height:48px!important;padding:10px 0!important}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property{margin-top:0!important;padding:0!important}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary{box-sizing:border-box;min-height:48px;padding:12px 0!important;line-height:24px!important}
-html body.yk208 #app #cmpSheet.cmp-page :is(.ct-seg button,.cmp-property>summary){font-size:14px!important;font-weight:600!important;color:#344257!important}
 html body.yk208 #app #cmpSheet.cmp-page #cmpFootnotes{margin:10px 0!important}
 html body.yk208 #app #cmpSheet.cmp-page #cmpFootnotes .cmp-note{margin:0!important;line-height:1.6!important}
 html body.yk208 #app #cmpSheet.cmp-page .cs-actions{margin:10px 0 8px!important}
@@ -13207,11 +13023,6 @@ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{margin-top:7px!important;paddi
 html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card,
 html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card.is-least{border-radius:12px!important;box-shadow:none!important;padding:8px 7px!important}
 html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card b{margin-top:6px!important}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary::-webkit-details-marker{display:none}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary::after{content:'';flex:none;width:8px;height:8px;margin-right:4px;border-right:2px solid #2458FF;border-bottom:2px solid #2458FF;transform:rotate(45deg)}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property[open]>summary::after{transform:rotate(225deg)}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property>summary:focus-visible{outline:2px solid #2458FF;outline-offset:2px;border-radius:6px}
 </style>
 <script id="v257-amount-alignment">
 (function(){
@@ -13249,7 +13060,6 @@ html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:14px!important;lin
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{font-size:12px!important;padding:4px!important;overflow-wrap:anywhere}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-money-part234{display:inline;white-space:normal}
 html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:18px!important;line-height:1.35!important}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-property thead th{position:static!important}
 /* One scroll container, with a header and confirmation button outside it. */
 html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput){display:flex!important;flex-direction:column!important;box-sizing:border-box!important;overflow:hidden!important;height:min(88dvh,720px)!important;max-height:calc(100dvh - 16px)!important;padding:14px 18px max(12px,env(safe-area-inset-bottom))!important}
 html body.yk208 #qSheet:has(#regionSearchInput)>.q-sheet-header{flex:0 0 auto!important;margin:0 0 10px!important;padding:0 0 10px!important}
@@ -13396,6 +13206,160 @@ html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-amt{font-s
 html body.yk208 #app #viewAnswer #heroDeals .hd-list li[data-key] .hd-sub{font-size:12px!important;line-height:1.5!important}
 html body.yk208 #app #viewAnswer #heroDeals .budget-delta{font-size:12px!important;line-height:1.5!important;border-radius:7px!important;padding:3px 7px!important}
 @media(max-width:370px){html body.yk208 #app #viewDeals #dealMapRange{padding-inline:8px!important;gap:4px!important}html body.yk208 #app #viewDeals #dealMapRange>button{padding-inline:8px!important}}
+</style>
+<style id="v262-sheet-and-comparison">
+/* v262: a single sheet layout owns the header, scrolling content and actions. */
+body.map-sheet-open{overflow:hidden;overscroll-behavior:none}
+html body.yk208 #dealMapDetail{
+ display:flex;flex-direction:column;box-sizing:border-box;position:absolute;
+ top:12px;right:12px;bottom:12px;left:auto;width:min(420px,calc(100% - 24px));
+ height:auto;max-height:none;overflow:hidden;margin:0;padding:0;
+ border:1px solid #BBC9DB;border-radius:22px;background:#fff;
+ box-shadow:none;z-index:450;color:#192C48;
+}
+html body.yk208 #dealMapDetail[hidden]{display:none!important}
+html body.yk208 #dealMapDetail .yk-sheet-handle{
+ display:flex;align-items:center;justify-content:center;flex:none;width:100%;height:24px;
+ padding:0;border:0;background:transparent;touch-action:none;cursor:ns-resize;
+}
+html body.yk208 #dealMapDetail .yk-sheet-handle::before{
+ content:'';width:36px;height:4px;border-radius:2px;background:#A4B0C2;
+}
+html body.yk208 #dealMapDetail .yk-sheet-head{
+ display:flex;align-items:center;flex:none;position:static;margin:0;gap:4px;
+ min-height:52px;padding:0 8px 8px 16px;border-bottom:1px solid #E1E7EF;background:#fff;
+ touch-action:none;
+}
+html body.yk208 #dealMapDetail .yk-sheet-head h3{
+ flex:1;min-width:0;margin:0;font-size:17px;font-weight:700;line-height:1.4;
+ color:#192C48;letter-spacing:-.025em;overflow-wrap:anywhere;outline:none;
+}
+html body.yk208 #dealMapDetail :is(.yk-sheet-close,.yk-sheet-grow){
+ position:relative;flex:none;width:44px;height:44px;margin:0;padding:0;border:0;
+ border-radius:12px;background:transparent;cursor:pointer;
+}
+html body.yk208 #dealMapDetail .yk-sheet-grow[hidden]{display:none}
+html body.yk208 #dealMapDetail .yk-sheet-close::before,
+html body.yk208 #dealMapDetail .yk-sheet-close::after{
+ content:'';position:absolute;left:15px;top:21px;width:14px;height:2px;background:#516077;transform:rotate(45deg);
+}
+html body.yk208 #dealMapDetail .yk-sheet-close::after{transform:rotate(-45deg)}
+html body.yk208 #dealMapDetail .yk-sheet-grow::before{
+ content:'';position:absolute;left:18px;top:19px;width:8px;height:8px;
+ border-left:2px solid #516077;border-top:2px solid #516077;transform:rotate(45deg);
+}
+html body.yk208 #dealMapDetail .yk-sheet-grow[aria-expanded="true"]::before{top:15px;transform:rotate(225deg)}
+html body.yk208 #dealMapDetail button:focus-visible{outline:2px solid #2458FF;outline-offset:-3px}
+html body.yk208 #dealMapDetail .yk-sheet-body{
+ flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;scroll-padding:12px;padding:0 16px 20px;touch-action:pan-y;
+}
+html body.yk208 #dealMapDetail .yk-sheet-body:focus-visible{outline:2px solid #2458FF;outline-offset:-2px}
+html body.yk208 #dealMapDetail .yk-pick{margin:0;padding:18px 0 16px}
+html body.yk208 #dealMapDetail .yk-pick strong{
+ display:block;font-size:28px;line-height:1.25;font-weight:750;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+html body.yk208 #dealMapDetail .yk-pick p{font-size:13px;line-height:1.6;margin:6px 0 0;color:#53617C}
+html body.yk208 #dealMapDetail .map-budget-gap .budget-delta{background:transparent;padding:0;font-size:13px}
+html body.yk208 #dealMapDetail .deal-afford{
+ margin:0 0 16px;padding:14px;border:1px solid #D6E4DE;border-radius:15px;background:#F4F8F6;
+}
+html body.yk208 #dealMapDetail .da-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:700;margin:0 0 12px}
+html body.yk208 #dealMapDetail .da-h span{font-size:11px;font-weight:400;color:#617087}
+html body.yk208 #dealMapDetail .dealrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:8px 0;font-size:13px;line-height:1.5}
+html body.yk208 #dealMapDetail .dealrow .k{flex:none;color:#53617C}
+html body.yk208 #dealMapDetail .dealrow .v{text-align:right;font-weight:650;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html body.yk208 #dealMapDetail .da-cash .v{font-size:21px;color:#2458FF;line-height:1.3}
+html body.yk208 #dealMapDetail .da-gap{font-size:12px;color:#3C6757;line-height:1.6}
+html body.yk208 #dealMapDetail .da-gap.is-short{color:#8B541E}
+html body.yk208 #dealMapDetail .yk-sheet-note{margin:16px 0 0;font-size:11px;line-height:1.6;color:#617087}
+html body.yk208 #dealMapDetail .yk-sheet-footer{
+ flex:none;padding:12px 14px max(12px,env(safe-area-inset-bottom));border-top:1px solid #DCE3EE;background:#fff;
+}
+html body.yk208 #dealMapDetail .yk-sheet-footer[hidden]{display:none}
+html body.yk208 #dealMapDetail .cmp-map-actions{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:0;padding:0;border:0;
+}
+html body.yk208 #dealMapDetail .cmp-map-actions:has(.cmp-map-open:disabled){grid-template-columns:1fr}
+html body.yk208 #dealMapDetail .cmp-map-open:disabled{display:none}
+html body.yk208 #dealMapDetail .cmp-save{margin:0;min-width:0}
+html body.yk208 #dealMapDetail :is(.cmp-btn,.cmp-map-open){
+ display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;
+ margin:0;padding:8px 10px;border:1px solid #9BB1EB;border-radius:12px;
+ background:#fff;color:#214CCF;font:inherit;font-size:13px;font-weight:650;line-height:1.4;cursor:pointer;
+}
+html body.yk208 #dealMapDetail .cmp-btn[aria-pressed="false"],
+html body.yk208 #dealMapDetail .cmp-map-actions:has(.cmp-btn[aria-pressed="true"]) .cmp-map-open{
+ background:#2458FF;color:#fff;border-color:#2458FF;
+}
+html body.yk208 #dealMapDetail .cmp-btn[aria-pressed="true"]{background:#EDF2FF;color:#214CCF}
+html body.yk208 #dealMapDetail .cmp-btn i{color:inherit}
+html body.yk208 #dealMapDetail .cmp-msg{font-size:12px;line-height:1.5}
+html body.yk208 #dealMapDetail :is(.yk-sheet-close,.yk-sheet-grow):active{background:#EDF2FF}
+@media(max-width:959px){
+ html body.yk208 #dealMapDetail{
+  position:fixed;top:auto;bottom:var(--sheet-bottom,84px);left:50%;right:auto;
+  transform:translateX(-50%);width:min(calc(100% - 16px),680px);
+  height:var(--sheet-preview,60dvh);max-height:var(--sheet-expanded,86dvh);
+  border-radius:22px;transition:height .22s cubic-bezier(.2,.7,.2,1);
+  z-index:500;
+ }
+ html body.yk208 #dealMapDetail.is-full{height:var(--sheet-expanded,86dvh)}
+}
+@media(min-width:960px){
+ html body.yk208 #dealMapDetail .yk-sheet-handle,
+ html body.yk208 #dealMapDetail .yk-sheet-grow{display:none}
+ html body.yk208 #dealMapDetail .yk-sheet-head{padding-top:8px}
+}
+@media(prefers-reduced-motion:reduce){html body.yk208 #dealMapDetail{transition:none}}
+
+/* v262: one comparison table with calm row groups and readable currency lines. */
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead{
+ background:#EEF4F1!important;color:#192C48!important;border:1px solid #D0E0D7!important;
+ border-left:3px solid #518474!important;border-radius:16px!important;padding:16px 18px!important;
+}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead small{color:#516B61!important;font-size:12px!important;line-height:1.5!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead b{color:#192C48!important;font-size:19px!important;margin:7px 0 6px!important;line-height:1.4!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-insight262{margin:0;font-size:13px;line-height:1.6;color:#516B61}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-insight262 strong{color:#285D49;font-weight:750}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll{
+ background:#fff;border:1px solid #D6DFEC;border-radius:16px!important;padding:10px 8px 0;box-sizing:border-box;
+}
+html body.yk208 #app #cmpSheet.cmp-page table{border-spacing:6px 0!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card{
+ border:0!important;border-top:3px solid #2458FF!important;border-radius:10px!important;
+ padding:9px 6px 12px!important;background:#F4F7FC!important;
+}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll th:nth-child(2) .cmp-card{border-top-color:#24344F!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll th:nth-child(3) .cmp-card{border-top-color:#5972AD!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card.is-least{background:#EEF4F1!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card b{
+ font-size:13px!important;line-height:1.5!important;white-space:normal!important;overflow:visible!important;
+ word-break:normal!important;overflow-wrap:anywhere!important;text-wrap:balance;margin-top:10px!important;
+}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card.is-least b::after{background:#DCEAE3!important;color:#285D49!important;content:'현금 최소'!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card small{font-size:11px!important;color:#617087!important;line-height:1.5!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-group th{padding:16px 0 6px!important;background:transparent!important;border:0!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-group .cmp-label256{font-size:12px!important;font-weight:700!important;letter-spacing:.02em;color:#53617C!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-k th{padding:12px 0 5px!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-k .cmp-label256{font-size:12px!important;font-weight:500!important;color:#617087!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:14px!important;line-height:1.5!important;padding:0 0 12px!important;border-bottom:1px solid #E6EBF2!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{
+ font-size:20px!important;font-weight:750!important;line-height:1.3!important;
+}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-money-part234{white-space:nowrap!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{display:block!important;padding:5px 4px!important;border-radius:8px!important;font-size:11px!important;background:#EDF5F1!important;color:#285D49!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill.is-short{background:#FCF3E8!important;color:#88551F!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-money-part234{display:block!important;white-space:nowrap!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-search td{padding:12px 0!important;border-bottom:0!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-naver{display:flex;align-items:center;justify-content:center;min-height:44px;font-size:11px!important;line-height:1.4!important;white-space:normal!important;padding:5px!important;border-radius:9px!important}
+@media(max-width:370px){
+ html body.yk208 #app #cmpSheet.cmp-page table{border-spacing:4px 0!important}
+ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll{padding-inline:5px!important}
+ html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:17px!important}
+ html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:13px!important}
+}
+
 </style>
 </body>
 </html>
