@@ -12797,5 +12797,130 @@ html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar>p{line-height:1.4
   html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar>p{font-size:11.5px!important}
 }
 </style>
+<style id="v251-stroke">
+/* v251 · final stroke and interaction-state layer.
+   Scope: cosmetic only; input, calculation, APIs, navigation and legal notices unchanged.
+   This comes after inherited historical styles so one visible perimeter wins. */
+html body.yk208 #app{
+  --yk-stroke:#C8D2E2;
+  --yk-stroke-strong:#B5C2D6;
+  --yk-stroke-divider:#E1E7F0;
+  --yk-stroke-field:#C1CCDD;
+}
+/* One continuous perimeter per grouped entry card. */
+html body.yk208 #app .funnel #crows>.crow[data-mode="region"]{
+  border:1px solid var(--yk-stroke)!important;
+  border-bottom:0!important;
+  border-radius:18px 18px 0 0!important;
+  background:#fff!important;box-shadow:none!important;
+}
+html body.yk208 #app .funnel #crows>.crow[data-mode="house"]{
+  border:1px solid var(--yk-stroke)!important;
+  border-top-color:var(--yk-stroke-divider)!important;
+  border-radius:0 0 18px 18px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+html body.yk208 #app .funnel #crows>.inline-money:has(#main-cash){
+  border:1px solid var(--yk-stroke)!important;
+  border-bottom:0!important;border-radius:18px 18px 0 0!important;
+  background:#fff!important;box-shadow:none!important;
+}
+html body.yk208 #app .funnel #crows>.main-no-loan{
+  border:1px solid var(--yk-stroke)!important;
+  border-top-color:var(--yk-stroke-divider)!important;
+  border-bottom:0!important;border-radius:0!important;
+  background:#fff!important;box-shadow:none!important;
+}
+html body.yk208 #app .funnel #crows>.inline-money:has(#main-income){
+  border-left:1px solid var(--yk-stroke)!important;
+  border-right:1px solid var(--yk-stroke)!important;
+  border-top:0!important;border-bottom:0!important;
+  border-radius:0!important;background:#fff!important;box-shadow:none!important;
+}
+html body.yk208 #app .funnel #crows>.crow[data-mode="debt"]{
+  border:1px solid var(--yk-stroke)!important;
+  border-top:0!important;border-radius:0 0 18px 18px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+html body.yk208 #app .funnel #crows>.main-no-loan:has(#mainNoLoan:checked){
+  border-bottom:1px solid var(--yk-stroke)!important;
+  border-radius:0 0 18px 18px!important;
+}
+/* Form field = one clear stroke; no overlapping outline/glow. */
+html body.yk208 #app .funnel #crows .inline-money-field{
+  box-sizing:border-box!important;border:1px solid var(--yk-stroke-field)!important;
+  border-radius:12px!important;box-shadow:none!important;
+  background:#F6F8FC!important;background-clip:padding-box;
+}
+html body.yk208 #app .funnel #crows .inline-money-field:focus-within{
+  border:2px solid #2458FF!important;
+  outline:none!important;box-shadow:none!important;
+  background:#fff!important;
+}
+/* Primary cards and lists: perimeter stronger than internal dividers. */
+html body.yk208 #app #viewAnswer :is(#fundingOverview,#payTile,#easyMarket,#reasonCard),
+html body.yk208 #app #viewDeals #dealCard,
+html body.yk208 #app #viewDeals :is(.deal-regions,.deal-map-panel,.yk-map-stage){
+  border-color:var(--yk-stroke)!important;
+  box-shadow:none!important;
+}
+html body.yk208 #app #viewAnswer #easyBalance .rlab>div,
+html body.yk208 #app #viewAnswer #easyCostOpen,
+html body.yk208 #app #viewDeals :is(.deal-filter,.deal-switch,.cmp-map-open){
+  border-color:var(--yk-stroke-field)!important;
+  box-shadow:none!important;
+}
+html body.yk208 #app #viewDeals :is(.dealwrap,.deal-row,.deal-detail),
+html body.yk208 #app #viewAnswer :is(.ans-row,.ans-pct){
+  border-color:var(--yk-stroke-divider)!important;
+}
+/* Navigation must remain legible over page content without a fuzzy shadow. */
+html body.yk208 #app #v208Nav{
+  box-sizing:border-box!important;
+  border:1px solid var(--yk-stroke)!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+/* Independent modal sheets live outside #app. One perimeter, one divider. */
+html body.yk208 #qSheet,
+html body.yk208 #cmpSheet{
+  border-color:var(--yk-stroke,#C8D2E2)!important;
+  box-shadow:none!important;
+}
+html body.yk208 #qSheet :is(.sheet-actions,.q-sheet-header),
+html body.yk208 #cmpSheet :is(.q-sheet-header,.cmp-row){
+  border-color:var(--yk-stroke-divider,#E1E7F0)!important;
+}
+html body.yk208 #qSheet :is(input,button):focus-visible,
+html body.yk208 #cmpSheet button:focus-visible{
+  outline:2px solid #2458FF!important;outline-offset:2px!important;
+}
+@media(max-width:600px){
+  /* Search area keeps its internal scrolling, but no longer opens as a nearly full-viewport blank sheet. */
+  html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput){
+    height:min(80svh,680px)!important;
+    max-height:calc(100svh - 20px)!important;
+  }
+}
+/* Only the initial region chooser is content-height: no empty sheet space.
+   After choosing a geographic group the regular scrollable list height returns. */
+@media(max-width:600px){
+  html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput):has(#regionPane:empty){
+    height:auto!important;min-height:0!important;
+    max-height:min(80svh,680px)!important;
+  }
+  html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput):has(#regionPane:empty) #qBox{
+    flex:0 1 auto!important;
+  }
+}
+@media(prefers-contrast:more){
+  html body.yk208 #app{
+    --yk-stroke:#9EADC4;--yk-stroke-field:#879AB6;--yk-stroke-divider:#C3CFE0;
+  }
+}
+
+</style>
 </body>
 </html>
