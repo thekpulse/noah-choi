@@ -13270,5 +13270,34 @@ html body.yk208 #qSheet #inputRegionStatus{margin:0 0 8px!important;padding:7px 
 }
 @media(max-width:370px){html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:16px!important}}
 </style>
+<style id="v259-three-column-money">
+/* Three narrow columns need intentional currency lines, not overflowing prose. */
+@media(max-width:600px){
+ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;-webkit-line-clamp:unset!important;word-break:normal!important;overflow-wrap:anywhere!important;margin-top:14px!important}
+ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-rm{top:0!important;right:0!important}
+ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll[data-cols="3"] tr.cmp-hero td>.cmp-money234{flex-direction:column!important;flex-wrap:nowrap!important;gap:0!important;font-size:18px!important;line-height:1.35!important}
+ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll[data-cols="3"] tr.cmp-hero td>.cmp-money234 .cmp-money-part234{display:block!important;white-space:nowrap!important}
+ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{font-size:12px!important;line-height:1.45!important;min-height:0!important;box-sizing:border-box}
+ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill>.cmp-money234{display:block}
+ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-status259{display:block;font-size:12px;font-weight:500;line-height:1.45;margin-top:1px}
+}
+@media(max-width:370px){html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll[data-cols="3"] tr.cmp-hero td>.cmp-money234{font-size:16px!important}}
+</style>
+<script id="v259-comparison-status">
+(function(){
+ 'use strict';
+ function normalize(){
+   document.querySelectorAll('#cmpBody .cmp-pill>.cmp-money234').forEach(amount=>{
+     if(amount.querySelector('.cmp-status259'))return;
+     const tail=amount.lastChild;
+     if(!tail||tail.nodeType!==Node.TEXT_NODE)return;
+     const match=tail.textContent.match(/^\s*(여유|부족)\s*$/);if(!match)return;
+     const status=document.createElement('span');status.className='cmp-status259';status.textContent=' '+match[1];tail.replaceWith(status);
+   });
+ }
+ const previous=cmpRender;cmpRender=function(){const result=previous.apply(this,arguments);normalize();return result;};
+ normalize();
+})();
+</script>
 </body>
 </html>
