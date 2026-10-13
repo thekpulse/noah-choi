@@ -4210,6 +4210,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 <button class="disc disc-head" id="rateToggle" aria-expanded="false" aria-controls="rateSim">
         <span class="k">금리가 달라지면</span><span class="v" id="rateSimV"></span><span class="caret" aria-hidden="true"></span></button>
     <div class="ratesim" id="rateSim" hidden>
+      <div id="rateCompare" aria-label="금리별 월 상환액"></div>
           
                     <input type="range" id="rateRange" min="30" max="100" step="1" value="54" aria-label="금리">
           <div class="range-ends" aria-hidden="true"><span>연 3.0%</span><span>연 10.0%</span></div><p class="tile-s" id="rateSimNote"></p>
@@ -6610,6 +6611,9 @@ function paintRateSim(loan, rate){
     const pct = (r.value - r.min) / (r.max - r.min) * 100;
     r.style.setProperty('--fill-pct', pct + '%');
   }
+  const scenarios = [rate - 1, rate, rate + 1].map(r => ({rate:r, monthly:monthlyPaymentCalc(loan,r,D.years)}));
+  const largest = Math.max(...scenarios.map(x => x.monthly));
+  $('rateCompare').innerHTML = scenarios.map((x,i) => `<div class="rate-case ${i===1?'selected':''}"><small>${i===1?'선택 금리':i===0?'−1%p':'+1%p'}</small><b>${formatWon(x.monthly)}</b><span class="rate-case-track" aria-hidden="true"><i style="height:${Math.round(x.monthly/largest*100)}%"></i></span><span>연 ${x.rate.toFixed(1)}%</span></div>`).join('');
   const base = monthlyPaymentCalc(loan, D.rate, D.years);
   const now  = monthlyPaymentCalc(loan, rate,   D.years);
   const shownMan = value => Math.round(Math.round(value) / 10000);
@@ -6791,11 +6795,13 @@ function renderCostBox(c, price){
 const LNAME={LTV:'집값 기준(LTV)',DSR:'소득 기준(DSR)',DTI:'소득 기준(DSR)','구간한도':'정부 상한','상품한도':'상품 상한','은행자체한도':'은행 상한',manual:'직접 정한 상한'};
 function renderLimits(c, price){
   const L=c.limits||{}, keys=Object.keys(L).filter(k=>isFinite(L[k]));
+  const label = $('limitToggle').querySelector('.k');
+  label.innerHTML = '대출 한도 계산 기준<span class="limit-summary">' + (keys.length ? (LNAME[c.binding]||'한도 비교') + ' 적용' + (c.roomCut>0?' · 방공제 반영':'') : '대출 없이 계산') + '</span>';
   if(!keys.length) $('limits').innerHTML=`<p class="tile-s">대출 없이 계산해서 비교할 한도가 없어요.</p>`;
   else{
     const max=Math.max(...keys.map(k=>L[k]));
     $('limits').innerHTML=keys.map(k=>`<div class="limitrow ${k===c.binding?'bind':''}">
-      <span class="k">${LNAME[k]||k}</span><span class="bar"><i style="width:${max>0?Math.round(L[k]/max*100):0}%"></i></span>
+      <span class="k">${LNAME[k]||k}${k===c.binding?'<small class="limit-applied">적용 기준</small>':''}</span><span class="bar"><i style="width:${max>0?Math.round(L[k]/max*100):0}%"></i></span>
       <span class="v">${formatWon(L[k])}</span></div>`).join('');
   }
   $('limitTip').innerHTML = bindingTip(c, price)
@@ -10848,7 +10854,7 @@ html body #cmpSheet .cmp-naver:focus-visible{outline:2px solid var(--v-blue);out
 .ct-view .ct-month li{display:flex;gap:10px;padding:8px 0;border-top:1px solid #E1E5EB}
 .ct-view .ct-month li:first-child{border-top:0}
 .ct-view .ct-month li i{display:inline-flex;align-items:center;justify-content:center;flex:none;width:20px;height:20px;border-radius:999px;color:#fff;font-size:12px;font-style:normal;font-weight:700;line-height:1}
-.ct-view .ct-month li>div{min-width:0}
+.ct-view .ct-month li>div{min-width:0;width:100%}
 .ct-view .ct-mname{margin:0;font-size:13px;line-height:1.3;color:#5F6B7D}
 .ct-view .ct-mval{margin:2px 0 0;font-size:14px;line-height:1.3;color:#465262;font-variant-numeric:tabular-nums}
 .ct-view .ct-mval b{font-size:16px;color:#192332}
@@ -11756,7 +11762,7 @@ function paint(){
     var sel = CT.sel != null && CT.sel < g.n ? CT.sel : ctDefaultSel(all);
     CT.view = { all:all, g:g, budget:budget, sel:sel };
     chart = '<div class="tr-plot ct-plot" tabindex="0" role="slider" aria-label="달 고르기 · 좌우 화살표" aria-valuemin="1" aria-valuemax="' + g.n + '" aria-valuenow="' + (sel + 1) + '" aria-valuetext="' + esc(ctMonthText(all, sel)) + '" data-ct-plot>'
-      + trendSvgFrame(g, inner + '<g class="ct-selg">' + ctSelSvg(g, sel) + '</g>') + badges + '</div>' + trendXLabels(all[0].series.rows)
+      + trendSvgFrame(g, inner + '<g class="ct-selg">' + ctSelSvg(g, sel) + '</g>') + '</div>' + trendXLabels(all[0].series.rows)
       + '<div class="tr-legend">' + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span>' : '') + (g.lines.some(function(L){return L.bridges.length;})?'<span><i class="tr-key-bridge"></i>거래 없는 달 연결</span>':'')+'</div>'
       + '<p class="ct-hint">차트를 끌어 월별 가격을 비교하세요.</p>'
       + ctMonthHtml(all, sel, budget);
@@ -11798,20 +11804,16 @@ function ctMonthText(all, sel){
   return trendYm(all[0].series.rows[sel].ymd) + ' · ' + all.map(function(a, i){ return (CT.no[i] + 1) + '번 ' + ctRowText(a.series.rows[sel]); }).join(' · ');
 }
 function ctMonthHtml(all, sel, budget){
-  var last = ctDefaultSel(all);
-  var back = sel !== last ? '<button type="button" class="tr-now" data-ct-sel="' + last + '">최근 달로</button>' : '';
+  var last = ctDefaultSel(all), n = all[0].series.rows.length;
+  var back = sel !== last ? '<button type="button" class="tr-now" data-ct-sel="' + last + '">최근 거래 달</button>' : '';
   var items = all.map(function(a, i){
     var r = a.series.rows[sel], v, sub = '';
     if(!r || !r.ok) v = '조회 실패';
     else if(!r.deals.length) v = '거래 없음';
-    else {
-      v = '<b>' + trendWon(r.median) + '</b>';
-      var d = budget ? r.median - budget : null;
-      sub = '거래 ' + r.deals.length + '건' + (d == null ? '' : d === 0 ? ' · 예상 집값과 같음' : ' · 예상 집값보다 <span class="' + (d > 0 ? 'is-over' : 'is-under') + '">' + trendWon(Math.abs(d)) + (d > 0 ? ' 높음' : ' 낮음') + '</span>');
-    }
-    return '<li><i style="background:' + COLORS[CT.no[i]] + '" aria-hidden="true">' + (CT.no[i] + 1) + '</i><div><p class="ct-mname">' + esc(a.s.name) + '</p><p class="ct-mval">' + v + '</p>' + (sub ? '<p class="ct-msub">' + sub + '</p>' : '') + '</div></li>';
+    else { v = '<b>' + formatWon(r.median*10000).replace(/억[\s\u2060]*/,'억|').split('|').map(function(x){return '<span>'+x+'</span>';}).join(' ') + '</b>'; sub = '거래 ' + r.deals.length + '건'; }
+    return '<li aria-label="'+esc(a.s.name)+'"><i style="background:' + COLORS[CT.no[i]] + '" aria-hidden="true">' + (CT.no[i] + 1) + '</i><div><p class="ct-mval">' + v + '</p>' + (sub ? '<p class="ct-msub">' + sub + '</p>' : '') + '</div></li>';
   }).join('');
-  return '<div class="ct-month"><div class="tr-mhead"><p>' + trendYm(all[0].series.rows[sel].ymd) + ' 월 중간값</p>' + back + '</div><ul>' + items + '</ul></div>';
+  return '<div class="ct-month"><div class="ct-month-nav"><button type="button" aria-label="이전 달" data-ct-sel="'+(sel-1)+'" '+(sel===0?'disabled':'')+'>‹</button><p>' + trendYm(all[0].series.rows[sel].ymd) + '<small>월 중간값</small></p><button type="button" aria-label="다음 달" data-ct-sel="'+(sel+1)+'" '+(sel===n-1?'disabled':'')+'>›</button></div><ul style="--ct-count:'+all.length+'">' + items + '</ul>'+back+'</div>';
 }
 function ctSelect(i){
   var V = CT.view; if(!V) return;
@@ -12460,11 +12462,11 @@ html body.yk208 #app .funnel .v232-step{font-size:14px!important;font-weight:700
 html body.yk208 #app .funnel .v232-step span{font-size:12.5px!important;font-weight:700!important;line-height:1.45!important;color:var(--yk-blue-dark)!important}
 html body.yk208 #app .funnel #crows>.crow,html body.yk208 #app .funnel #crows>.inline-money,html body.yk208 #app .funnel #crows>.main-no-loan{border-color:var(--yk-line)!important}
 html body.yk208 #app .funnel #crows>.crow{min-height:52px!important;padding:11px 16px!important;gap:12px!important}
-html body.yk208 #app .funnel #crows>.crow .k{font-size:14px!important;font-weight:500!important;line-height:1.45!important;letter-spacing:-.012em!important;color:var(--yk-sub)!important}
+html body.yk208 #app .funnel #crows>.crow .k{font-size:14px!important;font-weight:500!important;line-height:1.5!important;letter-spacing:-.012em!important;color:var(--yk-sub)!important}
 html body.yk208 #app .funnel #crows>.crow .v{font-size:15px!important;font-weight:650!important;line-height:1.45!important;letter-spacing:-.025em!important;color:var(--yk-ink)!important}
 html body.yk208 #app .funnel #crows>.crow .v:where(.empty,.placeholder),html body.yk208 #app .funnel #crows>.crow:not(.is-chosen) .v{color:var(--yk-blue-dark)}
 html body.yk208 #app .funnel #crows>.inline-money{padding:12px 16px!important}
-html body.yk208 #app .funnel #crows>.inline-money>label{font-size:14px!important;font-weight:650!important;line-height:1.5!important;color:var(--yk-ink)!important;letter-spacing:-.015em!important}
+html body.yk208 #app .funnel #crows>.inline-money>label{font-size:14px!important;font-weight:500!important;line-height:1.5!important;color:var(--yk-sub)!important;letter-spacing:-.012em!important}
 html body.yk208 #app .funnel #crows .inline-money-field{min-height:56px!important;margin-top:7px!important;padding-inline:12px!important}
 html body.yk208 #app .funnel #crows .inline-money-field:focus-within{}
 html body.yk208 #app .funnel #crows .inline-money-field input{font-size:28px!important;font-weight:650!important;letter-spacing:-.038em!important;line-height:1.25!important;color:var(--yk-ink)!important;min-height:44px!important}
@@ -13360,6 +13362,36 @@ html body.yk208 #app #cmpSheet.cmp-page .cmp-naver{display:flex;align-items:cent
  html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:13px!important}
 }
 
+</style>
+<style>
+/* v263: consistent field hierarchy and compact calculation comparisons */
+html body.yk208 #app .funnel #crows>.main-no-loan :is(span,label){font-weight:500!important}
+html body.yk208 #app #limitToggle .k{display:block;text-align:left}
+html body.yk208 #app .limit-summary{display:block;margin-top:5px;font-size:12px;font-weight:400;line-height:1.5;color:#64748B}
+html body.yk208 #app .limit-applied{display:inline-block;margin-left:6px;font-size:10px;font-weight:500;color:#1F5BFF}
+html body.yk208 #app #limits .limitrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px 0}
+html body.yk208 #app #limits .limitrow .bar{grid-column:1/-1;grid-row:2;height:5px}
+html body.yk208 #app #rateCompare{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 20px}
+html body.yk208 #app .rate-case{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;font-size:12px;color:#64748B}
+html body.yk208 #app .rate-case small{font-size:11px}
+html body.yk208 #app .rate-case b{font-size:13px;color:#334155;text-align:center;word-break:keep-all}
+html body.yk208 #app .rate-case.selected b{color:#1F5BFF}
+html body.yk208 #app .rate-case-track{height:48px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+html body.yk208 #app .rate-case-track i{display:block;width:34px;background:#D7DFED;border-radius:5px 5px 0 0}
+html body.yk208 #app .rate-case.selected .rate-case-track i{background:#1F5BFF}
+html body.yk208 #app .ct-month-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html body.yk208 #app .ct-month-nav button{width:44px;height:44px;border:1px solid #E2E8F0;border-radius:12px;background:white;color:#334155;font-size:24px}
+html body.yk208 #app .ct-month-nav button:disabled{opacity:.3}
+html body.yk208 #app .ct-month-nav p{margin:0;text-align:center;font-size:14px;font-weight:600}
+html body.yk208 #app .ct-month-nav small{display:block;font-size:11px;font-weight:400;color:#64748B;margin-top:3px}
+html body.yk208 #app .ct-view .ct-month ul{display:grid;grid-template-columns:repeat(var(--ct-count),minmax(0,1fr));gap:6px;margin-top:14px}
+html body.yk208 #app .ct-view .ct-month li{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;min-width:0;text-align:center;border:0}
+html body.yk208 #app .ct-view .ct-month li>div{min-width:0;width:100%}
+html body.yk208 #app .ct-view .ct-mval{font-size:13px;line-height:1.5;margin:0;white-space:normal}
+html body.yk208 #app .ct-view .ct-mval b{font-size:14px}
+html body.yk208 #app .ct-view .ct-mval b span{display:block!important;white-space:nowrap;font-size:13px!important}
+html body.yk208 #app .ct-view .ct-msub{font-size:11px;margin:5px 0 0;color:#64748B}
+html body.yk208 #app .ct-month>.tr-now{display:block;min-height:44px;margin:10px auto 0}
 </style>
 </body>
 </html>
