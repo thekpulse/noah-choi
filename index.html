@@ -4060,6 +4060,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
 </head>
 <body>
+<script>window.__sharedEntry272=/^#r=/.test(location.hash)||new URLSearchParams(location.search).has('r');</script>
 <style id="map-types270">
 .map-types270{position:absolute;right:12px;top:12px;z-index:5;font-size:14px;line-height:1.4;font-family:inherit;color:#192332}
 .map-types270 summary{list-style:none;cursor:pointer;background:#fff;border:1px solid #C6D2E4;border-radius:12px;min-height:44px;padding:0 12px;display:flex;align-items:center;gap:7px;box-sizing:border-box;font-size:13px;font-weight:600}
@@ -11284,10 +11285,10 @@ let active='home',started=!result.hidden||!!S.fromResult,busy=false;
 const tabScroll={home:0,map:0,compare:0,conditions:0};
 function clearStatus(){clearTimeout(status._timer);status.hidden=true;}
 function announce(message){status.textContent=message;status.hidden=false;clearTimeout(status._timer);status._timer=setTimeout(()=>status.hidden=true,4500);}
-function current(){return result.hidden?'conditions':RVIEW==='compare'?'compare':RVIEW==='deals'?'map':'home';}
+function current(){if(document.body.classList.contains('explore268-on'))return 'map';return result.hidden?'conditions':RVIEW==='compare'?'compare':RVIEW==='deals'?'map':'home';}
 function sync(){
  if(!result.hidden)started=true;
- const has=started;el('homeBtn').setAttribute('aria-label',has?'홈으로':'처음으로');document.querySelectorAll('#cmpBar,[data-cmp-open]').forEach(b=>b.removeAttribute('aria-haspopup'));active=current();nav.hidden=!has;document.body.classList.toggle('v208-ready',has);app.dataset.v208Tab=has?active:'entry';
+ const has=started;el('homeBtn').setAttribute('aria-label',has?'내 예산으로':'처음으로');document.querySelectorAll('#cmpBar,[data-cmp-open]').forEach(b=>b.removeAttribute('aria-haspopup'));active=current();nav.hidden=!has;document.body.classList.toggle('v208-ready',has);app.dataset.v208Tab=has?active:'entry';
  for(const b of nav.querySelectorAll('button')){const on=b.dataset.v208Tab===active;if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}
  const n=typeof cmpLoad==='function'?cmpLoad().length:0,c=el('v208Count');note.hidden=n>0;c.textContent=String(n);c.hidden=!n;
  nav.querySelector('[data-v208-tab="compare"]').setAttribute('aria-label','비교'+(n?' · '+n+'곳':''));
@@ -11331,11 +11332,13 @@ function compactCompare(){
 }
 cmpRender=function(){originalCmpRender();compactCompare();emptyState();sync();};
 function navigate(tab,fromHistory){
- if(tab==='map'&&window.__entry268){window.__entry268.open();return;}
+ if(tab==='map'&&window.__entry268){window.__entry268.open(!!fromHistory);return;}
+ if(window.__entry268&&!allReady()){window.__entry268.start(null,tab,!!fromHistory);return;}
+ const previousMap272=document.body.classList.contains('explore268-on');
  window.__entry268?.hide();
  if(!tabs.some(x=>x[0]===tab))return;
- if(!started&&result.hidden)return;
- clearStatus();const previous=current();tabScroll[previous]=window.scrollY;busy=true;
+ if(!started&&result.hidden&&!allReady())return;
+ clearStatus();const previous=previousMap272?'map':current();tabScroll[previous]=window.scrollY;busy=true;
  try{
   if(tab==='conditions'){
    if(!result.hidden)el('toCondBtn').click();
@@ -11344,13 +11347,7 @@ function navigate(tab,fromHistory){
     if(!allReady()){announce('입력이 필요한 항목을 확인해 주세요.');el('ctaTodo').scrollIntoView({block:'center'});return;}
     next();
    }
-   if(tab==='map'){
-    if(!dealsAlive()){announce('실거래를 준비하고 있어요. 잠시 후 다시 눌러 주세요.');return;}
-    originalSet('deals');sheet.hidden=true;
-    const map=el('dealMapTab'),bar=el('dealViewBar');
-    if(map&&bar&&!bar.hidden)map.click();
-    else announce('현재는 실거래 목록으로 확인할 수 있어요.');
-   }else if(tab==='compare'){
+   if(tab==='compare'){
     originalSet('compare');sheet.hidden=false;cmpRender();cmpQueueAlignment();
    }else{sheet.hidden=true;originalSet('answer');}
   }
@@ -11371,7 +11368,7 @@ sheet.addEventListener('keydown',function(e){if(e.key==='Tab'||e.key==='Escape')
 el('homeBtn').addEventListener('click',function(e){if(started){e.preventDefault();e.stopImmediatePropagation();navigate('home');}},true);
 nav.addEventListener('click',function(e){const b=e.target.closest('[data-v208-tab]');if(b)navigate(b.dataset.v208Tab);});
 document.addEventListener('click',function(e){const b=e.target.closest('[data-v208-go]');if(b)navigate(b.dataset.v208Go);});
-window.addEventListener('popstate',function(e){if(started)navigate(e.state&&e.state.yk208Tab||'home',true);});
+window.addEventListener('popstate',function(e){if(started||window.__entry268)navigate(e.state&&e.state.yk208Tab||'map',true);});
 window.addEventListener('resize',sync);
 const compareObserver=new MutationObserver(function(){sync();});compareObserver.observe(el('cmpBody'),{childList:true});
 const saveObserver=new MutationObserver(function(){sync();});const cmpBar=el('cmpBar');if(cmpBar)saveObserver.observe(cmpBar,{childList:true,subtree:true,characterData:true});
@@ -13576,24 +13573,28 @@ body.wizard268 #wizardFoot268 small::after{content:"참고용 계산 결과 · �
 'use strict';
 const $=id=>document.getElementById(id), esc268=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const root=document.createElement('section');root.id='explore268';root.hidden=true;root.setAttribute('aria-label','실거래 둘러보기');
-root.innerHTML=`<header><div class="ex-brand"><h1>영끌계산기</h1><button id="exBudget268" class="ex-primary">내 예산 알아보기</button></div><input id="exSearch268" type="search" aria-label="지역 검색" placeholder="어느 동네의 집을 볼까요? · 구·시 검색" autocomplete="off"><div id="exRegions268" hidden></div><p id="exLocation268"></p></header><div class="ex-stage"><div id="exMap268" aria-label="실거래 지도"></div><div class="ex-map-note"><span id="exMapStatus268" role="status">지도를 준비하고 있어요</span></div><section id="exDetail268" hidden aria-label="선택 단지"></section></div><div class="ex-lower"><div class="ex-list-head"><button id="exListToggle271" aria-expanded="false">거래 목록 보기</button><p id="exCount268" role="status">최근 거래</p><button id="exRetry268" hidden>다시 불러오기</button></div><div id="exList268"></div><p id="exLegal268">최근 3개월 실거래 · 매물 호가 아님<br>참고용 계산 결과 · 대출 주선·알선·중개 아님</p></div>`;
+root.innerHTML=`<header><div class="ex-brand"><h1>영끌계산기</h1><button id="exBudget268" class="ex-primary">내 예산 알아보기</button></div><input id="exSearch268" type="search" aria-label="지역 검색" placeholder="어느 동네의 집을 볼까요? · 구·시 검색" autocomplete="off"><div id="exRegions268" hidden></div><p id="exLocation268"></p></header><div class="ex-stage"><div id="exMap268" aria-label="실거래 지도"></div><div class="ex-map-note"><span id="exMapStatus268" role="status">지도를 준비하고 있어요</span></div><section id="exDetail268" hidden aria-label="선택 단지"></section></div><div class="ex-lower"><div class="ex-list-head"><button id="exListToggle271" aria-expanded="false">거래 목록 보기</button><p id="exCount268" role="status">최근 거래</p><button id="exRetry268" hidden>다시 불러오기</button></div><div id="exList268"></div><p id="exLegal268">최근 3개월 실거래 · 매물 호가 아님</p><small class="ex-disclaimer272">참고용 계산 결과 · 대출 주선·알선·중개 아님</small></div>`;
 document.body.append(root);
 const entryNav=document.createElement('nav');entryNav.id='entryNav271';entryNav.setAttribute('aria-label','주요 메뉴');entryNav.innerHTML='<button data-entry-tab="map" aria-current="page">지도</button><button data-entry-tab="home">내 예산</button><button data-entry-tab="compare">비교</button><button data-entry-tab="conditions">내 조건</button>';root.append(entryNav);
 entryNav.querySelectorAll('[data-entry-tab]').forEach(b=>{const src=document.querySelector('#v208Nav [data-v208-tab="'+b.dataset.entryTab+'"] svg');if(src)b.prepend(src.cloneNode(true));});
-function syncExplore271(){const ready=allReady();$('exBudget268').hidden=ready;entryNav.querySelector('[data-entry-tab="compare"]').setAttribute('aria-label','비교 '+cmpLoad().length+'곳');}
-entryNav.onclick=e=>{const b=e.target.closest('[data-entry-tab]');if(!b)return;const tab=b.dataset.entryTab;if(tab==='map')return;if(!allReady()){startBudget(null);return;}hideExplore();window.yk208Navigate(tab);};
+function syncExplore271(){$('exBudget268').hidden=true;entryNav.querySelector('[data-entry-tab="compare"]').setAttribute('aria-label','비교 '+cmpLoad().length+'곳');}
+entryNav.onclick=e=>{const b=e.target.closest('[data-entry-tab]');if(!b)return;const tab=b.dataset.entryTab;if(tab==='map')return;if(!allReady()){startBudget(null,tab);return;}window.yk208Navigate(tab);};
 $('exListToggle271').onclick=()=>{const open=root.classList.toggle('list-open271');$('exListToggle271').setAttribute('aria-expanded',String(open));$('exListToggle271').textContent=open?'목록 접기':'거래 목록 보기';requestAnimationFrame(()=>{if(map)naver.maps.Event.trigger(map,'resize')});};
 
-let area=String(S.sgg||'11200'),items=[],selected=null,map=null,markers=[],request=0,mapPaint=0,step=0,loading=false;
+let area=String(S.sgg||'11200'),items=[],selected=null,map=null,markers=[],request=0,mapPaint=0,step=0,loading=false,destination272='home',detailSource272=null,detailList272=false;
 const regions=Object.entries(LAWD).flatMap(([s,rs])=>rs.map(([code,name])=>({code:String(code),s,name,label:shortSido(s)+' '+name})));
-function openExplore(){document.body.classList.remove('wizard268','welcome232-on');document.body.classList.add('explore268-on');root.hidden=false;$('exDetail268').hidden=true;$('welcome232').hidden=true;window.scrollTo(0,0);if(map)requestAnimationFrame(()=>naver.maps.Event.trigger(map,'resize'));syncExplore271();if(!items.length&&!loading)loadArea();}
+function openExplore(fromHistory=false){if(fromHistory!==true&&history.state?.yk208Tab!=='map')history[history.state?.yk208Tab?'pushState':'replaceState']({...history.state,yk208Tab:'map'},'',location.href);document.body.classList.remove('wizard268','welcome232-on');document.body.classList.add('explore268-on');root.hidden=false;$('exDetail268').hidden=true;$('welcome232').hidden=true;window.scrollTo(0,0);if(map)requestAnimationFrame(()=>naver.maps.Event.trigger(map,'resize'));syncExplore271();if(!items.length&&!loading)loadArea();}
 function hideExplore(){root.hidden=true;document.body.classList.remove('explore268-on');}
 function latest(rows){const seen=new Map();rows.filter(d=>Number(d.amountMan)>0&&Number(d.areaM2)>0).sort((a,b)=>((b.y*10000+b.m*100+(b.d||0))-(a.y*10000+a.m*100+(a.d||0)))).forEach(d=>{const k=d.name+'|'+d.dong+'|'+d.areaM2;if(!seen.has(k))seen.set(k,d)});return [...seen.values()];}
 async function loadArea(){const token=++request;loading=true;++mapPaint;selected=null;$('exDetail268').hidden=true;markers.forEach(m=>m.setMap(null));markers=[];items=[];const r=regions.find(r=>r.code===area);$('exLocation268').textContent=(r?r.label:area)+' · 최근 3개월 실거래';$('exCount268').textContent='거래를 불러오는 중…';$('exRetry268').hidden=true;$('exList268').replaceChildren();centerMap();try{const rows=(await Promise.all(lawdCodesOf(area).map(fetchOne))).flat();if(token!==request)return;items=latest(rows);$('exCount268').textContent=items.length?'최근 거래 '+items.length+'건'+(items.length>60?' · 최신 60건 표시':''):'조회된 거래가 없어요';renderList();paintMarkers();}catch(e){if(token!==request)return;$('exCount268').textContent='실거래를 불러오지 못했어요';$('exRetry268').hidden=false;}finally{if(token===request){loading=false;requestAnimationFrame(()=>document.dispatchEvent(new Event('yk:entry-ready')));}}}
 function renderList(){$('exList268').innerHTML=items.slice(0,60).map((d,i)=>`<button data-ex-item="${i}"><b>${esc268(d.name)}</b><strong>${esc268(formatWon(d.amountMan*10000))}</strong><small>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${d.y}.${String(d.m).padStart(2,'0')}</small></button>`).join('');}
-function detail(d){selected=d;root.classList.remove('list-open271');$('exListToggle271').setAttribute('aria-expanded','false');$('exListToggle271').textContent='거래 목록 보기';$('exDetail268').innerHTML=`<button class="ex-close" aria-label="단지 상세 닫기">×</button><small>최근 실거래</small><h2>${esc268(d.name)}</h2><div class="ex-price">${esc268(formatWon(d.amountMan*10000))}</div><p>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${esc268(d.floor??'—')}층<br>${d.y}.${String(d.m).padStart(2,'0')}${d.d?'.'+String(d.d).padStart(2,'0'):''} 계약</p><button class="ex-primary" id="exSelectedCalc268">이 집, 내 예산으로 가능할까?</button>`;$('exDetail268').hidden=false;$('exDetail268').querySelector('.ex-close').onclick=()=>{$('exDetail268').hidden=true};$('exSelectedCalc268').onclick=()=>startBudget(d);
-if(allReady()){$('exSelectedCalc268').remove();const info=document.createElement('div');info.innerHTML=dealAffordHtml(d)+cmpBtnHtml(d);$('exDetail268').append(info);cmpSync();}
+function detail(d){selected=d;detailSource272=document.activeElement;detailList272=root.classList.contains('list-open271');root.classList.remove('list-open271');$('exListToggle271').setAttribute('aria-expanded','false');$('exListToggle271').textContent='거래 목록 보기';$('exDetail268').innerHTML=`<button class="ex-close" aria-label="단지 상세 닫기">×</button><small>최근 실거래</small><h2>${esc268(d.name)}</h2><div class="ex-price">${esc268(formatWon(d.amountMan*10000))}</div><p>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${esc268(d.floor??'—')}층<br>${d.y}.${String(d.m).padStart(2,'0')}${d.d?'.'+String(d.d).padStart(2,'0'):''} 계약</p><button class="ex-primary" id="exSelectedCalc268">이 집, 내 예산으로 가능할까?</button>`;$('exDetail268').hidden=false;$('exDetail268').querySelector('.ex-close').onclick=closeDetail272;$('exSelectedCalc268').onclick=()=>startBudget(d);
+if(allReady()&&lawdCodesOf(String(S.sgg)).map(String).includes(String(d.lawd))){$('exSelectedCalc268').remove();const info=document.createElement('div');info.innerHTML=dealAffordHtml(d)+cmpBtnHtml(d);$('exDetail268').append(info);cmpSync();}else if(allReady()){$('exSelectedCalc268').textContent='이 지역 조건으로 계산';const note=document.createElement('p');note.className='ex-region-note272';note.textContent='매수 지역이 달라 대출·부대비용을 다시 계산해야 해요.';$('exSelectedCalc268').before(note);}
+$('exDetail268').querySelector('.ex-close').focus({preventScroll:true});
 }
+function closeDetail272(){$('exDetail268').hidden=true;root.classList.toggle('list-open271',detailList272);$('exListToggle271').setAttribute('aria-expanded',String(detailList272));$('exListToggle271').textContent=detailList272?'목록 접기':'거래 목록 보기';if(detailSource272?.isConnected)detailSource272.focus({preventScroll:true});}
+root.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('exDetail268').hidden){e.preventDefault();closeDetail272();}});
+
 
 $('exList268').onclick=e=>{const b=e.target.closest('[data-ex-item]');if(b)detail(items[+b.dataset.exItem]);};
 function centerMap(){if(!map||!window.naver?.maps?.Service)return;const r=regions.find(r=>r.code===area),code=area;if(!r)return;naver.maps.Service.geocode({query:r.s+' '+r.name},(status,res)=>{if(code!==area)return;const a=res?.v2?.addresses?.[0];if(a)map.setCenter(new naver.maps.LatLng(+a.y,+a.x));});}
@@ -13608,11 +13609,12 @@ const foot=document.createElement('div');foot.id='wizardFoot268';foot.innerHTML=
 const steps=()=> (S.noLoan?['cash','region','house']:['cash','income','region','house','debt']).filter(k=>!(selected&&k==='region'));
 const titles={cash:'집에 쓸 현금은\n얼마인가요?',income:'한 해 소득은\n얼마인가요?',region:'어느 지역에서\n집을 살펴볼까요?',house:'주택을 보유한\n적이 있나요?',debt:'기존 대출로 매달\n얼마를 갚고 있나요?'};
 function paintStep(){const ss=steps();step=Math.min(step,ss.length-1);const key=ss[step];document.body.dataset.wizardStep=key;$('wizardProgress268').textContent=(step+1)+' / '+ss.length;$('wizardTitle268').innerText=titles[key];$('wizardSub268').textContent=selected?selected.name+' · 이 집을 기준으로 살펴볼게요.':'내 예산에 맞는 집을 찾기 위한 계산이에요.';$('wizardNext268').textContent=step===ss.length-1?'내 예산 확인하기':'다음';$('wizardPrev268').hidden=step===0;$('wizardError268').textContent='';}
-function startBudget(d){selected=d||null;hideExplore();if(!$('result').hidden)$('toCondBtn').click();$('welcome232').hidden=true;document.body.classList.remove('welcome232-on');$('funnel').hidden=false;if(selected){S.sgg=String(d.lawd);S.sido=sidoOfCode(S.sgg);S.group=S.sido===SEOUL?'seoul':METRO.includes(S.sido)?'metro':'other';}render();step=0;document.body.classList.add('wizard268');paintStep();$('wizardTitle268').focus({preventScroll:true});window.scrollTo(0,0);}
+function startBudget(d,target='home',fromHistory=false){destination272=target==='compare'?'compare':'home';if(!fromHistory&&history.state?.yk208Tab!=='conditions')history.pushState({...history.state,yk208Tab:'conditions'},'',location.href);selected=d||null;hideExplore();if(!$('result').hidden)$('toCondBtn').click();$('welcome232').hidden=true;document.body.classList.remove('welcome232-on');$('funnel').hidden=false;if(selected){S.sgg=String(d.lawd);S.sido=sidoOfCode(S.sgg);S.group=S.sido===SEOUL?'seoul':METRO.includes(S.sido)?'metro':'other';}render();step=0;document.body.classList.add('wizard268');paintStep();$('wizardTitle268').focus({preventScroll:true});window.scrollTo(0,0);}
 $('exBudget268').onclick=()=>startBudget(null);$('wizardExit268').onclick=openExplore;$('wizardPrev268').onclick=()=>{step--;paintStep()};
-$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=steps()[step];const ok={cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(step<steps().length-1){step++;paintStep();return;}if(!allReady())return;document.body.classList.remove('wizard268');S.lockedPrice=null;next();renderSelected();};
+$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=steps()[step];const ok={cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(step<steps().length-1){step++;paintStep();return;}if(!allReady())return;document.body.classList.remove('wizard268');S.lockedPrice=null;next();renderSelected();if(destination272==='compare')window.yk208Navigate('compare');else if(selected){const chosen=selected;openExplore();detail(chosen);}};
 $('crows').addEventListener('change',e=>{if(e.target.id==='mainNoLoan'&&document.body.classList.contains('wizard268'))paintStep()});
-function renderSelected(){let node=$('selectedHome268');if(!selected||String(S.sgg)!==String(selected.lawd)){if(node)node.remove();return;}if(!node){node=document.createElement('section');node.id='selectedHome268';$('payTile').before(node);}node.innerHTML='<small>지도에서 고른 집</small><h2>'+esc268(selected.name)+'</h2><p>'+esc268(formatWon(selected.amountMan*10000))+' · 전용 '+esc268(selected.areaM2)+'㎡</p>'+dealAffordHtml(selected)+'<button id="selectedExplore268">다른 집도 둘러보기</button>';$('selectedExplore268').onclick=openExplore;}
+function renderSelected(){$('selectedHome268')?.remove();}
+
 const oldSet271=setRView;setRView=function(v){if(v==='deals'){openExplore();return;}return oldSet271.apply(this,arguments);};
 new ResizeObserver(()=>{if(map&&!root.hidden)naver.maps.Event.trigger(map,'resize');}).observe($('exMap268'));
 const oldShow=showResult;showResult=function(){const r=oldShow.apply(this,arguments);renderSelected();return r;};
@@ -13620,7 +13622,7 @@ const oldShow=showResult;showResult=function(){const r=oldShow.apply(this,argume
 $('entryBack232').onclick=openExplore;
 window.__entry268={open:openExplore,hide:hideExplore,start:startBudget,select:detail,load:loadArea,items:()=>items};
 // Shared result links retain their direct-result destination.
-if($('result').hidden)openExplore();
+if(!window.__sharedEntry272){history.replaceState({...history.state,yk208Tab:'map'},'',location.href);openExplore(true);}else if($('result').hidden)openExplore(true);
 })();
 </script>
 
@@ -13662,5 +13664,5 @@ html body.yk208 #app #v208Nav{left:0!important;right:0!important;bottom:0!import
 #exDetail268 .da-gap{font-size:13px;margin:10px 0}
 #exDetail268 .afford-details268{font-size:12px}
 #exDetail268 .cmp-save{margin-top:14px}#exDetail268 .cmp-btn{width:100%}
-</style></body>
+</style><style>.ex-disclaimer272{display:block;color:#64748b;font-size:10px;margin:2px 0 4px}#exDetail268 .ex-region-note272{font-size:13px;line-height:1.6;color:#53617c}</style></body>
 </html>
