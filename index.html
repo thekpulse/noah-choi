@@ -4060,6 +4060,32 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
 </head>
 <body>
+<style id="v269-launch-style">
+#launch269{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#2458FF;color:#fff;pointer-events:none;opacity:1;transition:opacity .18s ease;animation:launch269-safe 0s 1.5s forwards}
+#launch269.leaving{opacity:0}
+#launch269 .launch-brand{display:flex;flex-direction:column;align-items:center;gap:22px;margin-top:-5vh}
+#launch269 svg{width:72px;height:72px;display:block}
+#launch269 strong{font-family:inherit;font-size:27px;font-weight:750;letter-spacing:-.045em;line-height:1.25}
+@keyframes launch269-safe{to{visibility:hidden;opacity:0}}
+@media(prefers-reduced-motion:reduce){#launch269{display:none;transition:none}}
+</style>
+<script id="v269-launch">
+(function(){
+  // Decorative launch cover: never blocks input, sharing links, or repeat visits.
+  const key='yk.launch.seen.v1';
+  if(location.search||location.hash||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  try{if(localStorage.getItem(key))return;}catch(e){}
+  const cover=document.createElement('div');cover.id='launch269';cover.setAttribute('aria-hidden','true');
+  cover.innerHTML='<div class="launch-brand"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 22 24 8l17 14M12 19v21h24V19M20 40V27h8v13"/></svg><strong>영끌계산기</strong></div>';
+  document.body.append(cover);
+  let done=false;
+  function dismiss(){if(done)return;done=true;clearTimeout(deadline);document.removeEventListener('yk:entry-ready',dismiss);cover.classList.add('leaving');try{localStorage.setItem(key,'1');}catch(e){}setTimeout(()=>cover.remove(),200);}
+  const deadline=setTimeout(dismiss,1000);
+  document.addEventListener('yk:entry-ready',dismiss,{once:true});
+  window.addEventListener('pageshow',e=>{if(e.persisted)dismiss();});
+})();
+</script>
+
 
 <div class="app" id="app">
   
@@ -4252,6 +4278,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
         <div id="limits"></div>
         <div class="tip" id="limitTip"></div>
         <div class="tip" id="roomTip"></div>
+        <div id="limitAfterRoom" hidden></div>
         
         <label class="subtoggle" id="mciRow">
           <input type="checkbox" id="swMci" aria-label="MCI·MCG 가입 조건 적용"><span>MCI·MCG 가입 조건 적용</span></label>
@@ -6817,6 +6844,9 @@ function renderLimits(c, price){
       ? `<b>방공제를 적용하지 않았어요.</b> 가입 조건과 비용은 은행마다 달라요.`
       : '');
   $('roomTip').hidden = !(c.roomCut>0 || mciOn);
+  const afterRoom = $('limitAfterRoom');
+  afterRoom.hidden = !(c.roomCut>0 && keys.length);
+  afterRoom.innerHTML = afterRoom.hidden ? '' : '<span>방공제 반영 한도</span><strong>' + formatWon(c.mortgageLoan) + '</strong>';
   (function(){
     const t = $('capTip'); if(!t) return;
     if(S.loanCap == null){t.textContent='';t.hidden=true;return;}
@@ -7267,11 +7297,12 @@ function dealAffordHtml(x){
   const basis = f.L > 0 ? '예상 대출 포함 · ' : '대출 없이 · ';
   const balance = f.gap > 0 ? '현금 ' + formatWon(f.gap * 10000) + ' 부족'
                 : f.gap < 0 ? '현금 ' + formatWon(-f.gap * 10000) + ' 여유' : '추가 현금 0원';
+  const why = dealAffordWhy(x, f);
   const gap = '<p class="da-gap' + (f.gap > 0 ? ' is-short' : '') + '">' + basis + balance + '</p>';
   return '<div class="deal-afford"><p class="da-h">이 가격으로 사면 <span>부대비용 포함</span></p>'
        + row('필요한 현금', formatWon(f.C * 10000))
        + (f.L > 0 ? row('주택담보대출', formatWon(f.L * 10000)) + row('월 상환액', formatWon(f.M * 10000)) : '')
-       + gap + dealAffordWhy(x, f) + '</div>';
+       + gap + (why ? '<details class="afford-details268"><summary>현금 차이 계산 보기</summary>'+why+'</details>' : '') + '</div>';
 }
 function dealAffordWhy(x, f){
   if(typeof LASTVIEW !== 'object' || !LASTVIEW || !(LASTVIEW.price > 0) || typeof S !== 'object' || !S || !f) return '';
@@ -11697,7 +11728,7 @@ document.addEventListener('click', function(e){
 });
 </script><script>/* v210 compare trend */
 (function(){
-var CT = { mode:'table', span:12, seq:0 };
+var CT = { mode:'trend', span:12, seq:0 };
 var sheet = document.getElementById('cmpSheet'), body = document.getElementById('cmpBody');
 if(!sheet || !body || typeof cmpRender !== 'function') return;
 var seg = document.createElement('div');
@@ -11705,26 +11736,27 @@ seg.className = 'ct-seg'; seg.setAttribute('role', 'group'); seg.setAttribute('a
 seg.innerHTML = '<button type="button" data-ct-mode="trend" aria-expanded="false" aria-controls="cmpTrend">가격 흐름 함께 보기 <span class="ct-chevron" aria-hidden="true"></span></button>';
 var view = document.createElement('div');
 view.id = 'cmpTrend'; view.className = 'ct-view'; view.hidden = true;
-body.parentNode.insertBefore(seg, body.nextSibling);
-body.parentNode.insertBefore(view, seg.nextSibling);
+body.parentNode.insertBefore(seg, body);
+body.parentNode.insertBefore(view, body);
 
 function list(){ return (typeof cmpLoad === 'function' ? cmpLoad() : []).map(function(s, i){ return Object.assign({}, s, { __no:i }); }).filter(function(s){ return s && s.lawd && s.name && Number(s.areaM2) > 0; }); }
 function skipped(){ return (typeof cmpLoad === 'function' ? cmpLoad() : []).map(function(s, i){ return { s:s, no:i }; }).filter(function(x){ return !(x.s && x.s.lawd && x.s.name && Number(x.s.areaM2) > 0); }); }
 function sync(){
   var n = typeof cmpLoad === 'function' ? cmpLoad().length : 0;
   seg.hidden = !n;
-  if(!n) CT.mode = 'table';
+  if(!n) { view.hidden = true; return; }
   var toggle = seg.querySelector('button');
   toggle.setAttribute('aria-expanded', String(CT.mode === 'trend'));
   toggle.setAttribute('data-ct-mode', CT.mode === 'trend' ? 'table' : 'trend');
   toggle.innerHTML = (CT.mode === 'trend' ? '가격 흐름 접기' : '가격 흐름 함께 보기') + '<span class="ct-chevron" aria-hidden="true"></span>';
   body.hidden = false;
   view.hidden = CT.mode !== 'trend';
-  if(CT.mode === 'trend') paint();
+  if(CT.mode === 'trend' && !sheet.hidden) paint();
 }
 var COLORS = ['#1F5BFF', '#192332', '#5972AD'];
 function monthsOf(lawd, span){ return TREND.last.get('ct:' + lawd + '#' + span) || trendCached(lawd, span); }
 function paint(){
+  if(sheet.hidden || CT.mode !== 'trend') return;
   var items = list(), span = CT.span;
   if(!items.length){ view.innerHTML = '<p class="ct-msg">' + (skipped().length ? '담긴 단지에 전용면적 정보가 없어 추이를 그릴 수 없습니다.' : '비교함에 담긴 단지가 없어요.') + '</p>'; return; }
   var lawds = items.map(function(s){ return s.lawd; }).filter(function(v, i, a){ return a.indexOf(v) === i; });
@@ -11737,7 +11769,7 @@ function paint(){
   if(lawds.every(function(l){ return monthsOf(l, span).every(function(m){ return !m.ok; }); })){
     view.innerHTML = '<p class="ct-msg" role="status">거래를 불러오지 못했어요.</p><button type="button" class="tr-retry" data-ct-retry>다시 불러오기</button>'; return;
   }
-  var budget = trendBudgetMan(), g = trendMultiGeometry(all.map(function(a){ return a.series; }), budget, 326, 248);
+  var budget = trendBudgetMan(), g = trendMultiGeometry(all.map(function(a){ return a.series; }), budget, 326, 196);
   var head = '<div class="ct-head"><p class="ct-k">거래가 흐름<span>같은 전용면적 · 월 중간값</span></p>' + spanSeg + '</div>';
   var lead = '';
   var both = all.filter(function(a){ return a.series.first && a.series.last && a.series.first !== a.series.last; });
@@ -11761,11 +11793,10 @@ function paint(){
       return '<span class="ct-badge" style="left:calc((100% - 44px) * ' + (Math.round(L.end.x / g.W * 1000) / 1000) + ');top:' + (Math.round(L.end.y / g.H * 1000) / 10) + '%;background:' + COLORS[CT.no[i]] + '" aria-hidden="true">' + (CT.no[i] + 1) + '</span>'; }).join('');
     var sel = CT.sel != null && CT.sel < g.n ? CT.sel : ctDefaultSel(all);
     CT.view = { all:all, g:g, budget:budget, sel:sel };
-    chart = '<div class="tr-plot ct-plot" tabindex="0" role="slider" aria-label="달 고르기 · 좌우 화살표" aria-valuemin="1" aria-valuemax="' + g.n + '" aria-valuenow="' + (sel + 1) + '" aria-valuetext="' + esc(ctMonthText(all, sel)) + '" data-ct-plot>'
+    chart = ctMonthHtml(all, sel, budget) + '<div class="tr-plot ct-plot" tabindex="0" role="slider" aria-label="달 고르기 · 좌우 화살표" aria-valuemin="1" aria-valuemax="' + g.n + '" aria-valuenow="' + (sel + 1) + '" aria-valuetext="' + esc(ctMonthText(all, sel)) + '" data-ct-plot>'
       + trendSvgFrame(g, inner + '<g class="ct-selg">' + ctSelSvg(g, sel) + '</g>') + '</div>' + trendXLabels(all[0].series.rows)
       + '<div class="tr-legend">' + (budget ? '<span><i class="tr-key-budget"></i>예상 집값 ' + trendWon(budget) + '</span>' : '') + (g.lines.some(function(L){return L.bridges.length;})?'<span><i class="tr-key-bridge"></i>거래 없는 달 연결</span>':'')+'</div>'
-      + '<p class="ct-hint">차트를 끌어 월별 가격을 비교하세요.</p>'
-      + ctMonthHtml(all, sel, budget);
+      + '<p class="ct-hint">선을 좌우로 움직이면 위 금액도 함께 바뀌어요.</p>';
   } else chart = '<p class="ct-msg">최근 ' + span + '개월 동안 조회된 같은 면적 거래가 없습니다.</p>';
   var rows = '<ol class="ct-list">' + all.map(function(a, i){
     var s = a.series, ap = typeof areaParts === 'function' ? areaParts(a.s.areaM2) : null, over = 0;
@@ -11784,7 +11815,7 @@ function paint(){
   skipped().forEach(function(x){ notes.push((x.no + 1) + '번 ' + esc(x.s.name || '') + ': 전용면적 정보가 없어 추이에서 뺐습니다.'); });
   var method='<details class="tr-method"><summary>차트 읽는 방법 · 데이터 기준</summary><p>담을 때의 전용면적과 같은 거래만 셉니다. 거래 없는 달은 앞뒤 거래 월을 가는 점선으로 연결합니다. 점선은 실제 거래가나 추정값이 아닙니다. 조회 실패 구간은 연결하지 않습니다.</p><p>국토교통부 실거래가 · 해제·토지임대부 거래 제외</p></details>';
   var keys = '<ol class="ct-series-key" aria-label="단지별 그래프 색상">' + all.map(function(a){ return '<li><i style="background:' + COLORS[a.s.__no] + '" aria-hidden="true">' + (a.s.__no + 1) + '</i><span>' + esc(a.s.name) + '</span></li>'; }).join('') + '</ol>';
-  view.innerHTML = head + keys + chart + '<details class="ct-period"><summary>기간 전체 변화 · 거래 건수</summary>'+lead+rows+'</details>' + (notes.length?'<ul class="tr-notes tr-alerts">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>':'')+method;
+  view.innerHTML = head + chart + '<details class="ct-period"><summary>기간 전체 변화 · 거래 건수</summary>'+lead+rows+'</details>' + (notes.length?'<ul class="tr-notes tr-alerts">' + notes.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>':'')+method;
 }
 /* ── 달 고르기(단지 상세와 같은 동작) ── */
 function ctCx(g, i){ var cw = (g.W - g.P.l - g.P.r) / g.n; return Math.round((g.P.l + i * cw + cw / 2) * 10) / 10; }
@@ -11804,16 +11835,13 @@ function ctMonthText(all, sel){
   return trendYm(all[0].series.rows[sel].ymd) + ' · ' + all.map(function(a, i){ return (CT.no[i] + 1) + '번 ' + ctRowText(a.series.rows[sel]); }).join(' · ');
 }
 function ctMonthHtml(all, sel, budget){
-  var last = ctDefaultSel(all), n = all[0].series.rows.length;
-  var back = sel !== last ? '<button type="button" class="tr-now" data-ct-sel="' + last + '">최근 거래 달</button>' : '';
+  var n = all[0].series.rows.length;
   var items = all.map(function(a, i){
-    var r = a.series.rows[sel], v, sub = '';
-    if(!r || !r.ok) v = '조회 실패';
-    else if(!r.deals.length) v = '거래 없음';
-    else { v = '<b>' + formatWon(r.median*10000).replace(/억[\s\u2060]*/,'억|').split('|').map(function(x){return '<span>'+x+'</span>';}).join(' ') + '</b>'; sub = '거래 ' + r.deals.length + '건'; }
-    return '<li aria-label="'+esc(a.s.name)+'"><i style="background:' + COLORS[CT.no[i]] + '" aria-hidden="true">' + (CT.no[i] + 1) + '</i><div><p class="ct-mval">' + v + '</p>' + (sub ? '<p class="ct-msub">' + sub + '</p>' : '') + '</div></li>';
+    var r = a.series.rows[sel], valid = r && r.ok && r.deals.length;
+    var v = valid ? formatWon(r.median*10000) : (!r || !r.ok ? '조회 실패' : '거래 없음');
+    return '<li style="--series-color:'+COLORS[CT.no[i]]+'"><i aria-hidden="true">'+(CT.no[i]+1)+'</i><span class="ct-read-name">'+esc(a.s.name)+'</span><div class="ct-read-value"><b>'+v+'</b><small>'+(valid?'거래 '+r.deals.length+'건':'—')+'</small></div></li>';
   }).join('');
-  return '<div class="ct-month"><div class="ct-month-nav"><button type="button" aria-label="이전 달" data-ct-sel="'+(sel-1)+'" '+(sel===0?'disabled':'')+'>‹</button><p>' + trendYm(all[0].series.rows[sel].ymd) + '<small>월 중간값</small></p><button type="button" aria-label="다음 달" data-ct-sel="'+(sel+1)+'" '+(sel===n-1?'disabled':'')+'>›</button></div><ul style="--ct-count:'+all.length+'">' + items + '</ul>'+back+'</div>';
+  return '<div class="ct-month"><div class="ct-month-nav"><button type="button" aria-label="이전 달" data-ct-sel="'+(sel-1)+'" '+(sel===0?'disabled':'')+'>‹</button><p>'+trendYm(all[0].series.rows[sel].ymd)+'<small>선택 월 · 중간값</small></p><button type="button" aria-label="다음 달" data-ct-sel="'+(sel+1)+'" '+(sel===n-1?'disabled':'')+'>›</button></div><ul>'+items+'</ul></div>';
 }
 function ctSelect(i){
   var V = CT.view; if(!V) return;
@@ -11846,9 +11874,12 @@ view.addEventListener('keydown', function(e){
   if(to == null) return; e.preventDefault(); ctSelect(to);
 });
 function load(lawds, span){
+  var key = lawds.slice().sort().join(',') + ':' + span;
+  if(CT.loading === key) return;
+  CT.loading = key;
   Promise.all(lawds.map(function(l){
     return Promise.all(trendYmds(span).map(function(y){ return trendFetchMonth(l, y); })).then(function(ms){ TREND.last.set('ct:' + l + '#' + span, ms); });
-  })).then(function(){ if(CT.mode === 'trend' && CT.span === span) paint(); });
+  })).then(function(){ if(CT.loading === key) CT.loading = null; if(CT.mode === 'trend' && CT.span === span) paint(); }, function(){ if(CT.loading === key) CT.loading = null; });
 }
 view.addEventListener('click', function(e){
   var b = e.target.closest('button'); if(!b) return;
@@ -11876,7 +11907,7 @@ var bar = document.createElement('div');
 bar.className = 'cs-actions'; bar.hidden = true;
 bar.innerHTML = '<button type="button" class="cs-add" data-v208-go="map"></button>'
   + '<button type="button" class="cs-save" data-cs-save><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg>비교 결과 이미지로 저장</button>';
-(trend || body).parentNode.insertBefore(bar, (trend || body).nextSibling);
+body.parentNode.insertBefore(bar, body.nextSibling);
 var wrap = document.createElement('div');
 wrap.className = 'reportwrap'; wrap.setAttribute('aria-hidden', 'true');   /* 기존 화면 검사가 .reportwrap 은 화면 밖 카드로 건너뜀 */
 wrap.innerHTML = '<div class="cs-card" id="cmpReportCard"></div>';
@@ -12978,7 +13009,7 @@ html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
  function reveal(selector){
    clearTimeout(timer);
    timer=setTimeout(()=>{
-     if(funnel.hidden)return;
+     if(funnel.hidden||document.body.classList.contains('wizard268'))return;
      if(document.activeElement?.matches('input,textarea,select'))return;
      const target=funnel.querySelector(selector);if(!target||!target.getClientRects().length)return;
      const rect=target.getBoundingClientRect(),header=document.querySelector('.appbar');
@@ -13393,5 +13424,160 @@ html body.yk208 #app .ct-view .ct-mval b span{display:block!important;white-spac
 html body.yk208 #app .ct-view .ct-msub{font-size:11px;margin:5px 0 0;color:#64748B}
 html body.yk208 #app .ct-month>.tr-now{display:block;min-height:44px;margin:10px auto 0}
 </style>
+
+<style id="v264-detail-hierarchy">
+/* Field edges align across selector rows and amount inputs. */
+html body.yk208 #app .funnel #crows>:is(.crow,.inline-money,.main-no-loan){padding-left:16px!important;padding-right:16px!important}
+html body.yk208 #app #limitBox :is(#limitTip,#roomTip){font-size:13px!important;line-height:1.65!important;color:var(--yk-sub)!important}
+html body.yk208 #app #limitBox :is(#limitTip,#roomTip) b{font-weight:500!important;color:inherit!important}
+html body.yk208 #app #limitAfterRoom:not([hidden]){display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;margin:12px 0 16px;padding:12px 0;border-top:1px solid var(--yk-line);border-bottom:1px solid var(--yk-line);font-size:13px;color:var(--yk-sub)}
+html body.yk208 #app #limitAfterRoom strong{font-size:16px;font-weight:700;color:var(--yk-ink);font-variant-numeric:tabular-nums}
+html body.yk208 #whySheet :is(#costItems .line>.k,.costrow .nm){font-size:14px!important;font-weight:500!important;line-height:1.5!important;color:var(--yk-sub)!important;letter-spacing:-.012em!important}
+html body.yk208 #whySheet .costrow .nm small{font-size:12px!important;font-weight:400!important;line-height:1.5!important;color:var(--yk-muted)!important}
+html body.yk208 #whySheet .costrow .sw{position:relative}
+html body.yk208 #whySheet .costrow .sw:focus-visible{outline:2px solid #2458FF;outline-offset:5px}
+html body.yk208 #whySheet .costrow .amt:focus-within{border-color:#2458FF;box-shadow:0 0 0 2px #E4ECFF}
+</style>
+
+<style id="v265-question-hierarchy">
+html body.yk208 #qSheet :is(#debtParts .costrow .nm,.drawer-t){font-size:14px!important;font-weight:500!important;line-height:1.5!important;letter-spacing:-.012em!important;color:var(--yk-sub)!important}
+html body.yk208 #qSheet #debtParts .costrow .nm small{font-size:12px!important;font-weight:400!important;line-height:1.5!important;color:var(--yk-muted)!important;text-wrap:pretty!important}
+html body.yk208 #qSheet #debtParts .costrow{grid-template-columns:minmax(0,1fr) 112px!important;gap:12px!important}
+html body.yk208 #qSheet #debtParts .costrow .amt{width:112px!important;min-width:0!important}
+html body.yk208 #qSheet #debtParts .costrow .amt input{min-width:0;width:100%;font-variant-numeric:tabular-nums}
+html body.yk208 #qSheet :is(#houseSeg,#ownSeg) button{font-size:14px!important;font-weight:500!important;color:var(--yk-sub)!important;min-height:48px}
+html body.yk208 #qSheet :is(#houseSeg,#ownSeg) button.is-on{font-weight:600!important;color:#1848D6!important;background:#EDF2FF!important;border-color:#5C85FF!important}
+html body.yk208 #qSheet .ownbox .subtoggle{font-size:14px!important;font-weight:500!important;color:var(--yk-sub)!important;line-height:1.5!important}
+html body.yk208 #qSheet :is(.preset-help,.debt-parts-help,#houseEcho){font-size:13px!important;font-weight:400!important;line-height:1.65!important;color:var(--yk-sub)!important}
+html body.yk208 #qSheet #debtBulletHead{font-size:14px!important;font-weight:600!important;line-height:1.5!important;color:var(--yk-ink)!important}
+html body.yk208 #qSheet #debtParts .amt:focus-within{border-color:#2458FF;box-shadow:0 0 0 2px #E4ECFF}
+html body.yk208 #qSheet :is(#houseSeg button,#ownSeg button,#debtNone):focus-visible{outline:2px solid #2458FF;outline-offset:3px}
+@media(max-width:370px){
+ html body.yk208 #qSheet #debtParts .costrow{grid-template-columns:minmax(0,1fr) 96px!important}
+ html body.yk208 #qSheet #debtParts .costrow .amt{width:96px!important}
+}
+</style>
+
+<style id="v266-integrated-chart">
+html body.yk208 #app #viewAnswer :is(#payTile,#savedHomes233){background:#fff!important;border:1px solid #D6DFEC!important}
+html body.yk208 #app #viewAnswer #payTile .section-symbol{background:transparent!important;color:#53617C!important}
+html body.yk208 #app #viewAnswer #payTile .ans-pct{background:transparent!important;border:0!important;color:#53617C!important;padding:0!important}
+html body.yk208 #app #savedHomesOpen233{color:#2458FF!important}
+html body.yk208 #app #savedHomes233 li{border:0!important;border-bottom:1px solid #E5EAF1!important;border-radius:0!important;padding:12px 0!important}
+html body.yk208 #app #savedHomes233 li:last-child{border-bottom:0!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead{background:#fff!important;border:1px solid #D6DFEC!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-lead small,html body.yk208 #app #cmpSheet.cmp-page .cmp-insight262{color:#53617C!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-insight262 strong{color:#192332!important}
+html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card,html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card.is-least{background:#fff!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-card.is-least b::after{background:#F1F4F8!important;color:#53617C!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{background:transparent!important;color:#53617C!important;padding:5px 0!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-pill.is-short{background:transparent!important;color:#88551F!important}
+html body.yk208 #app #cmpTrend{padding:16px!important;margin:0 0 16px!important;background:#fff!important;border:1px solid #D6DFEC!important;border-radius:18px!important}
+html body.yk208 #app #cmpTrend .ct-head{margin-bottom:6px!important}
+html body.yk208 #app #cmpTrend .ct-month{margin:0 0 8px!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important}
+html body.yk208 #app #cmpTrend .ct-month-nav{padding:0 0 8px;border-bottom:1px solid #E5EAF1}
+html body.yk208 #app #cmpTrend .ct-month-nav button{border:0;background:transparent;width:44px;height:44px}
+html body.yk208 #app #cmpTrend .ct-month-nav p{font-size:14px}
+html body.yk208 #app #cmpTrend .ct-month-nav small{display:inline;margin-left:6px}
+html body.yk208 #app #cmpTrend .ct-month ul{display:flex!important;flex-direction:column;gap:0!important;margin:6px 0 0!important}
+html body.yk208 #app #cmpTrend .ct-month li{display:grid!important;grid-template-columns:20px minmax(0,1fr) auto;align-items:center!important;gap:8px!important;padding:7px 0!important;text-align:left!important;min-width:0}
+html body.yk208 #app #cmpTrend .ct-month li>i{background:var(--series-color)!important;width:19px;height:19px;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-style:normal}
+html body.yk208 #app #cmpTrend .ct-read-name{font-size:12px;font-weight:500;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere;color:#53617C}
+html body.yk208 #app #cmpTrend .ct-month li>.ct-read-value{width:auto!important;text-align:right;min-width:0}
+html body.yk208 #app #cmpTrend .ct-read-value b{font-size:14px;font-weight:700;color:var(--series-color);white-space:nowrap}
+html body.yk208 #app #cmpTrend .ct-read-value small{display:block;font-size:10px;font-weight:400;color:#64748B;line-height:1.5}
+html body.yk208 #app #cmpTrend .ct-plot{margin-top:8px!important}
+html body.yk208 #app #cmpTrend .ct-over{fill:transparent!important}
+html body.yk208 #app #cmpTrend .tr-legend{font-size:10px!important;gap:6px 12px;margin-top:8px!important}
+html body.yk208 #app #cmpTrend .ct-hint{font-size:11px!important;color:#64748B!important;margin:6px 0 0!important}
+html body.yk208 #app #cmpTrend .ct-period{margin-top:12px!important}
+html body.yk208 #app #cmpSheet .ct-seg{margin:0!important;border:0!important}
+html body.yk208 #app #cmpSheet .ct-seg button{min-height:44px!important;font-size:12px!important}
+@media(max-width:370px){html body.yk208 #app #cmpTrend{padding:12px!important}html body.yk208 #app #cmpTrend .ct-read-value b{font-size:13px}}
+</style>
+
+<style id="v267-compare-density">
+@media(min-width:375px){
+ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-money-part234{display:inline-block!important}
+ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-status259{display:inline!important;font-size:11px!important;white-space:nowrap}
+ html body.yk208 #app #cmpSheet.cmp-page .cmp-pill>.cmp-money234{display:block!important;white-space:normal!important;line-height:1.55!important}
+}
+html body.yk208 #app #cmpTrend .ct-list>li{padding:12px 0!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-name{font-size:13px!important;line-height:1.5!important;margin:0 0 6px!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-name small{font-size:11px!important;font-weight:400!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-change{margin:6px 0!important;font-size:13px!important;line-height:1.5!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-price-step{padding:3px 0!important;gap:8px!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-price-step small{font-size:11px!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-delta{font-size:13px!important;margin:6px 0 0!important}
+html body.yk208 #app #cmpTrend .ct-list .ct-count{font-size:11px!important;line-height:1.5!important;margin:6px 0 0!important}
+</style>
+<style id="v268-map-first">
+.afford-details268{border-top:1px solid #E1E6EF;margin-top:12px;padding-top:10px}.afford-details268 summary{cursor:pointer;color:#53617C;font-size:13px;min-height:36px;display:list-item;align-content:center}
+
+body.explore268-on #app{display:none!important}body.explore268-on{overflow:hidden!important}
+#explore268[hidden]{display:none!important}#explore268{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:#fff;color:#192332;font-size:14px;line-height:1.5;font-family:inherit}
+#explore268 header{padding:14px 20px 12px;border-bottom:1px solid #D6DFEC;background:#fff;z-index:2}#explore268 .ex-brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}#explore268 h1{font-size:20px;margin:0;letter-spacing:-.04em}#explore268 button{font:inherit;cursor:pointer;min-height:44px;border:1px solid #D6DFEC;border-radius:12px;background:white;color:#192332;padding:8px 12px}#explore268 button:focus-visible{outline:3px solid #8FAEFF;outline-offset:2px}#explore268 .ex-primary{background:#2458FF;border-color:#2458FF;color:white;font-weight:700}#exSearch268{width:100%;box-sizing:border-box;border:1px solid #C6D2E4;border-radius:12px;padding:12px 14px;font:inherit;background:#F6F8FC}#exRegions268{max-height:240px;overflow:auto}#exRegions268 button{display:block;width:100%;text-align:left;margin-top:4px}#exLocation268{margin:8px 0 0;font-size:12px;color:#64748B}
+.ex-stage{position:relative;flex:1;min-height:0;background:#F1F4F8}#exMap268{position:absolute;inset:0}.ex-map-note{position:absolute;left:14px;top:14px;right:14px;pointer-events:none}#exMapStatus268{display:inline-block;background:white;border:1px solid #D6DFEC;border-radius:10px;padding:8px 12px;font-size:12px;max-width:90%}.ex-overlay-cta{position:absolute;right:14px;bottom:18px}.ex-pin{border:1px solid #fff;border-radius:9px;padding:6px 8px;background:#2458FF;color:white;font-size:13px;font-weight:700;white-space:nowrap}.ex-lower{padding:14px 20px max(12px,env(safe-area-inset-bottom));background:white;border-top:1px solid #D6DFEC;max-height:38dvh;overflow:auto}#exList268{display:flex;gap:10px;overflow:auto;margin-top:8px}#exList268 button{flex:0 0 220px;text-align:left;padding:12px}#exList268 b,#exList268 strong,#exList268 small{display:block}#exList268 strong{font-size:21px;margin:4px 0}#exList268 small{font-size:12px;color:#64748B}.ex-list-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.ex-list-head p{margin:0;font-weight:600}#exLegal268{margin:10px 0 0;color:#64748B;font-size:10px}#exDetail268{position:absolute;bottom:12px;left:12px;right:12px;max-width:480px;margin:auto;background:white;border:1px solid #C6D2E4;border-radius:20px;padding:18px;z-index:3}#exDetail268[hidden]{display:none}#exDetail268 .ex-close{float:right}#exDetail268 h2{font-size:20px;margin:4px 40px 8px 0}#exDetail268 .ex-price{font-size:32px;font-weight:750;margin:8px 0}#exDetail268 p{color:#53617C;margin:8px 0}#exDetail268 .ex-primary{width:100%;margin-top:10px}#exRetry268[hidden]{display:none}
+body.wizard268 #welcome232,body.wizard268 #entryBack232,body.wizard268 #funnel .v232-intro,body.wizard268 #dock,body.wizard268 #v208Nav,body.wizard268 .guide-nav,body.wizard268 .copyright{display:none!important}
+html body.yk208.wizard268 #app #funnel #crows::before,html body.yk208.wizard268 #app #funnel #crows>*::before{display:none!important}
+html body.yk208.wizard268 #app #funnel #crows>*{display:none!important}
+html body.yk208.wizard268[data-wizard-step="cash"] #app #funnel #crows>.inline-money:has(#main-cash),html body.yk208.wizard268[data-wizard-step="cash"] #app #funnel #crows>.main-no-loan,html body.yk208.wizard268[data-wizard-step="income"] #app #funnel #crows>.inline-money:has(#main-income),html body.yk208.wizard268[data-wizard-step="region"] #app #funnel #crows>[data-mode="region"],html body.yk208.wizard268[data-wizard-step="house"] #app #funnel #crows>[data-mode="house"],html body.yk208.wizard268[data-wizard-step="debt"] #app #funnel #crows>[data-mode="debt"]{display:flex!important;border:1px solid #D6DFEC!important;border-radius:16px!important;margin-top:12px!important;padding:18px!important}
+html body.yk208.wizard268 #app #funnel #crows>.inline-money{flex-direction:column;align-items:stretch}html body.yk208.wizard268 #app #funnel #crows .inline-money-field{width:100%;box-sizing:border-box}html body.yk208.wizard268 #app #funnel #crows .inline-money-field input{font-size:34px!important}body.wizard268 #funnel{padding-bottom:32px!important}
+#wizardHead268,#wizardFoot268{display:none}body.wizard268 #wizardHead268,body.wizard268 #wizardFoot268{display:block}#wizardHead268{padding:20px 0}#wizardHead268 h2{font-size:29px;line-height:1.35;margin:16px 0 8px;letter-spacing:-.035em}#wizardHead268 p{font-size:14px;color:#53617C;margin:8px 0}#wizardHead268 button,#wizardPrev268{min-height:44px;border:0;background:transparent;color:#53617C;font:inherit}#wizardProgress268{color:#2458FF;font-size:12px;font-weight:600}#wizardFoot268{margin-top:28px}#wizardNext268{width:100%;min-height:54px;border:0;border-radius:14px;background:#2458FF;color:white;font:inherit;font-weight:700}#wizardError268{color:#A23E31;font-size:13px}#wizardFoot268 small{display:block;margin-top:16px;color:#64748B;font-size:11px}#selectedHome268{background:#fff;border:1px solid #D6DFEC;border-radius:20px;padding:20px;margin-bottom:22px}#selectedHome268 h2{font-size:20px;margin:8px 0}#selectedHome268>small{color:#2458FF}#selectedHome268 button{min-height:44px;padding:8px 12px;border:1px solid #C6D2E4;border-radius:10px;background:white;font:inherit}#browseAgain268{min-height:44px;border:0;background:transparent;color:#2458FF;font:inherit;margin:0 0 12px}
+@media(min-width:900px){#explore268 header{padding-inline:32px}#exSearch268{max-width:520px}.ex-lower{position:absolute;left:24px;top:154px;bottom:24px;width:330px;max-height:none;border:1px solid #D6DFEC;border-radius:18px}#exList268{flex-direction:column}#exList268 button{flex:auto}#exDetail268{left:auto;right:24px;bottom:24px;width:360px}.ex-map-note{left:390px}.ex-overlay-cta{right:24px;bottom:24px}}
+
+html body.yk208.wizard268 #app #funnel #crows{border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+html body.yk208.wizard268 #app #funnel #crows>.inline-money{flex-direction:column!important;align-items:stretch!important;border-radius:16px!important;background:white!important}
+html body.yk208.wizard268 #app #funnel #crows .inline-money-field input{font-size:34px!important}
+html body.yk208.wizard268 #app #funnel #crows>.crow{background:#fff!important;min-height:72px!important}
+html body.yk208.wizard268 #app #funnel #crows>.main-no-loan{border:0!important;background:transparent!important;padding:12px 0!important}
+body.wizard268 #wizardFoot268 small::after{content:"참고용 계산 결과 · 대출 주선·알선·중개 아님";display:block;margin-top:6px}
+#exDetail268{box-sizing:border-box;max-height:calc(100% - 16px);overflow:auto}
+#exDetail268 .ex-price{font-variant-numeric:tabular-nums;letter-spacing:-.04em;line-height:1.2}
+#exList268 button:hover,#exList268 button:focus-visible{border-color:#2458FF;background:#F8FAFF}
+@media(max-height:600px){.ex-lower{max-height:25dvh}#exDetail268 h2{font-size:17px}#exDetail268 .ex-price{font-size:25px}}
+</style>
+<script id="v268-map-first-script">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id), esc268=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root=document.createElement('section');root.id='explore268';root.hidden=true;root.setAttribute('aria-label','실거래 둘러보기');
+root.innerHTML=`<header><div class="ex-brand"><h1>영끌계산기</h1><button id="exBudget268" class="ex-primary">내 예산 알아보기</button></div><input id="exSearch268" type="search" aria-label="지역 검색" placeholder="어느 동네의 집을 볼까요? · 구·시 검색" autocomplete="off"><div id="exRegions268" hidden></div><p id="exLocation268"></p></header><div class="ex-stage"><div id="exMap268" aria-label="실거래 지도"></div><div class="ex-map-note"><span id="exMapStatus268" role="status">지도를 준비하고 있어요</span></div><button id="exCalc268" class="ex-overlay-cta ex-primary">내 예산으로 볼 수 있는 집은?</button><section id="exDetail268" hidden aria-label="선택 단지"></section></div><div class="ex-lower"><div class="ex-list-head"><p id="exCount268" role="status">최근 거래</p><button id="exRetry268" hidden>다시 불러오기</button></div><div id="exList268"></div><p id="exLegal268">최근 3개월 실거래 · 매물 호가 아님<br>참고용 계산 결과 · 대출 주선·알선·중개 아님</p></div>`;
+document.body.append(root);
+let area=String(S.sgg||'11200'),items=[],selected=null,map=null,markers=[],request=0,mapPaint=0,step=0,loading=false;
+const regions=Object.entries(LAWD).flatMap(([s,rs])=>rs.map(([code,name])=>({code:String(code),s,name,label:shortSido(s)+' '+name})));
+function openExplore(){document.body.classList.remove('wizard268','welcome232-on');document.body.classList.add('explore268-on');root.hidden=false;$('exDetail268').hidden=true;$('welcome232').hidden=true;window.scrollTo(0,0);if(map)naver.maps.Event.trigger(map,'resize');if(!items.length&&!loading)loadArea();}
+function hideExplore(){root.hidden=true;document.body.classList.remove('explore268-on');}
+function latest(rows){const seen=new Map();rows.filter(d=>Number(d.amountMan)>0&&Number(d.areaM2)>0).sort((a,b)=>((b.y*10000+b.m*100+(b.d||0))-(a.y*10000+a.m*100+(a.d||0)))).forEach(d=>{const k=d.name+'|'+d.dong+'|'+d.areaM2;if(!seen.has(k))seen.set(k,d)});return [...seen.values()];}
+async function loadArea(){const token=++request;loading=true;++mapPaint;selected=null;$('exDetail268').hidden=true;markers.forEach(m=>m.setMap(null));markers=[];items=[];const r=regions.find(r=>r.code===area);$('exLocation268').textContent=(r?r.label:area)+' · 최근 3개월 실거래';$('exCount268').textContent='거래를 불러오는 중…';$('exRetry268').hidden=true;$('exList268').replaceChildren();centerMap();try{const rows=(await Promise.all(lawdCodesOf(area).map(fetchOne))).flat();if(token!==request)return;items=latest(rows);$('exCount268').textContent=items.length?'최근 거래 '+items.length+'건'+(items.length>60?' · 최신 60건 표시':''):'조회된 거래가 없어요';renderList();paintMarkers();}catch(e){if(token!==request)return;$('exCount268').textContent='실거래를 불러오지 못했어요';$('exRetry268').hidden=false;}finally{if(token===request){loading=false;requestAnimationFrame(()=>document.dispatchEvent(new Event('yk:entry-ready')));}}}
+function renderList(){$('exList268').innerHTML=items.slice(0,60).map((d,i)=>`<button data-ex-item="${i}"><b>${esc268(d.name)}</b><strong>${esc268(formatWon(d.amountMan*10000))}</strong><small>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${d.y}.${String(d.m).padStart(2,'0')}</small></button>`).join('');}
+function detail(d){selected=d;$('exDetail268').innerHTML=`<button class="ex-close" aria-label="단지 상세 닫기">×</button><small>최근 실거래</small><h2>${esc268(d.name)}</h2><div class="ex-price">${esc268(formatWon(d.amountMan*10000))}</div><p>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${esc268(d.floor??'—')}층<br>${d.y}.${String(d.m).padStart(2,'0')}${d.d?'.'+String(d.d).padStart(2,'0'):''} 계약</p><button class="ex-primary" id="exSelectedCalc268">이 집, 내 예산으로 가능할까?</button>`;$('exDetail268').hidden=false;$('exDetail268').querySelector('.ex-close').onclick=()=>{$('exDetail268').hidden=true};$('exSelectedCalc268').onclick=()=>startBudget(d);}
+$('exList268').onclick=e=>{const b=e.target.closest('[data-ex-item]');if(b)detail(items[+b.dataset.exItem]);};
+function centerMap(){if(!map||!window.naver?.maps?.Service)return;const r=regions.find(r=>r.code===area),code=area;if(!r)return;naver.maps.Service.geocode({query:r.s+' '+r.name},(status,res)=>{if(code!==area)return;const a=res?.v2?.addresses?.[0];if(a)map.setCenter(new naver.maps.LatLng(+a.y,+a.x));});}
+function initMap(){if(map||!window.naver?.maps?.Map)return;map=new naver.maps.Map($('exMap268'),{center:new naver.maps.LatLng(37.563,127.037),zoom:13});$('exMapStatus268').textContent='가격을 눌러 단지를 살펴보세요';centerMap();paintMarkers();}
+async function paintMarkers(){if(!map||!window.__ykMap?.coordinate)return;const token=++mapPaint;markers.forEach(m=>m.setMap(null));markers=[];let placed=0;await Promise.all(items.slice(0,60).map(async d=>{const c=await window.__ykMap.coordinate(d).catch(()=>null);if(token!==mapPaint||!c)return;const marker=new naver.maps.Marker({map,position:new naver.maps.LatLng(c.lat,c.lng),icon:{content:'<div class="ex-pin">'+esc268(formatWon(d.amountMan*10000))+'</div>',anchor:new naver.maps.Point(35,18)}});naver.maps.Event.addListener(marker,'click',()=>detail(d));markers.push(marker);placed++;}));if(token===mapPaint&&items.length)$('exMapStatus268').textContent=placed?'지도 '+placed+'곳 · 선택 지역 최근 거래':'위치를 확인하지 못했어요. 아래 목록에서 골라 주세요';}
+document.addEventListener('ykmap:fail',()=>{$('exMapStatus268').textContent='지도 연결을 확인해 주세요. 목록에서 집을 고를 수 있어요';});document.addEventListener('ykmap:ready',initMap);initMap();setTimeout(()=>{if(!map)$('exMapStatus268').textContent='지도 연결을 확인해 주세요. 아래 목록으로도 볼 수 있어요';},7000);
+$('exRetry268').onclick=loadArea;
+$('exSearch268').oninput=()=>{const q=$('exSearch268').value.trim().replace(/\s/g,'');const hits=q?regions.filter(r=>(r.s+r.name+r.label).replace(/\s/g,'').includes(q)).slice(0,12):[];$('exRegions268').hidden=!q;$('exRegions268').innerHTML=hits.length?hits.map(r=>`<button data-ex-area="${r.code}">${esc268(r.label)}</button>`).join(''):'<p>구·시 이름으로 검색해 주세요.</p>';};
+$('exRegions268').onclick=e=>{const b=e.target.closest('[data-ex-area]');if(!b)return;area=b.dataset.exArea;$('exRegions268').hidden=true;$('exSearch268').value='';$('exSearch268').blur();loadArea();};
+const head=document.createElement('div');head.id='wizardHead268';head.innerHTML='<button id="wizardExit268">‹ 지도 둘러보기</button><div id="wizardProgress268"></div><h2 id="wizardTitle268" tabindex="-1"></h2><p id="wizardSub268"></p>';$('funnel').prepend(head);
+const foot=document.createElement('div');foot.id='wizardFoot268';foot.innerHTML='<p id="wizardError268" role="alert"></p><button id="wizardNext268">다음</button><button id="wizardPrev268">이전</button><small>입력 금액은 브라우저에서 계산하며 서버로 보내지 않아요.</small>';$('crows').after(foot);
+const steps=()=> (S.noLoan?['cash','region','house']:['cash','income','region','house','debt']).filter(k=>!(selected&&k==='region'));
+const titles={cash:'집에 쓸 현금은\n얼마인가요?',income:'한 해 소득은\n얼마인가요?',region:'어느 지역에서\n집을 살펴볼까요?',house:'주택을 보유한\n적이 있나요?',debt:'기존 대출로 매달\n얼마를 갚고 있나요?'};
+function paintStep(){const ss=steps();step=Math.min(step,ss.length-1);const key=ss[step];document.body.dataset.wizardStep=key;$('wizardProgress268').textContent=(step+1)+' / '+ss.length;$('wizardTitle268').innerText=titles[key];$('wizardSub268').textContent=selected?selected.name+' · 이 집을 기준으로 살펴볼게요.':'내 예산에 맞는 집을 찾기 위한 계산이에요.';$('wizardNext268').textContent=step===ss.length-1?'내 예산 확인하기':'다음';$('wizardPrev268').hidden=step===0;$('wizardError268').textContent='';}
+function startBudget(d){selected=d||null;hideExplore();if(!$('result').hidden)$('toCondBtn').click();$('welcome232').hidden=true;document.body.classList.remove('welcome232-on');$('funnel').hidden=false;if(selected){S.sgg=String(d.lawd);S.sido=sidoOfCode(S.sgg);S.group=S.sido===SEOUL?'seoul':METRO.includes(S.sido)?'metro':'other';}render();step=0;document.body.classList.add('wizard268');paintStep();$('wizardTitle268').focus({preventScroll:true});window.scrollTo(0,0);}
+$('exBudget268').onclick=()=>startBudget(null);$('exCalc268').onclick=()=>startBudget(null);$('wizardExit268').onclick=openExplore;$('wizardPrev268').onclick=()=>{step--;paintStep()};
+$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=steps()[step];const ok={cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(step<steps().length-1){step++;paintStep();return;}if(!allReady())return;document.body.classList.remove('wizard268');S.lockedPrice=null;next();renderSelected();};
+$('crows').addEventListener('change',e=>{if(e.target.id==='mainNoLoan'&&document.body.classList.contains('wizard268'))paintStep()});
+function renderSelected(){let node=$('selectedHome268');if(!selected||String(S.sgg)!==String(selected.lawd)){if(node)node.remove();return;}if(!node){node=document.createElement('section');node.id='selectedHome268';$('payTile').before(node);}node.innerHTML='<small>지도에서 고른 집</small><h2>'+esc268(selected.name)+'</h2><p>'+esc268(formatWon(selected.amountMan*10000))+' · 전용 '+esc268(selected.areaM2)+'㎡</p>'+dealAffordHtml(selected)+'<button id="selectedExplore268">다른 집도 둘러보기</button>';$('selectedExplore268').onclick=openExplore;}
+const oldShow=showResult;showResult=function(){const r=oldShow.apply(this,arguments);renderSelected();return r;};
+const browse=document.createElement('button');browse.id='browseAgain268';browse.textContent='‹ 실거래 둘러보기';browse.onclick=openExplore;$('viewAnswer').prepend(browse);
+$('entryBack232').onclick=openExplore;
+window.__entry268={open:openExplore,start:startBudget,select:detail,load:loadArea,items:()=>items};
+// Shared result links retain their direct-result destination.
+if($('result').hidden)openExplore();
+})();
+</script>
+
 </body>
 </html>
