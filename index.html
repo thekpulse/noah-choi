@@ -13063,10 +13063,12 @@ html body.yk208 #app .funnel #crows .inline-error:empty{display:none!important}
    afterMoney(e.target);
  });
  funnel.addEventListener('keydown',e=>{
+   if(document.body.classList.contains('wizard268'))return;
    if(e.key!=='Enter'||e.isComposing||!e.target.matches('[data-money]'))return;
    e.preventDefault();e.stopImmediatePropagation();e.target.blur();
  },true);
  funnel.addEventListener('change',e=>{
+   if(document.body.classList.contains('wizard268'))return;
    if(e.target.id==='mainNoLoan'&&e.target.checked&&S.cash>0)reveal('#ctaBtn');
  });
  document.addEventListener('click',e=>{
@@ -13578,7 +13580,7 @@ root.innerHTML=`<header><div class="ex-brand"><h1>영끌계산기 <span class="e
 document.body.append(root);$('exZoomIn273').onclick=()=>{if(map)map.setZoom(Math.min(20,map.getZoom()+1));};$('exZoomOut273').onclick=()=>{if(map)map.setZoom(Math.max(6,map.getZoom()-1));};
 const entryNav=document.createElement('nav');entryNav.id='entryNav271';entryNav.setAttribute('aria-label','주요 메뉴');entryNav.innerHTML='<button data-entry-tab="map" aria-current="page">지도</button><button data-entry-tab="home">내 예산</button><button data-entry-tab="compare">비교</button>';root.append(entryNav);
 entryNav.querySelectorAll('[data-entry-tab]').forEach(b=>{const src=document.querySelector('#v208Nav [data-v208-tab="'+b.dataset.entryTab+'"] svg');if(src)b.prepend(src.cloneNode(true));});
-function syncExplore271(){$('exBudget268').hidden=true;$('exBudgetContext273').textContent=allReady()&&LASTVIEW?.price>0?'내 예상 집값 '+formatWon(LASTVIEW.price)+' · 여러 단지에 같은 예산 적용':'집을 먼저 둘러보세요 · 예산은 한 번만 설정해요';entryNav.querySelector('[data-entry-tab="compare"]').lastChild.textContent='비교'+(cmpLoad().length?' · '+cmpLoad().length:'');entryNav.querySelector('[data-entry-tab="compare"]').setAttribute('aria-label','비교 '+cmpLoad().length+'곳');}
+function syncExplore271(){$('exBudget268').hidden=true;$('exBudgetContext273').textContent=hasBudget273()?regionLabel()+' 기준 · 예상 집값 '+formatWon(LASTVIEW.price):'집을 먼저 둘러보세요 · 예산은 한 번만 설정해요';entryNav.querySelector('[data-entry-tab="compare"]').lastChild.textContent='비교'+(cmpLoad().length?' · '+cmpLoad().length:'');entryNav.querySelector('[data-entry-tab="compare"]').setAttribute('aria-label','비교 '+cmpLoad().length+'곳');}
 entryNav.onclick=e=>{const b=e.target.closest('[data-entry-tab]');if(!b)return;const tab=b.dataset.entryTab;if(tab==='map')return;window.yk208Navigate(tab);};
 $('exListToggle271').onclick=()=>{const open=root.classList.toggle('list-open271');$('exListToggle271').setAttribute('aria-expanded',String(open));$('exListToggle271').textContent=open?'목록 접기':'거래 목록 보기';requestAnimationFrame(()=>{if(map)naver.maps.Event.trigger(map,'resize')});};
 
@@ -13593,7 +13595,12 @@ function latest(rows){const seen=new Map();rows.filter(d=>Number(d.amountMan)>0&
 async function loadArea(){const token=++request;loading=true;++mapPaint;selected=null;$('exDetail268').hidden=true;markers.forEach(m=>m.setMap(null));markers=[];items=[];transactions273=[];located273=[];groups273=[];const r=regions.find(r=>r.code===area);$('exLocation268').textContent=(r?r.label:area)+' · 최근 3개월 실거래';$('exCount268').textContent='거래를 불러오는 중…';$('exRetry268').hidden=true;$('exList268').replaceChildren();centerMap();try{const rows=(await Promise.all(lawdCodesOf(area).map(fetchOne))).flat();if(token!==request)return;transactions273=rows.filter(d=>Number(d.amountMan)>0&&Number(d.areaM2)>0);items=latest(transactions273);$('exCount268').textContent=items.length?'최근 거래 '+items.length+'건'+(items.length>60?' · 최신 60건 표시':''):'조회된 거래가 없어요';renderList();paintMarkers();}catch(e){if(token!==request)return;$('exCount268').textContent='실거래를 불러오지 못했어요';$('exRetry268').hidden=false;}finally{if(token===request){loading=false;requestAnimationFrame(()=>document.dispatchEvent(new Event('yk:entry-ready')));}}}
 function renderList(){$('exList268').innerHTML=items.slice(0,60).map((d,i)=>`<button data-ex-item="${i}"><b>${esc268(d.name)}</b><strong>${esc268(formatWon(d.amountMan*10000))}</strong><small>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${d.y}.${String(d.m).padStart(2,'0')}</small></button>`).join('');}
 function detail(d){selected=d;detailSource272=document.activeElement;detailList272=root.classList.contains('list-open271');root.classList.remove('list-open271');$('exListToggle271').setAttribute('aria-expanded','false');$('exListToggle271').textContent='거래 목록 보기';$('exDetail268').innerHTML=`<button class="ex-close" aria-label="단지 상세 닫기">×</button><small>최근 실거래</small><h2>${esc268(d.name)}</h2><div class="ex-price">${esc268(formatWon(d.amountMan*10000))}</div><p>${esc268(d.dong)} · 전용 ${esc268(d.areaM2)}㎡ · ${esc268(d.floor??'—')}층<br>${d.y}.${String(d.m).padStart(2,'0')}${d.d?'.'+String(d.d).padStart(2,'0'):''} 계약</p><button class="ex-primary" id="exSelectedCalc268">내 예산 설정하기</button>`;$('exDetail268').hidden=false;$('exDetail268').querySelector('.ex-close').onclick=closeDetail272;$('exSelectedCalc268').onclick=()=>startBudget(null,'map');
-if(hasBudget273()&&lawdCodesOf(String(S.sgg)).map(String).includes(String(d.lawd))){$('exSelectedCalc268').remove();const info=document.createElement('div');info.innerHTML=dealAffordHtml(d);$('exDetail268').append(info);}else if(hasBudget273()){$('exSelectedCalc268').remove();const note=document.createElement('p');note.className='ex-region-note272';note.textContent='다른 지역의 대출·부대비용은 내 예산 → 조건 수정에서 지역을 바꿔 확인해 주세요. 담은 단지는 유지돼요.';$('exDetail268').append(note);}
+if(hasBudget273()&&lawdCodesOf(String(S.sgg)).map(String).includes(String(d.lawd))){$('exSelectedCalc268').remove();const info=document.createElement('div');info.innerHTML=dealAffordHtml(d);$('exDetail268').append(info);}else if(hasBudget273()){
+ const region=regions.find(r=>r.code===String(d.lawd));
+ const note=document.createElement('p');note.className='ex-region-note272';note.textContent='현재 예산은 '+regionLabel()+' 기준이에요. 다시 계산하면 공통 예산의 기준 지역이 '+(region?.label||sggName(d.lawd))+'로 바뀝니다. 입력한 금액과 담은 단지는 유지돼요.';
+ $('exSelectedCalc268').before(note);$('exSelectedCalc268').textContent='이 지역 기준으로 다시 계산';
+ $('exSelectedCalc268').onclick=()=>{if(!selectSearchedRegion(String(d.lawd)))return;S.lockedPrice=null;next();openExplore();detail(d);};
+}
 const saved=document.createElement('div');saved.innerHTML=cmpBtnHtml(d);$('exDetail268').append(saved);cmpSync();renderHierarchy273();
 $('exDetail268').querySelector('.ex-close').focus({preventScroll:true});
 }
@@ -13621,14 +13628,14 @@ function renderHierarchy273(){
  const next=[],existing=new Map(markers.map(m=>[m.__entryKey274,m]));
  for(const c of candidates){
   const position=new naver.maps.LatLng(c.lat,c.lng);if(bounds?.hasLatLng&&!bounds.hasLatLng(position))continue;
-  const xy=projection?.fromCoordToOffset(position);if(xy&&kept.some(k=>Math.abs(k.x-xy.x)<112&&Math.abs(k.y-xy.y)<65))continue;
+  const xy=projection?.fromCoordToOffset(position);if(xy&&kept.some(k=>Math.abs(k.x-xy.x)<128&&Math.abs(k.y-xy.y)<56))continue;
   if(xy)kept.push(xy);
   const key=[level,c.lat,c.lng,c.title,c.sub].join('|');let marker=existing.get(key);
   const button=marker?.__entryButton274||document.createElement('button');button.type='button';button.className='ex-hierarchy273 '+level;button.replaceChildren();
   const title=document.createElement('b');title.textContent=c.title;const sub=document.createElement('span');sub.textContent=c.sub;button.append(title,sub);
   button.setAttribute('aria-label',c.title+' · '+c.sub);button.onclick=e=>{e.stopPropagation();c.open();};
   if(level==='home')button.setAttribute('aria-pressed',String(!!selected&&dealSameKey(c.d)===dealSameKey(selected)));else button.removeAttribute('aria-pressed');
-  if(!marker){marker=new naver.maps.Marker({map,position,icon:{content:button,anchor:new naver.maps.Point(54,30)}});marker.__entryKey274=key;marker.__entryButton274=button;}
+  if(!marker){marker=new naver.maps.Marker({map,position,icon:{content:button,anchor:new naver.maps.Point(60,24)}});marker.__entryKey274=key;marker.__entryButton274=button;}
   next.push(marker);
  }
  const retained=new Set(next);markers.forEach(m=>{if(!retained.has(m))m.setMap(null)});markers=next;
@@ -13663,13 +13670,54 @@ results274.onclick=e=>{const b=e.target.closest('[data-ex-area]');if(b)chooseAre
 root.addEventListener('click',e=>{if(!searchWrap274.contains(e.target))closeSearch274()});
 const head=document.createElement('div');head.id='wizardHead268';head.innerHTML='<button id="wizardExit268">‹ 지도 둘러보기</button><div id="wizardProgress268"></div><h2 id="wizardTitle268" tabindex="-1"></h2><p id="wizardSub268"></p>';$('funnel').prepend(head);
 const foot=document.createElement('div');foot.id='wizardFoot268';foot.innerHTML='<p id="wizardError268" role="alert"></p><button id="wizardNext268">다음</button><button id="wizardPrev268">이전</button><small>입력 금액은 브라우저에서 계산하며 서버로 보내지 않아요.</small>';$('crows').after(foot);
-const steps=()=> (S.noLoan?['cash','region','house']:['cash','income','region','house','debt']).filter(k=>!(selected&&k==='region'));
+let budgetHome275=null,inheritRegion275=false;
+const steps=()=> (S.noLoan?['cash','region','house']:['cash','income','region','house','debt']).filter(k=>!(inheritRegion275&&k==='region'));
 const titles={cash:'집에 쓸 현금은\n얼마인가요?',income:'한 해 소득은\n얼마인가요?',region:'어느 지역에서\n집을 살펴볼까요?',house:'주택을 보유한\n적이 있나요?',debt:'기존 대출로 매달\n얼마를 갚고 있나요?'};
+const context275=document.createElement('div');context275.id='wizardContext275';head.append(context275);
+function syncContext275(){
+ context275.hidden=!S.sgg;
+ const region=regions.find(r=>r.code===String(S.sgg));
+ context275.replaceChildren();
+ const label=document.createElement('span');label.textContent=(budgetHome275&&String(budgetHome275.lawd)===String(S.sgg)?budgetHome275.name+' · ':'')+(region?.label||regionLabel());context275.append(label);
+ const change=document.createElement('button');change.type='button';change.textContent='지역 변경';change.onclick=()=>{inheritRegion275=false;step=steps().indexOf('region');paintStep(true);};context275.append(change);
+}
+new MutationObserver(syncContext275).observe($('wizardProgress268'),{childList:true});
+new MutationObserver(syncContext275).observe($('crows'),{childList:true});
+const choices276=document.createElement('div');choices276.id='wizardChoices276';$('crows').after(choices276);
+function paintChoices276(){
+ const focused=choices276.contains(document.activeElement)?document.activeElement.querySelector('strong')?.textContent:null;
+ const key=document.body.dataset.wizardStep;choices276.hidden=!['house','debt'].includes(key);choices276.replaceChildren();
+ const help={house:'본인과 세대원의 주택 보유 이력을 선택해 주세요.',debt:'원금과 이자를 합친 월 상환액을 확인해요.'};if(help[key])$('wizardSub268').textContent=help[key];
+ if(choices276.hidden)return;
+ const add=(title,note,pressed,action)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(pressed));const t=document.createElement('strong');t.textContent=title;const s=document.createElement('span');s.textContent=note;b.append(t,s);b.onclick=action;choices276.append(b);};
+ if(key==='house'){
+  for(const [value,title,note] of [['first','생애최초','나와 세대원 모두 집을 보유한 적이 없어요'],['none','무주택','보유한 적은 있지만, 지금은 모두 집이 없어요']])add(title,note,S.houseStatus===value,()=>{S.houseStatus=value;renderAnswered();syncCta();paintChoices276();choices276.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});});
+  add('1주택 이상',S.houseStatus==='multi'?houseEchoText():'보유 수와 처분 계획을 입력해 주세요',S.houseStatus==='multi',()=>{S.houseStatus='multi';openQ(2,'house');});
+ }else{
+  add('기존 대출 없음','매달 갚는 대출이 없어요',S.debtMonthly===0,()=>{S.debtMonthly=0;S.debtParts={credit:null,etc:null};S.debtPartsOpen=false;renderAnswered();syncCta();paintChoices276();choices276.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});});
+  add('기존 대출 있어요',S.debtMonthly>0?'월 '+formatWon(S.debtMonthly*10000)+' 상환 · 수정하기':'월 상환액과 대출 내역 입력',S.debtMonthly>0,()=>openQ(1,'debt'));
+ }
+ if(focused)[...choices276.querySelectorAll('button')].find(b=>b.querySelector('strong').textContent===focused)?.focus({preventScroll:true});
+}
+new MutationObserver(paintChoices276).observe($('wizardProgress268'),{childList:true});
+new MutationObserver(paintChoices276).observe($('crows'),{childList:true});
+// Enter must advance the current question, never invoke the legacy all-at-once calculator.
+$('funnel').addEventListener('keydown',e=>{if(document.body.classList.contains('wizard268')&&e.key==='Enter'&&e.target.matches('input')&&!e.isComposing){e.preventDefault();e.stopImmediatePropagation();$('wizardNext268').click();}},true);
 function paintStep(moveFocus=false){const ss=steps();step=Math.min(step,ss.length-1);const key=ss[step];document.body.dataset.wizardStep=key;$('wizardProgress268').innerHTML='<span>내 예산 설정</span><span>'+(step+1)+' / '+ss.length+'</span><progress aria-label="예산 입력 진행" max="'+ss.length+'" value="'+(step+1)+'"></progress>'; $('wizardExit268').textContent='‹ '+({map:'지도로 돌아가기',compare:'비교표로 돌아가기',home:'내 예산으로 돌아가기'}[budgetOrigin274]);$('wizardTitle268').innerText=titles[key];$('wizardSub268').textContent=selected?selected.name+' · 이 집을 기준으로 살펴볼게요.':'한 번 설정하면 여러 단지를 같은 예산으로 비교해요.';$('wizardNext268').textContent=step===ss.length-1?'내 예산 확인하기':'다음';$('wizardPrev268').hidden=step===0;$('wizardError268').textContent='';if(moveFocus){window.scrollTo(0,0);$('wizardTitle268').focus({preventScroll:true});}}
-function startBudget(d,target='home',fromHistory=false){destination272=['map','compare'].includes(target)?target:'home';if(!fromHistory&&history.state?.yk208Tab!=='conditions')history.pushState({...history.state,yk208Tab:'conditions'},'',location.href);budgetOrigin274=!root.hidden?'map':!$('result').hidden&&RVIEW==='compare'?'compare':'home';selected=null;hideExplore();budgetBefore273=allReady()&&LASTVIEW?.price>0?{s:structuredClone(S),d:structuredClone(D)}:null;if(!$('result').hidden)editBudget273({preventDefault(){}});$('welcome232').hidden=true;document.body.classList.remove('welcome232-on');$('funnel').hidden=false;render();step=0;document.body.classList.add('wizard268');paintStep();$('wizardTitle268').focus({preventScroll:true});window.scrollTo(0,0);}
+function startBudget(d,target='home',fromHistory=false){
+ destination272=['map','compare'].includes(target)?target:'home';
+ if(!fromHistory&&history.state?.yk208Tab!=='conditions')history.pushState({...history.state,yk208Tab:'conditions'},'',location.href);
+ budgetOrigin274=!root.hidden?'map':!$('result').hidden&&RVIEW==='compare'?'compare':'home';
+ budgetHome275=d||(budgetOrigin274==='map'?selected:null);
+ const inherited=budgetOrigin274==='map'?String(budgetHome275?.lawd||area):null;
+ selected=null;hideExplore();budgetBefore273=allReady()&&LASTVIEW?.price>0?{s:structuredClone(S),d:structuredClone(D)}:null;
+ if(!$('result').hidden)editBudget273({preventDefault(){}});
+ inheritRegion275=!!(inherited&&selectSearchedRegion(inherited));
+ $('welcome232').hidden=true;document.body.classList.remove('welcome232-on');$('funnel').hidden=false;render();step=0;document.body.classList.add('wizard268');paintStep();$('wizardTitle268').focus({preventScroll:true});window.scrollTo(0,0);
+}
 $('toCondBtn').onclick=e=>{e.preventDefault();startBudget(null,'home');};
-$('exBudget268').onclick=()=>startBudget(null);$('wizardExit268').onclick=()=>{const origin=budgetOrigin274;restoreBudget273();if(origin==='compare'||origin==='home'&&hasBudget273())window.yk208Navigate(origin);else openExplore();};$('wizardPrev268').onclick=()=>{step--;paintStep(true)};
-$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=steps()[step];const ok={cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(step<steps().length-1){step++;paintStep(true);return;}if(!allReady())return;document.body.classList.remove('wizard268');S.lockedPrice=null;next();renderSelected();if(destination272==='compare')window.yk208Navigate('compare');else if(destination272==='map')openExplore();};
+$('exBudget268').onclick=()=>startBudget(null);$('wizardExit268').onclick=()=>{const origin=budgetOrigin274;restoreBudget273();if(origin==='compare'||origin==='home'&&hasBudget273())window.yk208Navigate(origin);else{openExplore();if(budgetHome275)detail(budgetHome275);}};$('wizardPrev268').onclick=()=>{step--;paintStep(true)};
+$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=steps()[step];const ok={cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(step<steps().length-1){step++;paintStep(true);return;}if(!allReady())return;document.body.classList.remove('wizard268');budgetBefore273=null;S.lockedPrice=null;next();renderSelected();if(destination272==='compare')window.yk208Navigate('compare');else if(destination272==='map'){openExplore();if(budgetHome275)detail(budgetHome275);}};
 $('crows').addEventListener('change',e=>{if(e.target.id==='mainNoLoan'&&document.body.classList.contains('wizard268'))paintStep()});
 function renderSelected(){$('selectedHome268')?.remove();}
 
@@ -13774,6 +13822,70 @@ html body.yk208.wizard268 #app #funnel #wizardTitle268{outline:none}html body.yk
 html body.yk208.wizard268 #app #funnel #crows>.main-no-loan{border-top:1px solid #e5eaf1!important;border-radius:0!important;margin-top:20px!important;padding:16px 0!important}
 html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll{padding:10px 4px 0!important}html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll .cmp-card{border-radius:0!important;padding-inline:3px!important}
 @media(max-width:600px){html body.yk208.wizard268 #app #funnel{padding-bottom:20px!important}#wizardFoot268{margin-top:20px}}
+</style>
+<style id="v275-layout-contract">
+/* Each screen owns its layout; the legacy desktop entry grid is not a wizard. */
+html body.yk208.wizard268 #app #funnel{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ width:100%!important;max-width:560px!important;margin:0 auto!important;
+ padding:24px 24px 40px!important;gap:0!important;box-sizing:border-box!important;
+}
+html body.yk208.wizard268 #app #funnel>#wizardHead268{order:0;padding:0!important;margin:0 0 20px!important}
+html body.yk208.wizard268 #app #funnel>#crows{order:1;display:block!important;width:100%!important;margin:0!important;padding:0!important;min-height:0!important;grid-area:auto!important}
+html body.yk208.wizard268 #app #funnel>#wizardFoot268{order:2;width:100%;margin:24px 0 0!important;padding:0!important;grid-area:auto!important}
+html body.yk208.wizard268 #app :is(#dock,#ctaTodo,#ctaBtn,.v232-entry-legal,.guide-nav,.copyright){display:none!important}
+html body.yk208.wizard268 #app #wizardFoot268 #wizardPrev268[hidden]{display:none!important}
+html body.yk208.wizard268 #app #wizardTitle268{margin:20px 0 12px!important}
+html body.yk208.wizard268 #app #wizardSub268{font-size:14px!important;margin:0!important;color:#64748b}
+html body.yk208.wizard268 #app #wizardContext275{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 0;padding:12px 0;border-block:1px solid #e1e6ee;font-size:14px;color:#53617c}
+html body.yk208.wizard268 #app #wizardContext275[hidden]{display:none!important}
+html body.yk208.wizard268 #app #wizardContext275 button{white-space:nowrap;flex-shrink:0;font-size:14px;color:#2458ff;min-height:44px}
+html body.yk208.wizard268 #app #wizardFoot268 small{font-size:12px!important;line-height:1.6!important}
+html body.yk208 #app #viewAnswer:not([hidden]){display:flex!important;flex-direction:column!important;max-width:720px!important;width:100%!important;margin:0 auto!important;gap:0!important;padding:24px 20px 100px!important;box-sizing:border-box!important}
+html body.yk208 #app #viewAnswer>.v232-result-heading{order:-1!important;width:100%!important;margin:0 0 24px!important;position:static!important}
+html body.yk208 #app #viewAnswer>.v232-result-heading h2{font-size:28px!important;line-height:1.3!important}
+html body.yk208 #app #viewAnswer>.v232-result-heading p{font-size:14px!important}
+html body.yk208 #app #viewAnswer>:is(#fundingOverview,#payTile){width:100%!important;max-width:none!important;box-sizing:border-box!important;grid-area:auto!important}
+html body #explore268 .ex-hierarchy273{width:120px;min-height:48px;padding:7px 8px;border-radius:10px}
+html body #explore268 .ex-hierarchy273 b{white-space:nowrap!important;font-size:14px!important;line-height:1.3!important}
+html body #explore268 .ex-hierarchy273 span{font-size:12px!important;line-height:1.3!important}
+html body #explore268 .ex-hierarchy273.home{background:#fff;color:#192332;border-color:#8b9db9}
+html body #explore268 .ex-hierarchy273.home span{color:#53617c}
+html body #explore268 .ex-hierarchy273.home[aria-pressed="true"]{background:#2458ff;color:#fff;border-color:#fff;outline-color:#2458ff}
+html body #explore268 .ex-hierarchy273.home[aria-pressed="true"] span{color:#fff}
+@media(min-width:960px){
+ html body #explore268 header{display:grid;grid-template-columns:1fr minmax(280px,420px);gap:4px 24px;padding:16px 24px}
+ html body #explore268 .ex-brand{margin:0;align-self:center}
+ html body #explore268 .ex-search274{grid-column:2;grid-row:1 / span 3;width:100%;align-self:center}
+ html body #explore268 #exLocation268,html body #explore268 #exBudgetContext273{margin:0;grid-column:1}
+ html body #explore268 #entryNav271{justify-content:center}
+ html body #explore268 #entryNav271 button{flex:0 1 220px}
+}
+@media(max-width:600px){html body.yk208.wizard268 #app #funnel{padding:16px 20px 32px!important}html body.yk208 #app #viewAnswer:not([hidden]){padding:20px 0 100px!important}}
+@media(max-width:380px){
+ html body.yk208 #app #viewAnswer #easyBalance:not(.cash-only) .rlab{grid-template-columns:1fr!important;gap:8px!important}
+ html body.yk208 #app #viewAnswer #easyBalance .rlab>div{display:flex!important;align-items:center;justify-content:space-between;gap:8px;padding:10px!important;text-align:left!important}
+ html body.yk208 #app #viewAnswer #easyBalance .rlab .n{margin:0!important;font-size:18px!important;white-space:nowrap}
+}
+</style>
+<style id="v276-connected-flow">
+#wizardChoices276{display:none}
+html body.yk208.wizard268 #app #wizardChoices276:not([hidden]){display:grid;order:1;gap:10px}
+html body.yk208.wizard268:is([data-wizard-step="house"],[data-wizard-step="debt"]) #app #funnel #crows{display:none!important}
+html body.yk208.wizard268 #app #wizardChoices276 button{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;padding:16px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#192332;font:inherit;cursor:pointer}
+html body.yk208.wizard268 #app #wizardChoices276 button strong{font-size:16px;font-weight:650;line-height:1.5}
+html body.yk208.wizard268 #app #wizardChoices276 button span{font-size:14px;line-height:1.5;color:#53617c;word-break:keep-all}
+html body.yk208.wizard268 #app #wizardChoices276 button[aria-pressed="true"]{border-color:#2458ff;background:#f0f4ff;box-shadow:inset 0 0 0 1px #2458ff}
+html body.yk208.wizard268 #app #wizardChoices276 button:focus-visible{outline:3px solid #8faeff;outline-offset:3px}
+html body.yk208.wizard268 #app #wizardContext275{padding:4px 0;margin-top:12px}
+html body.yk208.wizard268 #app #wizardProgress268{margin:8px 0 16px}
+html body.yk208.wizard268 #app #funnel>#wizardHead268{margin-bottom:12px!important}
+html body.yk208.wizard268 #app #funnel>#wizardFoot268{margin-top:20px!important}
+/* The same navigation treatment on the map, budget and comparison screens. */
+html body #explore268 #entryNav271,html body.yk208 #app #v208Nav{box-sizing:border-box;background:#fff;border-top:1px solid #e1e6ee;padding:4px 8px max(4px,env(safe-area-inset-bottom))!important}
+html body #explore268 #entryNav271 button,html body.yk208 #app #v208Nav button{min-height:56px!important;padding:6px 2px!important;border:0!important;border-radius:10px!important;font-size:14px!important;font-weight:500!important;line-height:1.4!important;background:transparent!important;color:#53617c!important}
+html body #explore268 #entryNav271 button[aria-current="page"],html body.yk208 #app #v208Nav button[aria-current="page"]{color:#2458ff!important;background:#edf2ff!important;font-weight:650!important;border:0!important}
+@media(min-width:960px){html body.yk208 #app #v208Nav{grid-template-columns:repeat(3,minmax(0,220px))!important;justify-content:center!important}}
 </style>
 </body>
 </html>
