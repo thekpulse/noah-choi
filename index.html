@@ -13676,7 +13676,7 @@ const steps=()=> (S.noLoan?['cash','region','house']:['cash','income','region','
 const titles={cash:'집에 쓸 현금은\n얼마인가요?',income:'한 해 소득은\n얼마인가요?',region:'어느 지역에서\n집을 살펴볼까요?',house:'주택을 보유한\n적이 있나요?',debt:'기존 대출로 매달\n얼마를 갚고 있나요?'};
 const context275=document.createElement('div');context275.id='wizardContext275';head.append(context275);
 function syncContext275(){
- context275.hidden=!S.sgg;
+ context275.hidden=!S.sgg || (!review279 && document.body.dataset.wizardStep!=='region');
  const region=regions.find(r=>r.code===String(budgetHome275?.lawd||S.sgg));
  context275.replaceChildren();
  const label=document.createElement('span');label.textContent=(budgetHome275?budgetHome275.name+' · '+formatWon(budgetHome275.amountMan*10000)+' / ':'')+(region?.label||regionLabel());context275.append(label);
@@ -13689,7 +13689,7 @@ const reviewPanel279=document.createElement('div');reviewPanel279.id='conditionR
 function paintReview279(){
  document.body.dataset.wizardStep='review';reviewPanel279.hidden=false;
  $('wizardProgress268').textContent='모든 단지에 함께 적용';$('wizardTitle268').textContent='내 조건';
- $('wizardSub268').textContent='바꿀 항목만 눌러 수정하세요. 지역과 거래가는 선택한 집에 맞춰 계산해요.';
+ $('wizardSub268').textContent='수정할 항목을 선택하세요. 저장된 단지는 그대로 유지됩니다.';
  $('wizardExit268').textContent='‹ '+({map:'지도로 돌아가기',compare:'비교표로 돌아가기',home:'내 예산으로 돌아가기'}[budgetOrigin274]);
  $('wizardPrev268').hidden=true;$('wizardError268').textContent='';
  $('wizardNext268').textContent=destination272==='map'?'적용하고 '+(budgetHome275?'이 집 보기':'지도 보기'):destination272==='compare'?'적용하고 비교하기':'적용하고 내 예산 보기';
@@ -13717,7 +13717,8 @@ new MutationObserver(paintChoices276).observe($('wizardProgress268'),{childList:
 new MutationObserver(paintChoices276).observe($('crows'),{childList:true});
 // Enter must advance the current question, never invoke the legacy all-at-once calculator.
 $('funnel').addEventListener('keydown',e=>{if(document.body.classList.contains('wizard268')&&e.key==='Enter'&&e.target.matches('input')&&!e.isComposing){e.preventDefault();e.stopImmediatePropagation();$('wizardNext268').click();}},true);
-function paintStep(moveFocus=false){if(review279&&!editing279){paintReview279();return;}reviewPanel279.hidden=true;const ss=steps();step=Math.min(step,ss.length-1);const key=ss[step];document.body.dataset.wizardStep=key;$('wizardProgress268').innerHTML='<span>내 예산 설정</span><span>'+(step+1)+' / '+ss.length+'</span><progress aria-label="예산 입력 진행" max="'+ss.length+'" value="'+(step+1)+'"></progress>'; $('wizardExit268').textContent=budgetHome275?'‹ 단지로 돌아가기':'‹ '+({map:'지도로 돌아가기',compare:'비교표로 돌아가기',home:'내 예산으로 돌아가기'}[budgetOrigin274]);$('wizardTitle268').innerText=titles[key];$('wizardSub268').textContent=budgetHome275?'입력을 마치면 이 집에 필요한 현금과 월 부담을 보여드려요.':'한 번 입력하면 여러 지역의 집을 같은 조건으로 비교해요.';$('wizardNext268').textContent=step===ss.length-1?(destination272==='compare'?'담은 단지 비교하기':destination272==='map'?'이 집과 비교하기':'내 예산 확인하기'):'다음';$('wizardPrev268').hidden=step===0&&!review279;if(review279){$('wizardProgress268').textContent='내 조건 수정';$('wizardNext268').textContent='조건에 반영하기';$('wizardPrev268').textContent='조건 요약';}else $('wizardPrev268').textContent='이전';$('wizardError268').textContent='';if(moveFocus){window.scrollTo(0,0);$('app').scrollTop=0;$('wizardTitle268').focus({preventScroll:true});}}
+function resetWizardScroll280(){document.activeElement?.blur?.();window.scrollTo({top:0,left:0,behavior:'instant'});$('app').scrollTop=0;$('funnel').scrollTop=0;requestAnimationFrame(()=>{window.scrollTo({top:0,left:0,behavior:'instant'});$('app').scrollTop=0;});}
+function paintStep(moveFocus=false){if(review279&&!editing279){paintReview279();return;}reviewPanel279.hidden=true;const ss=steps();step=Math.min(step,ss.length-1);const key=ss[step];document.body.dataset.wizardStep=key;$('wizardProgress268').innerHTML='<span>내 예산 설정</span><span>'+(step+1)+' / '+ss.length+'</span><progress aria-label="예산 입력 진행" max="'+ss.length+'" value="'+(step+1)+'"></progress>'; $('wizardExit268').textContent=budgetHome275?'‹ 단지로 돌아가기':'‹ '+({map:'지도로 돌아가기',compare:'비교표로 돌아가기',home:'내 예산으로 돌아가기'}[budgetOrigin274]);$('wizardTitle268').innerText=titles[key];$('wizardSub268').textContent=budgetHome275?'입력을 마치면 이 집에 필요한 현금과 월 부담을 보여드려요.':({cash:'주택 구입에 사용할 수 있는 자금만 입력하세요.',income:'대출 가능 금액을 추정하기 위해 세전 연소득을 입력하세요.',region:'선택한 지역의 대출·세금 조건을 적용합니다.',house:'주택 보유 여부에 따라 대출 기준이 달라집니다.',debt:'이미 갚고 있는 대출을 반영합니다.'}[key]);$('wizardNext268').textContent=step===ss.length-1?(destination272==='compare'?'담은 단지 비교하기':destination272==='map'?'조건 적용하고 지도 보기':'결과 확인하기'):'다음';$('wizardPrev268').hidden=step===0&&!review279;if(review279){$('wizardProgress268').textContent='내 조건 수정';$('wizardNext268').textContent='조건에 반영하기';$('wizardPrev268').textContent='조건 요약';}else $('wizardPrev268').textContent='이전';$('wizardError268').textContent='';if(moveFocus){resetWizardScroll280();$('wizardTitle268').focus({preventScroll:true});}}
 function startBudget(d,target='home',fromHistory=false){
  destination272=['map','compare'].includes(target)?target:'home';
  if(!fromHistory&&history.state?.yk208Tab!=='conditions')history.pushState({...history.state,yk208Tab:'conditions'},'',location.href);
@@ -13732,11 +13733,11 @@ function startBudget(d,target='home',fromHistory=false){
   root.hidden=false;root.inert=true;$('exDetail268').hidden=true;document.body.classList.add('budget-overlay278');
   $('funnel').setAttribute('role','dialog');$('funnel').setAttribute('aria-modal','true');$('funnel').setAttribute('aria-labelledby','wizardTitle268');
  }
- paintStep();$('app').scrollTop=0;$('wizardTitle268').focus({preventScroll:true});window.scrollTo(0,0);
+ paintStep();resetWizardScroll280();$('wizardTitle268').focus({preventScroll:true});
 }
 $('toCondBtn').onclick=e=>{e.preventDefault();startBudget(null,'home');};
 $('exBudget268').onclick=()=>startBudget(null);$('wizardExit268').onclick=()=>{const origin=budgetOrigin274;restoreBudget273();if(origin==='compare'||origin==='home'&&hasBudget273())window.yk208Navigate(origin);else{openExplore();if(budgetHome275)detail(budgetHome275);}};$('wizardPrev268').onclick=()=>{if(review279){editing279=false;}else step--;paintStep(true)};
-$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=review279&&!editing279?'review':steps()[step];const ok={review:true,cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(review279&&editing279){editing279=false;paintStep();return;}if(!review279&&step<steps().length-1){step++;paintStep(true);return;}if(!allReady()){const missing=steps().find(k=>({cash:!(S.cash>0),income:!(S.income>0),region:!S.sgg,house:!S.houseStatus,debt:S.debtMonthly==null})[k]);if(missing){editing279=true;step=steps().indexOf(missing);paintStep(true);}return;}document.body.classList.remove('wizard268');budgetBefore273=null;restoreBudget273();root.hidden=true;S.lockedPrice=null;next();renderSelected();if(destination272==='compare')window.yk208Navigate('compare');else if(destination272==='map'){openExplore();if(budgetHome275)detail(budgetHome275);}};
+$('wizardNext268').onclick=()=>{document.activeElement?.blur();const key=review279&&!editing279?'review':steps()[step];const ok={review:true,cash:Number(S.cash)>0,income:Number(S.income)>0,region:!!S.sgg,house:!!S.houseStatus,debt:S.debtMonthly!=null}[key];if(!ok){$('wizardError268').textContent='이 항목을 입력하거나 선택해 주세요.';return;}if(review279&&editing279){editing279=false;paintStep();return;}if(!review279&&step<steps().length-1){step++;paintStep(true);return;}if(!allReady()){const missing=steps().find(k=>({cash:!(S.cash>0),income:!(S.income>0),region:!S.sgg,house:!S.houseStatus,debt:S.debtMonthly==null})[k]);if(missing){editing279=true;step=steps().indexOf(missing);paintStep(true);}return;}document.body.classList.remove('wizard268');budgetBefore273=null;restoreBudget273();root.hidden=true;S.lockedPrice=null;S.fromResult=false;next();renderSelected();if(destination272==='compare')window.yk208Navigate('compare');else if(destination272==='map'){openExplore();if(budgetHome275)detail(budgetHome275);}else{window.yk208Navigate('home');window.scrollTo({top:0,behavior:'instant'});}};
 $('crows').addEventListener('change',e=>{if(e.target.id==='mainNoLoan'&&document.body.classList.contains('wizard268'))paintStep()});
 document.addEventListener('keydown',e=>{
  if(!document.body.classList.contains('budget-overlay278')||!$('qSheet').hidden)return;
@@ -13942,5 +13943,95 @@ html body.yk208.budget-overlay278 #app #wizardContext275>button{font-size:12px;m
  html body.yk208.budget-overlay278 #app #funnel{padding:16px 20px max(24px,env(safe-area-inset-bottom))!important}
 }
 </style>
+
+<style id="v280-ux-recovery">
+/* Recover a coherent hierarchy across map / input / result without changing calculation. */
+:root{--v280-ink:#17283f;--v280-muted:#5f7088;--v280-stroke:#d9e2ee;--v280-blue:#2458ff;--v280-surface:#f5f7fb}
+html body.yk208 #app,html body #explore268{color:var(--v280-ink)}
+/* Explorer: controls support the map rather than consuming the whole first screen. */
+html body #explore268 header{padding:14px 18px 12px!important;border-color:var(--v280-stroke)!important;flex:none}
+html body #explore268 .ex-brand{margin:0 0 9px!important;align-items:center!important}
+html body #explore268 .ex-brand h1{font-size:18px!important;line-height:1.25!important;gap:8px!important}
+html body #explore268 .ex-purpose273{font-size:12px!important;font-weight:450!important}
+html body #explore268 .ex-search274{max-width:100%}
+html body #explore268 #exSearch268{height:46px!important;min-height:46px!important;padding:10px 14px!important;background:#f5f7fb!important;border:1px solid #d9e2ee!important;font-size:15px!important;line-height:1.4!important;border-radius:13px!important;color:#17283f!important}
+html body #explore268 #exLocation268{margin:5px 0 0!important;font-size:12px!important;line-height:1.4!important}
+html body #explore268 #exBudgetContext273{margin:5px 0 0!important;line-height:1.4!important}
+html body #explore268 #exConditions279{padding:4px 0!important;min-height:34px!important;font-size:13px!important;line-height:1.45!important;letter-spacing:-.02em!important}
+html body #explore268 .ex-stage{min-height:260px!important}
+html body #explore268 .ex-hierarchy273{min-height:46px!important;width:108px!important;padding:7px!important;border-radius:12px!important;border-color:#b6c4d7!important;background:rgba(255,255,255,.97)!important}
+html body #explore268 .ex-hierarchy273 b{font-size:13px!important}
+html body #explore268 .ex-hierarchy273 span{font-size:11px!important}
+html body #explore268 .ex-level273{padding:8px 10px!important;border-color:#b6c4d7!important}
+html body #explore268 .ex-level273 #exMapLevel273{font-size:13px!important}
+html body #explore268 .ex-list-head{min-height:36px!important}
+html body #explore268 .ex-lower{padding:8px 16px!important}
+html body #explore268 #entryNav271{box-shadow:0 -4px 16px rgba(31,49,80,.035)!important}
+/* Input: single narrow work area, soft background, reduced repetition and tighter vertical rhythm. */
+html body.yk208.wizard268:not(.budget-overlay278){background:var(--v280-surface)!important}
+html body.yk208.wizard268:not(.budget-overlay278) #app{background:var(--v280-surface)!important;min-height:100dvh}
+html body.yk208.wizard268 #app #funnel{max-width:540px!important;padding:22px 20px 32px!important;min-height:0!important;gap:0!important;border-radius:0!important;background:transparent!important}
+html body.yk208.wizard268:not(.budget-overlay278) #app #funnel{margin:0 auto!important}
+html body.yk208.wizard268 #app #wizardHead268{margin-bottom:8px!important}
+html body.yk208.wizard268 #app #wizardExit268{font-size:13px!important;font-weight:650!important;color:var(--v280-muted)!important;padding:6px 0!important;min-height:38px!important}
+html body.yk208.wizard268 #app #wizardProgress268{margin:12px 0 20px!important;color:#57708d!important;font-size:12px!important}
+html body.yk208.wizard268 #app #wizardProgress268 progress{height:4px!important;border-radius:99px}
+html body.yk208.wizard268 #app #wizardTitle268{font-size:clamp(24px,6vw,29px)!important;line-height:1.26!important;letter-spacing:-.045em!important;margin:0 0 10px!important;white-space:pre-line!important}
+html body.yk208.wizard268 #app #wizardSub268{font-size:14px!important;line-height:1.5!important;word-break:keep-all!important;color:#64748b!important}
+html body.yk208.wizard268 #app #wizardContext275{margin-top:14px!important;padding:8px 0!important;min-height:0!important;font-size:13px!important}
+html body.yk208.wizard268 #app #wizardContext275[hidden]{display:none!important}
+html body.yk208.wizard268 #app #funnel>#crows{margin:16px 0 0!important}
+html body.yk208.wizard268 #app #funnel #crows>.inline-money{margin:0!important;padding:0!important;border:1px solid var(--v280-stroke)!important;border-radius:16px!important;background:#fff!important;overflow:hidden!important}
+html body.yk208.wizard268 #app #funnel #crows>.inline-money .inline-money-field{background:#fff!important;border:0!important;border-bottom:2px solid var(--v280-blue)!important;border-radius:0!important;padding:8px 14px 10px!important;min-height:72px!important}
+html body.yk208.wizard268 #app #funnel #crows .inline-money-field input{font-size:clamp(27px,7vw,34px)!important;min-height:54px!important;color:#17283f!important}
+html body.yk208.wizard268 #app #funnel #crows>.main-no-loan{padding:8px 0!important;margin:12px 0 0!important;border-top:0!important;min-height:54px!important}
+html body.yk208.wizard268 #app #funnel #wizardFoot268{margin:18px 0 0!important}
+html body.yk208.wizard268 #app #wizardNext268{min-height:52px!important;border-radius:13px!important;font-size:16px!important;font-weight:700!important;box-shadow:none!important}
+html body.yk208.wizard268 #app #wizardPrev268{font-size:14px!important;min-height:44px!important;padding:8px 0!important;margin-top:5px!important}
+html body.yk208.wizard268 #app #wizardFoot268 small{font-size:11px!important;color:#748196!important;margin-top:10px!important;line-height:1.5!important}
+html body.yk208.wizard268 #app #wizardChoices276:not([hidden]){gap:9px!important;margin:14px 0 0!important}
+html body.yk208.wizard268 #app #wizardChoices276 button{border-radius:14px!important;padding:15px 16px!important;min-height:65px!important;background:#fff!important}
+html body.yk208.wizard268 #app #wizardChoices276 button[aria-pressed="true"]{background:#f0f4ff!important}
+html body.yk208.wizard268 #app #wizardChoices276 button strong{font-size:15px!important}
+html body.yk208.wizard268 #app #wizardChoices276 button span{font-size:12px!important}
+html body.yk208.wizard268 #app #conditionReview279{margin:18px 0 0!important}
+html body.yk208.wizard268 #app #conditionReview279 button{background:transparent!important;min-height:60px!important;padding:12px 0!important}
+html body.yk208.budget-overlay278 #app{scrollbar-width:thin}
+html body.yk208.budget-overlay278 #app #funnel{background:#fff!important}
+/* Results: meaningful call to action after the financial summary, no dead end. */
+html body.yk208 #app #viewAnswer:not([hidden]){max-width:660px!important;padding:18px 16px 104px!important;background:transparent!important}
+html body.yk208 #app #viewAnswer>.v232-result-heading{padding:8px 2px 0!important;margin:0 0 18px!important}
+html body.yk208 #app #viewAnswer>.v232-result-heading h2{font-size:25px!important;font-weight:750!important;line-height:1.25!important}
+html body.yk208 #app #viewAnswer>.v232-result-heading p{font-size:13px!important;margin-top:7px!important;line-height:1.55!important}
+html body.yk208 #app #viewAnswer #fundingOverview{border-radius:18px!important;border:1px solid var(--v280-stroke)!important;box-shadow:0 2px 8px rgba(23,45,75,.035)!important}
+html body.yk208 #app #viewAnswer #fundingOverview #easyPrice{font-size:clamp(31px,8vw,40px)!important;letter-spacing:-.055em!important}
+html body.yk208 #app #viewAnswer #fundingOverview .rhead{padding-block:19px!important}
+html body.yk208 #app #viewAnswer #payTile{margin-top:16px!important}
+html body.yk208 #app #viewAnswer .v280-result-actions{display:grid;gap:8px;order:3;margin:16px 0 2px;padding:0 2px}
+html body.yk208 #app #viewAnswer .v280-result-actions strong{font-size:17px;font-weight:700;line-height:1.35;color:var(--v280-ink)}
+html body.yk208 #app #viewAnswer .v280-result-actions p{margin:0 0 4px;color:#65748a;font-size:13px;line-height:1.55}
+html body.yk208 #app #viewAnswer .v280-result-actions button{border:0;border-radius:13px;background:#2458ff;color:#fff;font:inherit;font-size:16px;font-weight:700;padding:16px;min-height:54px;cursor:pointer}
+html body.yk208 #app #viewAnswer .v280-result-actions .v280-secondary{background:#fff;color:#2458ff;border:1px solid #b7c8e5;min-height:46px;font-size:14px}
+html body.yk208 #app #viewAnswer .v280-result-actions button:focus-visible{outline:3px solid #93b1ff;outline-offset:2px}
+@media(max-width:600px){
+ html body.yk208.budget-overlay278 #app{top:8px!important;max-height:calc(100dvh - 8px)!important;border-radius:18px 18px 0 0!important}
+ html body.yk208.budget-overlay278 #app #funnel{padding:18px 20px max(18px,env(safe-area-inset-bottom))!important}
+ html body.yk208.wizard268:not(.budget-overlay278) #app #funnel{padding:20px 20px 30px!important}
+ html body #explore268 #exSearch268{height:44px!important;min-height:44px!important}
+}
+</style>
+<script id="v280-result-wayfinding">
+(function(){
+ const answer=document.getElementById('viewAnswer');
+ if(!answer || document.getElementById('v280-result-actions'))return;
+ const actions=document.createElement('section');actions.id='v280-result-actions';actions.className='v280-result-actions';
+ actions.setAttribute('aria-label','예산 확인 후 다음 단계');
+ actions.innerHTML='<strong>이 예산으로 집을 찾아볼까요?</strong><p>지도에서 실거래 단지를 살펴보고 최대 3곳까지 비교할 수 있어요.</p><button type="button" id="v280-see-homes">지도에서 집 찾아보기 →</button><button type="button" id="v280-see-compare" class="v280-secondary">담은 단지 비교하기</button>';
+ const funding=document.getElementById('fundingOverview');
+ if(funding&&funding.parentElement===answer)funding.insertAdjacentElement('afterend',actions);else answer.append(actions);
+ document.getElementById('v280-see-homes').addEventListener('click',()=>window.yk208Navigate?.('map'));
+ document.getElementById('v280-see-compare').addEventListener('click',()=>window.yk208Navigate?.('compare'));
+})();
+</script>
 </body>
 </html>
