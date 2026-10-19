@@ -6870,14 +6870,18 @@ function renderLimits(c, price){
   $('roomTip').hidden = !(c.roomCut>0 || mciOn);
   const afterRoom = $('limitAfterRoom');
   afterRoom.hidden = !(c.roomCut>0 && keys.length);
-  afterRoom.innerHTML = afterRoom.hidden ? '' : '<span>방공제 반영 한도</span><strong>' + formatWon(c.mortgageLoan) + '</strong>';
+  /* v289 — 결과 카드의 「주택담보대출」과 같은 만원 값으로(오너 「1만원 차이나는 건 동일하게」).
+     카드는 heroFigures(총 필요 금액 올림 − 현금 올림)로 합계가 맞게 만든 값이고, 여기는 대출액을 바로 반올림해 1만원 어긋날 수 있었음.
+     「대출을 줄여 보기」로 줄인 몫은 한도가 아니므로 더해서 한도로 보임(줄이지 않았으면 카드 값과 같음). */
+  afterRoom.innerHTML = afterRoom.hidden ? '' : '<span>방공제 반영 한도</span><strong>' + formatWon((heroFigures(c, price).L + loanCutOf(c).cut) * 10000) + '</strong>';
   (function(){
     const t = $('capTip'); if(!t) return;
     if(S.loanCap == null){t.textContent='';t.hidden=true;return;}
     if(!(S.loanCap > 0)){t.textContent='금액 입력 후 입력칸 밖을 누르면 반영됩니다. 현재는 직접 한도를 적용하지 않았습니다.';t.hidden=false;return;}
-    t.innerHTML = c.binding === 'manual'
-      ? `<b>직접 정한 금액을 적용했어요.</b> ${formatWon(man(S.loanCap))}을 상한으로 계산했어요.`
-      : `<b>직접 정한 금액보다 다른 한도가 낮아요.</b> 주택담보대출은 ${formatWon(c.mortgageLoan)}으로 계산했어요.`;
+    /* v290 — 직접 정한 금액보다 다른 한도가 낮을 때의 안내 문장은 뺌(오너 「사족이야」).
+       어느 한도가 적용됐는지는 바로 위 한도 막대의 「적용 기준」 표시와 방공제 반영 한도 줄이 이미 보여 줌. */
+    if(c.binding !== 'manual'){ t.textContent=''; t.hidden=true; return; }
+    t.innerHTML = `<b>직접 정한 금액을 적용했어요.</b> ${formatWon(man(S.loanCap))}을 상한으로 계산했어요.`;
     t.hidden = false;
   })();
   const notes = $('limitNotes');
@@ -13668,6 +13672,90 @@ html body.yk208 #app[data-v208-tab="conditions"] #funnel>#crows{grid-column:1;gr
 html body.yk208 #app[data-v208-tab="conditions"] #funnel>#dock{grid-column:1;grid-row:4;width:100%!important;max-width:none!important;margin:0!important}
 html body.yk208 #app[data-v208-tab="conditions"] #funnel>#entryBack232{display:none!important}
 }
+</style>
+<style id="v288-graphics">
+/* v288 — 그래픽(아이콘 · 작은 도표) · 엔진 변경 없음 · 공유 이미지(#reportCard) 손대지 않음
+   1) 입력 줄 아이콘: 매수 지역 · 주택 보유 · 집에 쓸 현금 · 연 소득 · 기존 대출 — 무엇을 넣는 줄인지 글을 읽기 전에 보이게
+   2) 월 상환액: 「세전 소득의 N%」 옆 작은 원 도표(값은 화면이 이미 계산한 #gauge 폭을 그대로 씀)
+   3) 부대비용 조정: 합계 아래 항목별 막대(각 줄 금액을 더한 값이 합계와 같을 때만 그림 — 다르면 막대를 숨김) */
+html body.yk208 #app #crows .crow[data-mode] .k,
+html body.yk208 #app #crows .inline-money>label{display:inline-flex!important;align-items:center!important;gap:10px!important}
+html body.yk208 #app #crows .crow[data-mode] .k::before,
+html body.yk208 #app #crows .inline-money>label::before{content:"";flex:none;width:30px;height:30px;border-radius:9px;background:#EDF2FF center/18px 18px no-repeat}
+html body.yk208 #app #crows .crow[data-mode="region"] .k::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E")}
+html body.yk208 #app #crows .crow[data-mode="house"] .k::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.5 12 3l9 7.5'/%3E%3Cpath d='M5 9.5V21h14V9.5'/%3E%3Cpath d='M10 21v-6h4v6'/%3E%3C/svg%3E")}
+html body.yk208 #app #crows .crow[data-mode="debt"] .k::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3h7l4 4v14H7z'/%3E%3Cpath d='M14 3v4h4'/%3E%3Cpath d='M10 12h5M10 16h5'/%3E%3C/svg%3E")}
+html body.yk208 #app #crows .inline-money:has(#main-cash)>label::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='14' rx='3'/%3E%3Cpath d='M3 10.5h18'/%3E%3Cpath d='M15.5 15h2.5'/%3E%3C/svg%3E")}
+html body.yk208 #app #crows .inline-money:has(#main-income)>label::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19h16'/%3E%3Cpath d='M6 15l4-4 3 3 5-6'/%3E%3Cpath d='M15 8h3v3'/%3E%3C/svg%3E")}
+/* 2) 월 상환액 원 도표 */
+html body.yk208 #app #payTile .ans-pct{display:flex!important;align-items:center!important;gap:8px!important}
+html body.yk208 #app #payTile .v288-ring{flex:none;width:34px;height:34px;border-radius:50%;background:conic-gradient(#2458FF calc(var(--v288-pct,0) * 1%),#E6ECF7 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px))}
+html body.yk208 #app #payTile .v288-ring[hidden]{display:none!important}
+/* 3) 부대비용 항목 막대 */
+html body.yk208 #whySheet .v288-costbar{margin:12px 0 12px}
+html body.yk208 #whySheet .v288-costbar[hidden]{display:none!important}
+html body.yk208 #whySheet .v288-costbar .bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#E6ECF7;gap:2px}
+html body.yk208 #whySheet .v288-costbar .bar i{display:block;height:100%;min-width:3px}
+html body.yk208 #whySheet .v288-costbar ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--yk-sub,#516077)}
+html body.yk208 #whySheet .v288-costbar li{display:inline-flex;align-items:center;gap:6px}
+html body.yk208 #whySheet .v288-costbar li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+html body.yk208 #whySheet .v288-costbar li b{font-weight:600;color:var(--yk-ink,#192332)}
+</style>
+<script id="v288-graphics">
+(function(){
+  const C = ['#2458FF','#5C85FF','#8FA9FF','#B9CBFF','#1945D1'];
+  const man = t => { const m = String(t||'').replace(/\s/g,''); let v = 0; const a = m.match(/(\d[\d,]*)억/), b = m.match(/(?:억)?(\d[\d,]*)만/);
+    if(a) v += parseInt(a[1].replace(/,/g,''),10) * 10000; if(b) v += parseInt(b[1].replace(/,/g,''),10); return v; };
+  /* 2) 월 상환액 원 도표 — #gauge 안 막대 폭(화면이 계산한 비율)을 그대로 옮김 */
+  function ring(){
+    const pct = document.querySelector('#payTile .ans-pct'), g = document.querySelector('#gauge i'), gauge = document.getElementById('gauge');
+    if(!pct) return;
+    let r = pct.querySelector('.v288-ring');
+    if(!r){ r = document.createElement('span'); r.className = 'v288-ring'; r.setAttribute('aria-hidden','true'); pct.insertBefore(r, pct.firstChild); }
+    const w = g ? parseFloat(g.style.width) : NaN;
+    const show = !!gauge && !gauge.hasAttribute('hidden') && Number.isFinite(w);
+    r.hidden = !show; if(show) r.style.setProperty('--v288-pct', String(Math.max(0, Math.min(100, w))));
+  }
+  /* 3) 부대비용 막대 — 줄 금액 합이 화면 합계와 다르면 그리지 않음(틀린 그림을 내지 않기) */
+  function costbar(){
+    const sheet = document.getElementById('whySheet'), impact = sheet && sheet.querySelector('.cost-impact');
+    if(!impact) return;
+    let box = sheet.querySelector('.v288-costbar');
+    if(!box){ box = document.createElement('div'); box.className = 'v288-costbar'; box.setAttribute('aria-hidden','true'); impact.after(box); }
+    const parts = [];
+    sheet.querySelectorAll('#costItems .line').forEach(l => { const k = l.querySelector('.k'), v = l.querySelector('.v'); if(k && v) parts.push([k.textContent.trim(), man(v.textContent)]); });
+    sheet.querySelectorAll('#costBox .costrow').forEach(r => { const sw = r.querySelector('[role=switch]'), inp = r.querySelector('input'), nm = r.querySelector('.nm');
+      if(sw && inp && nm && sw.getAttribute('aria-checked') === 'true') parts.push([nm.childNodes[0].textContent.trim(), parseInt(String(inp.value).replace(/[^\d]/g,''),10) || 0]); });
+    const total = man((document.getElementById('costImpactTotal')||{}).textContent);
+    const list = parts.filter(p => p[1] > 0), sum = list.reduce((a,p) => a + p[1], 0);
+    if(!(total > 0) || !list.length || Math.abs(sum - total) > list.length){ box.hidden = true; box.innerHTML = ''; return; }   /* 줄마다 만원 반올림 차이만 허용 */
+    box.hidden = false;
+    const html = '<div class="bar">' + list.map((p,i) => '<i style="flex:' + p[1] + ';background:' + C[i % C.length] + '"></i>').join('') + '</div>'
+      + '<ul>' + list.map((p,i) => '<li style="--c:' + C[i % C.length] + '">' + p[0].replace(/[<&]/g,'') + ' <b>' + Math.round(p[1] / sum * 100) + '%</b></li>').join('') + '</ul>';
+    if(box.innerHTML !== html) box.innerHTML = html;
+  }
+  let busy = false;
+  function run(){ if(busy) return; busy = true; try{ ring(); costbar(); }catch(e){} finally{ busy = false; } }
+  function start(){
+    const mo = new MutationObserver(() => setTimeout(run, 0));
+    ['tileBurden','gauge','costImpactTotal','costItems'].forEach(id => { const n = document.getElementById(id); if(n) mo.observe(n, {childList:true, subtree:true, attributes:true, characterData:true}); });
+    const sheet = document.getElementById('whySheet');
+    if(sheet){ sheet.addEventListener('input', () => setTimeout(run, 0)); sheet.addEventListener('click', () => setTimeout(run, 0)); }
+    run();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
+<style id="v291-icons">
+/* v291 — 아이콘 통일 · 빈자리 채우기 (CSS만)
+   ① 카드 머리 아이콘이 두 가지 모양이었음: 「월 상환액」은 바탕 없는 회색, 「내 예산과 실거래 비교」는 연파랑 칸 안 파랑
+      → 둘 다 연파랑 칸(30px · 모서리 9px) 안 파랑 — v288 입력 줄 아이콘과 같은 모양
+   ② 아이콘이 없던 줄: 「주택담보대출 안 받기」(은행) · 「외부 사이트에서 확인」(바깥으로 나가는 화살표) */
+html body.yk208 #app#app #viewAnswer #payTile .section-symbol,html body.yk208 #app .section-symbol{background:#EDF2FF!important;color:#2458FF!important;border-radius:9px!important;width:30px!important;height:30px!important}
+html body.yk208 #app #crows .main-no-loan .nl-t{display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important}
+html body.yk208 #app #crows .main-no-loan .nl-t::before{content:"";flex:none;width:30px;height:30px;border-radius:9px;background:#EDF2FF center/18px 18px no-repeat;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9.5 12 4l9 5.5'/%3E%3Cpath d='M5 10v7M9.5 10v7M14.5 10v7M19 10v7'/%3E%3Cpath d='M3 20h18'/%3E%3C/svg%3E")}
+html body.yk208 #app .external-links>summary{display:flex!important;align-items:center!important;gap:8px!important}
+html body.yk208 #app .external-links>summary::before{content:"";flex:none;width:30px;height:30px;border-radius:9px;background:#EDF2FF center/18px 18px no-repeat;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4'/%3E%3C/svg%3E")}
 </style>
 </body>
 </html>
