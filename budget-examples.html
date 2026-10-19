@@ -42,6 +42,33 @@ header nav{display:flex;flex-wrap:wrap;column-gap:16px}
 header nav a{text-decoration:none!important;color:#465262!important;font-weight:500}
 header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 </style>
+<style id="v302-figures">
+/* v302 — 안내 페이지 도표(v301과 같은 틀). 페이지에 이미 적힌 숫자만 그립니다(새 수치 없음). 표·글이 정본이고 그림 부분은 낭독기에서 건너뜁니다(aria-hidden) — 설명 글(figcaption)만 읽힘. */
+.yk-fig{margin:14px 0 6px}
+.yk-fig .fr{margin:0 0 12px}
+.yk-fig .fl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;line-height:1.5;color:#516077;margin:0 0 4px}
+.yk-fig .fl b{color:#192332;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yk-fig .fl.on,.yk-fig .fl.on b{color:#1848D6}
+.yk-fig .track{display:flex;height:12px;border-radius:6px;background:#EDF2FF;overflow:hidden}
+.yk-fig .track>span{height:100%;background:#B9C6DA}
+.yk-fig .track>span.on{background:#2458FF}
+.yk-fig .track>span.soft{background:#9DB8FF}
+.yk-fig .track>span+span{border-left:2px solid #fff}
+.yk-fig figcaption{font-size:13px;line-height:1.6;color:#516077;margin-top:6px}
+.yk-line .plot{position:relative;height:184px;margin:22px 4px 0 44px;border-left:1px solid #B9C6DA;border-bottom:1px solid #B9C6DA}
+.yk-line .band{position:absolute;top:0;bottom:0;background:#EDF2FF;border-left:1px dashed #9DB8FF;border-right:1px dashed #9DB8FF}
+.yk-line .band em{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-style:normal;font-size:12px;font-weight:600;color:#1848D6;white-space:nowrap}
+.yk-line .gl{position:absolute;left:0;right:0;border-top:1px solid #E6EBF3}
+.yk-line .gl b{position:absolute;right:100%;transform:translateY(-50%);margin-right:6px;font-size:12px;font-weight:400;color:#516077;white-space:nowrap}
+.yk-line svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.yk-line i{position:absolute;width:8px;height:8px;margin:0 0 -4px -4px;border-radius:50%;background:#2458FF;border:2px solid #fff;box-sizing:content-box;transform:translate(-2px,2px)}
+.yk-line .xl{position:relative;height:20px;margin:4px 4px 0 44px;font-size:12px;color:#516077}
+.yk-line .xl b{position:absolute;transform:translateX(-50%);font-weight:400;white-space:nowrap}
+.yk-line .ax{display:flex;justify-content:space-between;margin:2px 4px 0 44px;font-size:12px;color:#516077}
+.yk-line .lg2{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 4px 0 44px;font-size:12px;line-height:1.5;color:#516077}
+.yk-line .lg2 span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.yk-line .lg2 svg{position:static;width:22px;height:8px;flex:none}
+</style>
 </head>
 <body><header><a class="site-brand" href="/" aria-label="영끌계산기 계산기로 가기"><span class="site-mark" aria-hidden="true"></span><strong>영끌계산기</strong></a><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide.html">계산 방법</a><a href="/articles.html">글 목록</a><a href="/about.html">소개·문의</a></nav></header><main>
 
@@ -85,6 +112,7 @@ header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 <tr><td>9,000만원</td><td class="num" data-label="서울 무주택">2억 3,400만원</td><td class="num" data-label="서울 생애최초">4억 5,700만원</td><td class="num" data-label="고양 덕양구">4억 7,900만원</td><td class="num" data-label="대전 서구">5억 4,300만원</td></tr>
 <tr><td>1억 2,000만원</td><td class="num" data-label="서울 무주택">2억 3,400만원</td><td class="num" data-label="서울 생애최초">4억 5,700만원</td><td class="num" data-label="고양 덕양구">4억 7,900만원</td><td class="num" data-label="대전 서구">5억 4,300만원</td></tr>
 </tbody></table></div>
+<figure class="yk-fig yk-line"><div aria-hidden="true"><p class="yt">살 수 있는 집값(현금 2억원)</p><div class="plot"><span class="gl" style="bottom:26.32%"><b>3억</b></span><span class="gl" style="bottom:52.63%"><b>4억</b></span><span class="gl" style="bottom:78.95%"><b>5억</b></span><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="5.13,91.05 30.77,91.05 56.41,91.05 94.87,91.05" fill="none" stroke="#9AA6B8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/><polyline points="5.13,58.68 30.77,36.05 56.41,32.37 94.87,32.37" fill="none" stroke="#2458FF" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/><polyline points="5.13,56.84 30.77,34.21 56.41,26.58 94.87,26.58" fill="none" stroke="#2458FF" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/><polyline points="5.13,37.37 30.77,9.74 56.41,9.74 94.87,9.74" fill="none" stroke="#1848D6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="1.5 3.5" vector-effect="non-scaling-stroke"/></svg><i style="left:5.13%;bottom:8.95%;background:#9AA6B8;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:30.77%;bottom:8.95%;background:#9AA6B8;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:56.41%;bottom:8.95%;background:#9AA6B8;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:94.87%;bottom:8.95%;background:#9AA6B8;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:5.13%;bottom:41.32%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:30.77%;bottom:63.95%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:56.41%;bottom:67.63%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:94.87%;bottom:67.63%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:5.13%;bottom:43.16%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:30.77%;bottom:65.79%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:56.41%;bottom:73.42%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:94.87%;bottom:73.42%;background:#2458FF;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:5.13%;bottom:62.63%;background:#1848D6;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:30.77%;bottom:90.26%;background:#1848D6;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:56.41%;bottom:90.26%;background:#1848D6;width:6px;height:6px;margin:0 0 -3px -3px"></i><i style="left:94.87%;bottom:90.26%;background:#1848D6;width:6px;height:6px;margin:0 0 -3px -3px"></i></div><div class="xl"><b style="left:5.13%">5천만</b><b style="left:30.77%">7천만</b><b style="left:56.41%">9천만</b><b style="left:94.87%;transform:translateX(-80%)">1억 2천만</b></div><p class="ax">연 소득</p><p class="lg2"><span><svg viewBox="0 0 22 8"><line x1="1" y1="4" x2="21" y2="4" stroke="#9AA6B8" stroke-width="2.5" stroke-linecap="round"/></svg>서울 무주택</span><span><svg viewBox="0 0 22 8"><line x1="1" y1="4" x2="21" y2="4" stroke="#2458FF" stroke-width="2.5" stroke-linecap="round"/></svg>서울 생애최초</span><span><svg viewBox="0 0 22 8"><line x1="1" y1="4" x2="21" y2="4" stroke="#2458FF" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 4"/></svg>고양 덕양구</span><span><svg viewBox="0 0 22 8"><line x1="1" y1="4" x2="21" y2="4" stroke="#1848D6" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1.5 3.5"/></svg>대전 서구</span></p></div><figcaption>점은 위 표의 값이고, 점 사이는 직선으로 이었습니다. 서울 무주택은 소득과 관계없이 같고, 나머지 세 곳도 소득이 일정 수준을 넘으면 더 오르지 않습니다.</figcaption></figure>
 <ul>
 <li><strong>서울 무주택</strong>은 소득과 관계없이 2억 3,400만원입니다. LTV 40%가 한도를 정하기 때문입니다.</li>
 <li><strong>고양 덕양구</strong>는 규제지역이 아니라 무주택자도 LTV 70%입니다. 수도권 생애최초 LTV도 70%라서, 이곳에서는 무주택과 생애최초의 결과가 같습니다.</li>
