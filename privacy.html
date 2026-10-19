@@ -13,7 +13,7 @@
      ⚠ 글꼴·favicon 로딩 방식은 index.html v25.8과 **같은 문법**입니다 — 비차단.
        이 페이지는 글자뿐이라 더더욱 외부 요청에 화면을 걸지 않습니다.
      ⚠ **광고 스니펫을 여기에도 넣습니다.** 구글이 요구하는 것은 「각 페이지의 <head>」입니다. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300CA71'/%3E%3Ctext x='32' y='45' font-family='system-ui,sans-serif' font-size='38' font-weight='700' fill='%23fff' text-anchor='middle'%3E%EC%98%81%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%231F5BFF'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5 12 7l6 5.5'/%3E%3Cpath d='M8.5 11v6h7v-6'/%3E%3C/g%3E%3C/svg%3E">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571049978270961"
         crossorigin="anonymous"></script>
 <meta name="description" content="영끌계산기가 무엇을 수집하지 않는지, 브라우저에 무엇이 남는지, 광고·분석 쿠키가 어떻게 쓰이는지 적어 둡니다.">
@@ -40,11 +40,11 @@
 /* index.html의 토큰 중 **이 페이지가 실제로 쓰는 것만** 옮겼습니다. 새 값은 없습니다. */
 :root{
   color-scheme:light;
-  --bg:#F2F4F6; --card:#FFFFFF;
-  --line:#E5E8EB;
-  --green:#00CA71;
-  --ink:#191F28; --ink-2:#333D4B; --ink-3:#4E5968; --ink-4:#6B7684;
-  --hair:1px solid #E5E8EB;
+  --bg:#F6F8FC; --card:#FFFFFF;
+  --line:#D7DFEB;
+  --green:#2458FF;
+  --ink:#192332; --ink-2:#192332; --ink-3:#516077; --ink-4:#607089;
+  --hair:1px solid #D7DFEB;
   --sh:0 4px 20px rgba(0,0,0,.03);
   --t1:28px; --t3:20px; --t4:17px; --t5:16px; --t6:14px; --t7:13px; --t8:12px;
   --r-l:20px; --r-m:14px;
@@ -62,7 +62,7 @@
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--ink-2);
   font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;
-  font-size:var(--t6);line-height:var(--lh-body);letter-spacing:var(--ls-body);
+  font-size:var(--t6);line-height:var(--lh-body);letter-spacing:-.012em;
   -webkit-text-size-adjust:100%}
 .app{max-width:480px;margin:0 auto;min-height:100dvh;padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 /* 상단 바 — index.html과 같은 56px · 같은 워드마크 문법(굵기 대비만으로 위계). */
@@ -108,12 +108,23 @@ tr:last-child td{border-bottom:0}
   font-size:var(--t6);font-weight:600;color:var(--ink-2);text-decoration:none}
 .copyright{margin:var(--sp-5) 0 0;padding:0 16px 24px;text-align:center;
   font-size:var(--t8);font-weight:var(--w-sub);color:var(--ink-3)}
+
+
+/* v247: article/guide pages use the same reading palette as the calculator. */
+:root{color:#192332;background:#F6F8FC;--v-blue:#2458FF;--v-blue-deep:#1848D6;--v-line:#D7DFEB;--v-sub:#516077}
+body{color:#192332;background:#F6F8FC;letter-spacing:-.012em}
+h1,h2,h3{color:#192332;letter-spacing:-.03em;line-height:1.38}
+p,li{color:#516077;line-height:1.7}
+.eyebrow{color:#1848D6}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #2458FF;outline-offset:3px}
+@media(max-width:600px){header,main,footer{max-width:100%;}section{scroll-margin-top:16px}}
+
 </style>
 </head>
 <body>
 <div class="app">
   <div class="appbar">
-    <a class="wordmark" href="/"><b>영끌</b>계산기</a>
+    <a class="wordmark" href="/" style="display:inline-flex;align-items:center;gap:8px"><span aria-hidden="true" style="flex:none;width:24px;height:24px;border-radius:7px;background:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%231F5BFF'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5 12 7l6 5.5'/%3E%3Cpath d='M8.5 11v6h7v-6'/%3E%3C/g%3E%3C/svg%3E&quot;) center/24px 24px no-repeat"></span><span><b>영끌</b>계산기</span></a>
     <span class="barlabel">개인정보처리방침</span>
   </div>
 
