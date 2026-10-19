@@ -10560,12 +10560,13 @@ html body #app #viewDeals .deal-afford .da-gap{font-weight:600}
  rows.filter(x=>x.amountMan>=lo&&x.amountMan<=hi).forEach(x=>{const i=Math.min(11,Math.floor((x.amountMan-lo)/(hi-lo)*12));bins[i][fits(x)?'under':'over']++;});
  return {n,under,lo,hi,below,above,shown:visible.length,bins,peak:Math.max(1,...bins.map(b=>b.under+b.over)),marker:(budget-lo)/(hi-lo),median};
 }
-function distributionDots(items,budget,pass,model){
+function distributionDots(items,budget,pass,model,span){
+ if(!(span>0))span=336;   /* v294 — 그림 폭(가로 단위). 휴대폰은 종전 336, 넓은 화면은 실제 폭에 맞춤 */
  const date=x=>(Number(x.y)||0)*10000+(Number(x.m)||0)*100+(Number(x.d)||0);
  const rows=items.filter(x=>Number.isFinite(x.amountMan)&&x.amountMan>=model.lo&&x.amountMan<=model.hi&&(!pass||pass(x))).slice().sort((a,b)=>date(b)-date(a)).slice(0,60);
  const placed=[];
  for(const row of rows){
-  const x=12+(row.amountMan-model.lo)/(model.hi-model.lo)*336;
+  const x=12+(row.amountMan-model.lo)/(model.hi-model.lo)*span;
   let level=0;while(placed.some(p=>p.level===level&&Math.abs(p.x-x)<9))level++;/* v198: 반지름 4 → 간격 9 */
   placed.push({x,level,amount:row.amountMan,fit:typeof dealFits==='function'?dealFits(row,budget):row.amountMan<=budget,name:row.name||'',date:[row.y,row.m,row.d].filter(Boolean).join('.')});
  }
@@ -10592,10 +10593,11 @@ function renderDealDistribution(priceMan){
  const money=v=>formatWon(Math.round(v)*10000);
  if(!Number.isFinite(budget)||budget<=0){box.innerHTML=head('실거래')+'<p class="dd-note">예상 집값을 계산하면 거래 분포를 볼 수 있어요.</p>';return;}
  if(!model.bins){box.innerHTML=head('예상 집값 이하 <b>'+model.under+'건</b>')+'<p class="dd-note">'+(model.n?'조건에 맞는 거래가 '+model.n+'건이라 분포를 표시하지 않아요.':'조건에 맞는 거래가 없어 분포를 표시하지 않아요.')+'</p>'+wideNote;return;}
- const dots=distributionDots(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null,model);
+ ddWatch(box); const W=ddPlotWidth(box),SPAN=W-24;   /* v294 — 넓은 화면에선 띠를 카드 폭에 맞춰 늘림(1단위=1px이라 점 크기는 그대로) */
+ const dots=distributionDots(DEAL.items||[],budget,typeof DEAL.pass==='function'?DEAL.pass:null,model,SPAN);
  /* 띠 높이를 고정한다 — 같은 가격대가 몰리면 4단까지 쌓고 그 위는 겹친다(개수는 문장·자세히에 있다) */
  /* v198 — 띠를 키운다(오너 「압축해 놓은 느낌」): 4단·8 간격·반지름 3.5 → 6단·10 간격·반지름 4. 띠 높이 약 33px → 약 58px(390 폭). */
- const CAP=6,base=66,mx=12+model.marker*336;
+ const CAP=6,base=66,mx=12+model.marker*SPAN;
  const moneyShort=v=>{const e=v/10000;return Number(e.toFixed(1))+'억';};
  const points=dots.points.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+(base-6-Math.min(p.level,CAP-1)*10)+'" r="4" fill="'+(p.fit?'#2458FF':'#8792A8')+'" fill-opacity="'+(p.level>=CAP-1?'.75':'1')+'"><title>'+esc(p.name+' '+money(p.amount)+' '+p.date)+'</title></circle>').join('');
  const shade='<path d="M12 4H'+mx.toFixed(1)+'V'+base+'H12Z" fill="#2458FF" fill-opacity=".06"/>';
@@ -10614,10 +10616,10 @@ function renderDealDistribution(priceMan){
   :'거래의 <b>'+underPct+'%</b>가 <i>내 예상 집값 이하예요</i>';
  const medPct=Number.isFinite(model.median)?(model.median-model.lo)/(model.hi-model.lo)*100:NaN;
  const medTag=medPct>=18&&medPct<=82?'<span class="dd-med" style="left:'+medPct.toFixed(1)+'%">중간값 '+moneyShort(model.median)+'</span>':'';
- const medLine=medTag?'<line x1="'+(12+medPct/100*336).toFixed(1)+'" x2="'+(12+medPct/100*336).toFixed(1)+'" y1="'+(base-4)+'" y2="'+(base+2)+'" stroke="#53617C" stroke-width="1.5"/>':'';
+ const medLine=medTag?'<line x1="'+(12+medPct/100*SPAN).toFixed(1)+'" x2="'+(12+medPct/100*SPAN).toFixed(1)+'" y1="'+(base-4)+'" y2="'+(base+2)+'" stroke="#53617C" stroke-width="1.5"/>':'';
  box.innerHTML=head('')
   +'<div class="dd-insight">'+insight+'</div>'
-  +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 360 '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="348" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+medLine+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
+  +'<div class="dd-strip">'+mark+'<svg viewBox="0 0 '+W+' '+(base+2)+'" role="img" aria-label="'+summary+' · '+dotNote+'"><title>'+summary+'</title>'+shade+'<line x1="12" x2="'+(W-12)+'" y1="'+base+'" y2="'+base+'" stroke="#DCE2EC"/>'+points+medLine+'<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="0" y2="'+base+'" stroke="#2458FF" stroke-width="1.5"/></svg>'
   +'<div class="dd-axis"><span>'+moneyShort(model.lo)+'</span>'+medTag+'<span>'+moneyShort(model.hi)+'</span></div></div>'
   +'<p class="dd-scope-note">전체 '+model.n+'건 중 예상 집값 이하 '+model.under+'건<br>점은 표시 구간의 최근 '+dots.points.length+'건 · 겹친 점이 있어요.</p>'
   +(model.shown===0?'<p class="dd-note">이 가격 구간에는 거래가 없어요. 범위 밖 거래는 전체 집계에 포함돼요.</p>':'')+wideNote
@@ -10631,6 +10633,29 @@ function renderDealDistribution(priceMan){
   +'<p class="dd-note">막대 위 숫자는 그 가격대의 거래 건수예요.<br>위 띠는 '+dotNote+'</p></div>'
   +'<div class="dd-group"><p class="dd-sub">목록·지도와 다른 점</p>'
   +'<p class="dd-note">분포는 같은 단지 거래도 한 건씩 세고, 지도를 옮겨 더한 거래는 빼요.<br>아래 목록은 단지별 최근 거래라 숫자가 달라요.</p></div></details>';
+}
+/* v294 — 실거래 분포 띠의 그림 폭. 띠가 380px 이상 넓으면 그 폭(px)을 그대로 가로 단위로 써서 점 크기·간격을 유지하고,
+   좁으면(휴대폰) 종전 360 단위를 그대로 씀 — 휴대폰 화면은 v293과 같음. */
+function ddPlotWidth(box){
+  let w=0;
+  const strip=box&&box.querySelector('.dd-strip');
+  if(strip&&strip.clientWidth) w=strip.clientWidth;
+  else if(box&&box.clientWidth){ const cs=getComputedStyle(box); w=box.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0); }
+  return w>=380?Math.round(w):360;
+}
+function ddWatch(box){
+  /* 탭이 숨은 상태에서 그리면 폭이 0이라 360으로 그려짐 → 보이거나 폭이 바뀌면 한 번 다시 그림(ResizeObserver) */
+  if(!box||box._ddWatch||typeof ResizeObserver!=='function')return;
+  let t=0;
+  box._ddWatch=new ResizeObserver(function(){
+    clearTimeout(t);
+    t=setTimeout(function(){
+      const strip=box.querySelector('.dd-strip'); if(!strip||!strip.clientWidth)return;
+      const svg=strip.querySelector('svg'),vb=svg?+(svg.getAttribute('viewBox')||'').split(' ')[2]:0;
+      if(vb&&Math.abs(ddPlotWidth(box)-vb)>24&&typeof renderDealDistribution==='function') renderDealDistribution();
+    },60);
+  });
+  box._ddWatch.observe(box);
 }
 function dealTools(){
  const card=document.getElementById('dealCard'),seg=document.getElementById('sortSeg'),fold=card&&card.querySelector(':scope>.deal-filter-fold');
@@ -13777,6 +13802,19 @@ html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead+.entry-sub
 html body.yk208 #app #viewCompare{max-width:none!important;margin-left:0!important;margin-right:0!important}
 html body.yk208 #app #viewDeals #dealCard{max-width:none!important;margin-inline:0!important}
 }
+</style>
+<style id="v294-dd-wide">
+/* v294 — 데스크톱에서 실거래 분포 띠를 카드 폭에 맞춤(v293에서 카드가 984px로 넓어졌는데 띠는 가운데 440px 고정이었음) */
+@media(min-width:960px){html body.yk208 #app #viewDeals #dealDistribution .dd-strip{max-width:none!important;margin-inline:0!important}}
+</style>
+<style id="v295-house-icons">
+/* v295 — 「주택 보유 이력」 시트의 세 선택지에 그림(입력 줄 아이콘과 같은 선 아이콘)
+   생애최초(새 집) · 무주택(열쇠) · 1주택 이상(집 두 채). 글자는 그대로, 위에 24px 그림. */
+html body.yk208 #houseSeg [data-house]{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:6px!important;min-height:76px!important;padding-top:12px!important;padding-bottom:10px!important}
+html body.yk208 #houseSeg [data-house]::before{content:"";width:24px;height:24px;background:center/24px 24px no-repeat}
+html body.yk208 #houseSeg [data-house="first"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11 11 4.5l8 6.5'/%3E%3Cpath d='M5 10v10h12V10'/%3E%3Cpath d='M9.5 20v-5h3v5'/%3E%3Cpath d='M19.5 2.5v4M17.5 4.5h4'/%3E%3C/svg%3E")}
+html body.yk208 #houseSeg [data-house="none"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='15' r='4'/%3E%3Cpath d='M11 12l9-9'/%3E%3Cpath d='M17 6l2 2'/%3E%3Cpath d='M15 8l2 2'/%3E%3C/svg%3E")}
+html body.yk208 #houseSeg [data-house="multi"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12l5-4.5 5 4.5'/%3E%3Cpath d='M3.5 11v9h7v-9'/%3E%3Cpath d='M12 9.5 17 5l5 4.5'/%3E%3Cpath d='M13.5 9v11h7V9'/%3E%3C/svg%3E")}
 </style>
 </body>
 </html>
