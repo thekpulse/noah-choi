@@ -42,6 +42,31 @@ header nav{display:flex;flex-wrap:wrap;column-gap:16px}
 header nav a{text-decoration:none!important;color:#465262!important;font-weight:500}
 header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 </style>
+<style id="v301-figures">
+/* v301 — 안내 페이지 도표. 페이지에 이미 적힌 숫자만 그립니다(새 수치 없음). 표·글이 정본이고 그림 부분은 낭독기에서 건너뜁니다(aria-hidden) — 설명 글(figcaption)만 읽힘. */
+.yk-fig{margin:14px 0 6px}
+.yk-fig .fr{margin:0 0 12px}
+.yk-fig .fl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;line-height:1.5;color:#516077;margin:0 0 4px}
+.yk-fig .fl b{color:#192332;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yk-fig .fl.on,.yk-fig .fl.on b{color:#1848D6}
+.yk-fig .track{display:flex;height:12px;border-radius:6px;background:#EDF2FF;overflow:hidden}
+.yk-fig .track>span{height:100%;background:#B9C6DA}
+.yk-fig .track>span.on{background:#2458FF}
+.yk-fig .track>span.soft{background:#9DB8FF}
+.yk-fig .track>span+span{border-left:2px solid #fff}
+.yk-fig figcaption{font-size:13px;line-height:1.6;color:#516077;margin-top:6px}
+.yk-line .yt{margin:0 0 8px;font-size:12px;line-height:1.5;color:#516077}
+.yk-line .plot{position:relative;height:184px;margin:0 4px 0 44px;border-left:1px solid #B9C6DA;border-bottom:1px solid #B9C6DA}
+.yk-line .band{position:absolute;top:0;bottom:0;background:#EDF2FF;border-left:1px dashed #9DB8FF;border-right:1px dashed #9DB8FF}
+.yk-line .band em{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-style:normal;font-size:12px;font-weight:600;color:#1848D6;white-space:nowrap}
+.yk-line .gl{position:absolute;left:0;right:0;border-top:1px solid #E6EBF3}
+.yk-line .gl b{position:absolute;right:100%;transform:translateY(-50%);margin-right:6px;font-size:12px;font-weight:400;color:#516077;white-space:nowrap}
+.yk-line svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.yk-line i{position:absolute;width:8px;height:8px;margin:0 0 -4px -4px;border-radius:50%;background:#2458FF;border:2px solid #fff;box-sizing:content-box;transform:translate(-2px,2px)}
+.yk-line .xl{position:relative;height:20px;margin:4px 4px 0 44px;font-size:12px;color:#516077}
+.yk-line .xl b{position:absolute;transform:translateX(-50%);font-weight:400;white-space:nowrap}
+.yk-line .ax{text-align:right;margin:2px 4px 0 44px;font-size:12px;line-height:1.5;color:#516077}
+</style>
 </head>
 <body><header><a class="site-brand" href="/" aria-label="영끌계산기 계산기로 가기"><span class="site-mark" aria-hidden="true"></span><strong>영끌계산기</strong></a><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide.html">계산 방법</a><a href="/articles.html">글 목록</a><a href="/about.html">소개·문의</a></nav></header><main>
 
@@ -99,6 +124,7 @@ header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 <tr><td>12억원</td><td class="num">15억 3,600만원</td></tr>
 <tr><td>13억원</td><td class="num">16억 3,200만원</td></tr>
 </tbody></table></div>
+<figure class="yk-fig yk-line"><div aria-hidden="true"><p class="yt">살 수 있는 최고 집값</p><div class="plot"><span class="band" style="left:18.57%;width:45.45%"><em>15억원에서 멈춤</em></span><span class="gl" style="bottom:7.14%"><b>14억</b></span><span class="gl" style="bottom:42.86%"><b>15억</b></span><span class="gl" style="bottom:78.57%"><b>16억</b></span><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="4.55,90.71 18.57,57.14 27.27,57.14 50.0,57.14 64.02,57.14 65.91,54.64 72.73,44.29 95.45,10.0" fill="none" stroke="#2458FF" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg><i style="left:4.55%;bottom:9.29%"></i><i style="left:27.27%;bottom:42.86%"></i><i style="left:50.0%;bottom:42.86%"></i><i style="left:65.91%;bottom:45.36%"></i><i style="left:72.73%;bottom:55.71%"></i><i style="left:95.45%;bottom:90.0%"></i></div><div class="xl"><b style="left:4.55%">9억</b><b style="left:27.27%">10억</b><b style="left:50.0%">11억</b><b style="left:72.73%">12억</b><b style="left:95.45%">13억</b></div><p class="ax">모아둔 현금</p></div><figcaption>점은 위 표의 값입니다. 15억원 구간의 시작과 끝은 아래 본문의 약 9억 6,170만원 · 약 11억 6,170만원이고, 점 사이는 직선으로 이었습니다.</figcaption></figure>
 <p>현금이 약 9억 6,170만원부터 약 11억 6,170만원까지는 최고 집값이 모두 15억원입니다. 15억원을 조금이라도 넘는 집은 대출이 4억원으로 줄어 필요 현금이 약 11억 6,170만원으로 뛰기 때문입니다. 이 구간에서는 현금이 늘어나는 만큼 대출을 덜 쓰는 효과는 있지만, 살 수 있는 집의 가격대는 올라가지 않습니다. 표의 집값은 100만원 아래를 버려 적었습니다.</p>
 <p>상한 기준은 「이하」입니다. 집값이 정확히 15억원이면 6억원 구간에 들어가고, 15억원을 넘는 순간부터 4억원 구간입니다.</p></section>
 

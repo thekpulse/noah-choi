@@ -42,6 +42,30 @@ header nav{display:flex;flex-wrap:wrap;column-gap:16px}
 header nav a{text-decoration:none!important;color:#465262!important;font-weight:500}
 header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 </style>
+<style id="v301-figures">
+/* v301 — 안내 페이지 도표. 페이지에 이미 적힌 숫자만 그립니다(새 수치 없음). 표·글이 정본이고 그림 부분은 낭독기에서 건너뜁니다(aria-hidden) — 설명 글(figcaption)만 읽힘. */
+.yk-fig{margin:14px 0 6px}
+.yk-fig .fr{margin:0 0 12px}
+.yk-fig .fl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;line-height:1.5;color:#516077;margin:0 0 4px}
+.yk-fig .fl b{color:#192332;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yk-fig .fl.on,.yk-fig .fl.on b{color:#1848D6}
+.yk-fig .track{display:flex;height:12px;border-radius:6px;background:#EDF2FF;overflow:hidden}
+.yk-fig .track>span{height:100%;background:#B9C6DA}
+.yk-fig .track>span.on{background:#2458FF}
+.yk-fig .track>span.soft{background:#9DB8FF}
+.yk-fig .track>span+span{border-left:2px solid #fff}
+.yk-fig figcaption{font-size:13px;line-height:1.6;color:#516077;margin-top:6px}
+.yk-line .plot{position:relative;height:184px;margin:22px 4px 0 44px;border-left:1px solid #B9C6DA;border-bottom:1px solid #B9C6DA}
+.yk-line .band{position:absolute;top:0;bottom:0;background:#EDF2FF;border-left:1px dashed #9DB8FF;border-right:1px dashed #9DB8FF}
+.yk-line .band em{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-style:normal;font-size:12px;font-weight:600;color:#1848D6;white-space:nowrap}
+.yk-line .gl{position:absolute;left:0;right:0;border-top:1px solid #E6EBF3}
+.yk-line .gl b{position:absolute;right:100%;transform:translateY(-50%);margin-right:6px;font-size:12px;font-weight:400;color:#516077;white-space:nowrap}
+.yk-line svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.yk-line i{position:absolute;width:8px;height:8px;margin:0 0 -4px -4px;border-radius:50%;background:#2458FF;border:2px solid #fff;box-sizing:content-box;transform:translate(-2px,2px)}
+.yk-line .xl{position:relative;height:20px;margin:4px 4px 0 44px;font-size:12px;color:#516077}
+.yk-line .xl b{position:absolute;transform:translateX(-50%);font-weight:400;white-space:nowrap}
+.yk-line .ax{display:flex;justify-content:space-between;margin:2px 4px 0 44px;font-size:12px;color:#516077}
+</style>
 </head>
 <body><header><a class="site-brand" href="/" aria-label="영끌계산기 계산기로 가기"><span class="site-mark" aria-hidden="true"></span><strong>영끌계산기</strong></a><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide.html">계산 방법</a><a href="/articles.html">글 목록</a><a href="/about.html">소개·문의</a></nav></header><main>
 
@@ -84,6 +108,7 @@ header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 <div class="scroll"><table><thead><tr><th>기준</th><th class="num">한도</th></tr></thead><tbody>
 <tr><td>LTV 40%</td><td class="num">3억 2,000만원</td></tr><tr><td>집값 구간 상한(15억원 이하)</td><td class="num">6억원</td></tr><tr><td>DSR 40%(스트레스 금리 반영)</td><td class="num">약 2억 6,300만원</td></tr>
 <tr><th>적용 한도(가장 낮은 값)</th><th class="num">약 2억 6,300만원</th></tr></tbody></table></div>
+<figure class="yk-fig"><div aria-hidden="true"><div class="fr"><p class="fl"><span>LTV 40%</span><b>3억 2,000만원</b></p><div class="track"><span class="" style="width:53.3%"></span></div></div><div class="fr"><p class="fl"><span>집값 구간 상한(15억원 이하)</span><b>6억원</b></p><div class="track"><span class="" style="width:100.0%"></span></div></div><div class="fr"><p class="fl on"><span>DSR 40%(스트레스 금리 반영)</span><b>약 2억 6,300만원</b></p><div class="track"><span class="on" style="width:43.8%"></span></div></div></div><figcaption>막대 길이는 위 표의 한도입니다. 가장 짧은 막대(파란색)가 적용 한도입니다.</figcaption></figure>
 <p>이 경우 한도를 정하는 것은 집값이 아니라 소득입니다. 그래서 같은 집이라도 소득이 다르면 빌릴 수 있는 금액이 크게 달라집니다. 실제 대출에서는 소액임차보증금(방공제)만큼 금액이 더 줄어들 수 있고, 보증보험 가입 여부에 따라 달라집니다.</p></section>
 
 <section class="related"><h2>함께 읽기</h2><a href="/dsr-income-table.html">연 소득별 주택담보대출 한도표</a><a href="/price-band-cap.html">집값 15억·25억을 넘으면 대출이 얼마나 줄어드나</a><a href="/budget-examples.html">현금 2억이면 얼마짜리 집을 살 수 있을까 — 지역·소득별 계산 예시</a><a href="/buying-costs.html">집값 말고 드는 돈 — 취득세·중개보수·등기비</a><a href="/existing-debt.html">신용대출·마이너스통장이 있으면 한도는 얼마나 줄어드나요</a><a href="/guide.html">계산 방법과 결과 읽기</a></section>

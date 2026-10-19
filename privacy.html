@@ -125,7 +125,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #24
 </head>
 <body>
 <div class="app">
-  <div class="appbar">
+  <div class="appbar" role="banner">
     <a class="wordmark" href="/" style="display:inline-flex;align-items:center;gap:8px"><span aria-hidden="true" style="flex:none;width:24px;height:24px;border-radius:7px;background:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%231F5BFF'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5 12 7l6 5.5'/%3E%3Cpath d='M8.5 11v6h7v-6'/%3E%3C/g%3E%3C/svg%3E&quot;) center/24px 24px no-repeat"></span><span><b>영끌</b>계산기</span></a>
     <span class="barlabel">개인정보처리방침</span>
   </div>
@@ -295,8 +295,10 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #24
     </section>
   </main>
 
+  <div role="contentinfo" style="display:contents">
   <div class="back"><a href="/">계산기로 돌아가기</a></div>
   <p class="copyright" id="copyright">© 2026 noahchoi</p>
+  </div>
 </div>
 <script>
 /* 연도를 손으로 적지 않습니다 — 해가 바뀌면 조용히 틀립니다(index.html v24.29와 같은 판단). */
