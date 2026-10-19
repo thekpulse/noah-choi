@@ -11,7 +11,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571049978270961"
         crossorigin="anonymous"></script>
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300CA71'/%3E%3Ctext x='32' y='45' font-family='system-ui,sans-serif' font-size='38' font-weight='700' fill='%23fff' text-anchor='middle'%3E%EC%98%81%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232458FF'/%3E%3Ctext x='32' y='45' font-family='system-ui,sans-serif' font-size='38' font-weight='700' fill='%23fff' text-anchor='middle'%3E%EC%98%81%3C/text%3E%3C/svg%3E">
 
 <script>
 (function(){
@@ -3891,7 +3891,7 @@ html body.yk208 #app #viewAnswer #marketOpen{border:1px solid #D6E0F3!important;
   html body.yk208 #app .funnel #crows>.inline-money>.inline-echo{
     grid-column:2; grid-row:3;
     min-height:0!important; margin:5px 0 0!important;
-    text-align:right; font-size:12.5px!important;
+    text-align:right; font-size:13px!important;
     font-weight:600!important; line-height:1.45!important;
     white-space:nowrap;
     color:var(--yk-blue-dark,#1949D9)!important;
@@ -7704,15 +7704,19 @@ function exportStatus(message){
 function isInAppBrowser(ua){
   return /Instagram|FBAN|FBAV|FB_IAB|KAKAOTALK|NAVER\(inapp|Line\/|DaumApps|everytimeApp|Barcelona|; wv\)/i.test(String(ua || ''));
 }
+/* v285 — 첫 로드(cdnjs)가 막혔을 때 같은 판(1.4.1)의 자체 사본(/vendor) → jsDelivr 순서로 다시 부름.
+   v284까지 /vendor/html2canvas.min.js 가 배포물에 있었지만 어디서도 부르지 않았음. */
 function ensureHtml2canvas(){
   if(typeof html2canvas==='function') return Promise.resolve();
-  return new Promise(resolve=>{
+  const load=src=>new Promise(resolve=>{
     const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.src=src;
     s.onload=s.onerror=()=>resolve();
     document.head.appendChild(s);
     setTimeout(resolve,8000);
   });
+  return load('/vendor/html2canvas.min.js').then(()=>typeof html2canvas==='function'?null:
+    load('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'));
 }
 let exportPreviewReturn = null;
 function closeExportPreview(){
@@ -9230,7 +9234,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     byId('easyPrice').innerHTML = safe(priceText).replace(/([\d,]+\s*)(억\s*원|억|만원|원)/g, '<span class="money-part">$1<span class="money-unit">$2</span></span>');
     byId('easyCost').textContent = costText || '—';
     byId('easyCash').textContent = cashText || '—';
-    byId('easyLoan').textContent = loanText || '없어요';
+    byId('easyLoan').textContent = loanText === '0만원' ? '0원' : (loanText || '없어요');   /* v285 — 대출 0일 때 「0만원」 → 「0원」 */
     if(byId('dealBudget')) byId('dealBudget').textContent = priceText;
 
     const price = won(priceText);
@@ -12246,7 +12250,7 @@ html body.yk208 #app #viewDeals,
 html body.yk208 #app #viewAnswer{padding-bottom:max(108px,calc(92px + env(safe-area-inset-bottom)))!important}
 @media(max-width:600px){
  html body #app .funnel #crows>.inline-money{column-gap:6px!important}
- html body #app .funnel #crows>.inline-money>.inline-help{font-size:10.5px!important}
+ html body #app .funnel #crows>.inline-money>.inline-help{font-size:12px!important}
  html body.yk208 #app #v208Nav{bottom:calc(8px + env(safe-area-inset-bottom))!important;border:1px solid #D6DCE5!important;border-radius:18px!important;box-shadow:none!important;padding-bottom:6px!important}
 }
 @media(max-width:360px){
@@ -12420,7 +12424,7 @@ html body.yk208 #app #v208Nav svg{width:21px!important;height:21px!important}
 @media(max-width:370px){
   html body.yk208 #app #v208Nav{width:calc(100% - 16px)!important}
   html body.yk208 #app #v208Nav button{font-size:11px!important}
-  html body.yk208 #app .funnel #crows>.inline-money>.inline-help{font-size:10.5px!important}
+  html body.yk208 #app .funnel #crows>.inline-money>.inline-help{font-size:12px!important}
   html body.yk208 #app .guide-nav a{padding-inline:3px!important;font-size:11px!important}
 }
 @media(min-width:960px){
@@ -12458,7 +12462,7 @@ html body.yk208 #app #v208Nav svg{width:21px!important;height:21px!important}
   html body.yk208 #app .funnel #dock{padding-top:7px!important}
   /* Supporting labels must not be reduced to illegible 10px type. */
   html body.yk208 #app .funnel #crows>.inline-money>.inline-help{
-    font-size:11.5px!important;line-height:1.5!important;
+    font-size:12px!important;line-height:1.5!important;
   }
   html body.yk208 #app .funnel #crows>.inline-money>.inline-echo{
     font-size:12px!important;line-height:1.5!important;
@@ -12482,7 +12486,7 @@ html body.yk208 #app #v208Nav svg{width:21px!important;height:21px!important}
   html body.yk208 #app:is([data-v208-tab="entry"],[data-v208-tab="conditions"]) .guide-nav a{
     min-width:0!important;min-height:44px!important;
     padding:6px 2px!important;
-    font-size:11.5px!important;
+    font-size:12px!important;
     white-space:normal!important;word-break:keep-all;
   }
   html body.yk208 #app .guide-nav a+a::before{content:none!important;display:none!important}
@@ -12532,11 +12536,11 @@ html body.yk208 #app .welcome232-startbody{padding:20px!important}
 html body.yk208 #app .welcome232-startbody h2{font-size:20px!important;font-weight:700!important;letter-spacing:-.03em!important;line-height:1.38!important;color:var(--yk-ink)!important}
 html body.yk208 #app .welcome232-startbody p{font-size:14px!important;line-height:1.62!important;color:var(--yk-sub)!important;margin:10px 0 20px!important}
 html body.yk208 #app #welcomeStart232{font-size:16px!important;font-weight:700!important;min-height:52px!important;background:var(--yk-blue)!important;border-color:var(--yk-blue)!important;letter-spacing:-.02em!important}
-html body.yk208 #app .welcome232-startbody small{font-size:11.5px!important;line-height:1.5!important;color:var(--yk-muted)!important;margin-top:12px!important}
+html body.yk208 #app .welcome232-startbody small{font-size:12px!important;line-height:1.5!important;color:var(--yk-muted)!important;margin-top:12px!important}
 html body.yk208 #app .welcome232-next{margin-top:26px!important}
 html body.yk208 #app .welcome232-next>h2{font-size:17px!important;letter-spacing:-.025em!important;font-weight:700!important;line-height:1.4!important;margin-bottom:16px!important}
 html body.yk208 #app .welcome232-features h3{font-size:14px!important;font-weight:700!important;line-height:1.45!important}
-html body.yk208 #app .welcome232-features p{font-size:12.5px!important;line-height:1.6!important;color:var(--yk-sub)!important}
+html body.yk208 #app .welcome232-features p{font-size:13px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 html body.yk208 #app #savedHomesTitle233{font-size:19px!important;line-height:1.4!important}
 html body.yk208 #app #savedHomes233 :is(.sh233-summary,.sh233-note){color:var(--yk-sub)!important;line-height:1.6!important}
 html body.yk208 #app .welcome232-legal{font-size:12px!important;line-height:1.6!important;color:var(--yk-muted)!important}
@@ -12544,10 +12548,10 @@ html body.yk208 #app .welcome232-legal{font-size:12px!important;line-height:1.6!
 /* Conditions — stable label/value contrast, 8px spacing rhythm and aligned units. */
 html body.yk208 #app .funnel .cond-lead{font-size:28px!important;line-height:1.27!important;font-weight:700!important;letter-spacing:-.043em!important;color:var(--yk-ink)!important}
 html body.yk208 #app .funnel .entry-sub{font-size:14px!important;line-height:1.6!important;letter-spacing:-.012em!important;color:var(--yk-sub)!important;margin-top:8px!important}
-html body.yk208 #app .ep233-heading{font-size:12.5px!important;line-height:1.5!important;color:var(--yk-sub)!important}
-html body.yk208 #app .ep233-heading strong{font-size:12.5px!important;color:var(--yk-blue-dark)!important;font-weight:700!important}
+html body.yk208 #app .ep233-heading{font-size:13px!important;line-height:1.5!important;color:var(--yk-sub)!important}
+html body.yk208 #app .ep233-heading strong{font-size:13px!important;color:var(--yk-blue-dark)!important;font-weight:700!important}
 html body.yk208 #app .funnel .v232-step{font-size:14px!important;font-weight:700!important;line-height:1.45!important;letter-spacing:-.018em!important;gap:8px!important;color:var(--yk-ink)!important}
-html body.yk208 #app .funnel .v232-step span{font-size:12.5px!important;font-weight:700!important;line-height:1.45!important;color:var(--yk-blue-dark)!important}
+html body.yk208 #app .funnel .v232-step span{font-size:13px!important;font-weight:700!important;line-height:1.45!important;color:var(--yk-blue-dark)!important}
 html body.yk208 #app .funnel #crows>.crow,html body.yk208 #app .funnel #crows>.inline-money,html body.yk208 #app .funnel #crows>.main-no-loan{border-color:var(--yk-line)!important}
 html body.yk208 #app .funnel #crows>.crow{min-height:52px!important;padding:11px 16px!important;gap:12px!important}
 html body.yk208 #app .funnel #crows>.crow .k{font-size:14px!important;font-weight:500!important;line-height:1.5!important;letter-spacing:-.012em!important;color:var(--yk-sub)!important}
@@ -12560,7 +12564,7 @@ html body.yk208 #app .funnel #crows .inline-money-field:focus-within{}
 html body.yk208 #app .funnel #crows .inline-money-field input{font-size:28px!important;font-weight:650!important;letter-spacing:-.038em!important;line-height:1.25!important;color:var(--yk-ink)!important;min-height:44px!important}
 html body.yk208 #app .funnel #crows .inline-money-field .unit,html body.yk208 #app .funnel #crows .inline-money-field .u{font-size:14px!important;font-weight:500!important;letter-spacing:0!important;color:var(--yk-sub)!important}
 html body.yk208 #app .funnel #crows>.inline-money>.inline-help{font-size:12px!important;line-height:1.5!important;letter-spacing:-.01em!important;color:var(--yk-sub)!important;margin-top:6px!important}
-html body.yk208 #app .funnel #crows>.inline-money>.inline-echo{font-size:12.5px!important;line-height:1.5!important;font-weight:600!important;letter-spacing:-.012em!important;color:var(--yk-blue-dark)!important;margin-top:6px!important}
+html body.yk208 #app .funnel #crows>.inline-money>.inline-echo{font-size:13px!important;line-height:1.5!important;font-weight:600!important;letter-spacing:-.012em!important;color:var(--yk-blue-dark)!important;margin-top:6px!important}
 html body.yk208 #app .funnel #crows>.main-no-loan,html body.yk208 #app .funnel #crows>.main-no-loan :is(span,label){font-size:14px!important;line-height:1.5!important;color:var(--yk-sub)!important}
 html body.yk208 #app .funnel #crows>.main-no-loan:has(input:checked),html body.yk208 #app .funnel #crows>.main-no-loan:has(input:checked) :is(span,label){color:var(--yk-blue-dark)!important}
 html body.yk208 #app .funnel #dock #ctaBtn{min-height:54px!important;font-size:17px!important;line-height:1.4!important;font-weight:700!important;letter-spacing:-.025em!important;border-radius:13px!important}
@@ -12572,7 +12576,7 @@ html body.yk208 #app .v232-entry-legal{font-size:12px!important;line-height:1.5!
 /* Result — title 22, labels 14, totals and figures on a distinct numerical rung. */
 html body.yk208 #app #viewAnswer{}
 html body.yk208 #app #viewAnswer .v232-result-heading h2{font-size:22px!important;font-weight:700!important;line-height:1.35!important;letter-spacing:-.035em!important;color:var(--yk-ink)!important}
-html body.yk208 #app #viewAnswer .v232-result-heading p{font-size:13.5px!important;line-height:1.55!important;color:var(--yk-sub)!important;margin-top:6px!important}
+html body.yk208 #app #viewAnswer .v232-result-heading p{font-size:14px!important;line-height:1.55!important;color:var(--yk-sub)!important;margin-top:6px!important}
 html body.yk208 #app #viewAnswer>#fundingOverview,html body.yk208 #app #viewAnswer>#payTile,html body.yk208 #app #viewAnswer>#easyMarket{border-color:var(--yk-line)!important;border-radius:var(--yk-r-card)!important;box-shadow:none!important}
 html body.yk208 #app #viewAnswer #fundingOverview>.rhead{background:var(--yk-blue)!important}
 html body.yk208 #app #viewAnswer #fundingOverview .price-answer>span{font-size:14px!important;line-height:1.5!important;font-weight:500!important;letter-spacing:-.015em!important;color:#F0F4FF!important}
@@ -12584,15 +12588,15 @@ html body.yk208 #app #viewAnswer #easyCostOpen{font-size:13px!important;line-hei
 html body.yk208 #app #viewAnswer #easyCostOpen :is(b,strong,em,span.v){font-size:14px!important;color:var(--yk-ink)!important}
 html body.yk208 #app #viewAnswer #easyBalance .rlab{gap:10px!important}
 html body.yk208 #app #viewAnswer #easyBalance .rlab>div{border:1px solid var(--yk-line)!important;background:#fff!important;border-radius:12px!important}
-html body.yk208 #app #viewAnswer #easyBalance .rlab .t{font-size:12.5px!important;line-height:1.5!important;color:var(--yk-sub)!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab .t{font-size:13px!important;line-height:1.5!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewAnswer #easyBalance .rlab .n{font-size:19px!important;line-height:1.35!important;font-weight:700!important;letter-spacing:-.03em!important;color:var(--yk-ink)!important;margin-top:8px!important}
-html body.yk208 #app #viewAnswer #cashRemainderNote,html body.yk208 #app #viewAnswer .easy-explain{font-size:12.5px!important;line-height:1.6!important;color:var(--yk-sub)!important}
+html body.yk208 #app #viewAnswer #cashRemainderNote,html body.yk208 #app #viewAnswer .easy-explain{font-size:13px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewAnswer #payTile .ans-k{font-size:15px!important;font-weight:650!important;line-height:1.5!important;color:var(--yk-ink)!important}
 html body.yk208 #app #viewAnswer #payTile #tileMonthly{font-size:32px!important;font-weight:700!important;line-height:1.25!important;letter-spacing:-.035em!important;color:var(--yk-ink)!important}
-html body.yk208 #app #viewAnswer #payTile .ans-pct{font-size:12.5px!important;color:var(--yk-sub)!important;line-height:1.45!important}
-html body.yk208 #app #viewAnswer #payTile #tileMonthlySub{font-size:12.5px!important;line-height:1.6!important;color:var(--yk-sub)!important}
+html body.yk208 #app #viewAnswer #payTile .ans-pct{font-size:13px!important;color:var(--yk-sub)!important;line-height:1.45!important}
+html body.yk208 #app #viewAnswer #payTile #tileMonthlySub{font-size:13px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewAnswer #easyMarketTitle{font-size:19px!important;font-weight:700!important;line-height:1.45!important;letter-spacing:-.025em!important;color:var(--yk-ink)!important}
-html body.yk208 #app #viewAnswer #easyMarket :is(.plot-legend,.market-scope,#resultScopeNote){font-size:12.5px!important;line-height:1.6!important;color:var(--yk-sub)!important}
+html body.yk208 #app #viewAnswer #easyMarket :is(.plot-legend,.market-scope,#resultScopeNote){font-size:13px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewAnswer #marketOpen{min-height:48px!important;font-size:14px!important;font-weight:650!important;color:var(--yk-blue-dark)!important;background:var(--yk-blue-tint)!important;border-color:var(--yk-line)!important}
 html body.yk208 #app #viewAnswer :is(.disc-head,.disc.quiet){min-height:44px;font-size:13px!important;line-height:1.5!important;font-weight:600!important;color:var(--yk-ink)!important}
 html body.yk208 #app #viewAnswer #heroDeals :is(.hd-nm,.hd-amt){line-height:1.45!important;letter-spacing:-.02em!important}
@@ -12600,13 +12604,13 @@ html body.yk208 #app #viewAnswer #heroDeals :is(.hd-nm,.hd-amt){line-height:1.45
 /* Real transaction list + map — charts, filter chips, rows and call to action. */
 html body.yk208 #app #viewDeals #dealCard{border-color:var(--yk-line)!important;border-radius:var(--yk-r-card)!important}
 html body.yk208 #app #viewDeals .card-title{font-size:20px!important;font-weight:700!important}
-html body.yk208 #app #viewDeals :is(#dealScopeNote,#dealSortNote,#dealMapNote,.deal-map-note,.dd-method,.dd-scope-note){font-size:12.5px!important;line-height:1.6!important;color:var(--yk-sub)!important}
+html body.yk208 #app #viewDeals :is(#dealScopeNote,#dealSortNote,#dealMapNote,.deal-map-note,.dd-method,.dd-scope-note){font-size:13px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewDeals :is(.deal-regions,.deal-budget,.deal-filter-fold){color:var(--yk-sub)}
 html body.yk208 #app #viewDeals :is(#dealListTab,#dealMapTab,#sortSeg button,.deal-switch button){font-size:13px!important;font-weight:600!important;line-height:1.4!important;letter-spacing:-.015em!important}
 html body.yk208 #app #viewDeals :is(.chip,.deal-filter-fold>summary){font-size:13px!important;line-height:1.45!important;font-weight:550!important}
 html body.yk208 #app #viewDeals :is(.deal .nm,.deal .name,.deal .apt,.deal-name){font-size:15px!important;line-height:1.45!important;font-weight:650!important;color:var(--yk-ink)!important}
 html body.yk208 #app #viewDeals :is(.deal .amt,.dealrow .v){font-size:15px!important;line-height:1.4!important;font-weight:650!important;letter-spacing:-.02em!important;color:var(--yk-ink)!important}
-html body.yk208 #app #viewDeals :is(.deal .meta,.deal .sub,.dealrow .k){font-size:12.5px!important;line-height:1.55!important;color:var(--yk-sub)!important}
+html body.yk208 #app #viewDeals :is(.deal .meta,.deal .sub,.dealrow .k){font-size:13px!important;line-height:1.55!important;color:var(--yk-sub)!important}
 html body.yk208 #app #viewDeals #dealDistribution :is(.dd-title,.dd-head){line-height:1.45!important;color:var(--yk-ink)!important}
 html body.yk208 #app #viewDeals .cmp-map-open{min-height:44px!important;background:var(--yk-blue)!important;border-color:var(--yk-blue)!important;color:#fff!important;font-size:14px!important;font-weight:700!important}
 html body.yk208 #app #viewDeals .cmp-map-open *{color:#fff!important}
@@ -12619,18 +12623,18 @@ html body.yk208 #app #cmpSheet.cmp-page .cmp-lead small{font-size:13px!important
 html body.yk208 #app #cmpSheet.cmp-page .cmp-lead :is(b,span){line-height:1.4!important;letter-spacing:-.035em!important;color:#fff!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card b{font-size:14px!important;line-height:1.5!important;font-weight:650!important;letter-spacing:-.025em!important;color:var(--yk-ink)!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-card small{font-size:12px!important;line-height:1.5!important;color:var(--yk-sub)!important}
-html body.yk208 #app #cmpSheet.cmp-page tr.cmp-column-names th,html body.yk208 #app #cmpSheet.cmp-page tr.cmp-k th{font-size:12.5px!important;font-weight:600!important;line-height:1.5!important;color:var(--yk-sub)!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-column-names th,html body.yk208 #app #cmpSheet.cmp-page tr.cmp-k th{font-size:13px!important;font-weight:600!important;line-height:1.5!important;color:var(--yk-sub)!important}
 html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:20px!important;line-height:1.4!important;font-weight:700!important;letter-spacing:-.035em!important;color:var(--yk-ink)}
-html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:13.5px!important;line-height:1.55!important;color:var(--yk-ink)!important}
+html body.yk208 #app #cmpSheet.cmp-page tr.cmp-v td{font-size:14px!important;line-height:1.55!important;color:var(--yk-ink)!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill{font-size:12px!important;line-height:1.5!important;letter-spacing:0!important}
-html body.yk208 #app #cmpSheet.cmp-page .cmp-naver{font-size:12.5px!important;font-weight:600!important;line-height:1.45!important;min-height:44px;color:var(--yk-blue-dark)!important}
+html body.yk208 #app #cmpSheet.cmp-page .cmp-naver{font-size:13px!important;font-weight:600!important;line-height:1.45!important;min-height:44px;color:var(--yk-blue-dark)!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-note{font-size:12px!important;line-height:1.6!important;color:var(--yk-sub)!important}
 
 /* Other sheets, shared legal links and fixed tab bar. */
 html body.yk208 #app :is(#qSheet,#whySheet,#cmpSheet:not(.cmp-page)) .sheet-title,html body.yk208 #app #qSheet #qSheetTitle{font-size:20px!important;line-height:1.4!important;font-weight:700!important;letter-spacing:-.028em!important;color:var(--yk-ink)!important}
 html body.yk208 #app #qSheet :is(button,label,summary){letter-spacing:-.012em;line-height:1.5}
 html body.yk208 #app #qSheet :is(.zonecard,.region-search label,.subtoggle){font-size:14px;line-height:1.55;color:var(--yk-ink)}
-html body.yk208 #app #qSheet :is(.region-intro,.sheet-desc,.help,.note){font-size:12.5px;line-height:1.6;color:var(--yk-sub)}
+html body.yk208 #app #qSheet :is(.region-intro,.sheet-desc,.help,.note){font-size:13px;line-height:1.6;color:var(--yk-sub)}
 html body.yk208 #app #v208Nav{border-color:var(--yk-line)!important}
 html body.yk208 #app #v208Nav button{font-size:12px!important;font-weight:550!important;line-height:1.3!important;letter-spacing:-.01em!important;color:var(--yk-sub)!important}
 html body.yk208 #app #v208Nav button[aria-current="page"]{color:var(--yk-blue-dark)!important;font-weight:700!important;background:var(--yk-blue-tint)!important}
@@ -12653,10 +12657,10 @@ html body.yk208 #app .v208-legal{font-size:12px!important;line-height:1.6!import
 @media(max-width:359px){
   html body.yk208 #app #welcomeTitle232{font-size:30px!important}
   html body.yk208 #app .funnel .cond-lead{font-size:25px!important}
-  html body.yk208 #app .funnel #crows>.inline-money>.inline-help{font-size:11.5px!important}
+  html body.yk208 #app .funnel #crows>.inline-money>.inline-help{font-size:12px!important}
   html body.yk208 #app .funnel #crows>.inline-money>.inline-echo{font-size:12px!important}
   html body.yk208 #app #cmpSheet.cmp-page tr.cmp-hero td>.cmp-money234{font-size:18px!important}
-  html body.yk208 #app #v208Nav button{font-size:11.5px!important}
+  html body.yk208 #app #v208Nav button{font-size:12px!important}
 }
 @media(min-width:960px){
   html body.yk208 #app .funnel .cond-lead{font-size:42px!important}
@@ -12725,7 +12729,7 @@ html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar>p{}
 @media(max-width:359px){
   html body.yk208 #app #viewDeals #dealMapPanel .yk-map-stage{height:350px!important}
   html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar{gap:6px!important}
-  html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar>p{font-size:11.5px!important}
+  html body.yk208 #app #viewDeals #dealMapPanel .cmp-map-toolbar>p{font-size:12px!important}
 }
 
 
@@ -13615,6 +13619,54 @@ html body.yk208 #app #viewNext .minigrid>#outCopy{grid-column:3!important;grid-r
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill>.cmp-money234{white-space:nowrap!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-money-part234{display:inline!important}
 html body.yk208 #app #cmpSheet.cmp-page .cmp-pill .cmp-status259{display:block!important}
+}
+</style>
+<style id="v285-head-and-card">
+/* v285 — 탭 머리 · 카드 테두리 통일 (CSS만 · 엔진 변경 없음)
+   실측(390px, v284): 제목 22 · 23 · 23 · 28px, 부제 13.5(0.5px 단위) · 13 · 13 · 15px,
+   본문 왼쪽 끝 20 · 20 · 20 · 22px, 내용 카드 테두리 #D6DFEC · #DCE2EC · #E1E5EB 세 가지, 실거래 목록만 모서리 16px. */
+/* 1) 본문 왼쪽 끝을 로고와 같은 20px로 — 첫 화면·입력·내 조건 화면만 22px이었음(데스크톱 첫 화면은 v284에서 이미 맞춤) */
+html body.yk208 #app main#funnel{padding-left:20px!important;padding-right:20px!important}
+@media(max-width:959px){html body.yk208 #app section#welcome232{padding-left:20px!important;padding-right:20px!important}}
+/* 2) 결과 탭 머리: 제목 24px(--t2) · 부제 14px(--t6) · 머리 아래 20px */
+html body.yk208 #app #viewAnswer .v232-result-heading h2,
+html body.yk208 #app .v283-page-head h2,
+html body.yk208 #app #cmpSheet.cmp-page>.why-sheet-header #cmpTitle,
+html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead{font-size:24px!important;line-height:1.3!important;letter-spacing:-.035em!important;font-weight:700!important;color:var(--yk-ink)!important;margin:0!important}
+html body.yk208 #app #viewAnswer .v232-result-heading h2+p,
+html body.yk208 #app .v283-page-head h2+p,
+html body.yk208 #app #cmpSheet.cmp-page>.why-sheet-header .v283-page-sub,
+html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead+.entry-sub{font-size:14px!important;line-height:1.5!important;letter-spacing:-.012em!important;font-weight:400!important;color:var(--yk-sub)!important;margin:6px 0 0!important}
+/* 내 조건: 부제와 파란 카드 사이를 다른 탭 머리 아래 간격(20px)에 맞춤 */
+html body.yk208 #app[data-v208-tab="conditions"] #funnel .v232-intro>.cp-card{margin-top:20px!important}
+/* 단계 번호 「01」: 자리 맞춤 숫자(tabular)라 가변 글꼴에서 「0 1」로 벌어져 보임 → 비례 숫자 */
+html body.yk208 #app h2.v232-step>span{font-variant-numeric:proportional-nums!important}
+html body.yk208 #app .v283-page-head,
+html body.yk208 #app #cmpSheet.cmp-page>.why-sheet-header{margin-top:0!important;margin-bottom:20px!important}
+/* 3) 내용 카드 테두리 한 색(--yk-line) · 모서리 20px */
+html body.yk208 #app #fundingOverview,
+html body.yk208 #app #payTile,
+html body.yk208 #app #easyMarket,
+html body.yk208 #app .external-links,
+html body.yk208 #app #viewDeals .deal-budget,
+html body.yk208 #app #dealList,
+html body.yk208 #app #cmpSheet .v208-empty{border-color:var(--yk-line)!important;border-radius:20px!important}
+html body.yk208 #app #dealList{overflow:hidden!important}
+</style>
+<style id="v286-conditions-desktop">
+/* v286 — 데스크톱(960px 이상) 「내 조건」을 다른 탭과 같은 판으로 (CSS만 · 엔진 변경 없음)
+   v285까지: 가운데 520px 칸 하나(왼쪽 끝 372px) — 홈·실거래·비교 탭은 왼쪽 끝 140px · 두 칸(1.12fr / 1fr · 간격 20px).
+   → 제목·부제는 다른 탭과 같은 자리(왼쪽 140px), 입력 묶음은 왼쪽 칸, 「이 조건이면 예상 집값」 카드는 오른쪽 칸에 붙어 따라옴. */
+@media(min-width:960px){
+html body.yk208 #app[data-v208-tab="conditions"] main#funnel{display:grid!important;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr)!important;column-gap:20px!important;align-items:start!important;max-width:none!important;margin:0!important;padding:14px 20px 40px!important}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel>.v232-intro{display:contents!important}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel>.v232-intro>*{grid-column:1 / -1}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead{grid-row:1;max-width:none!important}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead+.entry-sub{grid-row:2;margin-bottom:22px!important}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel>.v232-intro>.cp-card{grid-column:2!important;grid-row:3 / span 2;margin:0!important;position:sticky;top:84px;align-self:start}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel>#crows{grid-column:1;grid-row:3;margin:0!important;max-width:none!important}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel>#dock{grid-column:1;grid-row:4;width:100%!important;max-width:none!important;margin:0!important}
+html body.yk208 #app[data-v208-tab="conditions"] #funnel>#entryBack232{display:none!important}
 }
 </style>
 </body>
