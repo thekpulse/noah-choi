@@ -13769,5 +13769,14 @@ html body.yk208 #app #cmpSheet.cmp-page>.why-sheet-header .v283-page-sub,
 html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead+.entry-sub{display:none!important}
 @media(min-width:960px){html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead{margin-bottom:22px!important}}
 </style>
+<style id="v293-desktop-edge">
+/* v293 — 데스크톱(960px 이상) 「비교」 · 「실거래」 탭 왼쪽 끝을 다른 탭과 같은 140px로
+   v292까지: 비교 탭은 가운데 800px 칸(왼쪽 232px), 실거래 탭은 가운데 760px 칸(왼쪽 252px · 제목만 140px) — 홈 · 내 조건 · 로고는 140px라 탭을 오갈 때 제목이 옆으로 뜀.
+   → 본문 폭(984px) 그대로 씀. 비교표는 세 칸이 넓어져 단지 이름·금액이 한 줄에 들어감. */
+@media(min-width:960px){
+html body.yk208 #app #viewCompare{max-width:none!important;margin-left:0!important;margin-right:0!important}
+html body.yk208 #app #viewDeals #dealCard{max-width:none!important;margin-inline:0!important}
+}
+</style>
 </body>
 </html>
