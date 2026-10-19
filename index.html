@@ -13757,5 +13757,17 @@ html body.yk208 #app #crows .main-no-loan .nl-t::before{content:"";flex:none;wid
 html body.yk208 #app .external-links>summary{display:flex!important;align-items:center!important;gap:8px!important}
 html body.yk208 #app .external-links>summary::before{content:"";flex:none;width:30px;height:30px;border-radius:9px;background:#EDF2FF center/18px 18px no-repeat;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4'/%3E%3C/svg%3E")}
 </style>
+<style id="v292-trim">
+/* v292 — 탭 머리 부제 네 줄을 뺌(제목만 남김)
+   「입력한 조건으로 집값과 매달 갚을 돈을 살펴보세요」 · 「내 예상 집값과 최근 거래를 함께 살펴보세요」 ·
+   「담은 단지를 지금 조건으로 나란히 살펴보세요」 · 「조건을 바꾸고 예상 집값을 다시 확인하세요」
+   — 바로 아래 카드가 같은 내용을 보여 주는 사족이고(오너 원칙 2026-10-19), 「~하세요」 지시형이라 말투 원칙(사실만 서술)과도 어긋남.
+   제목 아래 첫 카드까지 간격은 20px 그대로. 되돌릴 땐 이 블록만 지움. */
+html body.yk208 #app #viewAnswer .v232-result-heading h2+p,
+html body.yk208 #app .v283-page-head h2+p,
+html body.yk208 #app #cmpSheet.cmp-page>.why-sheet-header .v283-page-sub,
+html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead+.entry-sub{display:none!important}
+@media(min-width:960px){html body.yk208 #app[data-v208-tab="conditions"] #funnel h1.cond-lead{margin-bottom:22px!important}}
+</style>
 </body>
 </html>
