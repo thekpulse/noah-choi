@@ -4105,6 +4105,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
   <div class="welcome232-startbody"><h2>우리 집 예산, 어디까지일까요?</h2><p>현금과 소득을 입력하면<br>예상 집값과 월 상환액을 함께 볼 수 있어요.</p><button type="button" id="welcomeStart232">내 집 예산 알아보기 <span aria-hidden="true">→</span></button><small>가입 없이 시작해요 · 입력 금액은 서버로 보내지 않아요</small></div>
  </div>
  <div class="welcome232-next"><h2>예산을 알면, 집 찾기가 달라져요</h2><div class="welcome232-features"><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16M15 5v16"/></svg></span><h3>동네를 살펴보고</h3><p>내 예산과 실거래가를<br>지도에서 함께 확인해요.</p></div><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="7" height="14" rx="2"/><rect x="14" y="3" width="7" height="18" rx="2"/><path d="M6 12h1m-1 4h1m10-8h1m-1 4h1"/></svg></span><h3>마음에 든 집을 나란히</h3><p>단지를 담아 비교하고,<br>예산 차이를 살펴봐요.</p></div></div></div>
+ <nav class="v305-reads" aria-labelledby="v305ReadsTitle"><h2 id="v305ReadsTitle">내 집 마련 자금 글</h2><ul><li><a href="/loan-limit.html"><strong>주택담보대출 한도는 무엇이 정하나요</strong><span>집값 기준, 소득 기준, 구간별 상한을 같은 조건에서 비교해요.</span></a></li><li><a href="/dsr-income-table.html"><strong>연 소득별 주택담보대출 한도표</strong><span>내 소득에 가까운 구간의 DSR 한도와 월 상환액을 표로 확인해요.</span></a></li><li><a href="/price-band-cap.html"><strong>집값 15억·25억을 넘으면 대출이 얼마나 줄어드나</strong><span>집값 구간이 바뀔 때 대출 상한과 필요한 현금이 어떻게 달라지는지 봐요.</span></a></li><li><a href="/existing-debt.html"><strong>신용대출·마이너스통장이 있으면 한도는 얼마나 줄어드나요</strong><span>기존 대출의 잔액과 상환 방식이 DSR에 반영되는 방법을 알아봐요.</span></a></li><li><a href="/budget-examples.html"><strong>현금 2억이면 얼마짜리 집을 살 수 있을까</strong><span>지역·소득·주택 보유 조건에 따라 달라지는 예산을 계산 예시로 봐요.</span></a></li><li><a href="/buying-costs.html"><strong>집값 말고 드는 돈 — 취득세·중개보수·등기비</strong><span>집값 외에 준비할 비용을 항목별로 나눠 확인해요.</span></a></li><li><a href="/guide.html"><strong>계산 방법과 결과 읽기</strong><span>입력할 금액부터 결과의 숫자와 실거래를 읽는 방법까지 안내해요.</span></a></li></ul><a class="v305-all" href="/articles.html">글 목록 전체 보기 <span aria-hidden="true">→</span></a></nav>
  <p class="welcome232-legal">참고용 계산 결과 · 대출 주선·알선·중개 아님</p>
 </section>
 <main class="funnel" id="funnel">
@@ -5708,7 +5709,7 @@ function renderQuestion(){
     h=h.split('<p class="blockhead">보유 주택</p>')[0];
   } else if(QMODE==='debt'){
     h=`<h2 class="q-title">기존 대출 월 상환액</h2>
-      <p class="preset-help">원금·이자를 합친 금액이에요. 신용대출도 포함해요.</p>
+      <p class="preset-help">원금·이자를 합친 금액이에요. 신용대출도 포함해요. 부부 소득을 합쳤다면 배우자 대출도 넣어요.</p>
       <button type="button" class="debt-bullet-link" id="debtBulletLink" aria-controls="debtParts">이자만 내는 신용대출·마이너스통장이 있나요?</button>
       <div class="debtbox open"><div class="moneycard"><div class="mfield">
         <input id="inDebt" inputmode="numeric" pattern="[0-9]*" placeholder="0"
@@ -5732,7 +5733,8 @@ function renderQuestion(){
   box.querySelectorAll('.zonegrid .zonecard,#houseSeg [data-house],#ownSeg [data-own]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('is-on'))));
   if($('debtNone')) $('debtNone').onclick=()=>{
     S.debtMonthly=0; S.debtParts={credit:null,etc:null}; S.debtPartsOpen=false;
-    renderQuestion(); syncCta(); $('debtNone').focus({preventScroll:true});
+    /* v306 — 「기존 대출 없음」은 누르면 바로 적용하고 시트를 닫음(「대출 없음 적용」을 한 번 더 누르지 않게). */
+    renderQuestion(); syncCta(); if(QMODE==='debt' && ready()) closeSheet('q'); else $('debtNone').focus({preventScroll:true});
   };
 }
 function ownDrawer(){
@@ -5752,6 +5754,8 @@ function ownDrawer(){
 function houseEchoText(){
   if(S.houseStatus === 'first') return '나와 세대원 모두 집을 가져본 적이 없는 경우예요.';
   if(S.houseStatus === 'none') return '나와 세대원 모두 지금은 집이 없는 경우예요.';
+  /* v306 — 아무것도 고르지 않았을 때도 두 선택지의 차이를 먼저 보여 줌(생애최초를 무주택으로 고르면 LTV가 낮게 계산됨). 문구는 아래 두 줄과 같은 기준. */
+  if(!S.houseStatus) return '집을 가져본 적이 없으면 생애최초, 가져본 적은 있지만 지금은 없으면 무주택이에요. 나와 세대원 모두를 기준으로 해요.';
   if(S.houseStatus !== 'multi') return '';
   /* 🔴 v25.0 — 「중과」를 무조건 말하지 않습니다. **비조정지역에서 2주택은 중과가 아닙니다.** */
   if(S.ownCount === 1 && S.disposePlan)
@@ -5840,7 +5844,10 @@ function renderAnswered(){
   const rows = CROWS.filter(r => visible().includes(r.step)).map(r => {
     if(r.mode === 'cash' || r.mode === 'income'){
       const key=r.mode, label=key==='cash'?'집에 쓸 현금':'연 소득 (세전)';
-      const note=key==='cash'?'주택담보대출·생활비·비상금 제외':'부부 소득 합산 가능';
+      /* v307 — 부부 소득을 합치면 배우자 대출도 DSR에 같이 들어감(주담대만 부부 소득 합산 가능 · 합산하면 부채도 합산).
+         출처: 한국경제 2021.11.14 「2억에 그쳤던 주담대 한도…부부 소득 합했더니 5억으로」(금융위 원문은 못 찾음) · 확인일 2026.10.27.
+         소득만 합치고 배우자 대출을 빼면 한도가 유리하게 나오므로(원칙 28) 문구로 막음 — 계산은 그대로. */
+      const note=key==='cash'?'주택담보대출·생활비·비상금 제외':'부부 합산 시 배우자 대출도 입력';
       return `<div class="inline-money"><label for="main-${key}">${label}</label>
         <div class="inline-money-field"><input id="main-${key}" data-money="${key}" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
           value="${S[key] ? comma(S[key]) : ''}" placeholder="0" aria-describedby="${key}-echo ${key}-help ${key}-error"><span>만원</span></div>
@@ -5901,7 +5908,10 @@ function syncQSheet(){
   b.textContent=QMODE==='region' && S.sgg ? (1+DEAL.compareCodes.length)+'개 지역 선택 완료' : (QMODE==='debt' && S.debtMonthly===0?'대출 없음 적용':'적용'); b.disabled=!ready();
   b.onclick=()=>{
     if(!ready()) return;
+    /* v309 — 매수 지역을 「선택 완료」로 닫았는데 주택 보유가 비어 있으면 주택 보유 시트를 이어서 엶(같은 01 묶음 · 탭 하나 줄임). ✕로 닫으면 잇지 않음. */
+    const chain = QMODE==='region' && !S.houseStatus;
     closeSheet('q');
+    if(chain) setTimeout(()=>{ if(!anySheetOpen()) document.querySelector('#crows [data-mode="house"]')?.click(); }, 240);
   };
 }
 
@@ -6197,13 +6207,19 @@ function bindRegionSearch(){
   clear.onclick=()=>{input.value='';paint();input.focus();};
   paint();
 }
+/* v308 — 「함께 비교할 지역」은 접어 둔 채 시작(고른 비교 지역이 있으면 펼침). 매수 지역 구를 고른 뒤
+   같은 구 버튼 목록이 비교용으로 바뀌어, 구를 바꾸려다 비교에 추가되던 것을 막음. 매수 지역 변경은 위 「계산 기준 · 변경」. */
+let CMP_OPEN = false;
 function inputCompareMarkup(){
   const own=new Set(lawdCodesOf(S.sgg)), options=(LAWD[sidoOfCode(S.sgg)]||[]).filter(x=>!own.has(x[0]));
-  return '<section class="input-compare"><h3>함께 비교할 지역 <small>선택 · 최대 2곳</small></h3><p>예상 집값은 매수 지역 기준이에요. 추가 지역의 거래는 그 지역 대출 규칙으로 비교해요.</p><div class="input-region-grid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
+  const open = CMP_OPEN || DEAL.compareCodes.length > 0;
+  return '<section class="input-compare'+(open?'':' is-collapsed')+'"><h3><button type="button" class="cmp-toggle" id="cmpToggle" aria-expanded="'+open+'" aria-controls="inputRegionGrid">함께 비교할 지역 <small>선택 · 최대 2곳</small></button></h3><p>예상 집값은 매수 지역 기준이에요. 추가 지역의 거래는 그 지역 대출 규칙으로 비교해요.</p><div class="input-region-grid" id="inputRegionGrid">'+options.map(x=>'<button type="button" class="chip'+(DEAL.compareCodes.includes(x[0])?' is-on':'')+'" data-input-region="'+x[0]+'" aria-pressed="'+DEAL.compareCodes.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div><p id="inputRegionStatus" role="status"'+(DEAL.compareCodes.length ? '' : ' hidden')+'>'+(DEAL.compareCodes.length ? DEAL.compareCodes.map(sggName).join(' · ')+' · '+DEAL.compareCodes.length+' / 2곳 선택' : '')+'</p></section>';
 }
 function bindPane(){
   const p=$('regionPane'); if(!p) return;
   const redraw = () => { p.innerHTML=regionPane(); bindPane(); syncCta(); };
+  const ct=p.querySelector('#cmpToggle');
+  if(ct) ct.onclick=()=>{ CMP_OPEN = ct.getAttribute('aria-expanded')!=='true'; ct.setAttribute('aria-expanded',String(CMP_OPEN)); ct.closest('.input-compare').classList.toggle('is-collapsed',!CMP_OPEN); };
   p.querySelectorAll('[data-input-region]').forEach(b=>b.onclick=()=>{
     const code=b.dataset.inputRegion, at=DEAL.compareCodes.indexOf(code);
     if(at>=0) DEAL.compareCodes.splice(at,1);
@@ -13832,6 +13848,30 @@ html body.yk208 #qSheet .zonegrid .zonecard::before{content:"";width:24px;height
 html body.yk208 #qSheet .zonegrid .zonecard[data-group="seoul"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9' stroke-opacity='.3'/%3E%3Ccircle cx='12' cy='12' r='3.6' fill='%232458FF' fill-opacity='.2'/%3E%3C/svg%3E")}
 html body.yk208 #qSheet .zonegrid .zonecard[data-group="metro"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9' fill='%232458FF' fill-opacity='.14'/%3E%3Ccircle cx='12' cy='12' r='3.6' stroke-opacity='.3'/%3E%3C/svg%3E")}
 html body.yk208 #qSheet .zonegrid .zonecard[data-group="other"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='12' r='6' stroke-opacity='.3'/%3E%3Ccircle cx='8' cy='12' r='2.4' stroke-opacity='.3'/%3E%3Cpath d='M18 21s-4-4-4-7a4 4 0 0 1 8 0c0 3-4 7-4 7z' fill='%232458FF' fill-opacity='.2'/%3E%3Ccircle cx='18' cy='14' r='1.3'/%3E%3C/svg%3E")}
+</style>
+<style id="v305-home-reads">
+/* v305 첫 화면 글 목록 — 글 7편 제목·요약(articles.html 문구 그대로). 정적 링크라 검색 로봇이 첫 화면에서 글로 바로 이어짐. 되돌릴 땐 이 블록 + welcome232의 nav.v305-reads */
+html body.yk208 #app .v305-reads{margin:32px 0 0}
+html body.yk208 #app .v305-reads>h2{font-size:17px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:-.025em!important;margin:0 0 8px!important;color:var(--yk-ink)}
+html body.yk208 #app .v305-reads ul{list-style:none;margin:0;padding:0}
+html body.yk208 #app .v305-reads li{border-top:1px solid var(--yk-line)}
+html body.yk208 #app .v305-reads li a{display:block;padding:12px 0;text-decoration:none;color:inherit}
+html body.yk208 #app .v305-reads li strong{display:block;font-size:14px!important;font-weight:700!important;line-height:1.45!important;letter-spacing:-.025em;color:var(--yk-ink);word-break:keep-all}
+html body.yk208 #app .v305-reads li span{display:block;margin-top:2px;font-size:13px!important;line-height:1.6!important;color:var(--yk-sub);word-break:keep-all}
+html body.yk208 #app .v305-reads .v305-all{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-size:14px!important;font-weight:600;color:var(--yk-blue-dark,#1848D6);text-decoration:none}
+@media(min-width:960px){
+ html body.yk208 #app .v305-reads{grid-column:1/-1;margin-top:48px}
+ html body.yk208 #app .v305-reads ul{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}
+}
+</style>
+<style id="v308-compare-fold">
+/* v308 — 「함께 비교할 지역」 접기. 제목 줄 전체가 버튼(44px 이상), 오른쪽 꺾쇠. 접히면 설명·버튼 목록만 숨기고 고른 지역 줄(#inputRegionStatus)은 남김. 되돌릴 땐 이 블록 + inputCompareMarkup·bindPane의 v308 줄. */
+html body.yk208 .input-compare .cmp-toggle{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:6px;width:100%;min-height:48px;cursor:pointer;font:inherit;color:inherit}
+html body.yk208 .input-compare .cmp-toggle::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--v-muted,#607089);border-bottom:2px solid var(--v-muted,#607089);transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+html body.yk208 .input-compare .cmp-toggle[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+html body.yk208 .input-compare .cmp-toggle:focus-visible{outline:2px solid #2458FF;outline-offset:3px;border-radius:8px}
+html body.yk208 .input-compare.is-collapsed>p:not(#inputRegionStatus),html body.yk208 .input-compare.is-collapsed .input-region-grid{display:none!important}
+@media (prefers-reduced-motion:reduce){html body.yk208 .input-compare .cmp-toggle::after{transition:none}}
 </style>
 </body>
 </html>
