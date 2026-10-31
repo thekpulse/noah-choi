@@ -4060,6 +4060,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 </style>
 
 
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"영끌계산기","url":"https://www.myhome-price.com/","description":"가진 돈과 소득으로 살 수 있는 집값을 계산해요. 취득세 · 중개보수까지 더해 실제로 사용할 현금을 함께 봐요.","applicationCategory":"FinanceApplication","operatingSystem":"All","inLanguage":"ko-KR","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
 </head>
 <body>
 
@@ -4105,7 +4106,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
   <div class="welcome232-startbody"><h2>우리 집 예산, 어디까지일까요?</h2><p>현금과 소득을 입력하면<br>예상 집값과 월 상환액을 함께 볼 수 있어요.</p><button type="button" id="welcomeStart232">내 집 예산 알아보기 <span aria-hidden="true">→</span></button><small>가입 없이 시작해요 · 입력 금액은 서버로 보내지 않아요</small></div>
  </div>
  <div class="welcome232-next"><h2>예산을 알면, 집 찾기가 달라져요</h2><div class="welcome232-features"><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16M15 5v16"/></svg></span><h3>동네를 살펴보고</h3><p>내 예산과 실거래가를<br>지도에서 함께 확인해요.</p></div><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="7" height="14" rx="2"/><rect x="14" y="3" width="7" height="18" rx="2"/><path d="M6 12h1m-1 4h1m10-8h1m-1 4h1"/></svg></span><h3>마음에 든 집을 나란히</h3><p>단지를 담아 비교하고,<br>예산 차이를 살펴봐요.</p></div></div></div>
- <nav class="v305-reads" aria-labelledby="v305ReadsTitle"><h2 id="v305ReadsTitle">내 집 마련 자금 글</h2><ul><li><a href="/loan-limit.html"><strong>주택담보대출 한도는 무엇이 정하나요</strong><span>집값 기준, 소득 기준, 구간별 상한을 같은 조건에서 비교해요.</span></a></li><li><a href="/dsr-income-table.html"><strong>연 소득별 주택담보대출 한도표</strong><span>내 소득에 가까운 구간의 DSR 한도와 월 상환액을 표로 확인해요.</span></a></li><li><a href="/price-band-cap.html"><strong>집값 15억·25억을 넘으면 대출이 얼마나 줄어드나</strong><span>집값 구간이 바뀔 때 대출 상한과 필요한 현금이 어떻게 달라지는지 봐요.</span></a></li><li><a href="/existing-debt.html"><strong>신용대출·마이너스통장이 있으면 한도는 얼마나 줄어드나요</strong><span>기존 대출의 잔액과 상환 방식이 DSR에 반영되는 방법을 알아봐요.</span></a></li><li><a href="/budget-examples.html"><strong>현금 2억이면 얼마짜리 집을 살 수 있을까</strong><span>지역·소득·주택 보유 조건에 따라 달라지는 예산을 계산 예시로 봐요.</span></a></li><li><a href="/buying-costs.html"><strong>집값 말고 드는 돈 — 취득세·중개보수·등기비</strong><span>집값 외에 준비할 비용을 항목별로 나눠 확인해요.</span></a></li><li><a href="/guide.html"><strong>계산 방법과 결과 읽기</strong><span>입력할 금액부터 결과의 숫자와 실거래를 읽는 방법까지 안내해요.</span></a></li></ul><a class="v305-all" href="/articles.html">글 목록 전체 보기 <span aria-hidden="true">→</span></a></nav>
+ <nav class="v305-reads v315-one" aria-label="내 집 마련 자금 글"><a href="/articles.html"><strong>내 집 마련 자금 글</strong><span>대출 한도 · 세금 · 규제지역 해설</span></a></nav>
  <p class="welcome232-legal">참고용 계산 결과 · 대출 주선·알선·중개 아님</p>
 </section>
 <main class="funnel" id="funnel">
@@ -4578,7 +4579,14 @@ const POLICY = {
      ⚠ `firstTime.other 0.8`은 이 자료에 없습니다 — **다른 출처의 값**이고 이번 대조 범위 밖입니다.
      🔴 **이 자료는 「추가 지정분」입니다.** 전국 규제지역 목록의 출처가 아닙니다(원칙 1). */
   ltv: {
-    multi:        {reg: 0,    other: 0.6},   // 유주택(1주택 포함): 규제지역 주담대 0%
+    /* 🔴 v310 — **수도권 비규제지역도 0%**(유주택이 기존 집을 안 팔고 추가로 살 때).
+         기준 : 「수도권 · 규제지역」(합집합 = 코드의 `metro`). 지방 비규제만 60%.
+         출처 : 금융위원회 보도자료 「수도권 중심의 가계부채 관리 강화 방안」(2025.6.27, 6.28 시행)
+                표 「2주택자 이상 / 1주택자 · 비규제지역 · LTV 60% → 수도권 0%」 · 확인일 2026.10.27
+         ⚠ 전에는 `{reg:0, other:0.6}` 둘뿐이라 **인천 · 경기 비규제에서 1주택자(처분 안 함)가 60%**를 받았습니다.
+           실제는 대출 불가(0%) — 결과가 **유리하게** 나오는 오차였습니다(원칙 28). 위 v25.24 대조표의
+           「비규제(수도권 외) … 유주택 60%」가 이미 「수도권 외」라고 적고 있었습니다. */
+    multi:        {reg: 0, metro: 0, other: 0.6},   // 유주택(1주택 포함 · 처분 안 함): 수도권·규제지역 0% · 지방 비규제 60%
     noneOrDispose:{reg: 0.4,  other: 0.7},   // 무주택 · 처분조건부 1주택
     firstTime:    {metro: 0.7, other: 0.8}   // 생애최초는 '수도권' 기준(규제지역 아님)
   },
@@ -5054,7 +5062,7 @@ function getLTV(houseStatus, reg, metro, dispose){
   /* reg   = 규제지역(투기과열지구·조정대상지역) → LTV 강화가 여기만 적용돼요
      metro = 수도권(규제지역 포함)               → 생애최초 LTV 상한이 여기 기준이에요 */
   const L = POLICY.ltv;
-  if(houseStatus === 'multi' && !dispose) return reg ? L.multi.reg : L.multi.other;
+  if(houseStatus === 'multi' && !dispose) return reg ? L.multi.reg : metro ? L.multi.metro : L.multi.other;   /* v310 — 수도권 비규제도 0% */
   if(houseStatus === 'multi') return reg ? L.noneOrDispose.reg : L.noneOrDispose.other;
   if(houseStatus === 'first') return metro ? L.firstTime.metro : L.firstTime.other;
   return reg ? L.noneOrDispose.reg : L.noneOrDispose.other;   /* 무주택 · 처분조건부 */
@@ -6484,8 +6492,12 @@ function ruleOtherNames(items){
 function bindingTip(c, price){
   if(S.noLoan) return `<b>대출을 넣지 않았어요.</b> 대출을 함께 계산하면 예상 금액이 올라가요.`;
   const L=c.limits||{};
-  if(L.LTV===0)
+  if(L.LTV===0){
+    /* v311 — 1주택(처분 안 함)이 수도권·규제지역에서 0원일 때는 이유와 바꿀 수 있는 선택지를 말함(금융위 2025.6.27 · v310). */
+    if(S.houseStatus==='multi' && S.ownCount===1 && !S.disposePlan)
+      return `<b>이 조건에서는 주택담보대출 예상액이 0원이에요.</b> 수도권·규제지역에서는 기존 집을 팔지 않고 한 채를 더 사면 주택담보대출이 나오지 않아요. 대출받은 날부터 6개월 안에 팔기로 하면 「기존 주택 처분 예정」으로 계산할 수 있어요.`;
     return `<b>이 조건에서는 주택담보대출 예상액이 0원이에요.</b> 주택 보유·처분 예정에 따라 달라져요.`;
+  }
   if(c.mortgageLoan<=0){
     if(L.DSR===0 || L.DTI===0)
       return `<b>갚고 있는 대출이 한도를 다 썼어요.</b> 은행은 연소득의 40%까지만 대출 갚는 데 쓸 수 있다고 봐요. ${S.debtMonthly ? '월 '+comma(S.debtMonthly)+'만원 갚는 대출이 ' : '기존 대출이 '}그 자리를 다 차지했어요.`;
@@ -13872,6 +13884,19 @@ html body.yk208 .input-compare .cmp-toggle[aria-expanded="true"]::after{transfor
 html body.yk208 .input-compare .cmp-toggle:focus-visible{outline:2px solid #2458FF;outline-offset:3px;border-radius:8px}
 html body.yk208 .input-compare.is-collapsed>p:not(#inputRegionStatus),html body.yk208 .input-compare.is-collapsed .input-region-grid{display:none!important}
 @media (prefers-reduced-motion:reduce){html body.yk208 .input-compare .cmp-toggle::after{transition:none}}
+</style>
+<style id="v315-calm">
+/* v315 — 오너 「값 입력하고 서비스 소개랑 이상한 페이지가 이어지는 건 직관적이지 않다」.
+   ① 첫 화면 글 목록(v305, 10편)을 한 줄 링크로 줄임(글 목록 페이지로).
+   ② 안내 링크 줄(계산 안내 · 글 목록 · 서비스 소개 · 개인정보처리방침)은 첫 화면에만 — 입력 화면에서는 숨김(v111 「첫 화면에만」 결정과 같은 뜻). 저작권 한 줄은 남김. */
+html body.yk208 #app .v305-reads.v315-one{margin:28px 0 0}
+html body.yk208 #app .v305-reads.v315-one a{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:64px;padding:12px 44px 12px 16px;position:relative;background:#fff;border:1px solid var(--yk-line);border-radius:14px;text-decoration:none;color:inherit}
+html body.yk208 #app .v305-reads.v315-one a::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;border-right:2px solid var(--yk-muted,#607089);border-top:2px solid var(--yk-muted,#607089);transform:translateY(-50%) rotate(45deg)}
+html body.yk208 #app .v305-reads.v315-one strong{font-size:14px!important;font-weight:700!important;line-height:1.45!important;color:var(--yk-ink)}
+html body.yk208 #app .v305-reads.v315-one span{font-size:13px!important;line-height:1.5!important;color:var(--yk-sub);margin:0}
+html body.yk208 #app .v305-reads.v315-one a:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+@media(min-width:960px){html body.yk208 #app .v305-reads.v315-one{grid-column:1/-1;margin-top:40px;max-width:560px}}
+html body.yk208 #app:has(#welcome232[hidden]) .guide-nav{display:none!important}
 </style>
 </body>
 </html>
