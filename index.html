@@ -5852,8 +5852,10 @@ function renderAnswered(){
   const rows = CROWS.filter(r => visible().includes(r.step)).map(r => {
     if(r.mode === 'cash' || r.mode === 'income'){
       const key=r.mode, label=key==='cash'?'집에 쓸 현금':'연 소득 (세전)';
-      /* v307 — 부부 소득을 합치면 배우자 대출도 DSR에 같이 들어감(주담대만 부부 소득 합산 가능 · 합산하면 부채도 합산).
-         출처: 한국경제 2021.11.14 「2억에 그쳤던 주담대 한도…부부 소득 합했더니 5억으로」(금융위 원문은 못 찾음) · 확인일 2026.10.27.
+      /* v307 — 부부 소득을 합치면 배우자 대출도 DSR에 같이 들어감(연소득은 차주 본인 기준 · 배우자 소득 합산 가능 · 합산하면 배우자 명의 대출 포함).
+         출처: 금융감독원 「은행업감독업무시행세칙」 <별표18> 주택관련 담보대출 등에 대한 리스크관리 세부기준 제2장 9.(연소득의 산정) 나목
+         (law.go.kr 별표 원문 · 한국주택금융공사 「금융기관 주택담보대출 양수에 관한 세부 업무처리기준」이 같은 조항 인용) · 확인일 2026.10.31(v316).
+         (v307 당시 출처: 한국경제 2021.11.14 — 원문 확인으로 교체)
          소득만 합치고 배우자 대출을 빼면 한도가 유리하게 나오므로(원칙 28) 문구로 막음 — 계산은 그대로. */
       const note=key==='cash'?'주택담보대출·생활비·비상금 제외':'부부 합산 시 배우자 대출도 입력';
       return `<div class="inline-money"><label for="main-${key}">${label}</label>
@@ -9339,7 +9341,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       byId('easyMarketTitle').textContent = '내 예산과 실거래';
       byId('easyMarketLead').textContent = typeof regionLabel === 'function' ? regionLabel() + ' · 최근 3개월' : '최근 3개월';
       byId('easyMarketNote').textContent = status === 'error'
-        ? '실거래 정보를 불러오지 못했습니다. 아래에서 다시 확인해 주세요.'
+        ? '실거래 목록에서 다시 불러올 수 있어요.'   /* v319 — 부제(「실거래를 불러오지 못했어요」)와 같은 말 두 번 · 합니다체 · 지시형이던 것 */
         : status === 'empty' ? '조회된 거래가 없어요. 다른 지역을 선택해 보세요.'
         : '최근 거래 가격을 불러오고 있어요.';
       chart.hidden = true;
