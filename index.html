@@ -4072,7 +4072,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
     <div class="barrow1">
     <button class="barback" id="barBack" aria-label="이전 화면으로" hidden></button>
     
-    <button class="wordmark" id="homeBtn" aria-label="처음으로">영끌계산기</button>
+    <button class="wordmark" id="homeBtn" aria-label="영끌계산기 처음으로">영끌계산기</button>
     
     
     <span class="barprice" id="barPrice" aria-hidden="true" hidden></span><span class="barlabel" id="barLabel"></span>
@@ -4168,7 +4168,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
       
       
     </header>    <div class="budget-summary"><div class="budget-total">      <p class="rhead-label" id="heroLabel"></p>
-      <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p></div><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" aria-label="부대비용 항목과 금액 조정"><span>포함된 부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true"></b></button>        </div><section class="easy-card easy-balance" id="easyBalance" aria-labelledby="easyUseTitle">
+      <p class="rhead-amount"><span id="heroAmount"></span><em class="rhead-tail" id="heroTail"></em></p></div><button class="easy-money-row easy-cost-row" id="easyCostOpen" type="button" title="부대비용 항목과 금액 조정"><span>포함된 부대비용</span><strong class="cost" id="easyCost">—</strong><em class="easy-row-pct" id="easyCostPct"></em><b class="easy-row-arrow" aria-hidden="true"></b></button>        </div><section class="easy-card easy-balance" id="easyBalance" aria-labelledby="easyUseTitle">
       
       
       <h2 id="easyUseTitle" class="sr-only">총 필요 금액의 마련 방법</h2>
@@ -4349,13 +4349,13 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
       <div id="restartWrap"></div>
       <div class="easy-next-card">
-      <p class="nx-lead">※ 입력한 조건을 바탕으로 계산한 참고용 예상 금액입니다.</p>
-      <p class="nx-body">※ 실제 대출 한도는 계산 결과와 다를 수 있습니다.</p>
+      <p class="nx-lead">입력한 조건으로 계산한 참고용 예상 금액이며, 실제 대출 한도와 다를 수 있습니다.</p>
       <p class="nx-body">※ 대출을 주선·알선·중개하거나 상품을 연결하지 않습니다.</p>
       
-      <p class="nx-body">※ 입력한 금액은 브라우저에서 계산하며 서버로 전송하지 않습니다.</p>
+      <details class="result-notes321"><summary>계산 기준·개인정보 안내</summary>
+      <p class="nx-body">입력한 금액은 브라우저에서 계산하며 서버로 전송하지 않습니다.</p>
+      <p class="foot" id="footNote"></p></details>
       </div>
-<p class="foot" id="footNote"></p>
     </div>
 
 
@@ -5366,7 +5366,8 @@ function solveMaxPrice(cashAvailable, ctxBase){
   for(let price = STEP; price <= MAX; price += STEP){
     if(ok(price)) best = price;
   }
-  if(best === 0) return 0;
+  /* v320 — 500만원 미만 해도 탐색. 0원 집값의 비용조차 부족할 때만 0 반환. */
+  if(best === 0 && !ok(0)) return 0;
 
   // 찾은 지점 위쪽 STEP 구간을 이분탐색으로 정밀화
   let lo = best, hi = Math.min(best + STEP, MAX);
@@ -6263,6 +6264,7 @@ function allReady(){
 }
 const DRAFT_KEY = 'yk.draft.v1';
 const DRAFT_KEYS = ['compareCodes','step','cash','income','noLoan','houseStatus','group','sido','sgg',
+                    'ownCount','disposePlan','priceOverride','loanCut', /* v320 — 계산 조건과 결과 조정값도 함께 복원 */
                     'debtMonthly','debtParts','debtOpen','debtPartsOpen',
                     'onResult','lockedPrice','pyeong','interior','itCustom','itTouched',
                     'loanCap',       /* v25.62 — 넣은 상한이 새로고침을 견뎌야 합니다(원칙 176) */
@@ -6270,10 +6272,7 @@ const DRAFT_KEYS = ['compareCodes','step','cash','income','noLoan','houseStatus'
                     'fromResult',
                     'broker', 'legal', 'move', 'appl'];
 const DRAFT_SKIP = [
-  'ownCount', 'disposePlan',
   'pick',
-  /* 결과를 다시 계산할 때 정하는 값. `loadDraft`가 **명시적으로 null로** 되돌립니다. */
-  'priceOverride',
   'costOpen', 'limitOpen', 'itOpen',
 ];
 const COST_KEYS = ['broker', 'legal', 'move', 'appl'];
@@ -6281,7 +6280,7 @@ const COST_DEFAULT = Object.fromEntries(COST_KEYS.map(k => [k, { on: S[k].on, v:
 function saveDraft(){
   try{
     if(!S.cash && !S.income && !S.sgg && !S.debtMonthly && !S.noLoan && !S.onResult){ clearDraft(); return; }
-    const o = {}; DRAFT_KEYS.forEach(k => o[k] = S[k]);
+    const o = {schema:320}; DRAFT_KEYS.forEach(k => o[k] = S[k]);
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify(o));
   }catch(e){}          /* 사파리 프라이빗 모드 등에서 던집니다 — 저장 실패가 화면을 막지 않습니다 */
 }
@@ -6302,7 +6301,15 @@ function loadDraft(){
     S.step = Math.max(0, Math.min(parseInt(S.step,10) || 0, STEPS.length - 1));
     if(visible().indexOf(S.step) < 0) S.step = visible()[visible().length - 1];
     /* 결과 복원은 **숫자가 성립할 때만** 합니다. 하나라도 어긋나면 퍼널로 돌립니다. */
-    S.priceOverride = null;
+    /* v320 — 구버전은 보유 수·처분 예정이 없어 복원 불가. 기존 금액은 남기고 재선택. */
+    const validOwnership = [1,2].includes(Number(o.ownCount)) && typeof o.disposePlan === 'boolean';
+    S.ownCount = validOwnership ? Number(o.ownCount) : 1;
+    S.disposePlan = validOwnership && S.houseStatus === 'multi' && S.ownCount === 1 && o.disposePlan;
+    if(S.houseStatus === 'multi' && !validOwnership){ S.houseStatus = null; S.onResult = false; }
+    const po = Number(o.priceOverride), cut = Number(o.loanCut);
+    S.priceOverride = Number.isFinite(po) && po > 0 ? Math.min(Math.floor(po), 9999999) : null;
+    S.loanCut = Number.isFinite(cut) && cut > 0 ? Math.floor(cut) : 0;
+    /* 저장한 집값은 아래에서 현재 조건으로 재계산. 오래된 조건의 결과를 섞지 않음. */
     const lp = Number(S.lockedPrice);
     if(!(Number.isFinite(lp) && lp > 0)) { S.lockedPrice = null; S.onResult = false; }
     else S.lockedPrice = lp;
@@ -6451,6 +6458,18 @@ function ctx(code){
    - dealBudgetFor(lawd): 그 지역 기준 예상 집값(만원). 같은 규칙이면 결과 화면의 예상 집값 그대로,
      다르면 같은 현금·조건으로 solveMaxPrice를 그 지역 ctx로 다시 풉니다(엔진 그대로 · 캐시).
    - dealFits(x): 그 거래가 자기 지역 기준 예상 집값 이하인가 */
+/* v320 — 이전/현재 조건 모두 저장 단지의 지역 규칙으로 비교한다. */
+function previewRegionBudget(snapshot, lawd){
+  const key = ruleKeyOf(lawd);
+  if(!snapshot.budgets.has(key)){
+    const z = zoneFromSgg(lawd), metro = z !== 'other', d = snapshot.rate;
+    const c = {...snapshot.context, regulated:z === 'reg', metro,
+      roomDeductAmt:man(roomDeductFromSgg(lawd)||2500),
+      stressBp:computeStressBp(metro, d.rateType, d.fixedYears, d.years)};
+    snapshot.budgets.set(key, Math.floor(solveMaxPrice(snapshot.cash,c)/10000));
+  }
+  return snapshot.budgets.get(key);
+}
 function ruleKeyOf(code){ return code ? zoneFromSgg(String(code)) + '/' + roomDeductFromSgg(String(code)) : ''; }
 function sameRules(code){ return !code || !S.sgg || ruleKeyOf(code) === ruleKeyOf(S.sgg); }
 const BUDGET_BY_RULE = new Map();
@@ -6742,6 +6761,7 @@ function bindLoanCut(){
     renderBento(LASTVIEW.c);
     renderBalance(LASTVIEW.c, LASTVIEW.price);
     renderReport(LASTVIEW);
+    saveDraft(); /* v320 — 대출 조정도 새로고침 후 유지 */
   };
 }
 
@@ -7136,28 +7156,46 @@ async function fetchOne(lawd){
       .then(j => (j && !Array.isArray(j) && j.ok === false) ? null : j)   /* v118 — ok:false(조회 실패)는 「거래 없음」이 아니라 실패 */
       .catch(() => null)                 /* 한 달이 실패해도 나머지는 씁니다 */
   ));
-  if(rs.every(r => r === null)) throw new Error('실거래 조회 실패');
+  const queryIssues = rs.flatMap((r,i) => r === null ? [{lawd,ymd:months[i],kind:'failed'}]
+    : r.total > 1000 ? [{lawd,ymd:months[i],kind:'truncated'}] : []);
+  if(rs.every(r => r === null)){ const e = new Error('실거래 조회 실패'); e.queryIssues=queryIssues; throw e; }
   /* 어느 구에서 왔는지 붙여 둡니다 — 화면에서 인근 구만 구 이름을 답니다. */
   const items = rs.flatMap(r => (Array.isArray(r) ? r : (r && r.items) || [])).map(x => ({...x, lawd}));
+  items.queryIssues = queryIssues;
   if(rs.every(r => r !== null)) DEAL.cache.set(lawd, items);
   if (typeof window !== 'undefined' && window.ykUnitsLoad) window.ykUnitsLoad(lawd);   /* v117 — 그 구 세대수(백그라운드) */
   return items;
+}
+function mergeDealGroups(groups){
+  const items = groups.flat();
+  items.queryIssues = groups.flatMap(g => g.queryIssues || []);
+  return items;
+}
+async function fetchDealGroups(codes){
+  const results = await Promise.allSettled(codes.map(c => fetchOne(c)));
+  if(results.every(r => r.status === 'rejected')) throw new Error('실거래 조회 실패');
+  return mergeDealGroups(results.map((r,i) => {
+    if(r.status === 'fulfilled') return r.value;
+    const empty=[]; empty.queryIssues=r.reason.queryIssues || [{lawd:codes[i],kind:'failed'}]; return empty;
+  }));
 }
 async function fetchDeals(lawd, priceMan){
   const own = lawdCodesOf(lawd);
   const compared = dealCompareCodes();
   if(DEAL.compareCodes.length){
     DEAL.wide = false;
-    return (await Promise.all(compared.map(c => fetchOne(c)))).flat();
+    return fetchDealGroups(compared);
   }
-  let items = (await Promise.all(own.map(c => fetchOne(c)))).flat();
+  let items = await fetchDealGroups(own);
   DEAL.wide = false;
   if(splitDeals(items, priceMan).under.length >= DEAL.want) return items;
   const near = NEARBY[lawd] || [];
   if(!near.length) return items;
-  const more = await Promise.all(near.map(code => fetchOne(code)));
+  const more = await fetchDealGroups(near).catch(() => {
+    const empty=[]; empty.queryIssues=near.map(lawd => ({lawd,kind:'failed'})); return empty;
+  });
   DEAL.wide = true;
-  return items.concat(...more);
+  return mergeDealGroups([items, more]);
 }
 
 function passesUnitFilter(x){
@@ -7474,8 +7512,8 @@ function paintDeals(priceMan){
   if(!rows.length){
     lead.textContent=dealScopeLabel()+` · 최근 ${DEAL.months}개월 · 0곳`;
     list.innerHTML = `<p class="deal-msg">${narrowed
-      ? '최근 3개월 안에 <b>이 조건에 맞는 거래가 없어요.</b>'
-      : '최근 3개월 안에 <b>이 가격대 거래가 없어요.</b>'}</p>`;
+      ? '조회된 자료에서 <b>이 조건에 맞는 거래가 없어요.</b>'
+      : '조회된 자료에서 <b>이 가격대 거래가 없어요.</b>'}</p>`;
     foot.textContent = narrowed
       ? '선택한 필터를 해제하거나 지역·예산을 바꿔 보세요.'
       : '매수 지역이나 예산을 바꿔 보세요.';
@@ -7960,8 +7998,13 @@ function restart(){
   DEAL.sort='price';
   resetDealFilters();
   clearDraft();          /* 처음부터 다시 = 남은 값도 지웁니다 */
-  Object.assign(S,{step:0,cash:null,income:null,noLoan:false,mciCovered:false,loanCap:null,houseStatus:null,disposePlan:false,
-    group:null,sido:'',sgg:'',compareCodes:[],pyeong:0,interior:150,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,loanCut:0,loanCutOpen:false,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
+  Object.assign(S,{step:0,cash:null,income:null,noLoan:false,mciCovered:false,loanCap:null,houseStatus:null,ownCount:1,disposePlan:false,
+    group:null,sido:'',sgg:'',pick:'',compareCodes:[],pyeong:0,interior:150,itCustom:null,itTouched:false,debtMonthly:null,debtOpen:false,debtParts:{credit:null,etc:null},debtPartsOpen:false,priceOverride:null,lockedPrice:null,loanCut:0,loanCutOpen:false,onResult:false,fromResult:false,costOpen:false,limitOpen:false,itOpen:false});
+  COST_KEYS.forEach(k => { S[k] = {...COST_DEFAULT[k]}; });
+  SIM_RATE = null;
+  LASTVIEW = null;
+  BUDGET_BY_RULE.clear();
+  if(window.__condPreview){ window.__condPreview.base = null; window.__condPreview.snapshot = null; }
   render(); window.scrollTo(0,0);
 }
 
@@ -8405,7 +8448,7 @@ loadDraft();          /* ⚠ render() 앞이어야 합니다. 뒤면 화면을 �
 const SHARED_IN = readSharedLink();   /* v126 — 초안 뒤(받은 링크가 이김) · RESUME_RESULT 앞(결과 복원 끔) */
 const RESUME_RESULT = S.onResult && S.lockedPrice > 0 && allReady();
 render();
-if(RESUME_RESULT) showResult(false);
+if(RESUME_RESULT){ S.lockedPrice = null; showResult(false); } /* v320 — 복원 조건으로 재계산 */
 if(SHARED_IN) paintSharedIn(SHARED_IN);   /* v126 */
 window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash)) location.reload(); });   /* v126 — 열린 앱에서 받은 링크를 눌러도(같은 문서 # 이동) 적용 */
 </script>
@@ -9936,6 +9979,7 @@ body #viewDeals .yk-map-stage{isolation:isolate}
     let html = '&nbsp;';
     if (DEAL.status === 'loading') html = '내 예산에 맞는 실거래 확인 중' + (scope ? ' · ' + esc(scope) : '');
     else if (DEAL.status === 'error') html = '실거래를 불러오지 못했어요';
+    else if ((DEAL.items?.queryIssues || []).length) html = '일부 자료만 조회됨 · 실거래 목록에서 확인';
     else if (DEAL.status === 'empty' || (DEAL.status === 'ready' && DEAL.lastPrice > 0 && typeof splitDeals === 'function')) {
       const groups = DEAL.status === 'empty' ? { under: [], over: [] } : splitDeals(DEAL.items || [], DEAL.lastPrice);
       const n = groups.under.length + (DEAL.over ? groups.over.length : 0);
@@ -11371,7 +11415,7 @@ function announce(message){status.textContent=message;status.hidden=false;clearT
 function current(){return result.hidden?'conditions':RVIEW==='compare'?'compare':RVIEW==='deals'?'map':'home';}
 function sync(){
  if(!result.hidden)started=true;
- const has=started;el('homeBtn').setAttribute('aria-label',has?'홈으로':'처음으로');document.querySelectorAll('#cmpBar,[data-cmp-open]').forEach(b=>b.removeAttribute('aria-haspopup'));active=current();nav.hidden=!has;document.body.classList.toggle('v208-ready',has);app.dataset.v208Tab=has?active:'entry';
+ const has=started;el('homeBtn').setAttribute('aria-label',has?'영끌계산기 홈으로':'영끌계산기 처음으로');document.querySelectorAll('#cmpBar,[data-cmp-open]').forEach(b=>b.removeAttribute('aria-haspopup'));active=current();nav.hidden=!has;document.body.classList.toggle('v208-ready',has);app.dataset.v208Tab=has?active:'entry';
  for(const b of nav.querySelectorAll('button')){const on=b.dataset.v208Tab===active;if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}
  const n=typeof cmpLoad==='function'?cmpLoad().length:0,c=el('v208Count');note.hidden=n>0;c.textContent=String(n);c.hidden=!n;
  nav.querySelector('[data-v208-tab="compare"]').setAttribute('aria-label','비교'+(n?' · '+n+'곳':''));
@@ -12131,6 +12175,7 @@ var original = showResult;
 showResult = function(){
   var r = original.apply(this, arguments);
   CP.base = (S.lockedPrice != null && Number.isFinite(S.lockedPrice)) ? Math.floor(S.lockedPrice / 10000) : null;
+  CP.snapshot = {context:ctx(), cash:man(S.cash), rate:{...D}, budgets:new Map()};
   CP.key = ''; box.hidden = true;
   return r;
 };
@@ -12151,9 +12196,14 @@ function paint(){
   d.innerHTML = diff ? '<span class="cp-prev">지난 계산 ' + esc(won(CP.base)) + '보다 </span><strong class="cp-change">' + (diff > 0 ? '+' : '−') + esc(won(Math.abs(diff))) + '</strong>' : '지난 계산과 같음';
   d.className = 'cp-d' + (diff > 0 ? ' is-up' : diff < 0 ? ' is-down' : '');
   var list = typeof cmpLoad === 'function' ? cmpLoad() : [], changed = [];
+  var currentSnapshot = {context:ctx(), cash:man(S.cash), rate:{...D}, budgets:new Map()};
   list.forEach(function(s){
     var a = Number(s.amountMan); if(!(a > 0)) return;
-    var was = a > CP.base, now = a > price;
+    if(!s.lawd || !sggName(s.lawd) || !CP.snapshot) return;
+    var oldBudget = previewRegionBudget(CP.snapshot, s.lawd);
+    var newBudget = previewRegionBudget(currentSnapshot, s.lawd);
+    if(!Number.isFinite(oldBudget) || !Number.isFinite(newBudget)) return;
+    var was = a > oldBudget, now = a > newBudget;
     if(was !== now) changed.push('<li><b>' + esc(s.name) + '</b> 예상 집값보다 ' + (was ? '높음' : '낮음') + ' → <span class="' + (now ? 'is-over' : 'is-under') + '">' + (now ? '높음' : '낮음') + '</span><i>바뀜</i></li>');
   });
   var ul = box.querySelector('.cp-cmp');
@@ -13899,6 +13949,73 @@ html body.yk208 #app .v305-reads.v315-one span{font-size:13px!important;line-hei
 html body.yk208 #app .v305-reads.v315-one a:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
 @media(min-width:960px){html body.yk208 #app .v305-reads.v315-one{grid-column:1/-1;margin-top:40px;max-width:560px}}
 html body.yk208 #app:has(#welcome232[hidden]) .guide-nav{display:none!important}
+</style>
+
+<script id="v320-query-status">
+/* v320 — 조회 불완전 상태를 목록·결과에 표시. 정상 상태는 기존 화면 유지. */
+(function(){
+ function syncQueryStatus(){
+  const issues=DEAL.status==='loading'||DEAL.status==='error'?[]:(DEAL.items?.queryIssues||[]);
+  const failed=issues.filter(x=>x.kind==='failed'), cut=issues.filter(x=>x.kind==='truncated');
+  const detail=xs=>[...new Set(xs.map(x=>(sggName(x.lawd)||x.lawd)+(x.ymd?' '+String(x.ymd).slice(0,4)+'.'+String(x.ymd).slice(4):'')))].join(' · ');
+  const message=[failed.length?detail(failed)+' 조회 실패':'',cut.length?detail(cut)+' 거래가 1,000건을 넘어 일부만 조회됨':''].filter(Boolean).join('. ');
+  for(const [id,anchorId,cls] of [['dealQueryStatus','dealLead','deal-msg'],['marketQueryStatus','easyMarketLead','axis-note']]){
+   const anchor=document.getElementById(anchorId); if(!anchor)continue;
+   let node=document.getElementById(id);
+   if(!node){node=document.createElement('div');node.id=id;node.className=cls;node.setAttribute('role','status');anchor.after(node);}
+   node.hidden=!issues.length; node.textContent='';
+   if(issues.length && id==='marketQueryStatus') node.textContent='조회된 자료만 비교에 포함했어요.';
+   else if(issues.length){
+    const fold=document.createElement('details');fold.className='query-details321';
+    const title=document.createElement('summary');title.textContent='일부 실거래 자료가 빠져 있어요';
+    const detail=document.createElement('p');detail.textContent=message;
+    fold.append(title,detail);node.append(fold);
+   }
+   if(failed.length && id==='dealQueryStatus'){
+    const b=document.createElement('button');b.type='button';b.className='tr-retry';b.textContent='다시 불러오기';
+    b.onclick=()=>{if(LASTVIEW?.price>0)renderDeals(LASTVIEW.price);};node.append(' ',b);
+   }
+  }
+  if(issues.length && !DEAL.items.length){
+   const list=document.getElementById('dealList');if(list)list.innerHTML='<p class="deal-msg">받은 자료에는 거래가 없어요. 조회되지 않은 자료는 위 안내에서 확인할 수 있어요.</p>';
+   const note=document.getElementById('easyMarketNote');if(note)note.textContent='일부 자료를 받지 못해 전체 거래 유무를 확인할 수 없어요.';
+  }
+ }
+ document.addEventListener('deals:ready',()=>queueMicrotask(syncQueryStatus));
+ const original=paintDeals;
+ paintDeals=function(){const r=original.apply(this,arguments);syncQueryStatus();return r;};
+ syncQueryStatus();
+})();
+</script>
+
+<style id="v321-result-layout">
+/* v321 — PC: 왼쪽 예산 / 오른쪽 상환액·실거래. 1264px 빈 상태 하단 높이는 QA에서 전후 측정.
+   모바일 카드 순서는 유지. 탐색 버튼을 주 행동, 저장·공유는 보조 행동으로 구분. */
+@media(min-width:960px){
+ html body.yk208 #app #viewAnswer{grid-template-rows:auto auto 1fr!important}
+ html body.yk208 #app #viewAnswer>#fundingOverview{grid-column:1!important;grid-row:2 / span 2!important}
+ html body.yk208 #app #viewAnswer>#payTile{grid-column:2!important;grid-row:2!important}
+ html body.yk208 #app #viewAnswer>#easyMarket{grid-column:2!important;grid-row:3!important}
+}
+html body.yk208 #app #viewAnswer #marketOpen{background:#2458FF!important;border-color:#2458FF!important;color:#fff!important;min-height:48px}
+html body.yk208 #app #viewAnswer #marketOpen .chev-r{border-color:currentColor!important}
+html body.yk208 #app #viewNext #outCopy{background:#fff!important;border:1px solid #CBD5E4!important;color:#192332!important}
+html body.yk208 #app #viewNext #outCopy :is(b,.arw,svg){color:inherit!important}
+html body.yk208 #app #viewNext .easy-next-card{padding-top:16px!important;margin-top:16px!important}
+html body.yk208 #app #viewNext .result-notes321{margin-top:8px;border-top:1px solid #D6DFEC}
+html body.yk208 #app #viewNext .result-notes321>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:0;list-style:none;cursor:pointer;font-size:12px;font-weight:500;line-height:1.6;color:#53617C}
+html body.yk208 #app #viewNext .result-notes321>summary::-webkit-details-marker{display:none}
+html body.yk208 #app #viewNext .result-notes321>summary::after{content:'';width:7px;height:7px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);margin-right:4px}
+html body.yk208 #app #viewNext .result-notes321[open]>summary::after{transform:rotate(225deg)}
+html body.yk208 #app #viewNext .result-notes321>summary:focus-visible{outline:2px solid #2458FF;outline-offset:2px;border-radius:8px}
+html body.yk208 #app #viewNext .result-notes321 #footNote{margin:8px 0 0!important;padding:0!important;border:0!important}
+html body.yk208 #app #dealQueryStatus{font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+html body.yk208 #app #marketQueryStatus{font-size:12px;line-height:1.65;overflow-wrap:anywhere}
+html body.yk208 #app #dealQueryStatus .query-details321>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600}
+html body.yk208 #app #dealQueryStatus .query-details321>summary::after{content:"＋";margin-left:auto;padding-left:12px}
+html body.yk208 #app #dealQueryStatus .query-details321[open]>summary::after{content:"−"}
+html body.yk208 #app #dealQueryStatus .query-details321>p{margin:4px 0 12px}
+html body.yk208 #app #dealQueryStatus .tr-retry{min-height:44px;min-width:44px}
 </style>
 </body>
 </html>
