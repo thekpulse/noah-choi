@@ -4202,7 +4202,25 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
         <p class="tile-s" id="loanCutNote"></p>
       </div>
       
-    </section></section><div class="paywrap" id="payTile">
+    </section></section>
+    <!-- v326 — 모바일 결과에서 「내 예산과 실거래」를 예산 카드 바로 아래로(오너 2026-11-09 「1번부터」). PC는 v321 grid 배치 그대로. -->
+<section class="plot" id="easyMarket" aria-labelledby="easyMarketTitle" hidden>
+      <h2 id="easyMarketTitle">내 예산이 어디쯤인가요</h2>
+      <p class="plot-lede" id="easyMarketLead"></p><p id="resultScopeNote" hidden>맞는 거래가 적어 인근 지역까지 넓혔어요.</p>
+      <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예상 집값 이하</span><span><i aria-hidden="true"></i>초과</span></p><div class="chart" id="easyMarketRows">
+        <div class="budget" id="plotLine"></div>
+        
+        <div class="axis"><span id="plotLo"></span><span id="plotHi"></span></div>
+      </div>
+      <p class="axis-note" id="easyMarketNote"></p><p class="hero-context" id="heroContext" aria-live="polite">&nbsp;</p><button class="market-open" id="marketOpen" type="button">실거래 목록 보기 <span class="chev-r" aria-hidden="true"></span></button>
+      
+      <div class="plot-detail" id="plotDetail" hidden>
+        
+        <p class="nm"><span id="plotDnm"></span><b id="plotDamt"></b></p>
+        <p class="mt" id="plotDmt"></p>
+      </div>
+    </section>
+    <div class="paywrap" id="payTile">
       <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
       <div class="ans-row">
         <p class="ans-v" id="tileMonthly"></p>
@@ -4232,22 +4250,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
 
     
-<section class="plot" id="easyMarket" aria-labelledby="easyMarketTitle" hidden>
-      <h2 id="easyMarketTitle">내 예산이 어디쯤인가요</h2>
-      <p class="plot-lede" id="easyMarketLead"></p><p id="resultScopeNote" hidden>맞는 거래가 적어 인근 지역까지 넓혔어요.</p>
-      <p class="budget-caption" id="plotLab"></p><p class="plot-legend"><span>막대 1개 = 거래 1건</span><span><i class="in" aria-hidden="true"></i>예상 집값 이하</span><span><i aria-hidden="true"></i>초과</span></p><div class="chart" id="easyMarketRows">
-        <div class="budget" id="plotLine"></div>
-        
-        <div class="axis"><span id="plotLo"></span><span id="plotHi"></span></div>
-      </div>
-      <p class="axis-note" id="easyMarketNote"></p><p class="hero-context" id="heroContext" aria-live="polite">&nbsp;</p><button class="market-open" id="marketOpen" type="button">실거래 목록 보기 <span class="chev-r" aria-hidden="true"></span></button>
-      
-      <div class="plot-detail" id="plotDetail" hidden>
-        
-        <p class="nm"><span id="plotDnm"></span><b id="plotDamt"></b></p>
-        <p class="mt" id="plotDmt"></p>
-      </div>
-    </section>
+
     <p class="ans-note" id="ansNote"></p>
     
     <div class="card" id="reasonCard">
