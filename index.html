@@ -4106,7 +4106,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
   <div class="welcome232-startbody"><h2>우리 집 예산, 어디까지일까요?</h2><p>현금과 소득을 입력하면<br>예상 집값과 월 상환액을 함께 볼 수 있어요.</p><button type="button" id="welcomeStart232">내 집 예산 알아보기 <span aria-hidden="true">→</span></button><small>가입 없이 시작해요 · 입력 금액은 서버로 보내지 않아요</small></div>
  </div>
  <div class="welcome232-next"><h2>예산을 알면, 집 찾기가 달라져요</h2><div class="welcome232-features"><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16M15 5v16"/></svg></span><h3>동네를 살펴보고</h3><p>내 예산과 실거래가를<br>지도에서 함께 확인해요.</p></div><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="7" height="14" rx="2"/><rect x="14" y="3" width="7" height="18" rx="2"/><path d="M6 12h1m-1 4h1m10-8h1m-1 4h1"/></svg></span><h3>마음에 든 집을 나란히</h3><p>단지를 담아 비교하고,<br>예산 차이를 살펴봐요.</p></div></div></div>
- <nav class="v305-reads v315-one" aria-label="내 집 마련 자금 글"><a href="/articles.html"><strong>내 집 마련 자금 글</strong><span>대출 한도 · 세금 · 규제지역 해설</span></a></nav>
+ <nav class="v305-reads v315-one" aria-label="내 집 마련 자금 글"><a href="/articles"><strong>내 집 마련 자금 글</strong><span>대출 한도 · 세금 · 규제지역 해설</span></a></nav>
  <p class="welcome232-legal">참고용 계산 결과 · 대출 주선·알선·중개 아님</p>
 </section>
 <main class="funnel" id="funnel">
@@ -4270,6 +4270,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
       </div>
       
     </div>
+    <nav class="v305-reads v315-one read324" id="relatedRead" aria-label="이 결과와 관련된 글" hidden><a id="relatedReadLink" href="/loan-limit"><span class="read324-k">이 결과와 관련된 글</span><strong id="relatedReadTitle"></strong></a></nav>
 
     </div>
 
@@ -4386,7 +4387,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 </section>
   
   
-  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide.html">계산 안내</a><a href="/articles.html">글 목록</a><a href="/about.html">서비스 소개</a><a href="/privacy.html">개인정보처리방침</a></nav>
+  <nav class="guide-nav" aria-label="서비스 안내"><a href="/guide">계산 안내</a><a href="/articles">글 목록</a><a href="/about">서비스 소개</a><a href="/privacy">개인정보처리방침</a></nav>
   <p class="copyright" id="copyright" role="contentinfo"></p>
 </div>
 
@@ -6588,7 +6589,7 @@ function showResult(keepScroll){
   $('heroTail').textContent = '';   /* v25.41 — 라벨의 「예상」이 이 일을 합니다(위 주석) */
 
   SIM_RATE = null;
-  renderBento(c); renderBalance(c, price); renderLimits(c, price); renderDiscs();
+  renderBento(c); renderBalance(c, price); renderLimits(c, price); renderRelated(c); renderDiscs();
   renderCostBox(c, price); renderPkg(); renderOutlinks(price); renderDeals(price);
   bindRateSim();
   bindLoanCut();
@@ -6895,6 +6896,41 @@ function renderCostBox(c, price){
   });
   $('outMove').href = PARTNER.moving
     || 'https://search.naver.com/search.naver?query='+encodeURIComponent('이사 입주청소 견적 비교');
+}
+/* v324 — 결과에 맞는 해설 글 하나를 잇는다(오너 결정 2026-11-09 「결과에 맞는 글 연결」).
+   대출을 정한 기준(c.binding)·방공제(c.roomCut)·주택 보유·기존 대출로 고른다. 수치를 새로 쓰지 않고 글 주소와 제목만 쓴다.
+   우선순위: 대출 없음 → 부대비용 / 정부 상한 → 구간 상한 글 / 소득 기준 → 기존 대출 있으면 기존 대출 글, 없으면 소득별 한도표 /
+   집값 기준 → 1주택 이상이면 갈아타기, 방공제가 빠졌으면 방공제 글, 아니면 한도 해설 / 그 밖(직접 입력 등) → 한도 해설. */
+const RELATED_READ={
+  'buying-costs':'집값 말고 드는 돈 — 취득세·중개보수·등기비',
+  'price-band-cap':'집값 15억·25억을 넘으면 대출이 얼마나 줄어드나',
+  'existing-debt':'신용대출·마이너스통장이 있으면 한도는 얼마나 줄어드나요',
+  'dsr-income-table':'연 소득별 주택담보대출 한도표',
+  'switch-home':'1주택자가 집을 갈아탈 때',
+  'room-deduction':'방공제 — 소액임차보증금만큼 빠지는 이유와 지역별 금액',
+  'loan-limit':'주택담보대출 한도는 무엇이 정하나요'
+};
+function relatedReadSlug(c){
+  const L=(c&&c.limits)||{}, hasLimit=!S.noLoan && Object.keys(L).some(k=>isFinite(L[k]));
+  if(!hasLimit) return 'buying-costs';
+  const b=c.binding;
+  if(b==='구간한도') return 'price-band-cap';
+  if(b==='DSR' || b==='DTI'){
+    const p=S.debtParts||{};
+    return ((S.debtMonthly||0)>0 || (p.credit||0)>0 || (p.etc||0)>0) ? 'existing-debt' : 'dsr-income-table';
+  }
+  if(b==='LTV'){
+    if(S.houseStatus==='multi') return 'switch-home';
+    if((c.roomCut||0)>0) return 'room-deduction';
+  }
+  return 'loan-limit';
+}
+function renderRelated(c){
+  const nav=$('relatedRead'), a=$('relatedReadLink'); if(!nav||!a) return;
+  const slug=relatedReadSlug(c);
+  a.href='/'+slug; $('relatedReadTitle').textContent=RELATED_READ[slug];
+  a.onclick=()=>track('related_read',{page:slug});
+  nav.hidden=false;
 }
 const LNAME={LTV:'집값 기준(LTV)',DSR:'소득 기준(DSR)',DTI:'소득 기준(DSR)','구간한도':'정부 상한','상품한도':'상품 상한','은행자체한도':'은행 상한',manual:'직접 정한 상한'};
 function renderLimits(c, price){
@@ -13947,6 +13983,9 @@ html body.yk208 #app .v305-reads.v315-one a::after{content:"";position:absolute;
 html body.yk208 #app .v305-reads.v315-one strong{font-size:14px!important;font-weight:700!important;line-height:1.45!important;color:var(--yk-ink)}
 html body.yk208 #app .v305-reads.v315-one span{font-size:13px!important;line-height:1.5!important;color:var(--yk-sub);margin:0}
 html body.yk208 #app .v305-reads.v315-one a:focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+.v305-reads.v315-one.read324{margin:16px 0 0!important;max-width:none}
+@media(min-width:960px){html body.yk208 #app #viewAnswer>#relatedRead{grid-column:1!important;grid-row:4!important;margin-top:0!important;max-width:none}}
+.v305-reads.v315-one.read324 .read324-k{font-size:13px!important;line-height:1.5!important;color:var(--yk-sub)}
 @media(min-width:960px){html body.yk208 #app .v305-reads.v315-one{grid-column:1/-1;margin-top:40px;max-width:560px}}
 html body.yk208 #app:has(#welcome232[hidden]) .guide-nav{display:none!important}
 </style>
