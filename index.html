@@ -3660,14 +3660,11 @@ html body.yk208 #app .v232-entry-legal{margin:14px 0 0;text-align:center;word-br
 html body.yk208.welcome232-on #app #funnel{display:none!important}
 html body.yk208.welcome232-on #app{max-width:600px!important}
 html body.yk208 #app #welcome232{padding:28px 22px 0;max-width:560px;box-sizing:border-box;margin:auto}
-html body.yk208 #app .welcome232-kicker{margin:0 0 12px}
 html body.yk208 #app #welcomeTitle232{margin:0;outline:none}
 html body.yk208 #app .welcome232-sub{word-break:keep-all}
 html body.yk208 #app .welcome232-start{border:1px solid #D6E0F3;overflow:hidden;background:white}
 html body.yk208 #app .welcome232-scene{position:relative;background:#EDF2FF;height:190px;overflow:hidden}
 html body.yk208 #app .welcome232-scene>svg{width:100%;height:100%;display:block;transform:translateY(15px)}
-html body.yk208 #app .welcome232-stamp{position:absolute;z-index:1;left:18px;top:16px;font-weight:600;letter-spacing:.01em}
-html body.yk208 #app .welcome232-caption{position:absolute;bottom:12px;right:14px;padding:6px 10px;background:#fff;border:1px solid #D6E0F3;border-radius:8px}
 html body.yk208 #app .welcome232-startbody{}
 html body.yk208 #app .welcome232-startbody h2{margin:0}
 html body.yk208 #app .welcome232-startbody p{}
@@ -4092,16 +4089,15 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
 
   
+  <!-- v327 — 첫 화면 반복 문구(작은 제목·그림 도장·캡션) 삭제, 부제를 실제 기능 문장으로(오너 2026-11-12 A안). -->
   <section id="welcome232" class="welcome232" role="main" aria-labelledby="welcomeTitle232" hidden>
- <div class="welcome232-heading"><p class="welcome232-kicker">내 예산 속 집 찾기</p><h1 id="welcomeTitle232" tabindex="-1">내 예산 속,<br>우리 집을 찾아요.</h1><p class="welcome232-sub">마음에 드는 집이 생겼을 때,<br>가격보다 내 생활에 맞는지 알 수 있도록.</p></div>
+ <div class="welcome232-heading"><h1 id="welcomeTitle232" tabindex="-1">내 예산 속,<br>우리 집을 찾아요.</h1><p class="welcome232-sub">예상 집값을 그 지역 실거래가와<br>나란히 보여 줘요.</p></div>
  <div class="welcome232-start">
   <div class="welcome232-scene" aria-hidden="true">
-   <span class="welcome232-stamp">나의 집 찾기</span>
    <svg viewBox="0 0 360 196" fill="none"><path d="M0 165H360M39 0V196M129 0V196M219 0V196M309 0V196" stroke="#D9E3FB"/><path d="M0 80H360" stroke="#D9E3FB"/><path d="M0 182L360 98" stroke="white" stroke-width="18"/><rect x="38" y="93" width="61" height="62" rx="4" fill="#D2DDFC"/><path d="M32 95L69 67L106 95" stroke="#A5B9EF" stroke-width="7" stroke-linejoin="round"/><path d="M54 110H64V122H54ZM75 110H85V122H75Z" fill="white"/><path d="M63 136H76V155H63Z" fill="#A5B9EF"/>
    <rect x="247" y="47" width="60" height="97" rx="5" fill="#D2DDFC"/><path d="M260 64H271V77H260ZM284 64H295V77H284ZM260 89H271V102H260ZM284 89H295V102H284ZM260 114H271V127H260ZM284 114H295V127H284Z" fill="white"/>
    <path d="M132 111L180 70L228 111V174H132V111Z" fill="#2458FF"/><path d="M124 114L180 65L236 114" stroke="#153AAB" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><rect x="151" y="119" width="19" height="20" rx="2" fill="#E8EEFF"/><rect x="189" y="119" width="19" height="20" rx="2" fill="#E8EEFF"/><path d="M172 151H190V174H172V151Z" fill="#E8EEFF"/><circle cx="180" cy="26" r="18" fill="white" stroke="#B8C9F6"/><path d="M172 26L178 32L189 20" stroke="#2458FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
    <path d="M321 162V142" stroke="#839ACD" stroke-width="3"/><circle cx="321" cy="136" r="12" fill="#BACCEE"/></svg>
-   <span class="welcome232-caption">집을 고르는 나만의 기준</span>
   </div>
   <div class="welcome232-startbody"><h2>우리 집 예산, 어디까지일까요?</h2><p>현금과 소득을 입력하면<br>예상 집값과 월 상환액을 함께 볼 수 있어요.</p><button type="button" id="welcomeStart232">내 집 예산 알아보기 <span aria-hidden="true">→</span></button><small>가입 없이 시작해요 · 입력 금액은 서버로 보내지 않아요</small></div>
  </div>
@@ -12677,12 +12673,9 @@ html body.yk208.v208-ready #app .appbar #barLabel{color:var(--yk-ink)!important;
 
 /* Home — title, copy, labels, and illustration card follow one ramp. */
 html body.yk208 #app #welcome232{color:var(--yk-ink)}
-html body.yk208 #app .welcome232-kicker{font-size:12px!important;font-weight:700!important;line-height:1.5!important;letter-spacing:0!important;color:var(--yk-blue-dark)!important;margin-bottom:12px!important}
 html body.yk208 #app #welcomeTitle232{font-size:clamp(30px,7.7vw,40px)!important;font-weight:700!important;letter-spacing:-.045em!important;line-height:1.23!important}
 html body.yk208 #app .welcome232-sub{font-size:14px!important;line-height:1.65!important;letter-spacing:-.015em!important;color:var(--yk-sub)!important;margin:14px 0 24px!important}
 html body.yk208 #app .welcome232-start{border-color:var(--yk-line)!important;border-radius:20px!important}
-html body.yk208 #app .welcome232-stamp{font-size:12px!important;line-height:1.45!important;color:#3E5586!important}
-html body.yk208 #app .welcome232-caption{font-size:11px!important;color:#3E5586!important}
 html body.yk208 #app .welcome232-startbody{padding:20px!important}
 html body.yk208 #app .welcome232-startbody h2{font-size:20px!important;font-weight:700!important;letter-spacing:-.03em!important;line-height:1.38!important;color:var(--yk-ink)!important}
 html body.yk208 #app .welcome232-startbody p{font-size:14px!important;line-height:1.62!important;color:var(--yk-sub)!important;margin:10px 0 20px!important}
