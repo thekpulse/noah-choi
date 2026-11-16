@@ -395,10 +395,49 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(rk==='3,2,1,0', 'v328 순위 — 이하 건수 → 전체 건수 · 실패한 구는 맨 뒤', rk);
   // 원칙 잠금: 누를 때만 조회 · 금액을 주소에 싣지 않음 · 세대수 API를 25개 구에 부르지 않음
   const js=html.slice(html.indexOf('<script id="v328-reach">'), html.indexOf('</script>', html.indexOf('<script id="v328-reach">')));
-  ok(/'\/api\/apt-price\?lawd=' \+ encodeURIComponent\(code\) \+ '&ymd=' \+ ymd\)/.test(js) && (js.match(/fetch\(/g)||[]).length===1, 'v328 조회 주소는 lawd·ymd만(금액·소득 없음)');
+  const urls=[...js.matchAll(/fetch\(([^)]*\))/g)].map(m=>m[1]);
+  ok(urls.length===2 && urls.some(u=>u==="'/api/apt-reach?ymd=' + ymd)") && urls.some(u=>u==="'/api/apt-price?lawd=' + encodeURIComponent(code)"), 'v329 조회 주소는 ymd · lawd만(금액·소득 없음) — 묶음 1 · 구별 1', urls.join(' | '));
   ok(!/ykUnitsLoad|apt-units/.test(js), 'v328 세대수 API를 부르지 않음');
   ok(/track\('reach_scan', \{ hit: hit === 0 \? 'none'/.test(js) && !/track\([^)]*(budget|amount|price|won)/i.test(js), 'v328 사용 로그는 범주 라벨만');
   ok(/id="reach328"[^>]*hidden/.test(html) && html.indexOf('id="reach328"')>html.indexOf('id="easyMarket"') && html.indexOf('id="reach328"')<html.indexOf('id="payTile"'), 'v328 카드 자리 — 실거래 카드 다음 · 월 상환액 앞');
+  // v329 — 묶음 응답 풀기: 실패한 구는 실패 그대로 · 달이 다르면 버림
+  const {reachUnpack}=(vm.runInContext('globalThis.__2={reachUnpack}',c),c.__2);
+  const un=reachUnpack({ok:true,ymd:202610,gu:{'11110':{ok:true,total:1,d:[[51000,84.9,3,'가','나',5,2010]]},'11350':{ok:false,reason:'gateway-22'}}},202610);
+  ok(un && un['11110'].ok && un['11110'].items[0].amountMan===51000 && un['11110'].items[0].y===2026 && un['11110'].items[0].m===10 && un['11110'].items[0].d===3 && un['11350'].ok===false && un['11350'].items.length===0, 'v329 묶음 응답 풀기 — 연·월은 ymd에서 · 실패한 구는 ok:false', JSON.stringify(un));
+  ok(reachUnpack({ok:true,ymd:202609,gu:{}},202610)===null && reachUnpack(null,202610)===null && reachUnpack({ymd:202610,gu:{}},202610)===null, 'v329 모양이 아니거나 달이 다른 응답은 버림');
+}
+
+// 27) v329 — api/apt-reach.js(서울 25개 구 묶음 조회)를 가짜 국토부 응답으로 직접 실행.
+{
+  const {createRequire}=await import('node:module');const req=createRequire(import.meta.url);
+  ok(exists('api/apt-reach.js'), 'v329 api/apt-reach.js 있음');
+  if(exists('api/apt-reach.js')){
+    const keep={fetch:globalThis.fetch,key:process.env.MOLIT_API_KEY};
+    let now=0,max=0,calls=[],bad='';
+    process.env.MOLIT_API_KEY='test';
+    globalThis.fetch=async u=>{const lawd=/LAWD_CD=(\d+)/.exec(u)[1];calls.push(lawd);now++;max=Math.max(max,now);await new Promise(r=>setTimeout(r,5));now--;
+      if(lawd===bad)return {ok:true,text:async()=>'<OpenAPI_ServiceResponse><cmmMsgHeader><returnReasonCode>22</returnReasonCode></cmmMsgHeader></OpenAPI_ServiceResponse>'};
+      return {ok:true,text:async()=>'<response><header><resultCode>000</resultCode></header><body><items><item><aptNm>검증'+lawd+'</aptNm><umdNm>검증동</umdNm><jibun>1</jibun><excluUseAr>84.93</excluUseAr><floor>7</floor><buildYear>2011</buildYear><dealAmount> 51,000</dealAmount><dealYear>2025</dealYear><dealMonth>3</dealMonth><dealDay>9</dealDay></item><item><aptNm>해제</aptNm><umdNm>검증동</umdNm><excluUseAr>59</excluUseAr><dealAmount>40,000</dealAmount><dealYear>2025</dealYear><dealMonth>3</dealMonth><dealDay>2</dealDay><cdealType>O</cdealType></item></items><totalCount>2</totalCount></body></response>'};};
+    try{
+      const h=req(path.join(ROOT,'api/apt-reach.js'));
+      const run=async q=>{const r={h:{},setHeader(k,v){r.h[k]=v;return r},status(){return r},json(o){r.o=o;return r}};await h({query:q},r);return r;};
+      const T2=[...html.slice(html.indexOf('var REACH_TILES')).matchAll(/\['(11\d{3})',/g)].slice(0,25).map(m=>m[1]).sort().join();
+      ok(h.SEOUL.slice().sort().join()===T2 && h.SEOUL.length===25, 'v329 서버의 구 25개 = 화면 격자의 구 25개');
+      bad='11350';const r1=await run({ymd:'202503'});
+      ok(calls.length===25 && max<=h.POOL && h.POOL<=5, 'v329 국토부 동시 호출 '+h.POOL+'개 이하 · 25번', calls.length+' / 동시 '+max);
+      ok(r1.o.ok===true && r1.o.ymd===202503 && r1.o.failed===1 && r1.o.gu['11350'].ok===false && r1.o.gu['11350'].reason==='gateway-22' && !('d' in r1.o.gu['11350']), 'v329 실패한 구는 ok:false · 이유(빈 성공 아님)', JSON.stringify(r1.o.gu['11350']));
+      ok(JSON.stringify(r1.o.gu['11110'])==='{"ok":true,"total":2,"d":[[51000,84.9,9,"검증11110","검증동",7,2011]]}', 'v329 거래 한 건 = [금액,전용㎡,일,단지,동,층,건축년도] · 해제 거래 제외', JSON.stringify(r1.o.gu['11110']));
+      ok(r1.h['Cache-Control']==='no-store', 'v329 하나라도 실패하면 캐시 안 함');
+      bad='';calls=[];const r2=await run({ymd:'202503'});
+      ok(calls.join()==='11350' && r2.o.failed===0 && /^public, s-maxage=21600, stale-while-revalidate=86400$/.test(r2.h['Cache-Control']), 'v329 다시 부르면 실패한 구만 국토부로 · 모두 성공이면 지난 달 6시간 캐시', calls.join()+' '+r2.h['Cache-Control']);
+      const d=new Date(),cur=String(d.getFullYear()*100+d.getMonth()+1);const r3=await run({ymd:cur});
+      ok(/s-maxage=1800,/.test(r3.h['Cache-Control']), 'v329 이번 달은 30분 캐시');
+      const r4=await run({ymd:'2025'}),r5=await run({ymd:'202513',price:'90000'});
+      ok(r4.o.ok===false && r4.o.reason==='bad-param' && r5.o.reason==='bad-param' && r4.h['Cache-Control']==='no-store', 'v329 잘못된 ymd는 bad-param');
+      const src=read('api/apt-reach.js');
+      ok(!/req\.query\.(?!ymd\b)/.test(src.replace(/req\.query &&/g,'')) && /require\('\.\/apt-price\.js'\)/.test(src) && !/apis\.data\.go\.kr/.test(src), 'v329 받는 값은 ymd 하나 · 조회·해석은 apt-price.js 재사용');
+    }finally{globalThis.fetch=keep.fetch;if(keep.key===undefined)delete process.env.MOLIT_API_KEY;else process.env.MOLIT_API_KEY=keep.key;}
+  }
 }
 
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
@@ -410,13 +449,19 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   try{
     const page=await browser.newPage({viewport:{width:390,height:844}});let mode='error';const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
-    const reach328Calls=[];let reach328Fail='',reach328On=false; // v328 — 서울 25개 구 조회 모의
+    const REACH328_CODES=[...html.slice(html.indexOf('var REACH_TILES')).matchAll(/\['(11\d{3})',/g)].slice(0,25).map(m=>[m[1]]);
+    const reach328Calls=[],reach328Bulk=[];let reach328Fail='',reach328On=false,reach328Missing=false; // v328 — 서울 25개 구 조회 모의
     await page.route('**/*',async route=>{
       const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
       if(u.pathname.startsWith('/api/')){
+        const reach328Item=lawd=>({name:'검증아파트',dong:'검증동',jibun:'1',areaM2:84,amountMan:lawd==='11320'?15000:230000,buildYear:2010,floor:10,y:2026,m:10,d:20});
+        if(reach328On&&u.pathname==='/api/apt-reach'){const ymd=Number(u.searchParams.get('ymd'));reach328Bulk.push(ymd);
+          if(reach328Missing)return route.fulfill({status:404,body:''});
+          const gu={};for(const [lawd] of REACH328_CODES){const x=reach328Item(lawd);gu[lawd]=lawd===reach328Fail?{ok:false,reason:'gateway-22'}:{ok:true,total:1,d:[[x.amountMan,x.areaM2,x.d,x.name,x.dong,x.floor,x.buildYear]]};}
+          return route.fulfill({json:{ok:true,ymd,failed:reach328Fail?1:0,gu}});}
         if(reach328On&&u.pathname==='/api/apt-price'){const lawd=u.searchParams.get('lawd');reach328Calls.push(lawd);
           if(lawd===reach328Fail)return route.fulfill({json:{ok:false,reason:'gateway-22',items:[]}});
-          return route.fulfill({json:{ok:true,items:[{name:'검증아파트',dong:'검증동',jibun:'1',areaM2:84,amountMan:lawd==='11320'?15000:230000,buildYear:2010,floor:10,y:2026,m:10,d:20}],total:1}});}
+          return route.fulfill({json:{ok:true,items:[reach328Item(lawd)],total:1}});}
         const good=mode==='success'||(mode==='partial'&&u.searchParams.get('ymd')?.endsWith('10'));
         const items=good?[{name:'검증아파트',dong:'검증동',jibun:'1',areaM2:84,amountMan:23000,buildYear:2010,floor:10,y:2026,m:10,d:20}]:[];
         return route.fulfill({json:{ok:mode!=='error'&&!(mode==='partial'&&!good),items,total:items.length}});
@@ -473,24 +518,35 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       await page.evaluate(()=>window.yk208Navigate('home'));
       const priceCalls=()=>reach328Calls.length;
       ok(await page.locator('#reach328').isVisible() && await page.locator('#reach328Go').isVisible() && !(await page.locator('#reach328Body').isVisible()), 'v328 조회 전 — 버튼만 표시');
-      reach328Calls.length=0; reach328Fail='11350';
+      reach328Calls.length=0; reach328Bulk.length=0; reach328Fail='11350';
       await page.locator('#reach328Go').click();
       await page.waitForFunction(()=>document.getElementById('reach328Go').hidden);
-      ok(new Set(reach328Calls).size===25 && priceCalls()===75, 'v328 서울 25개 구 × 3개월만 조회', String(priceCalls()));
+      ok(reach328Bulk.length===3 && priceCalls()===0, 'v329 묶음 조회 3번(달마다 1번) · 구별 조회 0번', reach328Bulk.length+' / '+priceCalls());
       const r1=await page.evaluate(()=>({tiles:document.querySelectorAll('#reach328Map .reach328-tile').length,fail:document.querySelector('#reach328Map [data-reach="11350"]').className,issue:document.getElementById('reach328Issue').innerText,lead:document.getElementById('reach328Lead').innerText,sum:[...document.querySelectorAll('#reach328Map .reach328-tile:not(.is-fail) b')].reduce((s,b)=>s+Number(b.textContent),0)}));
       ok(r1.tiles===25 && /is-fail/.test(r1.fail) && /1개 구는 조회하지 못해/.test(r1.issue) && /조회된 24개 구/.test(r1.lead), 'v328 실패한 구 — 「조회 실패」 칸 · 문장은 조회된 구 수로', JSON.stringify(r1));
       ok(r1.lead.includes('모두 '+r1.sum.toLocaleString('ko-KR')+'건') || (r1.sum===0 && /이하 거래가 없어요/.test(r1.lead)), 'v328 문장의 합계 = 칸 숫자 합', JSON.stringify(r1));
-      reach328Calls.length=0; reach328Fail='';
+      reach328Calls.length=0; reach328Bulk.length=0; reach328Fail='';
       await page.locator('#reach328Retry').click();
       await page.waitForFunction(()=>document.getElementById('reach328Issue').hidden);
-      ok(priceCalls()===3 && new Set(reach328Calls).size===1, 'v328 다시 불러오기 — 실패한 구만 다시 조회', String(priceCalls()));
+      ok(reach328Bulk.length===3 && priceCalls()===0, 'v329 다시 불러오기 — 묶음으로 다시(구별 75번으로 넘어가지 않음)', reach328Bulk.length+' / '+priceCalls());
       const before=await page.evaluate(()=>S.sgg);
       await page.locator('#reach328Map [data-reach="11320"]').click();
       await page.locator('#reach328 [data-reach-switch="11320"]').click();
       await page.waitForFunction(()=>S.sgg==='11320');
       ok(before!=='11320' && await page.evaluate(()=>document.querySelector('#reach328Map .is-mine').dataset.reach==='11320' && !document.getElementById('reach328Body').hidden), 'v328 매수 지역 바꾸기 — 지역이 바뀌고 받은 결과는 유지');
       await page.evaluate(b=>{selectSearchedRegion(b);S.lockedPrice=null;showResult(true);},before);
+      // v329 — 묶음 함수가 없으면(404) 예전처럼 구마다 조회해 같은 결과.
+      reach328On=false; reach328Missing=true;
+      await page.reload(); await page.evaluate(()=>document.fonts.ready); await seed();
+      mode='success';await page.setViewportSize({width:390,height:844});await page.evaluate(()=>DEAL.cache.clear());await seed();reach328On=true;
+      await page.evaluate(()=>window.yk208Navigate('home'));
+      reach328On=true; reach328Calls.length=0; reach328Bulk.length=0;
+      await page.locator('#reach328Go').click();
+      await page.waitForFunction(()=>document.getElementById('reach328Go').hidden);
+      ok(reach328Bulk.length===3 && reach328Calls.length===75 && await page.evaluate(()=>document.querySelectorAll('#reach328Map .reach328-tile:not(.is-fail):not(.is-wait)').length===25), 'v329 묶음 함수 없음(404) → 구별 조회 75번으로 25칸 채움', reach328Bulk.length+' / '+reach328Calls.length);
+      reach328Missing=false;
     }
+
     if(process.env.YK_AXE_PATH){
       await page.addScriptTag({path:process.env.YK_AXE_PATH});
       for(const width of [320,390,1264]){
