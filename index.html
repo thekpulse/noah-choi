@@ -14127,7 +14127,9 @@ html body.yk208 #app #reach328 .reach328-note{margin:12px 0 0;font-size:12px;lin
 </style>
 <script id="v328-reach">
 /* v328 reach — 서울 25개 구 · 예상 집값 이하 실거래 건수.
-   · 누를 때만 조회합니다(구 25 × 최근 DEAL.months개월). 주소는 기존 /api/apt-price 그대로 — 금액·소득은 보내지 않습니다.
+   · 누를 때만 조회합니다. 금액·소득은 보내지 않습니다(주소에 싣는 값은 ymd · lawd 뿐).
+   · v329 — 한 달치 25개 구를 /api/apt-reach 로 **한 번에** 받습니다(최근 DEAL.months개월 = 3번). v328 은 구마다 따로 75번을 불러
+     운영에서 느렸습니다(오너 2026-11-16). 묶음 조회가 통째로 안 되는 달만 예전처럼 /api/apt-price 로 구마다 부릅니다.
    · 구마다 **그 구의 대출 기준**으로 계산한 예상 집값(dealBudgetFor)과 비교합니다.
    · 조회 실패는 0건이 아닙니다. 실패한 구는 세지 않고 「조회 실패」로 적습니다. */
 
@@ -14177,6 +14179,22 @@ function reachRank(rows){
   });
 }
 
+/* v329 — /api/apt-reach 응답(한 달 · 25개 구)을 구별 월 자료로 풉니다. 모양이 아니면 null(묶음 조회 실패 → 구마다 조회).
+   거래 한 건 = [금액(만원), 전용㎡, 일, 단지명, 법정동, 층, 건축년도]. 실패한 구는 ok:false 그대로 — 0건으로 바꾸지 않습니다. */
+function reachUnpack(j, ymd){
+  if(!j || typeof j !== 'object' || !j.gu || typeof j.gu !== 'object' || Number(j.ymd) !== Number(ymd)) return null;
+  var out = {}, y = Math.floor(ymd / 100), m = ymd % 100, any = false;
+  REACH_TILES.forEach(function(t){
+    var g = j.gu[t[0]];
+    if(!g) return;
+    any = true;
+    var ok = g.ok === true && Array.isArray(g.d);
+    out[t[0]] = { ymd:ymd, ok:ok, total:ok && g.total != null ? Number(g.total) : null,
+      items: ok ? g.d.map(function(a){ return { amountMan:a[0], areaM2:a[1], d:a[2], name:a[3], dong:a[4], floor:a[5], buildYear:a[6], y:y, m:m }; }) : [] };
+  });
+  return any ? out : null;
+}
+
 /* ── 화면 ──────────────────────────────────────────────────────────── */
 (function(){
   if(typeof document === 'undefined') return;
@@ -14185,8 +14203,8 @@ function reachRank(rows){
   var el = function(id){ return document.getElementById(id); };
   var h = function(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
   var won = function(manWon){ return formatWon(manWon * 10000).replace(/ /g, ' '); };
-  var R = { status:'idle', months:new Map(), done:0, seq:0, sel:null, all:false };
-  var TOP = 5, POOL = 5;
+  var R = { status:'idle', months:new Map(), done:0, todo:0, seq:0, sel:null, all:false };
+  var TOP = 5, POOL = 6;
   var nMonths = function(){ return (typeof DEAL === 'object' && DEAL && DEAL.months) || 3; };
   var guName = function(code){ return sggName(code) || ''; };
 
@@ -14199,41 +14217,65 @@ function reachRank(rows){
         return { ymd:ymd, ok:ok, items:ok ? (Array.isArray(j) ? j : j.items) : [], total:ok && j.total != null ? Number(j.total) : null };
       });
   }
-  function fetchGu(code){
-    return Promise.all(recentYmd(nMonths()).map(function(ymd){ return fetchMonth(code, ymd); }));
+  /* v329 — 한 달치 25개 구 묶음. { data } 또는 { missing:true }(함수가 아직 없음 · 404) 또는 { failed:true }. */
+  function fetchBulk(ymd){
+    return fetch('/api/apt-reach?ymd=' + ymd)
+      .then(function(r){ if(r.status === 404) return { missing:true }; return r.ok ? r.json().then(function(j){ var d = reachUnpack(j, ymd); return d ? { data:d } : { failed:true }; }) : { failed:true }; })
+      .catch(function(){ return { failed:true }; });
   }
-  /* 실패했거나 아직 안 받은 구만 부릅니다. 한 번에 POOL 개 구씩. */
-  function scan(){
-    var my = ++R.seq;
-    var todo = REACH_TILES.map(function(t){ return t[0]; }).filter(function(c){
-      var m = R.months.get(c); return !m || m.some(function(x){ return !x.ok; });
-    });
-    R.status = 'loading'; R.done = REACH_TILES.length - todo.length; paint();
-    var next = 0;
-    function worker(){
-      if(my !== R.seq || next >= todo.length) return Promise.resolve();
-      var code = todo[next++];
-      return fetchGu(code).then(function(ms){
-        if(my !== R.seq) return;
-        R.months.set(code, ms); R.done++; paint();
-        return worker();
-      });
-    }
-    var ws = []; for(var i = 0; i < POOL; i++) ws.push(worker());
-    return Promise.all(ws).then(function(){
+  function monthOf(code, ymd){
+    var ms = R.months.get(code) || [];
+    for(var i = 0; i < ms.length; i++) if(ms[i].ymd === ymd) return ms[i];
+    return null;
+  }
+  function setMonth(code, m, ymds){
+    var ms = (R.months.get(code) || []).filter(function(x){ return x.ymd !== m.ymd && ymds.indexOf(x.ymd) >= 0; });
+    ms.push(m); R.months.set(code, ms);
+  }
+  /* 아직 못 받았거나 실패한 구가 있는 달만 묶음으로 다시 부릅니다(처음 = 3번). 받은 구는 서버·CDN 캐시에서 바로 옵니다.
+     구마다 따로 부르는 길(/api/apt-price)은 묶음 함수가 **없을 때(404)만** 씁니다 — 느리다고 75번으로 넘어가면 더 몰립니다. */
+  function scan(retry){
+    var my = ++R.seq, ymds = recentYmd(nMonths()), codes = REACH_TILES.map(function(t){ return t[0]; });
+    var need = function(code, ymd){ var m = monthOf(code, ymd); return !m || !m.ok; };
+    R.status = 'loading'; R.done = 0; R.todo = 0; paint();
+    var bulk = ymds.filter(function(ymd){ return codes.some(function(c){ return need(c, ymd); }); });
+    return Promise.all(bulk.map(fetchBulk)).then(function(rs){
       if(my !== R.seq) return;
+      var one = [];   /* 구마다 따로 부를 [구, 달] — 묶음 함수가 없는 달만 */
+      rs.forEach(function(r, i){
+        if(r.data) codes.forEach(function(c){ if(r.data[c] && (r.data[c].ok || need(c, bulk[i]))) setMonth(c, r.data[c], ymds); });
+        else if(r.missing) codes.forEach(function(c){ if(need(c, bulk[i])) one.push([c, bulk[i]]); });
+      });
+      R.todo = one.length; paint();
+      var next = 0;
+      function worker(){
+        if(my !== R.seq || next >= one.length) return Promise.resolve();
+        var job = one[next++];
+        return fetchMonth(job[0], job[1]).then(function(m){
+          if(my !== R.seq) return;
+          setMonth(job[0], m, ymds); R.done++; paint();
+          return worker();
+        });
+      }
+      var ws = []; for(var k = 0; k < POOL; k++) ws.push(worker());
+      return Promise.all(ws);
+    }).then(function(){
+      if(my !== R.seq) return;
+      /* 한 번도 답을 못 받은 달은 실패로 채워 둡니다(빈 달로 두면 「거래 없음」으로 읽힘) */
+      codes.forEach(function(c){ ymds.forEach(function(ymd){ if(!monthOf(c, ymd)) setMonth(c, { ymd:ymd, ok:false, items:[], total:null }, ymds); }); });
       R.status = 'done';
       var rows = build(), hit = rows.filter(function(r){ return r.st.under > 0; }).length;
       if(R.sel == null){ var top = reachRank(rows)[0]; R.sel = top && top.st.under > 0 ? top.code : null; }
       /* 사용 로그 — 금액 없이 범주만 */
       track('reach_scan', { hit: hit === 0 ? 'none' : hit <= 5 ? '1-5' : hit <= 15 ? '6-15' : '16-25',
-        failed: rows.some(function(r){ return r.st.state === 'failed'; }) });
+        failed: rows.some(function(r){ return r.st.state === 'failed'; }), retry: !!retry });
       paint();
     });
   }
   function build(){
     return REACH_TILES.map(function(t, i){
       var ms = R.months.get(t[0]), b = dealBudgetFor(t[0]);
+      if(ms && R.status === 'loading' && ms.length < nMonths()) ms = null;   /* 달이 다 모일 때까지는 「조회 중」 */
       return { code:t[0], short:t[1], col:t[2], row:t[3], i:i, budget:b, loaded:!!ms,
         st: ms ? reachStat(ms, b) : { state:'wait', total:0, under:0, recent:[] } };
     });
@@ -14309,7 +14351,7 @@ function reachRank(rows){
     body.hidden = false;
     if(R.status === 'loading'){
       lead.textContent = '구별 실거래를 불러오고 있어요.';
-      go.hidden = false; go.disabled = true; el('reach328GoText').textContent = '조회 중 · ' + R.done + ' / ' + all + '개 구';
+      go.hidden = false; go.disabled = true; el('reach328GoText').textContent = R.todo ? '조회 중 · ' + R.done + ' / ' + R.todo : '조회 중';
       el('reach328Pick').hidden = true; el('reach328List').innerHTML = ''; el('reach328More').hidden = true;
       el('reach328Issue').hidden = true; el('reach328Note').textContent = '';
       return;
@@ -14351,8 +14393,8 @@ function reachRank(rows){
   box.addEventListener('click', function(e){
     var t = e.target.closest ? e.target.closest('button') : null;
     if(!t || !box.contains(t)) return;
-    if(t.id === 'reach328Go'){ if(R.status !== 'loading'){ track('reach_open', {}); scan(); } return; }
-    if(t.id === 'reach328Retry'){ if(R.status !== 'loading') scan(); return; }
+    if(t.id === 'reach328Go'){ if(R.status !== 'loading'){ track('reach_open', {}); scan(false); } return; }
+    if(t.id === 'reach328Retry'){ if(R.status !== 'loading') scan(true); return; }
     if(t.id === 'reach328More'){ R.all = !R.all; paint(); return; }
     if(t.dataset.reachSwitch){
       var code = t.dataset.reachSwitch;
