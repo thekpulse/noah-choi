@@ -4216,6 +4216,25 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
         <p class="mt" id="plotDmt"></p>
       </div>
     </section>
+    <!-- v328 — 서울 25개 구에서 예상 집값 이하 실거래를 구별로 셈(오너 2026-11-16 「권장하는 방향대로」). 누를 때만 조회. -->
+<section class="reach328" id="reach328" aria-labelledby="reach328Title" hidden>
+      <h2 id="reach328Title">서울 25개 구 실거래</h2>
+      <p class="reach328-lead" id="reach328Lead" aria-live="polite"></p>
+      <button class="reach328-go" id="reach328Go" type="button"><span id="reach328GoText">서울 25개 구 살펴보기</span></button>
+      <div class="reach328-body" id="reach328Body" hidden>
+        <div>
+          <div class="reach328-map" id="reach328Map" role="group" aria-label="서울 구별 예상 집값 이하 거래 건수"></div>
+          <p class="reach328-key" id="reach328Key"></p>
+        </div>
+        <div>
+          <div class="reach328-pick" id="reach328Pick" aria-live="polite" hidden></div>
+          <ol class="reach328-list" id="reach328List"></ol>
+          <button class="reach328-more" id="reach328More" type="button" aria-expanded="false" hidden></button>
+        </div>
+        <p class="reach328-issue reach328-full" id="reach328Issue" hidden></p>
+        <p class="reach328-note reach328-full" id="reach328Note"></p>
+      </div>
+    </section>
     <div class="paywrap" id="payTile">
       <p class="ans-k"><span class="section-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2"/></svg></span>주택담보대출 월 상환액</p>
       <div class="ans-row">
@@ -14052,5 +14071,308 @@ html body.yk208 #app #dealQueryStatus .query-details321[open]>summary::after{con
 html body.yk208 #app #dealQueryStatus .query-details321>p{margin:4px 0 12px}
 html body.yk208 #app #dealQueryStatus .tr-retry{min-height:44px;min-width:44px}
 </style>
+<style id="v328-reach">
+/* v328 — 서울 25개 구 · 예상 집값 이하 실거래. 글자 12·13·14·16 · 모서리 10·14·20 · 행간 1.3·1.6 (스케일 안).
+   색은 파랑 한 계열(옅음→짙음 = 건수 적음→많음). 건수는 칸마다 숫자로도 적어 색만으로 읽지 않게 함. */
+html body.yk208 #app #viewAnswer>#reach328{margin:0;padding:19px;background:#fff;border:1px solid #D6DFEC;border-radius:20px;color:var(--yk-ink);min-width:0}
+html body.yk208 #app #reach328 h2{margin:0;font-size:16px;font-weight:600;line-height:1.3;letter-spacing:0;color:var(--yk-ink)}
+html body.yk208 #app #reach328 .reach328-lead{margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--yk-sub);word-break:keep-all}
+html body.yk208 #app #reach328 .reach328-lead b{color:var(--yk-ink);font-weight:600}
+html body.yk208 #app #reach328 .reach328-go{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin:16px 0 0;padding:0 16px;border:1px solid #2458FF;border-radius:14px;background:#2458FF;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+html body.yk208 #app #reach328 .reach328-go[disabled]{background:#EDF2FF;border-color:#C7D4F4;color:#1848D6;cursor:default}
+html body.yk208 #app #reach328 :is(.reach328-go:not([disabled]),.reach328-switch)::after{content:'';flex:none;width:7px;height:7px;margin-left:12px;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg)}
+html body.yk208 #app #reach328 .reach328-map{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:16px 0 0}
+html body.yk208 #app #reach328 .reach328-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:48px;padding:4px 0;border:1px solid transparent;border-radius:10px;background:#F3F5F8;color:#516077;font:inherit;line-height:1.3;cursor:pointer}
+html body.yk208 #app #reach328 .reach328-tile span{font-size:12px;font-weight:500;white-space:nowrap}
+html body.yk208 #app #reach328 .reach328-tile b{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+html body.yk208 #app #reach328 .reach328-tile.l1{background:#E3EAFF;color:#0E1B45}
+html body.yk208 #app #reach328 .reach328-tile.l2{background:#BCCBFF;color:#0E1B45}
+html body.yk208 #app #reach328 .reach328-tile.l3{background:#7F9BFF;color:#0E1B45}
+html body.yk208 #app #reach328 .reach328-tile.l4{background:#1F4FE6;color:#fff}
+html body.yk208 #app #reach328 .reach328-tile.is-wait{background:#fff;border-color:#E3E8F1;color:#8A96AA;cursor:default}
+html body.yk208 #app #reach328 .reach328-tile.is-fail{background:#fff;border:1px dashed #B9C5D8;color:#607089}
+html body.yk208 #app #reach328 .reach328-tile.is-mine span::after{content:'';display:inline-block;width:5px;height:5px;margin-left:3px;border-radius:50%;background:currentColor;vertical-align:middle}
+html body.yk208 #app #reach328 .reach328-tile[aria-pressed="true"]{outline:2px solid #0E1B45;outline-offset:1px}
+html body.yk208 #app #reach328 .reach328-tile:focus-visible,html body.yk208 #app #reach328 :is(.reach328-go,.reach328-row,.reach328-more,.reach328-switch,.reach328-retry):focus-visible{outline:2px solid #2458FF;outline-offset:2px}
+html body.yk208 #app #reach328 .reach328-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:10px 0 0;font-size:12px;line-height:1.6;color:var(--yk-sub)}
+html body.yk208 #app #reach328 .reach328-key i{display:inline-block;width:12px;height:12px;margin-right:2px;border-radius:3px;vertical-align:-2px}
+html body.yk208 #app #reach328 .reach328-key .sc{display:inline-flex;align-items:center;gap:2px}
+html body.yk208 #app #reach328 .reach328-pick{margin:16px 0 0;padding:14px 16px;border:1px solid #D6DFEC;border-radius:14px;background:#F8FAFD}
+html body.yk208 #app #reach328 .reach328-pick h3{margin:0;font-size:16px;font-weight:600;line-height:1.3;color:var(--yk-ink)}
+html body.yk208 #app #reach328 .reach328-pick p{margin:6px 0 0;font-size:14px;line-height:1.6;color:var(--yk-sub);word-break:keep-all}
+html body.yk208 #app #reach328 .reach328-pick p b{color:var(--yk-ink);font-weight:600}
+html body.yk208 #app #reach328 .reach328-deals{margin:10px 0 0;padding:0;list-style:none;border-top:1px solid #E3E8F1}
+html body.yk208 #app #reach328 .reach328-deals li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #E3E8F1;font-size:13px;line-height:1.6;color:var(--yk-sub)}
+html body.yk208 #app #reach328 .reach328-deals li span{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere}
+html body.yk208 #app #reach328 .reach328-deals li em{font-style:normal;font-weight:500;color:var(--yk-ink)}
+html body.yk208 #app #reach328 .reach328-deals li small{font-size:12px}
+html body.yk208 #app #reach328 .reach328-deals li b{flex:none;color:var(--yk-ink);font-weight:600;font-variant-numeric:tabular-nums}
+html body.yk208 #app #reach328 .reach328-switch{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin:12px 0 0;padding:0 14px;border:1px solid #C7D4F4;border-radius:14px;background:#fff;color:#1848D6;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+html body.yk208 #app #reach328 .reach328-list{margin:16px 0 0;padding:0;list-style:none}
+html body.yk208 #app #reach328 .reach328-row{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:44px;padding:0;border:0;border-top:1px solid #E3E8F1;background:none;color:var(--yk-ink);font:inherit;font-size:14px;line-height:1.3;text-align:left;cursor:pointer}
+html body.yk208 #app #reach328 .reach328-row .nm{font-weight:600}
+html body.yk208 #app #reach328 .reach328-row .bar{height:8px;border-radius:4px;background:#EEF1F6;overflow:hidden}
+html body.yk208 #app #reach328 .reach328-row .bar i{display:block;height:100%;border-radius:4px;background:#2458FF}
+html body.yk208 #app #reach328 .reach328-row .ct{font-size:13px;color:var(--yk-sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+html body.yk208 #app #reach328 .reach328-row .ct b{color:var(--yk-ink);font-weight:600}
+html body.yk208 #app #reach328 .reach328-row[aria-pressed="true"] .nm{color:#1848D6}
+html body.yk208 #app #reach328 :is(.reach328-more,.reach328-retry){min-height:44px;margin:4px 0 0;padding:0 2px;border:0;background:none;color:#1848D6;font:inherit;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+html body.yk208 #app #reach328 .reach328-issue{margin:10px 0 0;font-size:13px;line-height:1.6;color:var(--yk-sub)}
+html body.yk208 #app #reach328 .reach328-note{margin:12px 0 0;font-size:12px;line-height:1.6;color:var(--yk-sub);word-break:keep-all}
+@media(min-width:960px){
+ html body.yk208 #app #viewAnswer>#reach328{grid-column:1 / -1!important}
+ html body.yk208 #app #reach328 .reach328-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 32px;align-items:start}
+ html body.yk208 #app #reach328 .reach328-body>.reach328-full{grid-column:1 / -1}
+}
+</style>
+<script id="v328-reach">
+/* v328 reach — 서울 25개 구 · 예상 집값 이하 실거래 건수.
+   · 누를 때만 조회합니다(구 25 × 최근 DEAL.months개월). 주소는 기존 /api/apt-price 그대로 — 금액·소득은 보내지 않습니다.
+   · 구마다 **그 구의 대출 기준**으로 계산한 예상 집값(dealBudgetFor)과 비교합니다.
+   · 조회 실패는 0건이 아닙니다. 실패한 구는 세지 않고 「조회 실패」로 적습니다. */
+
+/* ── 순수 함수(검사가 vm 으로 직접 실행) ─────────────────────────────── */
+/* [법정동코드, 칸 이름, 열(1~6), 행(1~6)] — 대략적인 위치에 놓은 격자입니다(실제 경계 아님). */
+var REACH_TILES = [
+  ['11320','도봉',4,1],['11350','노원',5,1],
+  ['11380','은평',2,2],['11110','종로',3,2],['11305','강북',4,2],['11260','중랑',5,2],
+  ['11410','서대문',2,3],['11140','중구',3,3],['11290','성북',4,3],['11230','동대문',5,3],
+  ['11500','강서',1,4],['11440','마포',2,4],['11170','용산',3,4],['11200','성동',4,4],['11215','광진',5,4],['11740','강동',6,4],
+  ['11470','양천',1,5],['11560','영등포',2,5],['11590','동작',3,5],['11650','서초',4,5],['11680','강남',5,5],['11710','송파',6,5],
+  ['11530','구로',1,6],['11545','금천',2,6],['11620','관악',3,6]
+];
+var REACH_PAGE = 1000;   /* api/apt-price.js 의 numOfRows. 총건수가 이보다 크면 그 달은 일부만 받은 것 */
+/* months: [{ymd, ok, items, total}]. budgetMan: 그 구 기준 예상 집값(만원). */
+function reachStat(months, budgetMan){
+  var okMonths = months.filter(function(m){ return m.ok; });
+  var st = { state: !okMonths.length ? 'failed' : okMonths.length < months.length ? 'partial' : 'ok',
+    capped: okMonths.some(function(m){ return Number(m.total) > REACH_PAGE; }),
+    total:0, under:0, min:null, underMin:null, underMax:null, recent:[] };
+  if(st.state === 'failed' || !(budgetMan > 0)) return st;
+  var under = [];
+  okMonths.forEach(function(m){ (m.items || []).forEach(function(x){
+    var a = Number(x.amountMan);
+    if(!(a > 0)) return;
+    st.total++;
+    if(st.min == null || a < st.min) st.min = a;
+    if(a <= budgetMan){ st.under++; under.push(x);
+      if(st.underMin == null || a < st.underMin) st.underMin = a;
+      if(st.underMax == null || a > st.underMax) st.underMax = a; }
+  }); });
+  var when = function(n){ return (n.y || 0) * 10000 + (n.m || 0) * 100 + (n.d || 0); };
+  st.recent = under.sort(function(a, b){ return (when(b) - when(a)) || (b.amountMan - a.amountMan); }).slice(0, 3);
+  return st;
+}
+/* 건수 → 색 단계(0~4). 0건은 0, 그 밖은 가장 많은 구 대비 비율로 넷으로 나눕니다. */
+function reachLevel(under, max){
+  if(!(under > 0) || !(max > 0)) return 0;
+  var r = under / max;
+  return r >= 0.75 ? 4 : r >= 0.5 ? 3 : r >= 0.25 ? 2 : 1;
+}
+/* 순위: 이하 건수 많은 순 → 전체 건수 많은 순 → 격자 순서. 실패한 구는 맨 뒤. */
+function reachRank(rows){
+  return rows.slice().sort(function(a, b){
+    var fa = a.st.state === 'failed' ? 1 : 0, fb = b.st.state === 'failed' ? 1 : 0;
+    return (fa - fb) || (b.st.under - a.st.under) || (b.st.total - a.st.total) || (a.i - b.i);
+  });
+}
+
+/* ── 화면 ──────────────────────────────────────────────────────────── */
+(function(){
+  if(typeof document === 'undefined') return;
+  var box = document.getElementById('reach328');
+  if(!box || typeof showResult !== 'function' || typeof dealBudgetFor !== 'function') return;
+  var el = function(id){ return document.getElementById(id); };
+  var h = function(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  var won = function(manWon){ return formatWon(manWon * 10000).replace(/ /g, ' '); };
+  var R = { status:'idle', months:new Map(), done:0, seq:0, sel:null, all:false };
+  var TOP = 5, POOL = 5;
+  var nMonths = function(){ return (typeof DEAL === 'object' && DEAL && DEAL.months) || 3; };
+  var guName = function(code){ return sggName(code) || ''; };
+
+  function fetchMonth(code, ymd){
+    return fetch('/api/apt-price?lawd=' + encodeURIComponent(code) + '&ymd=' + ymd)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        var ok = !!j && j.ok !== false && Array.isArray(j.items || j);
+        return { ymd:ymd, ok:ok, items:ok ? (Array.isArray(j) ? j : j.items) : [], total:ok && j.total != null ? Number(j.total) : null };
+      });
+  }
+  function fetchGu(code){
+    return Promise.all(recentYmd(nMonths()).map(function(ymd){ return fetchMonth(code, ymd); }));
+  }
+  /* 실패했거나 아직 안 받은 구만 부릅니다. 한 번에 POOL 개 구씩. */
+  function scan(){
+    var my = ++R.seq;
+    var todo = REACH_TILES.map(function(t){ return t[0]; }).filter(function(c){
+      var m = R.months.get(c); return !m || m.some(function(x){ return !x.ok; });
+    });
+    R.status = 'loading'; R.done = REACH_TILES.length - todo.length; paint();
+    var next = 0;
+    function worker(){
+      if(my !== R.seq || next >= todo.length) return Promise.resolve();
+      var code = todo[next++];
+      return fetchGu(code).then(function(ms){
+        if(my !== R.seq) return;
+        R.months.set(code, ms); R.done++; paint();
+        return worker();
+      });
+    }
+    var ws = []; for(var i = 0; i < POOL; i++) ws.push(worker());
+    return Promise.all(ws).then(function(){
+      if(my !== R.seq) return;
+      R.status = 'done';
+      var rows = build(), hit = rows.filter(function(r){ return r.st.under > 0; }).length;
+      if(R.sel == null){ var top = reachRank(rows)[0]; R.sel = top && top.st.under > 0 ? top.code : null; }
+      /* 사용 로그 — 금액 없이 범주만 */
+      track('reach_scan', { hit: hit === 0 ? 'none' : hit <= 5 ? '1-5' : hit <= 15 ? '6-15' : '16-25',
+        failed: rows.some(function(r){ return r.st.state === 'failed'; }) });
+      paint();
+    });
+  }
+  function build(){
+    return REACH_TILES.map(function(t, i){
+      var ms = R.months.get(t[0]), b = dealBudgetFor(t[0]);
+      return { code:t[0], short:t[1], col:t[2], row:t[3], i:i, budget:b, loaded:!!ms,
+        st: ms ? reachStat(ms, b) : { state:'wait', total:0, under:0, recent:[] } };
+    });
+  }
+  function visible(){
+    if(!(typeof LASTVIEW === 'object' && LASTVIEW && LASTVIEW.price > 0) || !S.sgg) return false;
+    var sido = sidoOfCode(S.sgg);
+    return sido === SEOUL || METRO.indexOf(sido) >= 0;
+  }
+  function budgetPhrase(rows){
+    var bs = rows.map(function(r){ return r.budget; }).filter(function(b){ return b > 0; });
+    if(!bs.length) return null;
+    var same = bs.every(function(b){ return b === bs[0]; });
+    if(!same) return { same:false, label:'그 구 기준 예상 집값', text:'그 구 기준 예상 집값' };
+    /* 매수 지역과 대출 기준이 다르면(예: 경기 비규제 지역) 서울 기준으로 다시 계산한 값임을 적습니다 */
+    var mine = typeof sameRules === 'function' && sameRules(rows[0].code), label = mine ? '예상 집값' : '서울 기준 예상 집값';
+    return { same:true, label:label, text:label + ' ' + won(bs[0]) };
+  }
+  function tileHtml(r, max, label){
+    var st = r.st, mine = typeof lawdCodesOf === 'function' ? lawdCodesOf(S.sgg).indexOf(r.code) >= 0 : S.sgg === r.code;
+    var cls = 'reach328-tile', val = '', say = '';
+    if(st.state === 'wait'){ cls += ' is-wait'; val = '·'; say = '조회 중'; }
+    else if(st.state === 'failed'){ cls += ' is-fail'; val = '–'; say = '조회 실패'; }
+    else { cls += ' l' + reachLevel(st.under, max); val = String(st.under); say = '건 · ' + label + ' 이하 · 전체 ' + st.total + '건' + (st.state === 'partial' ? ' · 일부 달만 조회' : ''); }
+    if(mine){ cls += ' is-mine'; say += ' · 지금 매수 지역'; }
+    /* 읽히는 이름 = 보이는 글자(칸 이름 · 숫자) + 숨긴 설명. aria-label 로 덮지 않습니다(보이는 글자와 어긋나지 않게). */
+    return '<button type="button" class="' + cls + '" style="grid-column:' + r.col + ';grid-row:' + r.row + '" data-reach="' + r.code + '"'
+      + ' aria-pressed="' + (R.sel === r.code) + '"' + (st.state === 'wait' ? ' disabled' : '') + '>'
+      + '<span>' + h(r.short) + '</span><b>' + val + '</b><em class="sr-only">' + h(say) + '</em></button>';
+  }
+  function pickHtml(r, phrase){
+    var st = r.st, name = guName(r.code), out = '<h3>' + h(name) + '</h3>';
+    if(st.state === 'failed') return out + '<p>실거래를 불러오지 못했어요. 거래가 없다는 뜻이 아니에요.</p>';
+    var basis = phrase && !phrase.same && r.budget > 0 ? ' (' + won(r.budget) + ')' : '';
+    out += '<p>' + h(phrase ? phrase.label : '예상 집값') + ' 이하 <b>' + st.under + '건</b> · 전체 ' + st.total + '건' + basis + '</p>';
+    if(st.under > 0){
+      out += '<p>이하 거래 가격 ' + (st.underMin === st.underMax ? won(st.underMin) : won(st.underMin) + ' ~ ' + won(st.underMax)) + '</p>';
+      out += '<ul class="reach328-deals" aria-label="최근 이하 거래">' + st.recent.map(function(x){
+        var meta = [x.dong, x.areaM2 != null ? '전용 ' + x.areaM2 + '㎡' : '', x.y && x.m ? x.y + '.' + String(x.m).padStart(2, '0') + (x.d ? '.' + String(x.d).padStart(2, '0') : '') : ''].filter(Boolean).join(' · ');
+        return '<li><span><em>' + h(x.name) + '</em>' + (meta ? '<small>' + h(meta) + '</small>' : '') + '</span><b>' + won(Number(x.amountMan)) + '</b></li>';
+      }).join('') + '</ul>';
+    } else if(st.min != null && r.budget > 0){
+      out += '<p>가장 낮은 거래 ' + won(st.min) + ' · ' + h(phrase ? phrase.label : '예상 집값') + '보다 ' + won(st.min - r.budget) + ' 높음</p>';
+    } else if(!st.total){
+      out += '<p>최근 ' + nMonths() + '개월 거래가 없어요.</p>';
+    }
+    if(st.state === 'partial') out += '<p>일부 달은 조회하지 못해 빠졌어요.</p>';
+    if(st.capped) out += '<p>거래가 많은 달은 1,000건까지만 조회돼요.</p>';
+    var mine = typeof lawdCodesOf === 'function' ? lawdCodesOf(S.sgg).indexOf(r.code) >= 0 : S.sgg === r.code;
+    out += mine ? '<p>지금 고른 매수 지역이에요.</p>'
+      : '<button type="button" class="reach328-switch" data-reach-switch="' + r.code + '">매수 지역을 ' + h(name) + '로 바꾸기</button>';
+    return out;
+  }
+  function paint(){
+    var show = visible();
+    box.hidden = !show;
+    if(!show) return;
+    var go = el('reach328Go'), lead = el('reach328Lead'), body = el('reach328Body');
+    var n = nMonths(), all = REACH_TILES.length;
+    if(R.status === 'idle'){
+      var p0 = budgetPhrase(build());
+      lead.textContent = '서울 ' + all + '개 구의 최근 ' + n + '개월 실거래를 ' + (p0 && p0.label !== '예상 집값' ? p0.text + '과' : '내 예상 집값과') + ' 비교해 구별로 세어요.';
+      go.hidden = false; go.disabled = false; el('reach328GoText').textContent = '서울 ' + all + '개 구 살펴보기';
+      body.hidden = true; return;
+    }
+    var rows = build(), phrase = budgetPhrase(rows);
+    var loaded = rows.filter(function(r){ return r.st.state !== 'wait' && r.st.state !== 'failed'; });
+    var max = loaded.reduce(function(m, r){ return Math.max(m, r.st.under); }, 0), lab = phrase ? phrase.label : '예상 집값';
+    el('reach328Map').innerHTML = rows.map(function(r){ return tileHtml(r, max, lab); }).join('');
+    el('reach328Key').innerHTML = '<span>숫자 = ' + h(lab) + ' 이하 거래 건수</span>'
+      + '<span class="sc" aria-hidden="true">적음 <i style="background:#E3EAFF"></i><i style="background:#BCCBFF"></i><i style="background:#7F9BFF"></i><i style="background:#1F4FE6"></i> 많음</span>'
+      + '<span>● 지금 매수 지역</span>';
+    body.hidden = false;
+    if(R.status === 'loading'){
+      lead.textContent = '구별 실거래를 불러오고 있어요.';
+      go.hidden = false; go.disabled = true; el('reach328GoText').textContent = '조회 중 · ' + R.done + ' / ' + all + '개 구';
+      el('reach328Pick').hidden = true; el('reach328List').innerHTML = ''; el('reach328More').hidden = true;
+      el('reach328Issue').hidden = true; el('reach328Note').textContent = '';
+      return;
+    }
+    go.hidden = true;
+    var hit = loaded.filter(function(r){ return r.st.under > 0; });
+    var sum = hit.reduce(function(s, r){ return s + r.st.under; }, 0);
+    var failed = rows.filter(function(r){ return r.st.state === 'failed'; }), partial = rows.filter(function(r){ return r.st.state === 'partial'; });
+    var scope = failed.length ? '조회된 ' + loaded.length + '개 구' : '서울 ' + all + '개 구';
+    var ptxt = phrase ? phrase.text : '예상 집값';
+    if(!loaded.length) lead.textContent = '실거래를 불러오지 못했어요.';
+    else if(!hit.length) lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + '에 ' + h(ptxt) + ' 이하 거래가 없어요.';
+    else lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + ' 가운데 ' + h(ptxt) + ' 이하 거래가 있는 구는 <b>' + hit.length + '곳</b>, 모두 <b>' + sum.toLocaleString('ko-KR') + '건</b>이에요.';
+
+    var ranked = reachRank(rows), list = R.all ? ranked : ranked.filter(function(r){ return r.st.under > 0; }).slice(0, TOP);
+    el('reach328List').innerHTML = list.map(function(r){
+      var st = r.st, w = max > 0 ? Math.max(st.under > 0 ? 3 : 0, Math.round(st.under / max * 100)) : 0;
+      var ct = st.state === 'failed' ? '조회 실패' : '<b>' + st.under + '건</b> / ' + st.total + '건';
+      return '<li><button type="button" class="reach328-row" data-reach="' + r.code + '" aria-pressed="' + (R.sel === r.code) + '">'
+        + '<span class="nm">' + h(guName(r.code)) + '</span><span class="bar" aria-hidden="true"><i style="width:' + w + '%"></i></span><span class="ct">' + ct + '</span></button></li>';
+    }).join('');
+    var more = el('reach328More');
+    more.hidden = !loaded.length; more.setAttribute('aria-expanded', String(R.all));
+    more.textContent = R.all ? '접기' : all + '개 구 모두 보기';
+
+    var pick = el('reach328Pick'), sel = rows.filter(function(r){ return r.code === R.sel; })[0];
+    pick.hidden = !sel; pick.innerHTML = sel ? pickHtml(sel, phrase) : '';
+
+    var issue = el('reach328Issue'), msg = [];
+    if(failed.length) msg.push(failed.length + '개 구는 조회하지 못해 빠졌어요.');
+    if(partial.length) msg.push(partial.length + '개 구는 일부 달만 조회됐어요.');
+    issue.hidden = !msg.length;
+    issue.innerHTML = msg.length ? h(msg.join(' ')) + ' <button type="button" class="reach328-retry" id="reach328Retry">다시 불러오기</button>' : '';
+    el('reach328Note').innerHTML = '※ 국토교통부 실거래 기준(해제 거래 제외) · 면적·연식 구분 없이 센 건수예요.'
+      + (phrase && !phrase.same ? '<br>※ 구마다 그 지역 대출 기준으로 계산한 예상 집값과 비교했어요.' : '')
+      + '<br>※ 칸 배치는 대략적인 위치예요.';
+  }
+
+  box.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('button') : null;
+    if(!t || !box.contains(t)) return;
+    if(t.id === 'reach328Go'){ if(R.status !== 'loading'){ track('reach_open', {}); scan(); } return; }
+    if(t.id === 'reach328Retry'){ if(R.status !== 'loading') scan(); return; }
+    if(t.id === 'reach328More'){ R.all = !R.all; paint(); return; }
+    if(t.dataset.reachSwitch){
+      var code = t.dataset.reachSwitch;
+      if(typeof selectSearchedRegion !== 'function' || !selectSearchedRegion(code)) return;
+      track('reach_region_switch', {});
+      S.fromResult = false; S.priceOverride = null; S.lockedPrice = null; S.loanCut = 0;
+      R.sel = code; showResult(); return;
+    }
+    if(t.dataset.reach && R.status === 'done'){ R.sel = t.dataset.reach; paint(); }
+  });
+
+  /* 결과를 다시 낼 때마다(조건·지역이 바뀌면 예상 집값도 바뀜) 받은 거래로 다시 셉니다. 다시 부르지 않습니다. */
+  var original = showResult;
+  showResult = function(){
+    var r = original.apply(this, arguments);
+    try{ paint(); }catch(e){}
+    return r;
+  };
+  try{ paint(); }catch(e){}
+})();
+</script>
 </body>
 </html>
