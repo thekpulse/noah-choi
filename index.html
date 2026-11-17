@@ -7890,8 +7890,8 @@ async function saveImage(){
     if(typeof html2canvas!=='function') throw Error('Image renderer unavailable');
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
     /* v336 — body 바로 아래 것 가운데 그림 카드가 든 상자와 스타일만 베낍니다(계산기 본문 · 지도 · 시트는 건너뜀). 그림은 같고 시간만 줄어듭니다. */
-    const keep336=$('reportCard').closest('.reportwrap')||$('reportCard');
-    const canvas=await html2canvas($('reportCard'),{backgroundColor:null,scale:3,useCORS:true,ignoreElements:n=>n.parentElement===document.body&&n!==keep336&&!/^(STYLE|LINK)$/.test(n.tagName)});
+    /* v339 — 그리기는 ykCardCanvas(배율 2.5 · 미리 만든 그림이 있으면 그대로 씀 · 카드와 스타일만 베낌은 v336 그대로) */
+    const canvas=await ykCardCanvas($('reportCard'),'full');
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob) throw Error('Empty image');
     const file=new File([blob],'영끌계산기-내집마련-계산결과.png',{type:'image/png'});
@@ -9725,8 +9725,9 @@ window.addEventListener('resize',measure);measure();})();
 
   let MAP_TOKEN = 0;
   function mapWanted(){
-    const key = (document.querySelector('meta[name="naver-map-keyid"]')?.content || '').trim();
-    return !!key && !window.__ykMapFailed;
+    /* v340 — 홈 「내 예산과 실거래 비교」의 작은 지도를 그리지 않습니다. 지도 탭의 큰 지도와 같은 거래를 두 번 보여 줬고(168px),
+       「실거래 목록 보기」가 지도 탭으로 갑니다. 지도가 없으면 목록의 번호(지도 핀과 짝)도 붙지 않습니다. 지도 탭은 그대로. */
+    return false;
   }
   function dropMap(){
     const m = $h('heroDealsMap'); if(m) m.remove();
@@ -14500,18 +14501,15 @@ function reachUnpack(j, ymd){
     };
     var wait = function(p, ms){ return Promise.race([p, new Promise(function(r){ setTimeout(r, ms); })]); };
     Promise.resolve().then(function(){
-      renderReport(LASTVIEW); card.classList.add('is-map335');
+      renderReport(LASTVIEW);
       return ensureHtml2canvas();
     }).then(function(){
       if(typeof html2canvas !== 'function') throw Object.assign(new Error('renderer'), { name:'그림 도구를 불러오지 못함' });
       return document.fonts && document.fonts.ready ? wait(document.fonts.ready, 3000) : null;   /* 글꼴을 3초 넘게 기다리지 않음 */
     }).then(function(){
-      var keep = card.closest('.reportwrap') || card;
-      return html2canvas(card, { backgroundColor:null, scale:3, useCORS:true,
-        /* body 바로 아래 것 가운데 그림 카드가 든 상자와 스타일만 베낍니다 */
-        ignoreElements:function(n){ return n.parentElement === document.body && n !== keep && !/^(STYLE|LINK)$/.test(n.tagName); } });
+      /* v339 — ykCardCanvas: 지도 전용 표시를 붙여 그리고 떼며, 미리 만든 그림이 있으면 그대로 씀(배율 2.5) */
+      return typeof ykCardCanvas === 'function' ? ykCardCanvas(card, 'map') : Promise.reject(Object.assign(new Error('renderer'), { name:'그림 도구 없음' }));
     }).then(function(canvas){
-      card.classList.remove('is-map335');
       return new Promise(function(r){ canvas.toBlob(function(b){ r({ canvas:canvas, blob:b }); }, 'image/png'); });
     }).then(function(o){
       if(!o.blob) throw Object.assign(new Error('empty'), { name:'빈 그림' });
@@ -14717,6 +14715,151 @@ function pick330Next(state, code){
       };
     });
   };
+})();
+</script>
+<script id="v339-render">
+/* v339 render — 저장 그림을 미리 만들어 두고, 누르면 바로 씁니다.
+   오너 2026-11-17 17:09 「아직도 좀 느려. 용량이 커서 그런가봐」(v336 올린 뒤 아이폰).
+   측정(크롬 · CPU 6배 느리게 흉내): 그림 한 장에 약 1.3초 — 그중 약 60%는 html2canvas 가 문서를 iframe 에 복제하는 단계,
+   배율(크기)은 나머지 일부만 좌우. 배율 3 → 2 로 줄여도 약 30% 줄 뿐이었습니다.
+   그래서 둘을 함께 합니다.
+   ① 배율 3 → 2.5: 가로 1,320 → 1,100px(인스타 가로 1,080에 가까움). 픽셀 수 약 31% 감소.
+   ② 미리 만들기: 저장 버튼이 화면에 보이고 스크롤이 0.8초 멈추면 뒤에서 그림을 만들어 둡니다(카드 내용·모양이 같으면 다시 쓰고,
+      바뀌면 새로 만듦). 누를 때 이미 있으면 기다리지 않고, 공유 시트도 누른 직후에 열 수 있어 끊기지 않습니다.
+      · 데이터 절약 모드면 미리 만들지 않음 · 최근 두 장만 기억 · 그림 도구(html2canvas)를 바꿔 끼운 경우(검사)엔 미리 만들지 않음.
+   그리는 방법(카드와 스타일만 베낌)과 그림 내용은 v336 그대로입니다. 금액은 어디로도 보내지 않습니다. */
+var YK339 = { chain: Promise.resolve(), cache: [], scale: 2.5 };
+function ykCardCanvas(card, mode, scale){
+  scale = scale || YK339.scale;
+  var run = YK339.chain.then(function(){
+    card.classList.toggle('is-map335', mode === 'map');
+    var fn = window.html2canvas, sig = scale + '|' + card.className + '|' + card.innerHTML;
+    var hit = YK339.cache.filter(function(c){ return c.fn === fn && c.sig === sig; })[0];
+    var p = hit ? hit.p : (function(){
+      var keep = card.closest('.reportwrap') || card;
+      var q = Promise.resolve(fn(card, { backgroundColor:null, scale:scale, useCORS:true,
+        ignoreElements:function(n){ return n.parentElement === document.body && n !== keep && !/^(STYLE|LINK)$/.test(n.tagName); } }));
+      var e = { fn:fn, sig:sig, p:q };
+      YK339.cache.unshift(e); if(YK339.cache.length > 2) YK339.cache.length = 2;
+      q.catch(function(){ YK339.cache = YK339.cache.filter(function(x){ return x !== e; }); });
+      return q;
+    })();
+    var off = function(){ card.classList.remove('is-map335'); };
+    return p.then(function(c){ off(); return c; }, function(err){ off(); throw err; });
+  });
+  YK339.chain = run.catch(function(){});
+  return run;
+}
+(function(){
+  if(typeof document === 'undefined' || typeof ensureHtml2canvas !== 'function' || typeof renderReport !== 'function') return;
+  /* 그림 도구를 이 페이지가 직접 불러온 경우에만 「진짜」로 기억 — 검사가 가짜를 끼우면 미리 만들지 않음 */
+  var baseEnsure = ensureHtml2canvas;
+  /* 불러오는 중에 또 부르면 같은 약속을 돌려줌 — 두 번 불러오면 도구가 바뀌어 「진짜」 확인이 어긋남(v341에서 드러남) */
+  var loading = null;
+  ensureHtml2canvas = function(){
+    if(typeof window.html2canvas === 'function') return Promise.resolve(baseEnsure.apply(this, arguments));
+    if(loading) return loading;
+    var done = function(){ loading = null; };
+    loading = Promise.resolve(baseEnsure.apply(this, arguments)).then(function(){
+      if(!window.__ykH2C && typeof window.html2canvas === 'function') window.__ykH2C = window.html2canvas;
+    });
+    loading.then(done, done);
+    return loading;
+  };
+  function prerender(mode){
+    if(typeof LASTVIEW === 'undefined' || !LASTVIEW) return;
+    if(typeof exportBusy !== 'undefined' && exportBusy) return;
+    if(navigator.connection && navigator.connection.saveData) return;
+    if(typeof window.html2canvas === 'function' && window.html2canvas !== window.__ykH2C) return;
+    var card = document.getElementById('reportCard'); if(!card) return;
+    return ensureHtml2canvas().then(function(){
+      if(window.html2canvas !== window.__ykH2C || !window.__ykH2C) return;
+      return document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(function(r){ setTimeout(r, 3000); })]) : null;
+    }).then(function(){
+      if(window.html2canvas !== window.__ykH2C || !window.__ykH2C) return;
+      if(typeof exportBusy !== 'undefined' && exportBusy) return;
+      renderReport(LASTVIEW);
+      return ykCardCanvas(card, mode);
+    }).catch(function(){});
+  }
+  /* 두 버튼이 한 화면에 같이 보이면 둘 다 미리 만듦(v341에서 화면이 짧아져 드러남 — 하나만 기억하면 나중 것이 앞의 것을 덮어씀). */
+  var timer = 0, want = [];
+  function fire(){ var ms = want; want = []; ms.reduce(function(p, m){ return p.then(function(){ return prerender(m); }); }, Promise.resolve()); }
+  function arm(mode){ if(want.indexOf(mode) < 0) want.push(mode); clearTimeout(timer); timer = setTimeout(fire, 800); }
+  addEventListener('scroll', function(){ if(want.length){ clearTimeout(timer); timer = setTimeout(fire, 800); } }, { passive:true });
+  if(!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting || en.target.hidden || en.target.disabled) return;
+      arm(en.target.id === 'reach328Save' ? 'map' : 'full');
+    });
+  }, { threshold:0.6 });
+  ['reach328Save', 'outSave'].forEach(function(id){ var b = document.getElementById(id); if(b) io.observe(b); });
+})();
+</script>
+<style id="v340-cards">
+/* v340 — 결과 화면 카드 모양 통일(점검: 이웃한 카드 제목 19px/700 · 16px/600 · 15px/650, 안쪽 여백 19 · 17 · 18px, 카드 사이 20px).
+   제목 16px/700 · 안쪽 여백 16px · 카드 사이 12px · 머리 아이콘 26px(모서리 10px). 흰 카드·파랑 강조·모서리 20px 는 그대로. */
+html body.yk208 #app #result #viewAnswer{row-gap:12px!important}
+html body.yk208 #app #viewAnswer>:is(#easyMarket,#reach328,#payTile){padding:16px!important}
+html body.yk208 #app #viewAnswer :is(#easyMarket h2,#reach328 h2,#payTile .ans-k){font-size:16px!important;font-weight:700!important;line-height:1.3!important;letter-spacing:0!important}
+html body.yk208 #app#app #viewAnswer .section-symbol{width:26px!important;height:26px!important;border-radius:10px!important}
+html body.yk208 #app#app #viewAnswer .section-symbol svg{width:16px!important;height:16px!important}
+html body.yk208 #app #viewAnswer>#relatedRead{margin-top:0!important}
+</style>
+<style id="v341-more">
+/* v341 — 결과 화면 맨 아래 묶음 합치기(점검: 관련 글 · 외부 사이트 · 저장/공유 · 다시 계산 · 안내문이 따로따로 약 430px).
+   「이미지 저장 · 결과 공유」는 맨 위 한 줄(접지 않음) → 카드 「더 알아보기」 한 장에 목록 줄 4개 → 참고용·주선 안 함 안내문은 카드 밖에 늘 보임.
+   요소는 id 그대로 옮기기만 함(문구·링크를 바꾸는 기존 코드 그대로). 카드 모양은 v340 카드(흰 바탕 · 선 1px · 모서리 20px · 제목 16px/700)와 같음. */
+html body.yk208 #app#app #viewNext .minigrid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+html body.yk208 #app#app #viewNext .minigrid>#outSave{grid-column:1!important;grid-row:1!important}
+html body.yk208 #app#app #viewNext .minigrid>#outCopy{grid-column:2!important;grid-row:1!important}
+html body.yk208 #app#app #viewNext>.card{margin:0!important;padding:0!important}
+html body.yk208 #app#app #more341{margin:12px 0 0!important;padding:16px 16px 0!important;background:#fff!important;border:1px solid #D6DFEC!important;border-radius:20px!important}
+html body.yk208 #app#app #more341>h2{margin:0 0 4px!important;font-size:16px!important;font-weight:700!important;line-height:1.3!important;letter-spacing:0!important;color:var(--v-ink,#192332)!important}
+html body.yk208 #app#app #more341 .more341-list>*{display:block!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;max-width:none!important}
+html body.yk208 #app#app #more341 .more341-list>:not(:last-child){border-bottom:1px solid #E6ECF4!important}
+/* 줄 하나의 모양: 높이 48px 이상 · 14px/600 · 오른쪽 꺾쇠 */
+html body.yk208 #app#app #more341 :is(#relatedReadLink,.external-links>summary,.result-notes321>summary,#restartBtn){position:relative!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;gap:2px!important;width:100%!important;min-height:48px!important;margin:0!important;padding:12px 28px 12px 0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;font-size:14px!important;font-weight:600!important;line-height:1.4!important;letter-spacing:0!important;color:var(--v-ink,#192332)!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important;list-style:none!important}
+html body.yk208 #app#app #more341 :is(.external-links>summary,.result-notes321>summary)::-webkit-details-marker{display:none!important}
+html body.yk208 #app#app #more341 :is(.external-links>summary,.result-notes321>summary)::before{content:none!important;display:none!important}
+html body.yk208 #app#app #more341 :is(#relatedReadLink,.external-links>summary,.result-notes321>summary,#restartBtn)::after{content:''!important;position:absolute!important;right:6px!important;top:50%!important;width:7px!important;height:7px!important;margin:0!important;border:0!important;border-right:2px solid #5F6B7D!important;border-bottom:2px solid #5F6B7D!important;background:none!important;transform:translateY(-50%) rotate(-45deg)!important}
+html body.yk208 #app#app #more341#more341 :is(.external-links,.result-notes321)>summary::after{transform:translateY(-70%) rotate(45deg)!important}
+html body.yk208 #app#app #more341#more341 :is(.external-links,.result-notes321)[open]>summary::after{transform:translateY(-30%) rotate(225deg)!important}
+html body.yk208 #app#app #more341#more341 #restartBtn::after{content:none!important}
+html body.yk208 #app#app #more341 #restartBtn{color:#516077!important}
+html body.yk208 #app#app #more341 .read324-k{font-size:12px!important;font-weight:400!important;line-height:1.4!important;color:#516077!important}
+html body.yk208 #app#app #more341 #relatedReadTitle{font-size:14px!important;font-weight:600!important;line-height:1.4!important;color:var(--v-ink,#192332)!important}
+html body.yk208 #app#app #more341 :is(#relatedReadLink,.external-links>summary,.result-notes321>summary,#restartBtn):focus-visible{outline:2px solid #2458FF!important;outline-offset:-2px!important;border-radius:10px!important}
+/* 펼친 내용 */
+html body.yk208 #app#app #more341 .external-links>a.mini{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:44px!important;margin:0!important;padding:0 6px 0 12px!important;border:0!important;border-top:1px solid #EEF2F7!important;border-radius:0!important;background:none!important;box-shadow:none!important;font-size:14px!important;color:var(--v-ink,#192332)!important;text-decoration:none!important}
+html body.yk208 #app#app #more341 .external-links>a.mini b{font-size:14px!important;font-weight:400!important}
+html body.yk208 #app#app #more341 .external-links>a.mini .arw{font-size:14px!important;color:#5F6B7D!important}
+html body.yk208 #app#app #more341 .external-links[open]{padding-bottom:4px!important}
+html body.yk208 #app#app #more341 .result-notes321>p{margin:0 0 8px!important;padding:0!important;font-size:12px!important;line-height:1.7!important;color:#516077!important}
+html body.yk208 #app#app #more341 .result-notes321[open]{padding-bottom:6px!important}
+html body.yk208 #app#app #more341 .result-notes321 .legal{margin:0!important;font-size:12px!important}
+html body.yk208 #app#app #more341 #restartWrap .restartrow{display:block!important;margin:0!important;padding:0!important}
+/* 안내문(늘 보임): 카드 밖 작은 글씨 */
+html body.yk208 #app#app #viewNext>.easy-next-card{margin:12px 0 0!important;padding:0 2px!important;border:0!important;background:none!important}
+html body.yk208 #app#app #viewNext>.easy-next-card>p{margin:0!important}
+html body.yk208 #app#app #viewNext>.easy-next-card>p+p{margin-top:4px!important}
+</style>
+<script id="v341-more">
+/* v341 — 맨 아래 묶음 합치기: 관련 글 · 외부 사이트 · 계산 기준 안내 · 다시 계산을 카드 「더 알아보기」 한 장의 목록 줄로 옮깁니다.
+   옮기기만 하고 새로 만들지 않습니다(id · 문구 · 링크를 바꾸는 기존 코드가 그대로 작동). 계산과는 관계없습니다. */
+(function(){
+  var next = document.getElementById('viewNext');
+  if(!next || document.getElementById('more341')) return;
+  var card = next.querySelector(':scope > .card');
+  var parts = [document.getElementById('relatedRead'), next.querySelector('.external-links'), next.querySelector('.result-notes321'), document.getElementById('restartWrap')];
+  if(!card || parts.some(function(e){ return !e; })) return;
+  var sec = document.createElement('section');
+  sec.id = 'more341'; sec.className = 'more341'; sec.setAttribute('aria-labelledby', 'more341T');
+  sec.innerHTML = '<h2 id="more341T">더 알아보기</h2><div class="more341-list"></div>';
+  var list = sec.querySelector('.more341-list');
+  parts.forEach(function(e){ list.appendChild(e); });
+  card.after(sec);
 })();
 </script>
 </body>
