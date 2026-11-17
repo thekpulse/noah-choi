@@ -4218,7 +4218,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
     </section>
     <!-- v328 — 서울 25개 구에서 예상 집값 이하 실거래를 구별로 셈(오너 2026-11-16 「권장하는 방향대로」). 누를 때만 조회. -->
 <section class="reach328" id="reach328" aria-labelledby="reach328Title" hidden>
-      <h2 id="reach328Title">서울 25개 구 실거래</h2>
+      <h2 id="reach328Title"><span class="section-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg></span>서울 25개 구 실거래</h2>
       <p class="reach328-lead" id="reach328Lead" aria-live="polite"></p>
       <button class="reach328-go" id="reach328Go" type="button"><span id="reach328GoText">서울 25개 구 살펴보기</span></button>
       <div class="reach328-body" id="reach328Body" hidden>
@@ -4231,6 +4231,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
           <ol class="reach328-list" id="reach328List"></ol>
           <button class="reach328-more" id="reach328More" type="button" aria-expanded="false" hidden></button>
           <button class="reach328-switch" id="reach328Save" type="button" hidden>이 지도를 이미지로 저장</button>
+          <p class="reach328-issue" id="reach328SaveNote" role="status" hidden></p>
         </div>
         <p class="reach328-issue reach328-full" id="reach328Issue" hidden></p>
         <p class="reach328-note reach328-full" id="reach328Note"></p>
@@ -7888,7 +7889,9 @@ async function saveImage(){
     await ensureHtml2canvas();
     if(typeof html2canvas!=='function') throw Error('Image renderer unavailable');
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
-    const canvas=await html2canvas($('reportCard'),{backgroundColor:null,scale:3,useCORS:true});
+    /* v336 — body 바로 아래 것 가운데 그림 카드가 든 상자와 스타일만 베낍니다(계산기 본문 · 지도 · 시트는 건너뜀). 그림은 같고 시간만 줄어듭니다. */
+    const keep336=$('reportCard').closest('.reportwrap')||$('reportCard');
+    const canvas=await html2canvas($('reportCard'),{backgroundColor:null,scale:3,useCORS:true,ignoreElements:n=>n.parentElement===document.body&&n!==keep336&&!/^(STYLE|LINK)$/.test(n.tagName)});
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob) throw Error('Empty image');
     const file=new File([blob],'영끌계산기-내집마련-계산결과.png',{type:'image/png'});
@@ -14076,11 +14079,15 @@ html body.yk208 #app #dealQueryStatus .tr-retry{min-height:44px;min-width:44px}
 /* v328 — 서울 25개 구 · 예상 집값 이하 실거래. 글자 12·13·14·16 · 모서리 10·14·20 · 행간 1.3·1.6 (스케일 안).
    색은 파랑 한 계열(옅음→짙음 = 건수 적음→많음). 건수는 칸마다 숫자로도 적어 색만으로 읽지 않게 함. */
 html body.yk208 #app #viewAnswer>#reach328{margin:0;padding:19px;background:#fff;border:1px solid #D6DFEC;border-radius:20px;color:var(--yk-ink);min-width:0}
-html body.yk208 #app #reach328 h2{margin:0;font-size:16px;font-weight:600;line-height:1.3;letter-spacing:0;color:var(--yk-ink)}
+html body.yk208 #app #reach328 h2{display:flex;align-items:center;gap:8px;margin:0;font-size:16px;font-weight:600;line-height:1.3;letter-spacing:0;color:var(--yk-ink)}
 html body.yk208 #app #reach328 .reach328-lead{margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--yk-sub);word-break:keep-all}
 html body.yk208 #app #reach328 .reach328-nb{white-space:nowrap}
+html body.yk208 #app #reach328 .reach328-switch[disabled]{background:#EDF2FF;color:#1848D6;cursor:default}
+html body.yk208 #app #reach328 .reach328-switch[disabled]::after{display:none}
 html body.yk208 #app #reach328 .reach328-lead b{color:var(--yk-ink);font-weight:600}
 html body.yk208 #app #reach328 .reach328-go{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin:16px 0 0;padding:0 16px;border:1px solid #2458FF;border-radius:14px;background:#2458FF;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+/* v337 — 결과 화면에 파란 큰 버튼이 연달아 둘(「실거래 목록 보기」 · 이 버튼)이라 이쪽을 흰 버튼으로 */
+html body.yk208 #app #reach328 .reach328-go:not([disabled]){background:#fff;border-color:#C7D4F4;color:#1848D6}
 html body.yk208 #app #reach328 .reach328-go[disabled]{background:#EDF2FF;border-color:#C7D4F4;color:#1848D6;cursor:default}
 html body.yk208 #app #reach328 :is(.reach328-go:not([disabled]),.reach328-switch)::after{content:'';flex:none;width:7px;height:7px;margin-left:12px;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg)}
 html body.yk208 #app #reach328 .reach328-map{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:16px 0 0}
@@ -14241,7 +14248,7 @@ function reachUnpack(j, ymd){
   var h = function(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
   var won = function(manWon){ return formatWon(manWon * 10000).replace(/ /g, ' '); };
   var R = { status:'idle', months:new Map(), done:0, todo:0, seq:0, sel:null, all:false };
-  var TOP = 5, POOL = 6;
+  var POOL = 6;
   var nMonths = function(){ return (typeof DEAL === 'object' && DEAL && DEAL.months) || 3; };
   var guName = function(code){ return sggName(code) || ''; };
 
@@ -14402,7 +14409,7 @@ function reachUnpack(j, ymd){
     if(R.status === 'loading'){
       lead.textContent = '구별 실거래를 불러오고 있어요.';
       go.hidden = false; go.disabled = true; el('reach328GoText').textContent = R.todo ? '조회 중 · ' + R.done + ' / ' + R.todo : '조회 중';
-      el('reach328Pick').hidden = true; el('reach328List').innerHTML = ''; el('reach328More').hidden = true; el('reach328Save').hidden = true;
+      el('reach328Pick').hidden = true; el('reach328List').innerHTML = ''; el('reach328More').hidden = true; el('reach328Save').hidden = true; mapNote('');
       el('reach328Issue').hidden = true; el('reach328Note').textContent = '';
       return;
     }
@@ -14419,7 +14426,8 @@ function reachUnpack(j, ymd){
     else if(!hit.length) lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + '에 ' + ptxt + ' 거래가 없어요.';
     else lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + ' 가운데 ' + ptxt + ' 거래가 있는 구는 <b>' + hit.length + '곳</b>, 모두 <b>' + sum.toLocaleString('ko-KR') + '건</b>이에요.';
 
-    var ranked = reachRank(rows), list = R.all ? ranked : ranked.filter(function(r){ return r.st.near > 0; }).slice(0, TOP);
+    /* v337 — 순위는 접어 둡니다(격자가 같은 숫자를 이미 보여 줌 · 카드가 길어 아래 월 상환액 카드가 밀렸음). 펼치면 25개 구 전부. */
+    var ranked = reachRank(rows), list = R.all ? ranked : [];
     el('reach328List').innerHTML = list.map(function(r){
       var st = r.st, w = max > 0 ? Math.max(st.near > 0 ? 3 : 0, Math.round(st.near / max * 100)) : 0;
       var ct = st.state === 'failed' ? '조회 실패' : '<b>' + st.near + '건</b> / ' + st.total + '건';
@@ -14427,9 +14435,9 @@ function reachUnpack(j, ymd){
         + '<span class="nm">' + h(guName(r.code)) + '</span><span class="bar" aria-hidden="true"><i style="width:' + w + '%"></i></span><span class="ct">' + ct + '</span></button></li>';
     }).join('');
     var more = el('reach328More');
-    el('reach328Save').hidden = !loaded.length || typeof saveImage !== 'function';   /* v332 — 저장 이미지에 이 격자가 실림 */
+    el('reach328Save').hidden = !loaded.length || typeof renderReport !== 'function';   /* v332 — 저장 이미지에 이 격자가 실림 */
     more.hidden = !loaded.length; more.setAttribute('aria-expanded', String(R.all));
-    more.textContent = R.all ? '접기' : all + '개 구 모두 보기';
+    more.textContent = R.all ? '순위 접기' : all + '개 구 순위 보기';
 
     var pick = el('reach328Pick'), sel = rows.filter(function(r){ return r.code === R.sel; })[0];
     pick.hidden = !sel; pick.innerHTML = sel ? pickHtml(sel, phrase) : '';
@@ -14444,24 +14452,76 @@ function reachUnpack(j, ymd){
       + '<br>※ 칸 배치는 대략적인 위치예요.';
   }
 
+  /* v336 — 지도 전용 그림 저장을 따로 둡니다(v335 는 기존 saveImage 를 빌려 썼음).
+     오너 아이폰(앱 안 브라우저) 2026-11-17 11:04: 「지도 이미지 저장 눌러도 안 되네. 느리게 나오는 건지 오류가 있는 건지」.
+     크롬(아이폰 UA 흉내)에서는 1초 남짓에 미리보기가 떠서 **원인은 재현하지 못했습니다.** 그래서 고친 것은 셋입니다.
+     ① 버튼 자리에서 보이게: 만드는 동안 버튼 글이 「이미지를 만들고 있어요…」로 바뀌고, 끝·취소·실패가 버튼 아래에 남습니다
+        (전에는 4초 뒤 사라지는 알림뿐이라 느린 것과 실패를 구분할 수 없었음). 실패하면 오류 이름을 함께 적습니다.
+     ② 앱 안 브라우저에서는 공유 시트를 거치지 않고 바로 미리보기(길게 눌러 저장)로 갑니다 — 공유 시트 응답을 기다리다 멈출 길을 없앰.
+        그 밖에는 누른 뒤 시간이 지나 공유 시트를 못 여는 상태면 미리보기로 갑니다.
+     ③ 그림을 만들 때 화면의 다른 부분(계산기 본문 · 지도 · 시트)을 베끼지 않게 해 시간을 줄입니다(html2canvas ignoreElements).
+     금액은 어디로도 보내지 않습니다 — 그림은 기기 안에서만 만듭니다. */
+  var MAPBUSY = false;
+  function mapNote(msg){ var n = el('reach328SaveNote'); if(n){ n.textContent = msg || ''; n.hidden = !msg; } }
+  function saveMap(btn){
+    var card = document.getElementById('reportCard');
+    if(MAPBUSY || !card || typeof renderReport !== 'function' || typeof ensureHtml2canvas !== 'function') return;
+    if(typeof exportBusy !== 'undefined' && exportBusy) return;
+    MAPBUSY = true;
+    var label = btn.textContent, t0 = Date.now();
+    btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = '이미지를 만들고 있어요…'; mapNote('');
+    track('reach_save', {});
+    var finish = function(msg){
+      card.classList.remove('is-map335'); MAPBUSY = false;
+      btn.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = label; mapNote(msg);
+    };
+    var wait = function(p, ms){ return Promise.race([p, new Promise(function(r){ setTimeout(r, ms); })]); };
+    Promise.resolve().then(function(){
+      renderReport(LASTVIEW); card.classList.add('is-map335');
+      return ensureHtml2canvas();
+    }).then(function(){
+      if(typeof html2canvas !== 'function') throw Object.assign(new Error('renderer'), { name:'그림 도구를 불러오지 못함' });
+      return document.fonts && document.fonts.ready ? wait(document.fonts.ready, 3000) : null;   /* 글꼴을 3초 넘게 기다리지 않음 */
+    }).then(function(){
+      var keep = card.closest('.reportwrap') || card;
+      return html2canvas(card, { backgroundColor:null, scale:3, useCORS:true,
+        /* body 바로 아래 것 가운데 그림 카드가 든 상자와 스타일만 베낍니다 */
+        ignoreElements:function(n){ return n.parentElement === document.body && n !== keep && !/^(STYLE|LINK)$/.test(n.tagName); } });
+    }).then(function(canvas){
+      card.classList.remove('is-map335');
+      return new Promise(function(r){ canvas.toBlob(function(b){ r({ canvas:canvas, blob:b }); }, 'image/png'); });
+    }).then(function(o){
+      if(!o.blob) throw Object.assign(new Error('empty'), { name:'빈 그림' });
+      var file = new File([o.blob], '영끌계산기-서울-25개구.png', { type:'image/png' });
+      /* 걸린 시간은 구간 이름으로만 남깁니다(운영 기기에서 얼마나 걸리는지 보려는 것 · 금액 없음) */
+      var sec = (Date.now() - t0) / 1000;
+      track('reach_save_done', { took: sec < 2 ? 'under2s' : sec < 5 ? '2-5s' : sec < 10 ? '5-10s' : 'over10s' });
+      var preview = function(){ showExportPreview(o.canvas.toDataURL('image/png'), btn); finish(''); };
+      if(isInAppBrowser(navigator.userAgent)) return preview();
+      var active = navigator.userActivation ? navigator.userActivation.isActive : (Date.now() - t0 < 4000);
+      if(active && navigator.canShare && navigator.canShare({ files:[file] })){
+        return navigator.share({ files:[file] }).then(function(){ finish('이미지를 내보냈어요.'); },
+          function(e){ if(e && e.name === 'AbortError') finish('이미지 저장을 취소했어요.'); else preview(); });
+      }
+      if(window.matchMedia && matchMedia('(pointer:coarse)').matches) return preview();
+      var url = URL.createObjectURL(o.blob), a = document.createElement('a');
+      a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+      finish('이미지를 내려받았어요.');
+    }).catch(function(e){
+      try{ console.error(e); }catch(_){}
+      var why = e && (e.name && e.name !== 'Error' ? e.name : e.message) || '';
+      finish('이미지를 만들지 못했어요.' + (why ? ' (' + String(why).slice(0, 60) + ')' : ''));
+    });
+  }
+
   box.addEventListener('click', function(e){
     var t = e.target.closest ? e.target.closest('button') : null;
     if(!t || !box.contains(t)) return;
     if(t.id === 'reach328Go'){ if(R.status !== 'loading'){ track('reach_open', {}); scan(false); } return; }
     if(t.id === 'reach328Retry'){ if(R.status !== 'loading') scan(true); return; }
     if(t.id === 'reach328More'){ R.all = !R.all; paint(); return; }
-    if(t.id === 'reach328Save'){
-      /* v335 — 지도 전용 그림. 저장 그림 카드(#reportCard)에 is-map335 를 붙인 채 기존 saveImage 를 그대로 씁니다:
-         예상 집값(머리) + 25개 구 격자 + 주소만 남고, 자금 구성·실거래 세 곳은 이 그림에서 빠집니다.
-         공유 시트 · 미리보기 · 내려받기 길은 「이미지 저장」과 같습니다. 다른 저장이 도는 중이면 끼어들지 않습니다. */
-      var card = document.getElementById('reportCard');
-      if(!card || typeof saveImage !== 'function' || (typeof exportBusy !== 'undefined' && exportBusy)) return;
-      track('reach_save', {});
-      var off = function(){ card.classList.remove('is-map335'); };
-      card.classList.add('is-map335');
-      try{ Promise.resolve(saveImage()).then(off, off); }catch(e){ off(); }
-      return;
-    }
+    if(t.id === 'reach328Save'){ saveMap(t); return; }
     if(t.dataset.reachSwitch){
       var code = t.dataset.reachSwitch;
       if(typeof selectSearchedRegion !== 'function' || !selectSearchedRegion(code)) return;
