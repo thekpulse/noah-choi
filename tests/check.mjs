@@ -511,6 +511,15 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(/#viewNext>\.easy-next-card>\.nx-lead\{padding-left:0!important;text-indent:0!important\}/.test(html), 'v342 안내문 첫 문장 내어쓰기 없앰');
 }
 
+// 34) v343 — 첫 카드: 현금·대출 칸 상자 없앰(누르는 「포함된 부대비용」만 상자) · 320px 점이 혼자 한 줄 안 됨 · 금액 단위 글자를 총 필요 금액과 같은 크기로.
+{
+  const c343=html.slice(html.indexOf('<style id="v343-funding">'),html.indexOf('</style>',html.indexOf('<style id="v343-funding">')));
+  const s343=html.slice(html.indexOf('<script id="v343-funding">'),html.indexOf('</script>',html.indexOf('<script id="v343-funding">')));
+  ok(c343.length>0 && /\.rlab>div\+div\{background:none!important;border:0!important;border-radius:0!important;padding:0!important/.test(c343) && /:not\(\.cash-only\) \.rlab>div\+div\{border-left:1px solid/.test(c343), 'v343 현금·대출 칸은 상자 없이 가운데 세로선');
+  ok(/\.rlab \.t\{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important/.test(c343) && /\.rlab \.n\{margin-top:auto!important/.test(c343), 'v343 이름 줄은 가로(점과 이름 한 줄) · 두 금액은 같은 높이');
+  ok(/\.rlab \.n i\.u\{[^}]*font-size:var\(--t7\)!important/.test(c343) && /\['easyCash','easyLoan'\]/.test(s343) && /new MutationObserver/.test(s343) && /el\.querySelector\('i\.u'\)\) return/.test(s343), 'v343 금액 단위 글자 감싸기 · 바뀔 때마다 · 되풀이 없음');
+}
+
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -781,6 +790,32 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(/^예상 집값 85~110% 단지 \d+곳/.test(over), 'v342 「조금 넘는 집도」를 켜면 85~110%', over);
       ok(!errors.length, 'v342 JavaScript 오류 없음', errors.join(' | '));
       await page.evaluate(()=>window.yk208Navigate('home'));
+    }
+    // v343 — 첫 카드: 누르는 것만 상자 · 금액 단위 글자 크기 = 총 필요 금액 · 320px 점과 이름 한 줄 · 두 금액 같은 높이 · 대출 조절 뒤에도 감쌈.
+    {
+      const fund=()=>page.evaluate(()=>{const q=s=>document.querySelector(s),cs=s=>q(s)?getComputedStyle(q(s)):{};const tiles=[...document.querySelectorAll('#easyBalance .rlab>div')];
+        const t=q('#easyBalance .rlab>div:last-child .t'),tr=t.getBoundingClientRect(),dot=getComputedStyle(t,'::before');
+        const lab=document.createRange();lab.selectNodeContents(t.firstChild);const lr=lab.getBoundingClientRect();
+        return {bg:tiles.map(d=>getComputedStyle(d).backgroundColor),bw:tiles.map(d=>getComputedStyle(d).borderTopWidth),costBg:cs('#easyCostOpen').backgroundColor,
+          unit:cs("#easyCash i.u").fontSize,heroUnit:cs('#heroAmount i.u').fontSize,cash:q('#easyCash').textContent,loan:q('#easyLoan').textContent,bsCash:q('#bsCash').textContent,bsLoan:q('#bsLoan').textContent,
+          wrapped:!!q('#easyCash i.u')&&!!q('#easyLoan i.u'),dir:getComputedStyle(t).flexDirection,dotTop:Math.round(tr.top+parseFloat(dot.marginTop||0)),labTop:Math.round(lr.top),labH:Math.round(lr.height),
+          nTops:[...document.querySelectorAll('#easyBalance .rlab .n')].map(n=>Math.round(n.getBoundingClientRect().top))};});
+      const amt=s=>s.replace(/\(.*$/,'').trim();
+      for(const w of [320,390]){
+        await page.setViewportSize({width:w,height:844});
+        await page.evaluate(()=>{Object.assign(S,{cash:30000,income:8000,sgg:'11200',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null,noLoan:false,loanCut:0});showResult(false);window.yk208Navigate('home');});
+        await page.waitForTimeout(300);const f=await fund();
+        ok(f.bg.every(b=>b==='rgba(0, 0, 0, 0)') && f.bw.every(b=>b==='0px') && f.costBg!=='rgba(0, 0, 0, 0)', `v343 ${w}px 상자는 「포함된 부대비용」 하나만`, JSON.stringify(f));
+        ok(f.wrapped && f.unit===f.heroUnit && f.cash===amt(f.bsCash) && f.loan===amt(f.bsLoan), `v343 ${w}px 금액 단위 글자 = 총 필요 금액(${f.heroUnit}) · 글자는 원래와 같음`, JSON.stringify(f));
+        ok(f.dir==='row' && f.nTops.length===2 && f.nTops[0]===f.nTops[1], `v343 ${w}px 이름 줄 가로 · 두 금액 같은 높이`, JSON.stringify(f));
+      }
+      await page.setViewportSize({width:390,height:844});
+      await page.evaluate(()=>{Object.assign(S,{lockedPrice:300000000,loanCut:0});showResult(false);}); await page.waitForTimeout(300);
+      await page.evaluate(()=>{const r=document.getElementById('loanCutRange');r.value=String(Math.floor(+r.max/2/100)*100);r.dispatchEvent(new Event('input'));}); await page.waitForTimeout(200);
+      const g=await fund();
+      ok(await page.locator('#loanCutToggle').isVisible() && g.wrapped && g.loan===amt(g.bsLoan) && g.cash===amt(g.bsCash), 'v343 대출을 줄여도 금액·단위 감쌈 그대로', JSON.stringify(g));
+      await page.evaluate(()=>{Object.assign(S,{lockedPrice:null,loanCut:0});showResult(false);});
+      ok(!errors.length, 'v343 JavaScript 오류 없음', errors.join(' | '));
     }
     // v330 — 지역 시트: 서울 자치구 3곳을 같은 목록에서. 누른 뒤 칸 자리·스크롤이 그대로.
     {
