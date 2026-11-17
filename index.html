@@ -14078,6 +14078,7 @@ html body.yk208 #app #dealQueryStatus .tr-retry{min-height:44px;min-width:44px}
 html body.yk208 #app #viewAnswer>#reach328{margin:0;padding:19px;background:#fff;border:1px solid #D6DFEC;border-radius:20px;color:var(--yk-ink);min-width:0}
 html body.yk208 #app #reach328 h2{margin:0;font-size:16px;font-weight:600;line-height:1.3;letter-spacing:0;color:var(--yk-ink)}
 html body.yk208 #app #reach328 .reach328-lead{margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--yk-sub);word-break:keep-all}
+html body.yk208 #app #reach328 .reach328-nb{white-space:nowrap}
 html body.yk208 #app #reach328 .reach328-lead b{color:var(--yk-ink);font-weight:600}
 html body.yk208 #app #reach328 .reach328-go{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin:16px 0 0;padding:0 16px;border:1px solid #2458FF;border-radius:14px;background:#2458FF;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 html body.yk208 #app #reach328 .reach328-go[disabled]{background:#EDF2FF;border-color:#C7D4F4;color:#1848D6;cursor:default}
@@ -14169,14 +14170,14 @@ function reachStat(months, budgetMan, loMan){
   var okMonths = months.filter(function(m){ return m.ok; });
   var st = { state: !okMonths.length ? 'failed' : okMonths.length < months.length ? 'partial' : 'ok',
     capped: okMonths.some(function(m){ return Number(m.total) > REACH_PAGE; }),
-    total:0, under:0, near:0, min:null, underMax:null, nearMin:null, nearMax:null, recent:[] };
+    total:0, under:0, near:0, min:null, minDeal:null, underMax:null, nearMin:null, nearMax:null, recent:[] };
   if(st.state === 'failed' || !(budgetMan > 0)) return st;
   var near = [], lo = loMan > 0 ? loMan : 0;
   okMonths.forEach(function(m){ (m.items || []).forEach(function(x){
     var a = Number(x.amountMan);
     if(!(a > 0)) return;
     st.total++;
-    if(st.min == null || a < st.min) st.min = a;
+    if(st.min == null || a < st.min){ st.min = a; st.minDeal = x; }
     if(a <= budgetMan){ st.under++;
       if(st.underMax == null || a > st.underMax) st.underMax = a;
       if(a >= lo){ st.near++; near.push(x);
@@ -14347,6 +14348,13 @@ function reachUnpack(j, ymd){
       out += '<p>이 범위 거래는 없어요. 이하 거래 중 가장 높은 가격 ' + won(st.underMax) + '</p>';
     } else if(st.min != null && r.budget > 0){
       out += '<p>가장 낮은 거래 ' + won(st.min) + ' · ' + h(phrase ? phrase.label : '예상 집값') + '보다 ' + won(st.min - r.budget) + ' 높음</p>';
+      /* v333 — 그 거래를 사려면: 거래 상세의 「이 가격으로 사면」과 같은 계산(dealAfford · 그 구 기준). 부족할 때만 적습니다. */
+      var f = typeof dealAfford === 'function' ? dealAfford(st.min, r.code) : null;
+      if(f && f.gap > 0){
+        var md = st.minDeal || {}, meta = [md.dong, md.areaM2 != null ? '전용 ' + md.areaM2 + '㎡' : ''].filter(Boolean).join(' · ');
+        out += '<ul class="reach328-deals" aria-label="가장 낮은 거래"><li><span><em>' + h(md.name || '') + '</em>' + (meta ? '<small>' + h(meta) + '</small>' : '') + '</span><b>' + won(st.min) + '</b></li></ul>';
+        out += '<p>이 가격으로 사면 필요한 현금 <b>' + won(f.C) + '</b> · 현금 <b>' + won(f.gap) + ' 부족</b>' + (f.L > 0 ? ' (예상 대출 ' + won(f.L) + ' 포함)' : '') + '</p>';
+      }
     } else if(!st.total){
       out += '<p>최근 ' + nMonths() + '개월 거래가 없어요.</p>';
     }
@@ -14389,11 +14397,13 @@ function reachUnpack(j, ymd){
     var sum = hit.reduce(function(s, r){ return s + r.st.near; }, 0);
     var failed = rows.filter(function(r){ return r.st.state === 'failed'; }), partial = rows.filter(function(r){ return r.st.state === 'partial'; });
     var scope = failed.length ? '조회된 ' + loaded.length + '개 구' : '서울 ' + all + '개 구';
-    var ptxt = (phrase ? phrase.label : '예상 집값') + '의 ' + pctText()
-      + (phrase && phrase.same && rows[0].budget > 0 ? '(' + won(rows[0].lo) + ' ~ ' + won(rows[0].budget) + ')' : '');
+    /* v333 — 「85%~100%」와 괄호 안 금액 범위가 각각 줄 중간에서 끊기지 않게(오너 캡처 2026-11-17: 「85%」 뒤에서 줄이 바뀜) */
+    var nb = function(t){ return '<span class="reach328-nb">' + t + '</span>'; };
+    var ptxt = h(phrase ? phrase.label : '예상 집값') + '의 ' + nb(pctText())
+      + (phrase && phrase.same && rows[0].budget > 0 ? ' ' + nb('(' + won(rows[0].lo) + ' ~ ' + won(rows[0].budget) + ')') : '');
     if(!loaded.length) lead.textContent = '실거래를 불러오지 못했어요.';
-    else if(!hit.length) lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + '에 ' + h(ptxt) + ' 거래가 없어요.';
-    else lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + ' 가운데 ' + h(ptxt) + ' 거래가 있는 구는 <b>' + hit.length + '곳</b>, 모두 <b>' + sum.toLocaleString('ko-KR') + '건</b>이에요.';
+    else if(!hit.length) lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + '에 ' + ptxt + ' 거래가 없어요.';
+    else lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + ' 가운데 ' + ptxt + ' 거래가 있는 구는 <b>' + hit.length + '곳</b>, 모두 <b>' + sum.toLocaleString('ko-KR') + '건</b>이에요.';
 
     var ranked = reachRank(rows), list = R.all ? ranked : ranked.filter(function(r){ return r.st.near > 0; }).slice(0, TOP);
     el('reach328List').innerHTML = list.map(function(r){
