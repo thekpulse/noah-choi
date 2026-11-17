@@ -409,6 +409,8 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(/track\('reach_scan', \{ hit: hit === 0 \? 'none'/.test(js) && !/track\([^)]*(budget|amount|price|won)/i.test(js), 'v328 사용 로그는 범주 라벨만');
   ok(/id="reach328"[^>]*hidden/.test(html) && html.indexOf('id="reach328"')>html.indexOf('id="easyMarket"') && html.indexOf('id="reach328"')<html.indexOf('id="payTile"'), 'v328 카드 자리 — 실거래 카드 다음 · 월 상환액 앞');
   ok(/if\(R\.status !== 'done' \|\| !visible\(\)\) return '';/.test(js) && !/reportHtml[\s\S]{0,1500}(scan\(|fetch\()/.test(js.slice(js.indexOf('function reportHtml'), js.indexOf('if(typeof renderReport'))), 'v332 저장 이미지 격자는 조회를 마친 뒤에만 · 이미지를 만들려고 조회하지 않음');
+  ok(/async function saveImage\(\)\{[\s\S]{0,900}ignoreElements:n=>n\.parentElement===document\.body&&n!==keep336&&!\/\^\(STYLE\|LINK\)\$\/\.test\(n\.tagName\)/.test(html), 'v336 「이미지 저장」도 카드·스타일만 베껴 그림을 만듦');
+  ok(/track\('reach_save_done', \{ took: sec < 2 \? 'under2s'/.test(js), 'v336 저장에 걸린 시간은 구간 이름으로만 남김');
   // v329 — 묶음 응답 풀기: 실패한 구는 실패 그대로 · 달이 다르면 버림
   const {reachUnpack}=(vm.runInContext('globalThis.__2={reachUnpack}',c),c.__2);
   const un=reachUnpack({ok:true,ymd:202610,gu:{'11110':{ok:true,total:1,d:[[51000,84.9,3,'가','나',5,2010]]},'11350':{ok:false,reason:'gateway-22'}}},202610);
@@ -546,6 +548,8 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(await page.locator('#reach328').isVisible() && await page.locator('#reach328Go').isVisible() && !(await page.locator('#reach328Body').isVisible()), 'v328 조회 전 — 버튼만 표시');
       reach328Budget=await page.evaluate(()=>dealBudgetFor('11320'));
       ok(await page.evaluate(()=>{renderReport(LASTVIEW);const b=document.getElementById('rReach328');return !!b && b.hidden && !b.innerHTML;}), 'v332 조회 전 — 저장 이미지에 격자 없음(이전과 같은 이미지)');
+      const v337a=await page.evaluate(()=>{const g=document.getElementById('reach328Go'),m=document.getElementById('marketOpen');const c=e=>getComputedStyle(e).backgroundColor;return {go:c(g),market:m&&m.offsetParent?c(m):null,sym:!!document.querySelector('#reach328Title .section-symbol svg'),symW:Math.round(document.querySelector('#reach328Title .section-symbol').getBoundingClientRect().width)};});
+      ok(v337a.go==='rgb(255, 255, 255)' && v337a.go!==v337a.market && v337a.sym && v337a.symW===30, 'v337 조회 버튼은 흰 버튼(파란 큰 버튼과 겹치지 않음) · 카드 머리에 옆 카드와 같은 크기의 아이콘', JSON.stringify(v337a));
       reach328Calls.length=0; reach328Bulk.length=0; reach328Fail='11350';
       await page.locator('#reach328Go').click();
       await page.waitForFunction(()=>document.getElementById('reach328Go').hidden);
@@ -557,18 +561,38 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(r1b.a==='3' && r1b.b==='0' && r1b.c==='0' && r1.sum===3 && /85%~100%/.test(r1b.key) && /85%~100% 3건/.test(r1b.pick) && /이하 3건 · 전체 3건/.test(r1b.pick), 'v331 칸 숫자 = 예상 집값의 85%~100% 건수(예상 집값과 같은 값은 포함 · 85%보다 1만원 낮으면 0)', JSON.stringify(r1b));
       const rr=await page.evaluate(()=>{renderReport(LASTVIEW);const b=document.getElementById('rReach328');return {hidden:b.hidden,after:b.previousElementSibling&&b.previousElementSibling.id,cells:[...b.querySelectorAll('.rr328-t')].map(t=>t.querySelector('span').textContent+':'+t.querySelector('b').textContent+':'+t.className.replace('rr328-t ','')).join(),tiles:[...document.querySelectorAll('#reach328Map .reach328-tile')].map(t=>t.querySelector('span').textContent+':'+t.querySelector('b').textContent+':'+(t.className.match(/\b(l[0-4]|is-fail)\b/)||[''])[0]).join(),head:b.querySelector('.rr328-h').textContent,over:[...b.querySelectorAll('.rr328-t')].filter(t=>t.scrollWidth>t.clientWidth+1).length};});
       ok(!rr.hidden && rr.after==='rDeals' && rr.cells===rr.tiles && rr.cells.split(',').length===25 && /:–:is-fail/.test(rr.cells) && /85%~100% 거래 건수/.test(rr.head) && rr.over===0, 'v332 조회 뒤 — 저장 이미지 격자 25칸 = 화면 격자(숫자·색 단계·실패 칸)', JSON.stringify(rr).slice(0,300));
+      const v337b=await page.evaluate(()=>({rows:document.querySelectorAll('#reach328List .reach328-row').length,label:document.getElementById('reach328More').textContent,exp:document.getElementById('reach328More').getAttribute('aria-expanded')}));
+      await page.locator('#reach328More').click();
+      const v337c=await page.evaluate(()=>({rows:document.querySelectorAll('#reach328List .reach328-row').length,label:document.getElementById('reach328More').textContent,exp:document.getElementById('reach328More').getAttribute('aria-expanded'),first:document.querySelector('#reach328List .reach328-row .nm').textContent}));
+      ok(v337b.rows===0 && v337b.label==='25개 구 순위 보기' && v337b.exp==='false' && v337c.rows===25 && v337c.label==='순위 접기' && v337c.exp==='true' && v337c.first==='도봉구', 'v337 순위는 접혀 있고 펼치면 25개 구 전부(건수 많은 순)', JSON.stringify([v337b,v337c]));
+      await page.locator('#reach328More').click();
       await page.locator('#reach328Map [data-reach="11680"]').click();
       const sh=await page.evaluate(()=>{const f=dealAfford(990000,'11680');const t=document.getElementById('reach328Pick').innerText;return {t,need:formatWon(f.C*10000),gap:formatWon(f.gap*10000),pos:f.gap>0,nb:document.querySelectorAll('#reach328Lead .reach328-nb').length,nbWrap:[...document.querySelectorAll('#reach328Lead .reach328-nb')].every(e=>e.getClientRects().length===1)};});
       ok(sh.pos && sh.t.replace(/\u00a0/g,' ').includes('필요한 현금 '+sh.need) && sh.t.replace(/\u00a0/g,' ').includes('현금 '+sh.gap+' 부족') && /가장 낮은 거래 99억/.test(sh.t), 'v333 닿지 않는 구 — 가장 낮은 거래의 필요한 현금·부족액 = 거래 상세와 같은 계산(dealAfford)', sh.t.replace(/\n+/g,' | ').slice(0,260));
       ok(sh.nb>=1 && sh.nbWrap, 'v333 문장의 「85%~100%」·금액 범위가 줄 중간에서 끊기지 않음', String(sh.nb));
       ok(await page.locator('#reach328Save').isVisible() && (await page.locator('#reach328Save').innerText()).trim()==='이 지도를 이미지로 저장', 'v332 조회 뒤 — 카드에 「이 지도를 이미지로 저장」');
-      // v335 — 「이 지도를 이미지로 저장」은 지도 전용 그림: 자금 구성·실거래 세 곳 없이 예상 집값 + 격자. 끝나면 카드가 원래대로.
-      await page.evaluate(()=>{window.__m335=null;navigator.canShare=undefined;window.html2canvas=async el=>{const cs=id=>getComputedStyle(el.querySelector(id)).display;window.__m335={cls:el.className,mix:cs('#rMix'),deals:cs('#rDeals'),grid:el.querySelectorAll('#rReach328 .rr328-t').length,amount:el.querySelector('#rAmount').textContent,cta:!el.querySelector('#rCta').hidden,key:!!el.querySelector('.rr328-k')};const c=document.createElement('canvas');c.width=c.height=8;return c;};});
+      // v335·v336 — 「이 지도를 이미지로 저장」: 지도 전용 그림 · 만드는 동안 버튼 자리에서 보임 · 다른 화면은 베끼지 않음 · 끝나면 원래대로.
+      await page.evaluate(()=>{window.__m335=null;window.__hold=null;navigator.canShare=undefined;window.html2canvas=(el,o)=>new Promise(res=>{const cs=id=>getComputedStyle(el.querySelector(id)).display;const btn=document.getElementById('reach328Save');
+        window.__m335={cls:el.className,mix:cs('#rMix'),deals:cs('#rDeals'),grid:el.querySelectorAll('#rReach328 .rr328-t').length,amount:el.querySelector('#rAmount').textContent,cta:!el.querySelector('#rCta').hidden,key:!!el.querySelector('.rr328-k'),
+          busyText:btn.textContent,busy:btn.disabled&&btn.getAttribute('aria-busy')==='true',
+          skipApp:o.ignoreElements(document.getElementById('app')),keepCard:!o.ignoreElements(el.closest('.reportwrap')),keepStyle:[...document.body.children].filter(n=>n.tagName==='STYLE').every(n=>!o.ignoreElements(n)),inner:!o.ignoreElements(el.querySelector('#rAmount'))};
+        window.__hold=()=>{const c=document.createElement('canvas');c.width=c.height=8;res(c);};});});
       await page.locator('#reach328Save').click();
-      await page.waitForFunction(()=>window.__m335 && !document.getElementById('reportCard').classList.contains('is-map335') && !document.getElementById('reach328Save').disabled);
+      await page.waitForFunction(()=>window.__m335);
       const m335=await page.evaluate(()=>window.__m335);
       ok(/is-map335/.test(m335.cls) && m335.mix==='none' && m335.deals==='none' && m335.grid===25 && m335.cta && m335.key && /\d/.test(m335.amount), 'v335 지도 전용 그림 — 예상 집값 + 25칸 + 주소 · 자금 구성·실거래 세 곳은 빠짐', JSON.stringify(m335));
+      ok(m335.busy && /만들고 있어요/.test(m335.busyText), 'v336 만드는 동안 버튼 글이 「이미지를 만들고 있어요…」 · 눌림 막힘', m335.busyText);
+      ok(m335.skipApp && m335.keepCard && m335.keepStyle && m335.inner, 'v336 그림을 만들 때 계산기 본문은 베끼지 않고 카드·스타일만 베낌');
+      await page.evaluate(()=>window.__hold());
+      await page.waitForFunction(()=>!document.getElementById('reach328Save').disabled);
+      const a336=await page.evaluate(()=>({text:document.getElementById('reach328Save').textContent,note:document.getElementById('reach328SaveNote').textContent,cls:document.getElementById('reportCard').className}));
+      ok(a336.text==='이 지도를 이미지로 저장' && /내려받았어요|내보냈어요/.test(a336.note) || !!(await page.evaluate(()=>{const b=document.getElementById('exportPreview');return b&&!b.hidden;})), 'v336 끝나면 버튼이 돌아오고 결과가 버튼 아래(또는 미리보기)에 남음', JSON.stringify(a336));
+      await page.evaluate(()=>{const b=document.getElementById('exportPreview');if(b&&!b.hidden)closeExportPreview();});
       ok(await page.evaluate(()=>{renderReport(LASTVIEW);const el=document.getElementById('reportCard');return !el.classList.contains('is-map335') && getComputedStyle(el.querySelector('#rMix')).display!=='none';}), 'v335 저장 뒤 카드는 원래대로(「이미지 저장」은 전체 그림 그대로)');
+      await page.evaluate(()=>{window.html2canvas=()=>Promise.reject(Object.assign(new Error('x'),{name:'SecurityError'}));});
+      await page.locator('#reach328Save').click();
+      await page.waitForFunction(()=>/만들지 못했어요/.test(document.getElementById('reach328SaveNote').textContent));
+      ok(await page.evaluate(()=>/\(SecurityError\)/.test(document.getElementById('reach328SaveNote').textContent) && !document.getElementById('reach328Save').disabled && !document.getElementById('reportCard').classList.contains('is-map335')), 'v336 실패하면 버튼 아래에 오류 이름과 함께 남고 버튼은 다시 눌림');
       await page.locator('#reach328Map [data-reach="11305"]').click();
       ok(/85%~100% 0건/.test(await page.locator('#reach328Pick').innerText()) && /이 범위 거래는 없어요\. 이하 거래 중 가장 높은 가격/.test(await page.locator('#reach328Pick').innerText()), 'v331 범위 밖·이하 거래만 있는 구 — 0건 + 이하 거래 최고가');
       reach328Calls.length=0; reach328Bulk.length=0; reach328Fail='';
