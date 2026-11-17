@@ -562,6 +562,13 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(sh.pos && sh.t.replace(/\u00a0/g,' ').includes('필요한 현금 '+sh.need) && sh.t.replace(/\u00a0/g,' ').includes('현금 '+sh.gap+' 부족') && /가장 낮은 거래 99억/.test(sh.t), 'v333 닿지 않는 구 — 가장 낮은 거래의 필요한 현금·부족액 = 거래 상세와 같은 계산(dealAfford)', sh.t.replace(/\n+/g,' | ').slice(0,260));
       ok(sh.nb>=1 && sh.nbWrap, 'v333 문장의 「85%~100%」·금액 범위가 줄 중간에서 끊기지 않음', String(sh.nb));
       ok(await page.locator('#reach328Save').isVisible() && (await page.locator('#reach328Save').innerText()).trim()==='이 지도를 이미지로 저장', 'v332 조회 뒤 — 카드에 「이 지도를 이미지로 저장」');
+      // v335 — 「이 지도를 이미지로 저장」은 지도 전용 그림: 자금 구성·실거래 세 곳 없이 예상 집값 + 격자. 끝나면 카드가 원래대로.
+      await page.evaluate(()=>{window.__m335=null;navigator.canShare=undefined;window.html2canvas=async el=>{const cs=id=>getComputedStyle(el.querySelector(id)).display;window.__m335={cls:el.className,mix:cs('#rMix'),deals:cs('#rDeals'),grid:el.querySelectorAll('#rReach328 .rr328-t').length,amount:el.querySelector('#rAmount').textContent,cta:!el.querySelector('#rCta').hidden,key:!!el.querySelector('.rr328-k')};const c=document.createElement('canvas');c.width=c.height=8;return c;};});
+      await page.locator('#reach328Save').click();
+      await page.waitForFunction(()=>window.__m335 && !document.getElementById('reportCard').classList.contains('is-map335') && !document.getElementById('reach328Save').disabled);
+      const m335=await page.evaluate(()=>window.__m335);
+      ok(/is-map335/.test(m335.cls) && m335.mix==='none' && m335.deals==='none' && m335.grid===25 && m335.cta && m335.key && /\d/.test(m335.amount), 'v335 지도 전용 그림 — 예상 집값 + 25칸 + 주소 · 자금 구성·실거래 세 곳은 빠짐', JSON.stringify(m335));
+      ok(await page.evaluate(()=>{renderReport(LASTVIEW);const el=document.getElementById('reportCard');return !el.classList.contains('is-map335') && getComputedStyle(el.querySelector('#rMix')).display!=='none';}), 'v335 저장 뒤 카드는 원래대로(「이미지 저장」은 전체 그림 그대로)');
       await page.locator('#reach328Map [data-reach="11305"]').click();
       ok(/85%~100% 0건/.test(await page.locator('#reach328Pick').innerText()) && /이 범위 거래는 없어요\. 이하 거래 중 가장 높은 가격/.test(await page.locator('#reach328Pick').innerText()), 'v331 범위 밖·이하 거래만 있는 구 — 0건 + 이하 거래 최고가');
       reach328Calls.length=0; reach328Bulk.length=0; reach328Fail='';
@@ -612,6 +619,16 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         const v=await page.evaluate(async()=> (await axe.run(document.getElementById('qSheet'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
         ok(!v.length,'v330 지역 시트 접근성(3곳 고른 상태)',JSON.stringify(v));
       }
+      // v334 — 앱 안 브라우저 크기(393×700)에서 구 칸이 다섯 줄 넘게 보임(이전 1~2줄) · 안내는 목록 아래에 남음
+      await page.setViewportSize({width:393,height:700});
+      const v334=await page.evaluate(()=>{const p=document.getElementById('regionPane');let sc=null;for(let n=p;n&&n!==document.body;n=n.parentElement){const o=getComputedStyle(n).overflowY;if(o==='auto'||o==='scroll'){sc=n;break}}
+        sc.scrollTop=0;const b=sc.getBoundingClientRect();const chips=[...p.querySelectorAll('.pick330 [data-pick]')];
+        const vis=chips.filter(c=>{const r=c.getBoundingClientRect();return r.top>=b.top-1&&r.bottom<=b.bottom+1}).length;
+        const grid=p.querySelector('.taggrid'),tip=p.querySelector('.pick330-tip'),zc=document.querySelector('#qSheet .zonegrid .zonecard');
+        return {vis,tipBelow:!!tip&&!!(grid.compareDocumentPosition(tip)&Node.DOCUMENT_POSITION_FOLLOWING)&&/규제지역/.test(tip.textContent),zoneH:Math.round(zc.getBoundingClientRect().height),title:!!p.querySelector('.pane-title.sr-only'),sheetTop:Math.round(document.getElementById('qSheet').getBoundingClientRect().top),over:document.documentElement.scrollWidth>innerWidth+1};});
+      ok(v334.vis>=15 && v334.zoneH===44 && v334.sheetTop<=16, 'v334 구 칸이 다섯 줄 이상 보임(393×700) · 위 버튼 44px · 시트가 화면 위까지', JSON.stringify(v334));
+      ok(v334.tipBelow && v334.title && !v334.over, 'v334 규제지역 안내는 목록 아래에 남음 · 제목은 낭독용으로 남음');
+      await page.setViewportSize({width:390,height:844});
       await page.locator('#qClose').click();
       mode='success';await seed();reach328On=true;
     }
