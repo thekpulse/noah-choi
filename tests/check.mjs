@@ -391,6 +391,8 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(s1b.near===2 && s1b.under===4 && s1b.total===5 && s1b.nearMin===33750 && s1b.nearMax===39705 && s1b.recent.length===2 && s1b.recent.every(x=>x.amountMan>=33750&&x.amountMan<=39705), 'v331 범위 건수 — 아래 끝·예상 집값 둘 다 포함 · 1만원 밖은 제외 · 이하 전체는 따로', JSON.stringify(s1b));
   const lawdBand=/const DEAL = \{[^}]*band:0\.85,/.test(html) && /const lo = Math\.round\(priceMan \* DEAL\.band\);/.test(html) && /function loOf\(budgetMan\)\{ return budgetMan > 0 \? Math\.round\(budgetMan \* bandOf\(\)\) : 0; \}/.test(html);
   ok(lawdBand, 'v331 아래 끝 = 실거래 비교 카드와 같은 식(Math.round(예상 집값 × DEAL.band))');
+  ok(s1b.min===10000 && s1b.minDeal && s1b.minDeal.amountMan===10000, 'v333 가장 낮은 거래 한 건을 함께 돌려줌');
+  ok(/if\(f && f\.gap > 0\)\{/.test(html.slice(html.indexOf('<script id="v328-reach">'))), 'v333 부족액은 부족할 때만 적음(여유는 적지 않음)');
   const s2=reachStat([m(202611,false,[],null),m(202610,true,[it(20000,2026,10,2)],1200),m(202609,true,[],0)],39705);
   ok(s2.state==='partial' && s2.under===1 && s2.capped===true, 'v328 한 달 실패 → partial · 1,000건 초과 표시');
   const s3=reachStat([m(202611,false,[],null),m(202610,false,[],null),m(202609,false,[],null)],39705);
@@ -555,6 +557,10 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(r1b.a==='3' && r1b.b==='0' && r1b.c==='0' && r1.sum===3 && /85%~100%/.test(r1b.key) && /85%~100% 3건/.test(r1b.pick) && /이하 3건 · 전체 3건/.test(r1b.pick), 'v331 칸 숫자 = 예상 집값의 85%~100% 건수(예상 집값과 같은 값은 포함 · 85%보다 1만원 낮으면 0)', JSON.stringify(r1b));
       const rr=await page.evaluate(()=>{renderReport(LASTVIEW);const b=document.getElementById('rReach328');return {hidden:b.hidden,after:b.previousElementSibling&&b.previousElementSibling.id,cells:[...b.querySelectorAll('.rr328-t')].map(t=>t.querySelector('span').textContent+':'+t.querySelector('b').textContent+':'+t.className.replace('rr328-t ','')).join(),tiles:[...document.querySelectorAll('#reach328Map .reach328-tile')].map(t=>t.querySelector('span').textContent+':'+t.querySelector('b').textContent+':'+(t.className.match(/\b(l[0-4]|is-fail)\b/)||[''])[0]).join(),head:b.querySelector('.rr328-h').textContent,over:[...b.querySelectorAll('.rr328-t')].filter(t=>t.scrollWidth>t.clientWidth+1).length};});
       ok(!rr.hidden && rr.after==='rDeals' && rr.cells===rr.tiles && rr.cells.split(',').length===25 && /:–:is-fail/.test(rr.cells) && /85%~100% 거래 건수/.test(rr.head) && rr.over===0, 'v332 조회 뒤 — 저장 이미지 격자 25칸 = 화면 격자(숫자·색 단계·실패 칸)', JSON.stringify(rr).slice(0,300));
+      await page.locator('#reach328Map [data-reach="11680"]').click();
+      const sh=await page.evaluate(()=>{const f=dealAfford(990000,'11680');const t=document.getElementById('reach328Pick').innerText;return {t,need:formatWon(f.C*10000),gap:formatWon(f.gap*10000),pos:f.gap>0,nb:document.querySelectorAll('#reach328Lead .reach328-nb').length,nbWrap:[...document.querySelectorAll('#reach328Lead .reach328-nb')].every(e=>e.getClientRects().length===1)};});
+      ok(sh.pos && sh.t.replace(/\u00a0/g,' ').includes('필요한 현금 '+sh.need) && sh.t.replace(/\u00a0/g,' ').includes('현금 '+sh.gap+' 부족') && /가장 낮은 거래 99억/.test(sh.t), 'v333 닿지 않는 구 — 가장 낮은 거래의 필요한 현금·부족액 = 거래 상세와 같은 계산(dealAfford)', sh.t.replace(/\n+/g,' | ').slice(0,260));
+      ok(sh.nb>=1 && sh.nbWrap, 'v333 문장의 「85%~100%」·금액 범위가 줄 중간에서 끊기지 않음', String(sh.nb));
       ok(await page.locator('#reach328Save').isVisible() && (await page.locator('#reach328Save').innerText()).trim()==='이 지도를 이미지로 저장', 'v332 조회 뒤 — 카드에 「이 지도를 이미지로 저장」');
       await page.locator('#reach328Map [data-reach="11305"]').click();
       ok(/85%~100% 0건/.test(await page.locator('#reach328Pick').innerText()) && /이 범위 거래는 없어요\. 이하 거래 중 가장 높은 가격/.test(await page.locator('#reach328Pick').innerText()), 'v331 범위 밖·이하 거래만 있는 구 — 0건 + 이하 거래 최고가');
