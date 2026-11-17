@@ -14135,6 +14135,20 @@ html body #reportCard .rr328-t.l2{background:#BCCBFF;color:#0E1B45}
 html body #reportCard .rr328-t.l3{background:#7F9BFF;color:#0E1B45}
 html body #reportCard .rr328-t.l4{background:#1F4FE6;color:#fff}
 html body #reportCard .rr328-t.is-fail{background:#fff;border:1px dashed #B9C5D8;color:#607089}
+html body #reportCard .rr328-k{display:flex;align-items:center;gap:4px;margin:8px 0 0;font-size:12px;line-height:1.3;color:#516077}
+html body #reportCard .rr328-k i{display:block;width:12px;height:12px;border-radius:3px}
+html body #reportCard .rr328-k i.l1{background:#E3EAFF}
+html body #reportCard .rr328-k i.l2{background:#BCCBFF}
+html body #reportCard .rr328-k i.l3{background:#7F9BFF}
+html body #reportCard .rr328-k i.l4{background:#1F4FE6}
+/* v335 — 지도 전용 그림(「이 지도를 이미지로 저장」): 자금 구성·실거래 세 곳을 빼고 격자를 키움 */
+html body #reportCard.is-map335 :is(#rMix,#rMonthly,#rDeals){display:none!important}
+html body #reportCard.is-map335 .rr328{margin:0;padding:0;border-top:0}
+html body #reportCard.is-map335 .rr328-h{font-size:14px}
+html body #reportCard.is-map335 .rr328-map{gap:5px;margin-top:12px}
+html body #reportCard.is-map335 .rr328-t{height:50px}
+html body #reportCard.is-map335 .rr328-t span{font-size:13px}
+html body #reportCard.is-map335 .rr328-t b{font-size:14px}
 html body #reportCard .rr328-c{margin:8px 0 0;font-size:12px;line-height:1.6;color:#516077}
 @media(min-width:960px){
  html body.yk208 #app #viewAnswer>#reach328{grid-column:1 / -1!important}
@@ -14436,7 +14450,18 @@ function reachUnpack(j, ymd){
     if(t.id === 'reach328Go'){ if(R.status !== 'loading'){ track('reach_open', {}); scan(false); } return; }
     if(t.id === 'reach328Retry'){ if(R.status !== 'loading') scan(true); return; }
     if(t.id === 'reach328More'){ R.all = !R.all; paint(); return; }
-    if(t.id === 'reach328Save'){ track('reach_save', {}); if(typeof saveImage === 'function') saveImage(); return; }
+    if(t.id === 'reach328Save'){
+      /* v335 — 지도 전용 그림. 저장 그림 카드(#reportCard)에 is-map335 를 붙인 채 기존 saveImage 를 그대로 씁니다:
+         예상 집값(머리) + 25개 구 격자 + 주소만 남고, 자금 구성·실거래 세 곳은 이 그림에서 빠집니다.
+         공유 시트 · 미리보기 · 내려받기 길은 「이미지 저장」과 같습니다. 다른 저장이 도는 중이면 끼어들지 않습니다. */
+      var card = document.getElementById('reportCard');
+      if(!card || typeof saveImage !== 'function' || (typeof exportBusy !== 'undefined' && exportBusy)) return;
+      track('reach_save', {});
+      var off = function(){ card.classList.remove('is-map335'); };
+      card.classList.add('is-map335');
+      try{ Promise.resolve(saveImage()).then(off, off); }catch(e){ off(); }
+      return;
+    }
     if(t.dataset.reachSwitch){
       var code = t.dataset.reachSwitch;
       if(typeof selectSearchedRegion !== 'function' || !selectSearchedRegion(code)) return;
@@ -14464,6 +14489,7 @@ function reachUnpack(j, ymd){
           return '<div class="rr328-t ' + (bad ? 'is-fail' : 'l' + reachLevel(st.near, max)) + '" style="grid-column:' + r.col + ';grid-row:' + r.row + '">'
             + '<span>' + h(r.short) + '</span><b>' + (bad ? '–' : st.near) + '</b></div>';
         }).join('') + '</div>'
+      + '<p class="rr328-k"><span>적음</span><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>많음</span></p>'
       + '<p class="rr328-c">최근 ' + nMonths() + '개월 국토교통부 실거래 · 면적·연식 구분 없이 센 건수</p>';
   }
   if(typeof renderReport === 'function'){
@@ -14506,6 +14532,16 @@ html body.yk208 #qSheet .pick330 .chip.is-cmp330 *{color:#1848D6!important;font-
 html body.yk208 #qSheet .pick330 .chip .tag330{flex:none;display:inline-block;margin-right:5px;padding:1px 5px;border-radius:10px;font-size:12px;line-height:1.3;font-weight:600!important;pointer-events:none}
 html body.yk208 #qSheet .pick330 .chip.is-base330 .tag330{background:#fff;color:#1848D6!important}
 html body.yk208 #qSheet .pick330 .chip.is-cmp330 .tag330{background:#fff;color:#1848D6!important;box-shadow:inset 0 0 0 1px #5C85FF}
+/* v334 — 서울 자치구 목록을 고르는 동안: 위쪽 자리를 줄여 구 칸이 더 많이 보이게.
+   · 서울/경기·인천/그 외 버튼: 그림을 빼고 한 줄 높이(44px)  · 「목록에서 선택」 글은 낭독용으로만
+   · 시트 높이: 지역 시트는 화면에 거의 가득(위 16px만 남김 · 서울을 누를 때 시트가 출렁이지 않게 지역 시트 전체에 적용)
+   · 규제지역 안내는 목록 아래 */
+html body.yk208 #qSheet:not([hidden]):has(#regionSearchInput):has(#regionPane){height:min(calc(100dvh - 16px),760px)!important;max-height:calc(100dvh - 16px)!important}
+html body.yk208 #qSheet #qBox:has(.pick330) .zonegrid .zonecard{flex-direction:row!important;min-height:44px!important;padding-top:0!important;padding-bottom:0!important}
+html body.yk208 #qSheet #qBox:has(.pick330) .zonegrid .zonecard::before{display:none!important}
+html body.yk208 #qSheet #qBox:has(.pick330) #regionBrowseLabel{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
+html body.yk208 #qSheet .pick330 .pick330-status{margin:0 0 10px}
+html body.yk208 #qSheet .pick330 .pick330-tip{margin:14px 0 0!important}
 </style>
 <script id="v330-pick">
 /* v330 pick — 서울 자치구를 목록 하나에서 최대 3곳 고릅니다(오너 2026-11-16 「3개 다 한번에 선택하는 게」).
@@ -14558,11 +14594,14 @@ function pick330Next(state, code){
   regionPane = function(){
     if(S.group !== 'seoul'){ if(S.sgg) CMP_OPEN = true; return basePane(); }
     if(S.sgg) dealCompareCodes();
+    /* v334 — 구 목록이 먼저 보이게: 제목은 낭독용으로만 두고, 규제지역 안내는 목록 아래로 내렸습니다.
+       (오너 아이폰 캡처 2026-11-17: 검색칸 · 큰 버튼 · 안내 · 상태 줄에 밀려 구가 두 줄만 보였음) */
     return '<div class="pick330">'
-      + '<p class="pane-title">자치구 선택</p>'
-      + '<div class="tip info"><b>서울은 전 구역이 규제지역이에요.</b><br>대출 비율이 낮고 집값 구간별 상한이 있어요.</div>'
+      + '<p class="pane-title sr-only">자치구 선택</p>'
       + '<p class="pick330-status' + (S.sgg && !FULL ? ' is-set' : '') + '" id="pick330Status" role="status">' + statusHtml() + '</p>'
-      + tagGrid(picksOf(SEOUL), false, '') + '</div>';
+      + tagGrid(picksOf(SEOUL), false, '')
+      + '<div class="tip info pick330-tip"><b>서울은 전 구역이 규제지역이에요.</b><br>대출 비율이 낮고 집값 구간별 상한이 있어요.</div>'
+      + '</div>';
   };
   bindPane = function(){
     var p = document.getElementById('regionPane');
