@@ -7599,7 +7599,8 @@ function paintDeals(priceMan){
     ? `※ 「거래 활발」은 ${DEAL.months}개월 안 ${DEAL.hotMin}건 이상 거래된 단지입니다.` : '';
   /* 인근 구까지 봤으면 그 사실만 한 마디. 어느 구인지는 각 줄이 말합니다. */
   const shown = shownRows.length;
-  lead.textContent = `최근 ${DEAL.months}개월 · ${total}곳` + (total > shown ? ` 중 ${shown}곳` : '');
+  /* v342 — 「곳」이 무엇을 세는지 적음: 예상 집값의 85~100%(「조금 넘는 집도」를 켜면 ~110%)에 거래가 있는 단지 수. 기간은 바로 위 카드 머리가 말함. */
+  lead.textContent = `예상 집값 ${Math.round(DEAL.band*100)}~${Math.round((DEAL.over ? DEAL.overBand : 1)*100)}% 단지 ${total}곳` + (total > shown ? ` 중 ${shown}곳` : '');
   /* 🔴 v25.5 — ※를 붙였습니다. 이 화면의 각주는 전부 ※로 시작합니다(위 마크업 주석). */
   foot.innerHTML = '※ 국토교통부 실거래 기준(해제 거래 제외)입니다.<br>※ 평형은 공급면적 추정치입니다.';
 }
@@ -14860,6 +14861,40 @@ html body.yk208 #app#app #viewNext>.easy-next-card>p+p{margin-top:4px!important}
   var list = sec.querySelector('.more341-list');
   parts.forEach(function(e){ list.appendChild(e); });
   card.after(sec);
+})();
+</script>
+<style id="v342-summary">
+/* v342 — 결과 화면 안내문 첫 문장의 둘째 줄 들여쓰기 없앰: 「※」 줄용 내어쓰기(1.2em)가 「※」 없는 문장에도 걸려 있었음(v338부터). 「※」 줄은 그대로. */
+html body.yk208 #app#app #viewNext>.easy-next-card>.nx-lead{padding-left:0!important;text-indent:0!important}
+</style>
+<script id="v342-summary">
+/* v342 — 홈 「내 예산과 실거래 비교」 요약을 지도 탭 머리와 같은 셈 · 같은 문장으로.
+   이전: 「현재 조건에 맞는 실거래 110곳」(예상 집값 85~100%에 거래가 있는 단지 수)
+         vs 지도 탭 「거래의 71%가 내 예상 집값 이하예요」(조회 거래 전체 중 예상 집값 이하 비율) — 기준이 달라 두 숫자가 서로 안 맞아 보였음.
+   지금: 홈도 distributionModel(지도 탭과 같은 함수 · 같은 예상 집값 · 같은 필터)로 셈. 소수점은 버림(지도 탭과 같음).
+   불러오는 중 · 실패 · 일부만 조회 · 거래 없음 문구는 그대로(원래 heroContext). 계산과는 관계없음. */
+(function(){
+  function sum342(){
+    var el = document.getElementById('heroContext');
+    if(!el || typeof DEAL === 'undefined' || typeof distributionModel !== 'function') return;
+    if(DEAL.status !== 'ready' || ((DEAL.items && DEAL.items.queryIssues) || []).length) return;
+    var budget = (typeof LASTVIEW === 'object' && LASTVIEW && LASTVIEW.price > 0) ? Math.floor(LASTVIEW.price / 10000) : DEAL.lastPrice;
+    if(!(budget > 0)) return;
+    var m = distributionModel(DEAL.items || [], budget, typeof DEAL.pass === 'function' ? DEAL.pass : null);
+    if(!m.n) return;
+    var pct = Math.floor(m.under / m.n * 100);
+    var t = m.under === 0 ? '내 예상 집값 이하 거래 없음'
+      : m.under === m.n ? '모든 거래가 내 예상 집값 이하'
+      : pct === 0 ? '거래의 <b>1% 미만</b>이 내 예상 집값 이하'
+      : '거래의 <b>' + pct + '%</b>가 내 예상 집값 이하';
+    var extra = (DEAL.compareCodes || []).length, scope = extra ? (extra + 1) + '개 지역' : (DEAL.wide ? '인근 지역 포함' : '');
+    el.innerHTML = '<span class="hc-t">' + t + (scope ? ' · <span class="hc-nw">' + scope + '</span>' : '') + ' · <span class="hc-nw">최근 ' + (DEAL.months || 3) + '개월</span></span>';
+    el.dataset.v342 = m.under + '/' + m.n;
+  }
+  window.__ykSum342 = sum342;
+  document.addEventListener('deals:ready', sum342);   /* 원래 heroContext 보다 뒤에 등록 → 뒤에 실행 */
+  if(typeof paintDeals === 'function'){ var pd = paintDeals; paintDeals = function(){ var r = pd.apply(this, arguments); sum342(); return r; }; }
+  sum342();
 })();
 </script>
 </body>
