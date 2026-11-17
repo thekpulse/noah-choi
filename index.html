@@ -4230,6 +4230,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
           <div class="reach328-pick" id="reach328Pick" aria-live="polite" hidden></div>
           <ol class="reach328-list" id="reach328List"></ol>
           <button class="reach328-more" id="reach328More" type="button" aria-expanded="false" hidden></button>
+          <button class="reach328-switch" id="reach328Save" type="button" hidden>이 지도를 이미지로 저장</button>
         </div>
         <p class="reach328-issue reach328-full" id="reach328Issue" hidden></p>
         <p class="reach328-note reach328-full" id="reach328Note"></p>
@@ -14119,6 +14120,21 @@ html body.yk208 #app #reach328 .reach328-row[aria-pressed="true"] .nm{color:#184
 html body.yk208 #app #reach328 :is(.reach328-more,.reach328-retry){min-height:44px;margin:4px 0 0;padding:0 2px;border:0;background:none;color:#1848D6;font:inherit;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 html body.yk208 #app #reach328 .reach328-issue{margin:10px 0 0;font-size:13px;line-height:1.6;color:var(--yk-sub)}
 html body.yk208 #app #reach328 .reach328-note{margin:12px 0 0;font-size:12px;line-height:1.6;color:var(--yk-sub);word-break:keep-all}
+/* v332 — 저장·공유 이미지 안의 25개 구 격자(카드 폭 440px 고정). 글자 12·13 · 모서리 10. */
+html body #reportCard .rr328{margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--v-line)}
+html body #reportCard .rr328[hidden]{display:none}
+html body #reportCard .rr328-h{margin:0;font-size:13px;font-weight:600;line-height:1.3;color:#192332}
+html body #reportCard .rr328-r{margin:2px 0 0;font-size:12px;line-height:1.6;color:#516077}
+html body #reportCard .rr328-map{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:10px 0 0}
+html body #reportCard .rr328-t{display:flex;flex-direction:column;align-items:center;justify-content:center;height:42px;border-radius:10px;background:#F3F5F8;color:#516077;line-height:1.3}
+html body #reportCard .rr328-t span{font-size:12px;font-weight:500}
+html body #reportCard .rr328-t b{font-size:13px;font-weight:700}
+html body #reportCard .rr328-t.l1{background:#E3EAFF;color:#0E1B45}
+html body #reportCard .rr328-t.l2{background:#BCCBFF;color:#0E1B45}
+html body #reportCard .rr328-t.l3{background:#7F9BFF;color:#0E1B45}
+html body #reportCard .rr328-t.l4{background:#1F4FE6;color:#fff}
+html body #reportCard .rr328-t.is-fail{background:#fff;border:1px dashed #B9C5D8;color:#607089}
+html body #reportCard .rr328-c{margin:8px 0 0;font-size:12px;line-height:1.6;color:#516077}
 @media(min-width:960px){
  html body.yk208 #app #viewAnswer>#reach328{grid-column:1 / -1!important}
  html body.yk208 #app #reach328 .reach328-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 32px;align-items:start}
@@ -14126,7 +14142,10 @@ html body.yk208 #app #reach328 .reach328-note{margin:12px 0 0;font-size:12px;lin
 }
 </style>
 <script id="v328-reach">
-/* v328 reach — 서울 25개 구 · 예상 집값 이하 실거래 건수.
+/* v328 reach — 서울 25개 구 · 예상 집값 가까이 거래된 실거래 건수.
+   · v331 — 세는 범위를 「예상 집값 이하 전부」에서 **「예상 집값의 85%~100%」**로 좁혔습니다(DEAL.band — 실거래 비교 카드와 같은 범위).
+     운영 확인(오너 캡처 2026-11-16, 예상 집값 22억): 노원 844건 / 844건처럼 거의 모든 거래가 「이하」라 구별 차이가 거래량 차이로만 보였습니다.
+     「이하 전체」 건수는 고른 구 상세에 함께 적습니다.
    · 누를 때만 조회합니다. 금액·소득은 보내지 않습니다(주소에 싣는 값은 ymd · lawd 뿐).
    · v329 — 한 달치 25개 구를 /api/apt-reach 로 **한 번에** 받습니다(최근 DEAL.months개월 = 3번). v328 은 구마다 따로 75번을 불러
      운영에서 느렸습니다(오너 2026-11-16). 묶음 조회가 통째로 안 되는 달만 예전처럼 /api/apt-price 로 구마다 부릅니다.
@@ -14144,25 +14163,28 @@ var REACH_TILES = [
   ['11530','구로',1,6],['11545','금천',2,6],['11620','관악',3,6]
 ];
 var REACH_PAGE = 1000;   /* api/apt-price.js 의 numOfRows. 총건수가 이보다 크면 그 달은 일부만 받은 것 */
-/* months: [{ymd, ok, items, total}]. budgetMan: 그 구 기준 예상 집값(만원). */
-function reachStat(months, budgetMan){
+/* months: [{ymd, ok, items, total}]. budgetMan: 그 구 기준 예상 집값(만원). loMan: 세는 범위의 아래 끝(만원 · 포함).
+   near = loMan ≤ 금액 ≤ budgetMan · under = 금액 ≤ budgetMan(이하 전체). loMan 이 없으면 near = under. */
+function reachStat(months, budgetMan, loMan){
   var okMonths = months.filter(function(m){ return m.ok; });
   var st = { state: !okMonths.length ? 'failed' : okMonths.length < months.length ? 'partial' : 'ok',
     capped: okMonths.some(function(m){ return Number(m.total) > REACH_PAGE; }),
-    total:0, under:0, min:null, underMin:null, underMax:null, recent:[] };
+    total:0, under:0, near:0, min:null, underMax:null, nearMin:null, nearMax:null, recent:[] };
   if(st.state === 'failed' || !(budgetMan > 0)) return st;
-  var under = [];
+  var near = [], lo = loMan > 0 ? loMan : 0;
   okMonths.forEach(function(m){ (m.items || []).forEach(function(x){
     var a = Number(x.amountMan);
     if(!(a > 0)) return;
     st.total++;
     if(st.min == null || a < st.min) st.min = a;
-    if(a <= budgetMan){ st.under++; under.push(x);
-      if(st.underMin == null || a < st.underMin) st.underMin = a;
-      if(st.underMax == null || a > st.underMax) st.underMax = a; }
+    if(a <= budgetMan){ st.under++;
+      if(st.underMax == null || a > st.underMax) st.underMax = a;
+      if(a >= lo){ st.near++; near.push(x);
+        if(st.nearMin == null || a < st.nearMin) st.nearMin = a;
+        if(st.nearMax == null || a > st.nearMax) st.nearMax = a; } }
   }); });
   var when = function(n){ return (n.y || 0) * 10000 + (n.m || 0) * 100 + (n.d || 0); };
-  st.recent = under.sort(function(a, b){ return (when(b) - when(a)) || (b.amountMan - a.amountMan); }).slice(0, 3);
+  st.recent = near.sort(function(a, b){ return (when(b) - when(a)) || (b.amountMan - a.amountMan); }).slice(0, 3);
   return st;
 }
 /* 건수 → 색 단계(0~4). 0건은 0, 그 밖은 가장 많은 구 대비 비율로 넷으로 나눕니다. */
@@ -14171,11 +14193,11 @@ function reachLevel(under, max){
   var r = under / max;
   return r >= 0.75 ? 4 : r >= 0.5 ? 3 : r >= 0.25 ? 2 : 1;
 }
-/* 순위: 이하 건수 많은 순 → 전체 건수 많은 순 → 격자 순서. 실패한 구는 맨 뒤. */
+/* 순위: 범위 안 건수 많은 순 → 전체 건수 많은 순 → 격자 순서. 실패한 구는 맨 뒤. */
 function reachRank(rows){
   return rows.slice().sort(function(a, b){
     var fa = a.st.state === 'failed' ? 1 : 0, fb = b.st.state === 'failed' ? 1 : 0;
-    return (fa - fb) || (b.st.under - a.st.under) || (b.st.total - a.st.total) || (a.i - b.i);
+    return (fa - fb) || (b.st.near - a.st.near) || (b.st.total - a.st.total) || (a.i - b.i);
   });
 }
 
@@ -14264,8 +14286,8 @@ function reachUnpack(j, ymd){
       /* 한 번도 답을 못 받은 달은 실패로 채워 둡니다(빈 달로 두면 「거래 없음」으로 읽힘) */
       codes.forEach(function(c){ ymds.forEach(function(ymd){ if(!monthOf(c, ymd)) setMonth(c, { ymd:ymd, ok:false, items:[], total:null }, ymds); }); });
       R.status = 'done';
-      var rows = build(), hit = rows.filter(function(r){ return r.st.under > 0; }).length;
-      if(R.sel == null){ var top = reachRank(rows)[0]; R.sel = top && top.st.under > 0 ? top.code : null; }
+      var rows = build(), hit = rows.filter(function(r){ return r.st.near > 0; }).length;
+      if(R.sel == null){ var top = reachRank(rows)[0]; R.sel = top && top.st.near > 0 ? top.code : null; }
       /* 사용 로그 — 금액 없이 범주만 */
       track('reach_scan', { hit: hit === 0 ? 'none' : hit <= 5 ? '1-5' : hit <= 15 ? '6-15' : '16-25',
         failed: rows.some(function(r){ return r.st.state === 'failed'; }), retry: !!retry });
@@ -14277,9 +14299,13 @@ function reachUnpack(j, ymd){
       var ms = R.months.get(t[0]), b = dealBudgetFor(t[0]);
       if(ms && R.status === 'loading' && ms.length < nMonths()) ms = null;   /* 달이 다 모일 때까지는 「조회 중」 */
       return { code:t[0], short:t[1], col:t[2], row:t[3], i:i, budget:b, loaded:!!ms,
-        st: ms ? reachStat(ms, b) : { state:'wait', total:0, under:0, recent:[] } };
+        lo: loOf(b), st: ms ? reachStat(ms, b, loOf(b)) : { state:'wait', total:0, under:0, near:0, recent:[] } };
     });
   }
+  /* 세는 범위의 아래 끝 — 실거래 비교 카드(splitDeals)와 같은 식 */
+  function loOf(budgetMan){ return budgetMan > 0 ? Math.round(budgetMan * bandOf()) : 0; }
+  function bandOf(){ return (typeof DEAL === 'object' && DEAL && DEAL.band > 0 && DEAL.band < 1) ? DEAL.band : 0.85; }
+  function pctText(){ return Math.round(bandOf() * 100) + '%~100%'; }
   function visible(){
     if(!(typeof LASTVIEW === 'object' && LASTVIEW && LASTVIEW.price > 0) || !S.sgg) return false;
     var sido = sidoOfCode(S.sgg);
@@ -14299,7 +14325,7 @@ function reachUnpack(j, ymd){
     var cls = 'reach328-tile', val = '', say = '';
     if(st.state === 'wait'){ cls += ' is-wait'; val = '·'; say = '조회 중'; }
     else if(st.state === 'failed'){ cls += ' is-fail'; val = '–'; say = '조회 실패'; }
-    else { cls += ' l' + reachLevel(st.under, max); val = String(st.under); say = '건 · ' + label + ' 이하 · 전체 ' + st.total + '건' + (st.state === 'partial' ? ' · 일부 달만 조회' : ''); }
+    else { cls += ' l' + reachLevel(st.near, max); val = String(st.near); say = '건 · ' + label + '의 ' + pctText() + ' · 이하 ' + st.under + '건 · 전체 ' + st.total + '건' + (st.state === 'partial' ? ' · 일부 달만 조회' : ''); }
     if(mine){ cls += ' is-mine'; say += ' · 지금 매수 지역'; }
     /* 읽히는 이름 = 보이는 글자(칸 이름 · 숫자) + 숨긴 설명. aria-label 로 덮지 않습니다(보이는 글자와 어긋나지 않게). */
     return '<button type="button" class="' + cls + '" style="grid-column:' + r.col + ';grid-row:' + r.row + '" data-reach="' + r.code + '"'
@@ -14309,14 +14335,16 @@ function reachUnpack(j, ymd){
   function pickHtml(r, phrase){
     var st = r.st, name = guName(r.code), out = '<h3>' + h(name) + '</h3>';
     if(st.state === 'failed') return out + '<p>실거래를 불러오지 못했어요. 거래가 없다는 뜻이 아니에요.</p>';
-    var basis = phrase && !phrase.same && r.budget > 0 ? ' (' + won(r.budget) + ')' : '';
-    out += '<p>' + h(phrase ? phrase.label : '예상 집값') + ' 이하 <b>' + st.under + '건</b> · 전체 ' + st.total + '건' + basis + '</p>';
-    if(st.under > 0){
-      out += '<p>이하 거래 가격 ' + (st.underMin === st.underMax ? won(st.underMin) : won(st.underMin) + ' ~ ' + won(st.underMax)) + '</p>';
-      out += '<ul class="reach328-deals" aria-label="최근 이하 거래">' + st.recent.map(function(x){
+    var lab = phrase ? phrase.label : '예상 집값';
+    out += '<p>' + h(lab) + '의 ' + pctText() + ' <b>' + st.near + '건</b>' + (r.budget > 0 ? ' (' + won(r.lo) + ' ~ ' + won(r.budget) + ')' : '') + '</p>';
+    out += '<p>' + h(lab) + ' 이하 ' + st.under + '건 · 전체 ' + st.total + '건</p>';
+    if(st.near > 0){
+      out += '<ul class="reach328-deals" aria-label="이 범위의 최근 거래">' + st.recent.map(function(x){
         var meta = [x.dong, x.areaM2 != null ? '전용 ' + x.areaM2 + '㎡' : '', x.y && x.m ? x.y + '.' + String(x.m).padStart(2, '0') + (x.d ? '.' + String(x.d).padStart(2, '0') : '') : ''].filter(Boolean).join(' · ');
         return '<li><span><em>' + h(x.name) + '</em>' + (meta ? '<small>' + h(meta) + '</small>' : '') + '</span><b>' + won(Number(x.amountMan)) + '</b></li>';
       }).join('') + '</ul>';
+    } else if(st.under > 0){
+      out += '<p>이 범위 거래는 없어요. 이하 거래 중 가장 높은 가격 ' + won(st.underMax) + '</p>';
     } else if(st.min != null && r.budget > 0){
       out += '<p>가장 낮은 거래 ' + won(st.min) + ' · ' + h(phrase ? phrase.label : '예상 집값') + '보다 ' + won(st.min - r.budget) + ' 높음</p>';
     } else if(!st.total){
@@ -14337,43 +14365,45 @@ function reachUnpack(j, ymd){
     var n = nMonths(), all = REACH_TILES.length;
     if(R.status === 'idle'){
       var p0 = budgetPhrase(build());
-      lead.textContent = '서울 ' + all + '개 구의 최근 ' + n + '개월 실거래를 ' + (p0 && p0.label !== '예상 집값' ? p0.text + '과' : '내 예상 집값과') + ' 비교해 구별로 세어요.';
+      lead.textContent = '서울 ' + all + '개 구의 최근 ' + n + '개월 실거래 가운데 ' + (p0 ? p0.label : '예상 집값') + '의 ' + pctText() + '에 거래된 건수를 구별로 세어요.';
       go.hidden = false; go.disabled = false; el('reach328GoText').textContent = '서울 ' + all + '개 구 살펴보기';
       body.hidden = true; return;
     }
     var rows = build(), phrase = budgetPhrase(rows);
     var loaded = rows.filter(function(r){ return r.st.state !== 'wait' && r.st.state !== 'failed'; });
-    var max = loaded.reduce(function(m, r){ return Math.max(m, r.st.under); }, 0), lab = phrase ? phrase.label : '예상 집값';
+    var max = loaded.reduce(function(m, r){ return Math.max(m, r.st.near); }, 0), lab = phrase ? phrase.label : '예상 집값';
     el('reach328Map').innerHTML = rows.map(function(r){ return tileHtml(r, max, lab); }).join('');
-    el('reach328Key').innerHTML = '<span>숫자 = ' + h(lab) + ' 이하 거래 건수</span>'
+    el('reach328Key').innerHTML = '<span>숫자 = ' + h(lab) + '의 ' + pctText() + ' 거래 건수</span>'
       + '<span class="sc" aria-hidden="true">적음 <i style="background:#E3EAFF"></i><i style="background:#BCCBFF"></i><i style="background:#7F9BFF"></i><i style="background:#1F4FE6"></i> 많음</span>'
       + '<span>● 지금 매수 지역</span>';
     body.hidden = false;
     if(R.status === 'loading'){
       lead.textContent = '구별 실거래를 불러오고 있어요.';
       go.hidden = false; go.disabled = true; el('reach328GoText').textContent = R.todo ? '조회 중 · ' + R.done + ' / ' + R.todo : '조회 중';
-      el('reach328Pick').hidden = true; el('reach328List').innerHTML = ''; el('reach328More').hidden = true;
+      el('reach328Pick').hidden = true; el('reach328List').innerHTML = ''; el('reach328More').hidden = true; el('reach328Save').hidden = true;
       el('reach328Issue').hidden = true; el('reach328Note').textContent = '';
       return;
     }
     go.hidden = true;
-    var hit = loaded.filter(function(r){ return r.st.under > 0; });
-    var sum = hit.reduce(function(s, r){ return s + r.st.under; }, 0);
+    var hit = loaded.filter(function(r){ return r.st.near > 0; });
+    var sum = hit.reduce(function(s, r){ return s + r.st.near; }, 0);
     var failed = rows.filter(function(r){ return r.st.state === 'failed'; }), partial = rows.filter(function(r){ return r.st.state === 'partial'; });
     var scope = failed.length ? '조회된 ' + loaded.length + '개 구' : '서울 ' + all + '개 구';
-    var ptxt = phrase ? phrase.text : '예상 집값';
+    var ptxt = (phrase ? phrase.label : '예상 집값') + '의 ' + pctText()
+      + (phrase && phrase.same && rows[0].budget > 0 ? '(' + won(rows[0].lo) + ' ~ ' + won(rows[0].budget) + ')' : '');
     if(!loaded.length) lead.textContent = '실거래를 불러오지 못했어요.';
-    else if(!hit.length) lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + '에 ' + h(ptxt) + ' 이하 거래가 없어요.';
-    else lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + ' 가운데 ' + h(ptxt) + ' 이하 거래가 있는 구는 <b>' + hit.length + '곳</b>, 모두 <b>' + sum.toLocaleString('ko-KR') + '건</b>이에요.';
+    else if(!hit.length) lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + '에 ' + h(ptxt) + ' 거래가 없어요.';
+    else lead.innerHTML = '최근 ' + n + '개월 ' + h(scope) + ' 가운데 ' + h(ptxt) + ' 거래가 있는 구는 <b>' + hit.length + '곳</b>, 모두 <b>' + sum.toLocaleString('ko-KR') + '건</b>이에요.';
 
-    var ranked = reachRank(rows), list = R.all ? ranked : ranked.filter(function(r){ return r.st.under > 0; }).slice(0, TOP);
+    var ranked = reachRank(rows), list = R.all ? ranked : ranked.filter(function(r){ return r.st.near > 0; }).slice(0, TOP);
     el('reach328List').innerHTML = list.map(function(r){
-      var st = r.st, w = max > 0 ? Math.max(st.under > 0 ? 3 : 0, Math.round(st.under / max * 100)) : 0;
-      var ct = st.state === 'failed' ? '조회 실패' : '<b>' + st.under + '건</b> / ' + st.total + '건';
+      var st = r.st, w = max > 0 ? Math.max(st.near > 0 ? 3 : 0, Math.round(st.near / max * 100)) : 0;
+      var ct = st.state === 'failed' ? '조회 실패' : '<b>' + st.near + '건</b> / ' + st.total + '건';
       return '<li><button type="button" class="reach328-row" data-reach="' + r.code + '" aria-pressed="' + (R.sel === r.code) + '">'
         + '<span class="nm">' + h(guName(r.code)) + '</span><span class="bar" aria-hidden="true"><i style="width:' + w + '%"></i></span><span class="ct">' + ct + '</span></button></li>';
     }).join('');
     var more = el('reach328More');
+    el('reach328Save').hidden = !loaded.length || typeof saveImage !== 'function';   /* v332 — 저장 이미지에 이 격자가 실림 */
     more.hidden = !loaded.length; more.setAttribute('aria-expanded', String(R.all));
     more.textContent = R.all ? '접기' : all + '개 구 모두 보기';
 
@@ -14396,6 +14426,7 @@ function reachUnpack(j, ymd){
     if(t.id === 'reach328Go'){ if(R.status !== 'loading'){ track('reach_open', {}); scan(false); } return; }
     if(t.id === 'reach328Retry'){ if(R.status !== 'loading') scan(true); return; }
     if(t.id === 'reach328More'){ R.all = !R.all; paint(); return; }
+    if(t.id === 'reach328Save'){ track('reach_save', {}); if(typeof saveImage === 'function') saveImage(); return; }
     if(t.dataset.reachSwitch){
       var code = t.dataset.reachSwitch;
       if(typeof selectSearchedRegion !== 'function' || !selectSearchedRegion(code)) return;
@@ -14406,6 +14437,41 @@ function reachUnpack(j, ymd){
     if(t.dataset.reach && R.status === 'done'){ R.sel = t.dataset.reach; paint(); }
   });
 
+  /* v332 — 저장·공유 이미지(#reportCard)에 25개 구 격자를 싣습니다(오너 2026-11-16 선택 「25개 구 지도 공유 이미지」).
+     · **조회를 마친 뒤에만** 실립니다. 안 눌렀거나 조회 중이면 이미지는 이전과 같습니다(이미지를 만들려고 따로 조회하지 않음).
+     · 칸 숫자·색 단계는 화면 격자와 같은 값(build · reachLevel)에서 옵니다. 실패한 구는 「–」. */
+  function reportHtml(){
+    if(R.status !== 'done' || !visible()) return '';
+    var rows = build(), phrase = budgetPhrase(rows);
+    var loaded = rows.filter(function(r){ return r.st.state !== 'wait' && r.st.state !== 'failed'; });
+    if(!loaded.length) return '';
+    var max = loaded.reduce(function(m, r){ return Math.max(m, r.st.near); }, 0), lab = phrase ? phrase.label : '예상 집값';
+    var range = phrase && phrase.same && rows[0].budget > 0 ? won(rows[0].lo) + ' ~ ' + won(rows[0].budget) : '';
+    return '<p class="rr328-h">서울 25개 구 · ' + h(lab) + '의 ' + pctText() + ' 거래 건수</p>'
+      + (range ? '<p class="rr328-r">' + range + '</p>' : '')
+      + '<div class="rr328-map">' + rows.map(function(r){
+          var st = r.st, bad = st.state === 'failed' || st.state === 'wait';
+          return '<div class="rr328-t ' + (bad ? 'is-fail' : 'l' + reachLevel(st.near, max)) + '" style="grid-column:' + r.col + ';grid-row:' + r.row + '">'
+            + '<span>' + h(r.short) + '</span><b>' + (bad ? '–' : st.near) + '</b></div>';
+        }).join('') + '</div>'
+      + '<p class="rr328-c">최근 ' + nMonths() + '개월 국토교통부 실거래 · 면적·연식 구분 없이 센 건수</p>';
+  }
+  if(typeof renderReport === 'function'){
+    var baseReport = renderReport;
+    renderReport = function(){
+      var r = baseReport.apply(this, arguments);
+      try{
+        var box = document.getElementById('rReach328'), after = document.getElementById('rDeals');
+        if(!box && after && after.parentNode){
+          box = document.createElement('div'); box.id = 'rReach328'; box.className = 'rr328';
+          after.parentNode.insertBefore(box, after.nextSibling);
+        }
+        if(box){ var html = reportHtml(); box.hidden = !html; box.innerHTML = html; }
+      }catch(e){}
+      return r;
+    };
+  }
+
   /* 결과를 다시 낼 때마다(조건·지역이 바뀌면 예상 집값도 바뀜) 받은 거래로 다시 셉니다. 다시 부르지 않습니다. */
   var original = showResult;
   showResult = function(){
@@ -14414,6 +14480,111 @@ function reachUnpack(j, ymd){
     return r;
   };
   try{ paint(); }catch(e){}
+})();
+</script>
+<style id="v330-pick">
+/* v330 — 서울 자치구: 목록 하나에서 최대 3곳(기준 1 + 비교 2). 누른 뒤에도 칸 자리가 움직이지 않게 표시는 칸 안 꼬리표로만.
+   글자 12·13 · 모서리 10 · 행간 1.3·1.6 (스케일 안). 기준 = 파랑 면 + 「기준」, 비교 = 옅은 파랑 + 「비교」(색만으로 가르지 않음). */
+html body.yk208 #qSheet .pick330-status{min-height:42px;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#F3F5F8;color:#516077;font-size:13px;line-height:1.6;word-break:keep-all}
+html body.yk208 #qSheet .pick330-status b{color:#192332;font-weight:600}
+html body.yk208 #qSheet .pick330-status.is-set{background:#EDF2FF;color:#1848D6}
+html body.yk208 #qSheet .pick330-status.is-set b{color:#1848D6}
+html body.yk208 #qSheet .pick330 .chip.is-base330{background:#2458FF!important;border-color:#2458FF!important;color:#fff!important}
+html body.yk208 #qSheet .pick330 .chip.is-base330 *{color:#fff!important;font-weight:600!important}
+html body.yk208 #qSheet .pick330 .chip.is-cmp330{background:#EDF2FF!important;border-color:#5C85FF!important;color:#1848D6!important}
+html body.yk208 #qSheet .pick330 .chip.is-cmp330 *{color:#1848D6!important;font-weight:600!important}
+html body.yk208 #qSheet .pick330 .chip .tag330{flex:none;display:inline-block;margin-right:5px;padding:1px 5px;border-radius:10px;font-size:12px;line-height:1.3;font-weight:600!important;pointer-events:none}
+html body.yk208 #qSheet .pick330 .chip.is-base330 .tag330{background:#fff;color:#1848D6!important}
+html body.yk208 #qSheet .pick330 .chip.is-cmp330 .tag330{background:#fff;color:#1848D6!important;box-shadow:inset 0 0 0 1px #5C85FF}
+</style>
+<script id="v330-pick">
+/* v330 pick — 서울 자치구를 목록 하나에서 최대 3곳 고릅니다(오너 2026-11-16 「3개 다 한번에 선택하는 게」).
+   이전: 구를 누르면 목록이 「계산 기준 · 변경」으로 접히고, 「함께 비교할 지역」을 펼쳐 다른 목록에서 다시 골랐습니다.
+         누를 때마다 화면이 다시 그려져 스크롤 자리가 어긋났습니다(오너 「제대로 안 내려가서 굳이 내려서 한 개 누르고」).
+   지금: 같은 목록에서 처음 누른 구 = 계산 기준(매수 지역), 다음 두 곳 = 비교. 누른 뒤에도 칸 자리는 그대로이고 스크롤도 그대로입니다.
+         기준 구를 다시 누르면 해제되고, 먼저 고른 비교 구가 기준이 됩니다.
+   · 서울(S.group==='seoul')만 바꿉니다. 경기·인천·그 외는 묶인 시(시 안에 구)가 있어 기존 화면 그대로 —
+     다만 다시 그릴 때 스크롤 자리를 지키고, 「함께 비교할 지역」을 처음부터 펼쳐 둡니다(한 번 덜 누름).
+   · 계산은 건드리지 않습니다. 바뀌는 값은 S.sgg · S.pick · S.compareCodes 뿐(기존 화면이 쓰던 그대로). */
+
+/* ── 순수 함수(검사가 vm 으로 직접 실행) ─────────────────────────────── */
+/* state: {base:'11215'|'' , cmp:['11200', …]} 에서 code 를 눌렀을 때의 다음 상태. full:true 면 더 못 고름(상태 그대로). */
+function pick330Next(state, code){
+  var base = state.base || '', cmp = (state.cmp || []).slice(), at = cmp.indexOf(code);
+  if(!base) return { base:code, cmp:cmp.filter(function(c){ return c !== code; }), full:false };
+  if(code === base){ var next = cmp.shift() || ''; return { base:next, cmp:cmp, full:false }; }   /* 기준 해제 → 먼저 고른 비교가 기준 */
+  if(at >= 0){ cmp.splice(at, 1); return { base:base, cmp:cmp, full:false }; }
+  if(cmp.length >= 2) return { base:base, cmp:cmp, full:true };
+  cmp.push(code);
+  return { base:base, cmp:cmp, full:false };
+}
+
+/* ── 화면 ──────────────────────────────────────────────────────────── */
+(function(){
+  if(typeof document === 'undefined' || typeof regionPane !== 'function' || typeof bindPane !== 'function' || typeof tagGrid !== 'function') return;
+  var basePane = regionPane, baseBind = bindPane;
+  var FULL = false;
+  var h = function(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  /* 시트 안에서 실제로 스크롤되는 상자 */
+  function scroller(el){
+    for(var n = el; n && n !== document.body; n = n.parentElement){
+      var oy = getComputedStyle(n).overflowY;
+      if((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return n;
+    }
+    return null;
+  }
+  function keepScroll(fn){
+    var p = document.getElementById('regionPane'), sc = p ? scroller(p) : null, top = sc ? sc.scrollTop : 0;
+    var r = fn();
+    if(sc && sc.isConnected) sc.scrollTop = top;
+    return r;
+  }
+  function statusHtml(){
+    if(FULL) return '<b>3곳까지 고를 수 있어요.</b> 고른 구를 누르면 해제돼요.';
+    if(!S.sgg) return '<b>처음 누른 구가 계산 기준이에요.</b> 두 곳을 더 누르면 함께 비교해요.';
+    var cmp = (S.compareCodes || []).map(sggName).filter(Boolean);
+    return '기준 <b>' + h(sggName(S.sgg)) + '</b>' + (cmp.length ? ' · 비교 <b>' + h(cmp.join(' · ')) + '</b>' : ' · 두 곳을 더 누르면 함께 비교해요.');
+  }
+  regionPane = function(){
+    if(S.group !== 'seoul'){ if(S.sgg) CMP_OPEN = true; return basePane(); }
+    if(S.sgg) dealCompareCodes();
+    return '<div class="pick330">'
+      + '<p class="pane-title">자치구 선택</p>'
+      + '<div class="tip info"><b>서울은 전 구역이 규제지역이에요.</b><br>대출 비율이 낮고 집값 구간별 상한이 있어요.</div>'
+      + '<p class="pick330-status' + (S.sgg && !FULL ? ' is-set' : '') + '" id="pick330Status" role="status">' + statusHtml() + '</p>'
+      + tagGrid(picksOf(SEOUL), false, '') + '</div>';
+  };
+  bindPane = function(){
+    var p = document.getElementById('regionPane');
+    if(!p) return;
+    if(S.group !== 'seoul' || !p.querySelector('.pick330')){
+      /* 서울 밖 — 기존 동작. 누를 때마다 다시 그리므로 스크롤 자리만 지킵니다. */
+      baseBind();
+      p.querySelectorAll('[data-pick],[data-input-region],[data-sido]').forEach(function(b){
+        var f = b.onclick; if(typeof f === 'function') b.onclick = function(e){ return keepScroll(function(){ return f.call(b, e); }); };
+      });
+      return;
+    }
+    var cmp = S.compareCodes || [];
+    p.querySelectorAll('.pick330 [data-pick]').forEach(function(b){
+      var code = b.dataset.pick, isBase = S.sgg === code, isCmp = cmp.indexOf(code) >= 0;
+      b.classList.remove('is-on');
+      b.classList.toggle('is-base330', isBase); b.classList.toggle('is-cmp330', isCmp);
+      b.setAttribute('aria-pressed', String(isBase || isCmp));
+      if(isBase || isCmp){ var t = document.createElement('small'); t.className = 'tag330'; t.textContent = isBase ? '기준' : '비교'; b.insertBefore(t, b.firstChild); }
+      b.onclick = function(){
+        var nx = pick330Next({ base:S.sgg || '', cmp:(S.compareCodes || []).slice() }, code);
+        FULL = !!nx.full;
+        if(!nx.full){
+          S.sgg = nx.base; S.pick = nx.base ? ((pickOfCode(nx.base) || {}).id || '') : '';
+          S.compareCodes = nx.cmp;
+        }
+        keepScroll(function(){ p.innerHTML = regionPane(); bindPane(); syncCta(); });
+        var again = p.querySelector('.pick330 [data-pick="' + code + '"]');
+        if(again && again.focus) again.focus({ preventScroll:true });
+      };
+    });
+  };
 })();
 </script>
 </body>
