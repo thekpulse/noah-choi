@@ -14897,5 +14897,37 @@ html body.yk208 #app#app #viewNext>.easy-next-card>.nx-lead{padding-left:0!impor
   sum342();
 })();
 </script>
+<style id="v343-funding">
+/* v343 — 첫 카드(예상 집값) 어긋난 것만(오너 A안, 2026-11-17). 숫자·문구·계산은 그대로.
+   ① 상자는 누를 수 있는 「포함된 부대비용」 하나만: 현금·대출 칸(누를 수 없음)의 면·테두리를 없애고 가운데 세로선으로 나눔.
+   ② 320px: 점이 혼자 한 줄을 차지하던 세로 쌓기(v2xx @max-width:374px)를 가로로 되돌림 — 점 · 이름이 한 줄, 비율은 자리가 모자라면 다음 줄.
+   ③ 금액의 「억 · 만원」 글자를 「총 필요 금액」과 같은 크기(--t7)로 — 글자 감싸기는 아래 script. */
+html body.yk208 #app #viewAnswer #easyBalance .rlab>div,
+html body.yk208 #app #viewAnswer #easyBalance .rlab>div+div{background:none!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
+html body.yk208 #app #viewAnswer #easyBalance:not(.cash-only) .rlab>div+div{border-left:1px solid var(--yk-stroke-divider)!important;padding-left:var(--sp-3)!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab .t{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;gap:2px 6px!important;min-height:0!important}
+html body.yk208 #app #viewAnswer #easyBalance .rlab>div{display:flex!important;flex-direction:column}
+html body.yk208 #app #viewAnswer #easyBalance .rlab .n{margin-top:auto!important;padding-top:var(--sp-2)}  /* 한쪽 이름이 두 줄이 돼도 두 금액은 같은 높이 */
+html body.yk208 #app #viewAnswer #easyBalance .rlab .n i.u{font-style:normal;font-size:var(--t7)!important;font-weight:inherit;letter-spacing:inherit}
+</style>
+<script id="v343-funding">
+/* v343 — 현금·대출 금액의 단위 글자를 감쌈(「3억원」 → 3<i class="u">억원</i>). 글자(textContent)는 그대로라 읽는 곳은 바뀌지 않음.
+   금액을 쓰는 원래 함수(syncBalance)는 손대지 않고, 바뀔 때마다 뒤따라 감쌈. 이미 감싼 것은 다시 감싸지 않음(되풀이 없음). */
+(function(){
+  var RE = /([\d,]+\s*)(억\s*원|억|만원|원)/g;
+  function wrap(el){
+    if(!el || el.querySelector('i.u')) return;
+    var t = el.textContent;
+    if(!RE.test(t)) return; RE.lastIndex = 0;
+    el.innerHTML = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(RE, '$1<i class="u">$2</i>');
+  }
+  ['easyCash','easyLoan'].forEach(function(id){
+    var el = document.getElementById(id); if(!el) return;
+    wrap(el);
+    new MutationObserver(function(){ wrap(el); }).observe(el, {childList:true, characterData:true, subtree:true});
+  });
+  window.__ykWrap343 = wrap;
+})();
+</script>
 </body>
 </html>
