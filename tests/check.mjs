@@ -468,6 +468,12 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(/if\(S\.group !== 'seoul'\)\{ if\(S\.sgg\) CMP_OPEN = true; return basePane\(\); \}/.test(js), 'v330 서울 밖은 기존 화면 그대로(비교 목록만 펼쳐 둠)');
 }
 
+// 29) v338 — 지도 탭 구·동 알약(정적): 단지 보기는 범위 안 거래의 중앙값 · 범위 안 거래가 없으면 알약을 내지 않음.
+{
+  ok(/const inMap = new Map\(\);\s+mapDeals\(\)\.forEach/.test(html) && /inCount: shown\.length, inPrice: shown\.length \? median\(shown\) : 0/.test(html), 'v338 묶음마다 범위 안 거래(mapDeals)의 건수·중앙값을 계산');
+  ok(/const p = onDeal\(\) && group\.inCount \? group\.inPrice : group\.price/.test(html) && /if \(onDeal\(\) && !group\.inCount\) button\.hidden = true;/.test(html), 'v338 단지 보기 = inPrice · 범위 안 거래 0건이면 숨김 · 동네 시세 = price');
+}
+
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -477,10 +483,12 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   try{
     const page=await browser.newPage({viewport:{width:390,height:844}});let mode='error';const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
+    /* v338 — 검증용 가짜 네이버 지도(실제 SDK 아님). 지도 탭 코드가 쓰는 기능만 흉내 냅니다. */
+    let fakeMap338=false; const FAKE_NAVER_338="/* 검증용 가짜 네이버 지도 — 실제 SDK 가 아닙니다. 지도 탭 코드가 쓰는 기능만 흉내 냅니다(로컬·검사 전용).\n   좌표→화면 변환은 줌에 비례하는 단순 선형. 마커의 content 요소를 지도 상자 안에 절대 위치로 붙입니다. */\n(function(){\n  if (window.naver && window.naver.maps && window.naver.maps.__fake) return;\n  function LatLng(lat, lng){ this._lat = lat; this._lng = lng; }\n  LatLng.prototype.lat = function(){ return this._lat; }; LatLng.prototype.lng = function(){ return this._lng; };\n  function Point(x, y){ this.x = x; this.y = y; }\n  var listeners = new Map();\n  var Event = { addListener:function(t, n, f){ var k = listeners.get(t) || []; k.push([n, f]); listeners.set(t, k); return { t:t, n:n, f:f }; },\n    removeListener:function(){}, trigger:function(t, n, a){ (listeners.get(t) || []).forEach(function(x){ if(x[0] === n) x[1](a); }); } };\n  function FMap(node, o){\n    this.node = node; this.zoom = (o && o.zoom) || 12; this.center = (o && o.center) || new LatLng(37.55, 127.0); this.markers = [];\n    node.style.position = node.style.position || 'relative'; if(!node.style.minHeight) node.style.minHeight = '320px';\n    var self = this; window.__fakeMap = this;\n    setTimeout(function(){ self._idle(); }, 30);\n  }\n  FMap.prototype._scale = function(){ return 256 * Math.pow(2, this.zoom) / 360; };\n  FMap.prototype._xy = function(ll){ var s = this._scale(), r = this.node.getBoundingClientRect();\n    return { x:(ll.lng() - this.center.lng()) * s + r.width / 2, y:-(ll.lat() - this.center.lat()) * s * 1.26 + r.height / 2 }; };\n  FMap.prototype._place = function(){ var self = this; this.markers.forEach(function(m){ if(!m.el) return; var p = self._xy(m.position);\n    m.el.style.position = 'absolute'; m.el.style.left = p.x + 'px'; m.el.style.top = p.y + 'px'; m.el.style.transform = 'translate(-50%,-50%)'; }); };\n  FMap.prototype._idle = function(){ this._place(); Event.trigger(this, 'zoom_changed'); Event.trigger(this, 'bounds_changed'); Event.trigger(this, 'idle'); };\n  FMap.prototype.getZoom = function(){ return this.zoom; };\n  FMap.prototype.setZoom = function(z){ this.zoom = z; var s = this; setTimeout(function(){ s._idle(); }, 10); };\n  FMap.prototype.getCenter = function(){ return this.center; };\n  FMap.prototype.setCenter = function(c){ this.center = c; var s = this; setTimeout(function(){ s._idle(); }, 10); };\n  FMap.prototype.panTo = function(c){ this.setCenter(c); };\n  FMap.prototype.refresh = function(){ this._place(); };\n  FMap.prototype.setOptions = function(){}; FMap.prototype.setSize = function(){}; FMap.prototype.autoResize = function(){};\n  FMap.prototype.getSize = function(){ var r = this.node.getBoundingClientRect(); return { width:r.width, height:r.height }; };\n  FMap.prototype.fitBounds = function(pts){ var a = Array.isArray(pts) ? pts : [pts.getSW(), pts.getNE()];\n    var la = a.map(function(p){ return p.lat(); }), ln = a.map(function(p){ return p.lng(); });\n    var span = Math.max(Math.max.apply(null, ln) - Math.min.apply(null, ln), (Math.max.apply(null, la) - Math.min.apply(null, la)) * 1.26, 0.002);\n    var r = this.node.getBoundingClientRect(); this.zoom = Math.max(8, Math.min(18, Math.floor(Math.log2((r.width - 120) * 360 / (256 * span)))));\n    this.setCenter(new LatLng((Math.max.apply(null, la) + Math.min.apply(null, la)) / 2, (Math.max.apply(null, ln) + Math.min.apply(null, ln)) / 2)); };\n  FMap.prototype.getBounds = function(){ var s = this._scale(), r = this.node.getBoundingClientRect(), dx = r.width / 2 / s, dy = r.height / 2 / s / 1.26, c = this.center;\n    var sw = new LatLng(c.lat() - dy, c.lng() - dx), ne = new LatLng(c.lat() + dy, c.lng() + dx); return { getSW:function(){ return sw; }, getNE:function(){ return ne; } }; };\n  FMap.prototype.getProjection = function(){ var self = this; return {\n    fromCoordToOffset:function(ll){ var p = self._xy(ll); return new Point(p.x, p.y); },\n    fromOffsetToCoord:function(pt){ var s = self._scale(), r = self.node.getBoundingClientRect(); return new LatLng(self.center.lat() - (pt.y - r.height / 2) / s / 1.26, self.center.lng() + (pt.x - r.width / 2) / s); } }; };\n  function Marker(o){ this.position = o.position; this.map = null; this.el = o.icon && o.icon.content; this.zIndex = o.zIndex; if(this.el && this.zIndex != null) this.el.style.zIndex = String(this.zIndex);\n    var self = this; if(this.el) this.el.addEventListener('click', function(e){ Event.trigger(self, 'click', e); }); this.setMap(o.map); }\n  Marker.prototype.setMap = function(m){ if(this.map){ var i = this.map.markers.indexOf(this); if(i >= 0) this.map.markers.splice(i, 1); if(this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el); }\n    this.map = m; if(m){ m.markers.push(this); if(this.el){ m.node.appendChild(this.el); m._place(); } } };\n  Marker.prototype.getPosition = function(){ return this.position; }; Marker.prototype.setPosition = function(p){ this.position = p; if(this.map) this.map._place(); };\n  Marker.prototype.setZIndex = function(z){ this.zIndex = z; if(this.el) this.el.style.zIndex = String(z); }; Marker.prototype.getElement = function(){ return this.el; };\n  /* 주소 → 좌표: 구 중심 근처에 주소 글자로 정한 자리(늘 같은 자리) */\n  var GU = { '종로구':[37.594,126.977],'중구':[37.560,126.996],'용산구':[37.531,126.981],'성동구':[37.551,127.041],'광진구':[37.546,127.086],'동대문구':[37.582,127.055],'중랑구':[37.598,127.093],'성북구':[37.606,127.018],'강북구':[37.643,127.011],'도봉구':[37.669,127.032],'노원구':[37.652,127.075],'은평구':[37.619,126.927],'서대문구':[37.578,126.939],'마포구':[37.560,126.908],'양천구':[37.524,126.855],'강서구':[37.561,126.823],'구로구':[37.494,126.856],'금천구':[37.460,126.901],'영등포구':[37.522,126.910],'동작구':[37.499,126.951],'관악구':[37.467,126.945],'서초구':[37.473,127.031],'강남구':[37.496,127.063],'송파구':[37.505,127.115],'강동구':[37.550,127.147] };\n  function hash(s){ var h = 0; for(var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }\n  var Service = { Status:{ OK:200, ERROR:500 }, geocode:function(q, cb){ var query = String(q.query || ''), g = null;\n      Object.keys(GU).forEach(function(k){ if(query.indexOf(k) >= 0) g = GU[k]; });\n      setTimeout(function(){ if(!g) return cb(200, { v2:{ addresses:[] } });\n        var exact = /\\d/.test(query) || /동\\d/.test(query), h = hash(query);\n        var lat = g[0] + (exact ? ((h % 1000) / 1000 - 0.5) * 0.03 : 0), lng = g[1] + (exact ? (((h >> 10) % 1000) / 1000 - 0.5) * 0.04 : 0);\n        cb(200, { v2:{ addresses:[{ x:String(lng), y:String(lat), roadAddress:query, jibunAddress:query }] } }); }, 5); } };\n  window.naver = window.naver || {};\n  window.naver.maps = { __fake:true, jsContentLoaded:true, Map:FMap, LatLng:LatLng, Point:Point, Marker:Marker, Event:Event, Service:Service,\n    Position:{ CENTER:1, BOTTOM:2, TOP_LEFT:3, TOP_RIGHT:4, BOTTOM_LEFT:5, BOTTOM_RIGHT:6 }, MapTypeId:{ NORMAL:'normal' }, ZoomControlStyle:{}, LatLngBounds:function(sw, ne){ this.getSW = function(){ return sw; }; this.getNE = function(){ return ne; }; } };\n  try{ var cb = new URLSearchParams((document.currentScript && document.currentScript.src.split('?')[1]) || '').get('callback'); if(cb && typeof window[cb] === 'function') setTimeout(window[cb], 0); }catch(e){}\n})();\n";
     const REACH328_CODES=[...html.slice(html.indexOf('var REACH_TILES')).matchAll(/\['(11\d{3})',/g)].slice(0,25).map(m=>[m[1]]);
     const reach328Calls=[],reach328Bulk=[];let reach328Fail='',reach328On=false,reach328Missing=false,reach328Budget=15000; // v328 — 서울 25개 구 조회 모의
     await page.route('**/*',async route=>{
-      const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+      const u=new URL(route.request().url());if(fakeMap338&&u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
       if(u.pathname.startsWith('/api/')){
         const reach328Item=lawd=>({name:'검증아파트',dong:'검증동',jibun:'1',areaM2:84,amountMan:lawd==='11320'?reach328Budget:lawd==='11305'?Math.round(reach328Budget*0.85)-1:990000,buildYear:2010,floor:10,y:2026,m:10,d:20});
         if(reach328On&&u.pathname==='/api/apt-reach'){const ymd=Number(u.searchParams.get('ymd'));reach328Bulk.push(ymd);
@@ -617,6 +625,39 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       reach328Missing=false;
     }
 
+    // v338 — 지도 탭(가짜 지도 SDK): 「단지」 보기의 구 알약 = 예상 집값 ±범위 안 거래의 중앙값 · 「동네 시세」 보기는 전체 중앙값 그대로.
+    {
+      reach328On=true; reach328Fail=''; reach328Missing=false; fakeMap338=true;
+      await page.reload(); await page.evaluate(()=>document.fonts.ready);
+      await page.evaluate(b=>{Object.assign(S,{cash:20000,income:7000,sgg:'11320',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null,compareCodes:['11305','11680']});showResult(false);});
+      await page.waitForFunction(()=>DEAL.status!=='loading');
+      reach328Budget=await page.evaluate(()=>dealBudgetFor('11320'));
+      await page.evaluate(()=>{DEAL.cache.clear();showResult(false);});
+      await page.waitForFunction(()=>DEAL.status==='done'||DEAL.status==='ok'||Array.isArray(DEAL.items)&&DEAL.items.length>0);
+      await page.evaluate(()=>window.yk208Navigate('map'));
+      await page.waitForFunction(()=>window.__ykMap&&window.__ykMap.isReady());
+      await page.locator('#dealMapTab').click();
+      await page.waitForFunction(()=>document.querySelectorAll('.yk-map-group[data-level=gu]').length>=3,null,{timeout:15000});
+      await page.waitForTimeout(400);
+      const read=()=>page.evaluate(()=>{const all={};DEAL.items.filter(d=>Number(d.amountMan)>0&&(typeof DEAL.pass!=='function'||DEAL.pass(d))).forEach(d=>{(all[d.lawd]=all[d.lawd]||[]).push(Number(d.amountMan));});
+        const med=v=>{v=v.slice().sort((a,b)=>a-b);const m=Math.floor(v.length/2);return v.length%2?v[m]:Math.round((v[m-1]+v[m])/2);};
+        const out={layer:window.__ykMap.layer(),range:window.__ykMap.range(),note:document.getElementById('dealMapNote').textContent,gu:{}};
+        document.querySelectorAll('.yk-map-group[data-level=gu]').forEach(b=>{const name=b.querySelector('span').textContent;out.gu[name]={median:Number(b.dataset.median),basis:b.dataset.basis,hidden:b.hidden,text:b.querySelector('strong').textContent,aria:b.getAttribute('aria-label')};});
+        out.all={도봉구:med(all['11320']||[0]),강북구:med(all['11305']||[0]),강남구:med(all['11680']||[0])};out.budget=dealBudgetFor('11320');return out;});
+      const d1=await read();
+      ok(d1.layer==='deal' && d1.gu['도봉구'].basis==='shown' && d1.gu['도봉구'].median===d1.budget && d1.gu['강북구'].median===Math.round(d1.budget*0.85)-1 && /예상 집값 ±20% 안 거래 1건/.test(d1.gu['도봉구'].aria), 'v338 단지 보기 — 구 알약은 예상 집값 ±범위 안 거래의 중앙값', JSON.stringify(d1).slice(0,400));
+      ok(d1.gu['강남구'].hidden===true && d1.all['강남구']===990000 && d1.gu['강남구'].text!=='0만', 'v338 범위 안 거래가 없는 구는 단지 보기에서 알약을 내지 않음(0으로 적지 않음)', JSON.stringify(d1.gu['강남구']));
+      ok(/알약 금액은 예상 집값 ±20% 안 거래의 중앙값이에요\./.test(d1.note), 'v338 단지 보기의 알약 설명');
+      await page.evaluate(()=>window.__ykMap.setLayer('area'));await page.waitForTimeout(300);
+      const d2=await read();
+      ok(d2.layer==='area' && ['도봉구','강북구','강남구'].every(n=>d2.gu[n].basis==='all' && d2.gu[n].median===d2.all[n] && !d2.gu[n].hidden) && /면적 구분 없는 최근 거래가 중앙값/.test(d2.note), 'v338 동네 시세 보기 — 전체 거래 중앙값 그대로 · 세 구 모두 보임', JSON.stringify(d2.gu).slice(0,300));
+      await page.evaluate(()=>window.__ykMap.setLayer('deal'));await page.waitForTimeout(300);
+      const d3=await read();
+      ok(d3.gu['도봉구'].basis==='shown' && d3.gu['도봉구'].median===d3.budget && d3.gu['강남구'].hidden===true, 'v338 단지 보기로 돌아오면 다시 범위 안 중앙값');
+      ok(!errors.length, 'v338 지도 탭 JavaScript 오류 없음', errors.join(' | '));
+      fakeMap338=false; reach328On=false;
+      await page.reload(); await page.evaluate(()=>document.fonts.ready); mode='success'; await seed();
+    }
     // v330 — 지역 시트: 서울 자치구 3곳을 같은 목록에서. 누른 뒤 칸 자리·스크롤이 그대로.
     {
       reach328On=false;
