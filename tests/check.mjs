@@ -409,7 +409,8 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(/track\('reach_scan', \{ hit: hit === 0 \? 'none'/.test(js) && !/track\([^)]*(budget|amount|price|won)/i.test(js), 'v328 사용 로그는 범주 라벨만');
   ok(/id="reach328"[^>]*hidden/.test(html) && html.indexOf('id="reach328"')>html.indexOf('id="easyMarket"') && html.indexOf('id="reach328"')<html.indexOf('id="payTile"'), 'v328 카드 자리 — 실거래 카드 다음 · 월 상환액 앞');
   ok(/if\(R\.status !== 'done' \|\| !visible\(\)\) return '';/.test(js) && !/reportHtml[\s\S]{0,1500}(scan\(|fetch\()/.test(js.slice(js.indexOf('function reportHtml'), js.indexOf('if(typeof renderReport'))), 'v332 저장 이미지 격자는 조회를 마친 뒤에만 · 이미지를 만들려고 조회하지 않음');
-  ok(/async function saveImage\(\)\{[\s\S]{0,900}ignoreElements:n=>n\.parentElement===document\.body&&n!==keep336&&!\/\^\(STYLE\|LINK\)\$\/\.test\(n\.tagName\)/.test(html), 'v336 「이미지 저장」도 카드·스타일만 베껴 그림을 만듦');
+  /* v339 — 이 잠금은 saveImage 안을 보던 것을 공용 그리기 함수(ykCardCanvas)로 옮김(목적 그대로: 카드와 스타일만 베낌) */
+  ok(/ignoreElements:function\(n\)\{ return n\.parentElement === document\.body && n !== keep && !\/\^\(STYLE\|LINK\)\$\/\.test\(n\.tagName\); \}/.test(html.slice(html.indexOf('function ykCardCanvas'))) && /const canvas=await ykCardCanvas\(\$\('reportCard'\),'full'\);/.test(html), 'v336 「이미지 저장」도 카드·스타일만 베껴 그림을 만듦(v339부터 ykCardCanvas 안)');
   ok(/track\('reach_save_done', \{ took: sec < 2 \? 'under2s'/.test(js), 'v336 저장에 걸린 시간은 구간 이름으로만 남김');
   // v329 — 묶음 응답 풀기: 실패한 구는 실패 그대로 · 달이 다르면 버림
   const {reachUnpack}=(vm.runInContext('globalThis.__2={reachUnpack}',c),c.__2);
@@ -472,6 +473,33 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
 {
   ok(/const inMap = new Map\(\);\s+mapDeals\(\)\.forEach/.test(html) && /inCount: shown\.length, inPrice: shown\.length \? median\(shown\) : 0/.test(html), 'v338 묶음마다 범위 안 거래(mapDeals)의 건수·중앙값을 계산');
   ok(/const p = onDeal\(\) && group\.inCount \? group\.inPrice : group\.price/.test(html) && /if \(onDeal\(\) && !group\.inCount\) button\.hidden = true;/.test(html), 'v338 단지 보기 = inPrice · 범위 안 거래 0건이면 숨김 · 동네 시세 = price');
+}
+
+// 30) v339 — 저장 그림: 배율 2.5 · 두 버튼 모두 ykCardCanvas · 가짜 그림 도구일 땐 미리 만들지 않음.
+{
+  const saveSrc=html.slice(html.indexOf('async function saveImage(){'),html.indexOf('async function saveImage(){')+2600);
+  ok(/const canvas=await ykCardCanvas\(\$\('reportCard'\),'full'\);/.test(saveSrc) && !/html2canvas\(\$\('reportCard'\)/.test(saveSrc), 'v339 「이미지 저장」은 ykCardCanvas 로 그림');
+  const r339=html.slice(html.indexOf('<script id="v339-render">'));
+  ok(/var YK339 = \{ chain: Promise\.resolve\(\), cache: \[\], scale: 2\.5 \};/.test(r339) && /c\.fn === fn && c\.sig === sig/.test(r339), 'v339 배율 2.5 · 같은 그림 도구·같은 카드일 때만 다시 씀');
+  ok(/window\.html2canvas !== window\.__ykH2C\) return;/.test(r339) && /navigator\.connection\.saveData\) return;/.test(r339), 'v339 가짜 그림 도구·데이터 절약 모드면 미리 만들지 않음');
+  const rj=html.slice(html.indexOf('<script id="v328-reach">'),html.indexOf('</script>',html.indexOf('<script id="v328-reach">')));
+  ok(/ykCardCanvas\(card, 'map'\)/.test(rj) && !/scale:3/.test(rj), 'v339 「이 지도를 이미지로 저장」도 ykCardCanvas(배율 3 없음)');
+}
+
+// 31) v340 — 홈 「내 예산과 실거래 비교」에 작은 지도를 그리지 않음(지도 탭과 겹침) · 결과 카드 제목·여백·간격 하나로.
+{
+  ok(/function mapWanted\(\)\{\s*\/\*[^]*?\*\/\s*return false;\s*\}/.test(html), 'v340 홈 작은 지도 끔(mapWanted → false)');
+  const c340=html.slice(html.indexOf('<style id="v340-cards">'),html.indexOf('</style>',html.indexOf('<style id="v340-cards">')));
+  ok(c340.length>0 && /#app #result #viewAnswer\{row-gap:12px!important\}/.test(c340) && /:is\(#easyMarket,#reach328,#payTile\)\{padding:16px!important\}/.test(c340) && /font-size:16px!important;font-weight:700!important/.test(c340), 'v340 카드 사이 12px · 안쪽 16px · 제목 16px/700');
+}
+
+// 32) v341 — 맨 아래 묶음: 관련 글 · 외부 사이트 · 계산 기준 안내 · 다시 계산을 카드 「더 알아보기」 한 장으로(옮기기만, 새로 만들지 않음).
+{
+  const m341=html.slice(html.indexOf('<script id="v341-more">'),html.indexOf('</script>',html.indexOf('<script id="v341-more">')));
+  ok(m341.length>0 && /getElementById\('relatedRead'\), next\.querySelector\('\.external-links'\), next\.querySelector\('\.result-notes321'\), document\.getElementById\('restartWrap'\)/.test(m341) && /list\.appendChild\(e\)/.test(m341) && !/cloneNode|outerHTML/.test(m341), 'v341 네 요소를 옮기기만 함(복제·새로 쓰기 없음)');
+  const r341=html.slice(html.indexOf('<script id="v339-render">'),html.indexOf('</script>',html.indexOf('<script id="v339-render">')));
+  ok(/var timer = 0, want = \[\];/.test(r341) && /if\(want\.indexOf\(mode\) < 0\) want\.push\(mode\);/.test(r341) && /if\(loading\) return loading;/.test(r341) && /return ensureHtml2canvas\(\)\.then/.test(r341), 'v341 미리 만들기: 두 버튼이 같이 보이면 둘 다 · 그림 도구는 한 번만 불러옴 · 차례로 만듦');
+  ok(/id="v341-more">[^]*?#more341\{margin:12px 0 0!important;[^}]*border-radius:20px!important\}/.test(html) && /#viewNext>\.easy-next-card\{margin:12px 0 0!important/.test(html), 'v341 카드 모양(모서리 20px) · 안내문은 카드 밖');
 }
 
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
@@ -556,8 +584,8 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(await page.locator('#reach328').isVisible() && await page.locator('#reach328Go').isVisible() && !(await page.locator('#reach328Body').isVisible()), 'v328 조회 전 — 버튼만 표시');
       reach328Budget=await page.evaluate(()=>dealBudgetFor('11320'));
       ok(await page.evaluate(()=>{renderReport(LASTVIEW);const b=document.getElementById('rReach328');return !!b && b.hidden && !b.innerHTML;}), 'v332 조회 전 — 저장 이미지에 격자 없음(이전과 같은 이미지)');
-      const v337a=await page.evaluate(()=>{const g=document.getElementById('reach328Go'),m=document.getElementById('marketOpen');const c=e=>getComputedStyle(e).backgroundColor;return {go:c(g),market:m&&m.offsetParent?c(m):null,sym:!!document.querySelector('#reach328Title .section-symbol svg'),symW:Math.round(document.querySelector('#reach328Title .section-symbol').getBoundingClientRect().width)};});
-      ok(v337a.go==='rgb(255, 255, 255)' && v337a.go!==v337a.market && v337a.sym && v337a.symW===30, 'v337 조회 버튼은 흰 버튼(파란 큰 버튼과 겹치지 않음) · 카드 머리에 옆 카드와 같은 크기의 아이콘', JSON.stringify(v337a));
+      const v337a=await page.evaluate(()=>{const g=document.getElementById('reach328Go'),m=document.getElementById('marketOpen');const c=e=>getComputedStyle(e).backgroundColor;return {go:c(g),market:m&&m.offsetParent?c(m):null,sym:!!document.querySelector('#reach328Title .section-symbol svg'),symW:Math.round(document.querySelector('#reach328Title .section-symbol').getBoundingClientRect().width),nbW:Math.round(document.querySelector('#easyMarket .section-symbol').getBoundingClientRect().width)};}); /* v340 — 고정 30px 대신 옆 카드 아이콘과 비교 */
+      ok(v337a.go==='rgb(255, 255, 255)' && v337a.go!==v337a.market && v337a.sym && v337a.symW>0 && v337a.symW===v337a.nbW, 'v337 조회 버튼은 흰 버튼(파란 큰 버튼과 겹치지 않음) · 카드 머리에 옆 카드와 같은 크기의 아이콘', JSON.stringify(v337a));
       reach328Calls.length=0; reach328Bulk.length=0; reach328Fail='11350';
       await page.locator('#reach328Go').click();
       await page.waitForFunction(()=>document.getElementById('reach328Go').hidden);
@@ -657,6 +685,73 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(!errors.length, 'v338 지도 탭 JavaScript 오류 없음', errors.join(' | '));
       fakeMap338=false; reach328On=false;
       await page.reload(); await page.evaluate(()=>document.fonts.ready); mode='success'; await seed();
+    }
+    // v339 — 진짜 그림 도구로: 버튼이 보이고 멈추면 미리 만들어 두고, 누를 때 같은 그림(같은 캔버스)을 다시 씀 · 배율 2.5.
+    {
+      reach328On=true; reach328Fail=''; reach328Missing=false;
+      await page.reload(); await page.evaluate(()=>document.fonts.ready);
+      await page.setViewportSize({width:390,height:844});
+      await page.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11320',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null,compareCodes:[]});showResult(false);});
+      await page.locator('#reach328Go').click();
+      await page.waitForFunction(()=>document.getElementById('reach328Go').hidden);
+      ok(await page.evaluate(()=>typeof window.html2canvas!=='function' && !window.__ykH2C), 'v339 (전제) 그림 도구는 아직 안 불러옴');
+      await page.evaluate(()=>document.getElementById('reach328Save').scrollIntoView({block:'center'}));
+      await page.waitForFunction(()=>YK339.cache.some(c=>/is-map335/.test(c.sig)),null,{timeout:20000});
+      const v339=await page.evaluate(async()=>{const e=YK339.cache.find(c=>/is-map335/.test(c.sig));const pre=await e.p;window.__pre339=pre;const card=document.getElementById('reportCard');
+        renderReport(LASTVIEW);const again=await ykCardCanvas(card,'map');
+        return {real:window.html2canvas===window.__ykH2C,same:pre===again,w:again.width,cardW:Math.round(card.getBoundingClientRect().width),cls:card.className,n:YK339.cache.length};});
+      ok(v339.real && v339.same && v339.w===Math.round(v339.cardW*2.5) && !/is-map335/.test(v339.cls), 'v339 버튼이 보이면 미리 만들고, 누를 때 같은 캔버스를 다시 씀 · 가로 = 카드 폭 × 2.5 · 끝나면 카드 원래대로', JSON.stringify(v339));
+      const v339b=await page.evaluate(async()=>{const card=document.getElementById('reportCard');const before=YK339.cache.length;
+        const mk=document.createElement('i');mk.hidden=true;mk.textContent='t339';card.appendChild(mk);const c=await ykCardCanvas(card,'map');mk.remove(); /* v341 — 저장 카드는 LASTVIEW.price 를 쓰지 않아 예전 방식은 내용이 안 바뀌던 헛잠금. 카드 안 내용(innerHTML)을 실제로 바꿈 */const ps=await Promise.all(YK339.cache.map(x=>x.p)); /* v341 — 두 버튼이 같이 보이면 「전체」 미리 만들기가 끼어들어 목록 순서·구성이 바뀜: 「이전 캔버스를 다시 쓰지 않음」으로 판정 */
+        return {grew:YK339.cache.length<=2, fresh:c instanceof HTMLCanvasElement&&c!==window.__pre339&&ps.length>0};});
+      ok(v339b.grew && v339b.fresh, 'v339 카드 내용이 바뀌면 새로 그림(최근 두 장만 기억)', JSON.stringify(v339b));
+      reach328On=false; mode='success';
+      await page.reload(); await page.evaluate(()=>document.fonts.ready); await seed();
+    }
+    // v340 — 지도 키가 있어도 홈 카드엔 작은 지도·번호가 없고, 목록 행은 그대로 · 세 카드 모양이 같음 · 지도 탭은 그대로 열림.
+    {
+      reach328On=true; reach328Fail=''; reach328Missing=false; fakeMap338=true;
+      await page.reload(); await page.evaluate(()=>document.fonts.ready);
+      for(const width of [390,1264]){
+        await page.setViewportSize({width,height:900});
+        await page.evaluate(()=>{window.yk208Navigate&&window.yk208Navigate('home');DEAL.cache.clear();Object.assign(S,{cash:20000,income:7000,sgg:'11320',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null,compareCodes:['11305','11680']});showResult(false);});
+        await page.waitForFunction(()=>document.querySelectorAll('#heroDeals .hd-list li').length>0,null,{timeout:15000});
+        await page.waitForTimeout(300);
+        const v=await page.evaluate(()=>({key:!!(document.querySelector('meta[name="naver-map-keyid"]')?.content||'').trim(),map:!!document.getElementById('heroDealsMap'),no:document.querySelectorAll('#heroDeals .hd-no').length,rows:document.querySelectorAll('#heroDeals .hd-list li').length,
+          t:['#easyMarket h2','#reach328 h2','#payTile .ans-k'].map(q=>{const c=getComputedStyle(document.querySelector(q));return c.fontSize+'/'+c.fontWeight}),
+          pad:['easyMarket','reach328','payTile'].map(i=>getComputedStyle(document.getElementById(i)).paddingTop),gap:getComputedStyle(document.getElementById('viewAnswer')).rowGap,over:document.documentElement.scrollWidth>innerWidth+1}));
+        ok(v.key && !v.map && v.no===0 && v.rows>0, `v340 ${width}px 홈 카드: 작은 지도·번호 없음, 거래 목록은 있음`, JSON.stringify(v));
+        ok(v.t.every(x=>x==='16px/700') && v.pad.every(x=>x==='16px') && v.gap==='12px' && !v.over, `v340 ${width}px 세 카드 제목 16px/700 · 안쪽 16px · 카드 사이 12px`, JSON.stringify(v));
+      }
+      await page.evaluate(()=>window.yk208Navigate('map'));
+      await page.waitForFunction(()=>window.__ykMap&&window.__ykMap.isReady(),null,{timeout:15000});
+      ok(true,'v340 지도 탭은 그대로 열림');
+      ok(!errors.length, 'v340 JavaScript 오류 없음', errors.join(' | '));
+      fakeMap338=false; reach328On=false;
+      await page.reload(); await page.evaluate(()=>document.fonts.ready); mode='success'; await seed();
+    }
+    // v341 — 맨 아래: 저장·공유 두 버튼 한 줄 → 카드 「더 알아보기」(줄 4개, 48px 이상) → 안내문은 접히지 않고 보임 · 옮긴 뒤에도 관련 글·접기·다시 계산이 작동.
+    {
+      mode='success'; await page.reload(); await page.evaluate(()=>document.fonts.ready); await seed();
+      for(const width of [320,390,1264]){
+        await page.setViewportSize({width,height:900}); await page.waitForTimeout(200);
+        const v=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect();const sec=document.getElementById('more341');const s1=document.getElementById('outSave'),s2=document.getElementById('outCopy');
+          const lead=document.querySelector('#viewNext>.easy-next-card>.nx-lead');
+          return {sec:!!sec&&sec.offsetHeight>0,parent:sec&&sec.parentElement.id,prev:sec&&sec.previousElementSibling&&sec.previousElementSibling.contains(s1),
+            rows:sec?[...sec.querySelectorAll('.more341-list>*')].map(e=>e.id||e.className.split(' ')[0]):[],
+            rowH:[...document.querySelectorAll('#more341 :is(#relatedReadLink,.external-links>summary,.result-notes321>summary,#restartBtn)')].map(e=>Math.round(R(e).height)),
+            title:document.getElementById('relatedReadTitle').textContent.trim(),navShown:!document.getElementById('relatedRead').hidden,
+            sameRow:Math.round(R(s1).top)===Math.round(R(s2).top)&&Math.abs(R(s1).width-R(s2).width)<2&&R(s1).height>=48,
+            lead:!!lead&&!!sec&&lead.offsetHeight>0&&!lead.closest('details')&&R(lead).top>R(sec).bottom,
+            fold:!!document.querySelector('#more341 .result-notes321')&&!document.querySelector('#more341 .result-notes321').open&&!document.getElementById('footNote').checkVisibility(), /* 닫힌 details 안은 offsetHeight 가 남음(크롬) */over:document.documentElement.scrollWidth>innerWidth+1};});
+        ok(v.sec && v.parent==='viewNext' && v.prev && JSON.stringify(v.rows)==='["relatedRead","external-links","result-notes321","restartWrap"]' && v.rowH.length===4 && v.rowH.every(h=>h>=48), `v341 ${width}px 저장·공유 다음에 카드 「더 알아보기」 · 줄 4개 순서 · 높이 48px 이상`, JSON.stringify(v));
+        ok(v.navShown && v.title.length>0 && v.sameRow && v.lead && v.fold && !v.over, `v341 ${width}px 관련 글 채워짐 · 두 버튼 한 줄 같은 폭 · 안내문 카드 밖에 보임 · 계산 기준은 접힘 · 가로 넘침 없음`, JSON.stringify(v));
+      }
+      await page.setViewportSize({width:390,height:844});
+      if(await page.locator('#more341 .external-links>summary').count()) await page.locator('#more341 .external-links>summary').click();
+      ok(await page.locator('#more341 #outNaver').count()===1 && await page.locator('#outNaver').isVisible() && await page.locator('#outHogang').isVisible(), 'v341 「외부 사이트에서 확인」을 누르면 두 링크가 보임');
+      if(await page.locator('#more341 .external-links>summary').count()) await page.locator('#more341 .external-links>summary').click();
+      ok(!errors.length, 'v341 JavaScript 오류 없음', errors.join(' | '));
     }
     // v330 — 지역 시트: 서울 자치구 3곳을 같은 목록에서. 누른 뒤 칸 자리·스크롤이 그대로.
     {
