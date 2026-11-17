@@ -9103,11 +9103,19 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       buckets.get(k).deals.push(d);
     });
     placed.forEach((p) => { const b = buckets.get(keyOf(p.deal)); if (b) b.items.push(p); });
-    return [...buckets.values()].map(({ deals, items }) => {
+    /* v338 — 「단지」 보기의 알약 금액은 **지도의 가격 범위 안 거래**(mapDeals: 예상 집값 ±mapRange% · 필터 통과 · 단지·면적별 최근 거래)의 중앙값.
+       (핀은 상한 MAP_MAX 까지만 찍히므로 「지도에 표시한 거래」라고 부르지 않습니다 — 범위 안 거래 전체로 셉니다.)
+       이전에는 면적 구분 없는 전체 거래 중앙값이라, 소형 거래가 많은 구는 예상 집값과 동떨어진 금액이 떴습니다
+       (오너 아이폰 2026-11-17: 예상 집값 22억 화면에 「동대문구 2.7억」). 전체 중앙값(price)은 「동네 시세」 보기가 계속 씁니다. */
+    const inMap = new Map();
+    mapDeals().forEach((d) => { const a = Number(d.amountMan); if (!(a > 0)) return; const k = keyOf(d); if (!inMap.has(k)) inMap.set(k, []); inMap.get(k).push(a); });
+    return [...buckets.entries()].map(([k, { deals, items }]) => {
       const d = deals[0];
       const price = median(deals.map((x) => Number(x.amountMan)));
+      const shown = inMap.get(k) || [];
       return { level, items, deals, count: deals.length, lawd: d.lawd, dong: d.dong,
-        name: level === 'gu' ? guName(d.lawd) : (d.dong || guName(d.lawd)), price, tier: tierOf(price, d.lawd), center: null };
+        name: level === 'gu' ? guName(d.lawd) : (d.dong || guName(d.lawd)), price, tier: tierOf(price, d.lawd), center: null,
+        inCount: shown.length, inPrice: shown.length ? median(shown) : 0 };
     });
   }
   async function centerOf(group) {
@@ -9144,8 +9152,22 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     const price = document.createElement('strong');
     price.textContent = compactPrice(group.price);
     button.append(name, price);
-    const label = () => `${group.name}, 최근 ${DEAL.months}개월 거래 ${group.count}건, 거래가 중앙값 ${fullPrice(group.price)}, ${TIER_TEXT[group.tier]}, `
-      + (layer === 'deal' && group.items.length ? '누르면 확대' : '누르면 상세');
+    /* v338 — 단지 보기: 가격 범위 안 거래의 중앙값(inPrice). 동네 시세 보기: 전체 거래 중앙값(price) 그대로.
+       단지 보기에서 범위 안 거래가 없는 구·동은 알약을 내지 않습니다(누를 단지가 없고, 전체 중앙값은 맥락이 다름). */
+    const onDeal = () => layer === 'deal';
+    const paint = () => {
+      const p = onDeal() && group.inCount ? group.inPrice : group.price, t = tierOf(p, group.lawd);
+      price.textContent = compactPrice(p);
+      button.dataset.median = String(p); button.dataset.tier = t; button.dataset.basis = onDeal() ? 'shown' : 'all';
+      button.classList.remove('is-fit', 'is-near', 'is-over'); button.classList.add('is-' + t);
+      if (onDeal() && !group.inCount) button.hidden = true;
+      return t;
+    };
+    const label = () => { const t = paint();
+      return (onDeal()
+        ? `${group.name}, 예상 집값 ±${mapRange}% 안 거래 ${group.inCount}건, 거래가 중앙값 ${fullPrice(group.inPrice)}, ${TIER_TEXT[t]}, `
+        : `${group.name}, 최근 ${DEAL.months}개월 거래 ${group.count}건, 거래가 중앙값 ${fullPrice(group.price)}, ${TIER_TEXT[t]}, `)
+        + (onDeal() && group.items.length ? '누르면 확대' : '누르면 상세'); };
     button.setAttribute('aria-label', label());
     button.__ykLabelFn = label;
     let lastOpen = 0;
@@ -9203,7 +9225,8 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if (mapNode) { mapNode.dataset.level = level; mapNode.dataset.layer = layer; }
     placed.forEach((p) => { p.button.hidden = level !== 'deal'; });
     groupMarkers.forEach((g) => { g.button.hidden = g.group.level !== level; g.button.setAttribute('aria-label', g.button.__ykLabelFn()); });
-    const note = byId('dealMapNote'); if (note) note.hidden = level === 'deal';
+    const note = byId('dealMapNote'); if (note) { note.hidden = level === 'deal';
+      /* v338 */ note.textContent = layer === 'deal' ? `알약 금액은 예상 집값 ±${mapRange}% 안 거래의 중앙값이에요.` : '알약 금액은 면적 구분 없는 최근 거래가 중앙값이에요.'; }
     if (legend) legend.hidden = level === 'deal';
     if (level !== 'deal' && activeLabel) { activeLabel.classList.remove('is-active'); activeLabel = null; if (detail) detail.hidden = true; }
     if (level === 'deal') declutter(); else if (level === 'dong' && typeof declutterGroups === 'function') declutterGroups(level);
