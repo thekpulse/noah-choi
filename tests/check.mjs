@@ -502,6 +502,15 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(/id="v341-more">[^]*?#more341\{margin:12px 0 0!important;[^}]*border-radius:20px!important\}/.test(html) && /#viewNext>\.easy-next-card\{margin:12px 0 0!important/.test(html), 'v341 카드 모양(모서리 20px) · 안내문은 카드 밖');
 }
 
+// 33) v342 — 홈 요약 = 지도 탭 머리와 같은 셈(distributionModel · 같은 예상 집값 · 같은 필터) · 목록 「곳」에 가격 범위 · 안내문 첫 문장 들여쓰기 없음.
+{
+  const s342=html.slice(html.indexOf('<script id="v342-summary">'),html.indexOf('</script>',html.indexOf('<script id="v342-summary">')));
+  ok(s342.length>0 && /distributionModel\(DEAL\.items \|\| \[\], budget, typeof DEAL\.pass === 'function' \? DEAL\.pass : null\)/.test(s342) && /Math\.floor\(LASTVIEW\.price \/ 10000\)/.test(s342) && /Math\.floor\(m\.under \/ m\.n \* 100\)/.test(s342), 'v342 홈 요약은 지도 탭과 같은 함수·예상 집값·버림으로 셈');
+  ok(/addEventListener\('deals:ready', sum342\)/.test(s342) && /paintDeals = function\(\)\{ var r = pd\.apply\(this, arguments\); sum342\(\); return r; \}/.test(s342) && /DEAL\.status !== 'ready'/.test(s342), 'v342 원래 문구(불러오는 중·실패·일부 조회) 뒤에 덧씀 · 준비됐을 때만');
+  ok(/lead\.textContent = `예상 집값 \$\{Math\.round\(DEAL\.band\*100\)\}~\$\{Math\.round\(\(DEAL\.over \? DEAL\.overBand : 1\)\*100\)\}% 단지 \$\{total\}곳`/.test(html), 'v342 목록 머리줄에 「예상 집값 85~100% 단지」');
+  ok(/#viewNext>\.easy-next-card>\.nx-lead\{padding-left:0!important;text-indent:0!important\}/.test(html), 'v342 안내문 첫 문장 내어쓰기 없앰');
+}
+
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -752,6 +761,26 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(await page.locator('#more341 #outNaver').count()===1 && await page.locator('#outNaver').isVisible() && await page.locator('#outHogang').isVisible(), 'v341 「외부 사이트에서 확인」을 누르면 두 링크가 보임');
       if(await page.locator('#more341 .external-links>summary').count()) await page.locator('#more341 .external-links>summary').click();
       ok(!errors.length, 'v341 JavaScript 오류 없음', errors.join(' | '));
+    }
+    // v342 — 홈 요약과 지도 탭 머리가 같은 숫자 · 목록 머리줄 범위(「조금 넘는 집도」면 ~110%) · 안내문 두 줄이 같은 왼쪽에서 시작.
+    {
+      mode='success'; await page.reload(); await page.evaluate(()=>document.fonts.ready); await page.setViewportSize({width:390,height:844}); await seed();
+      await page.waitForFunction(()=>DEAL.status==='ready',null,{timeout:15000}); await page.waitForTimeout(300);
+      const h=await page.evaluate(()=>{const b=Math.floor(LASTVIEW.price/10000);const m=distributionModel(DEAL.items||[],b,typeof DEAL.pass==='function'?DEAL.pass:null);const el=document.getElementById('heroContext');
+        const n=document.querySelector('#viewNext>.easy-next-card>.nx-lead');const r=document.createRange();r.selectNodeContents(n);const lefts=[...new Set([...r.getClientRects()].map(x=>Math.round(x.left)))];
+        return {text:el.innerText,data:el.dataset.v342,want:m.under+'/'+m.n,n:m.n,lines:r.getClientRects().length,lefts};});
+      ok(h.n>0 && h.data===h.want && /내 예상 집값 이하/.test(h.text) && !/맞는 실거래/.test(h.text), 'v342 홈 요약은 거래 건수 기준(예상 집값 이하 비율)', JSON.stringify(h));
+      ok(h.lefts.length===1, 'v342 안내문 첫 문장 — 모든 줄이 같은 왼쪽에서 시작', JSON.stringify(h));
+      await page.evaluate(()=>window.yk208Navigate('map')); await page.waitForTimeout(400);
+      await page.evaluate(()=>{if(typeof paintDeals==='function')paintDeals(DEAL.lastPrice);});
+      const mtab=await page.evaluate(()=>({ins:document.querySelector('#dealDistribution .dd-insight')?.innerText||'',lead:document.getElementById('dealLead').innerText,home:document.getElementById('heroContext').innerText}));
+      const pc=t=>(t.match(/(\d+)%/)||[])[1]||(/1% 미만/.test(t)?'<1':/모든 거래/.test(t)?'all':/거래(가)? 없/.test(t)?'none':'?');
+      ok(mtab.ins && pc(mtab.ins)===pc(mtab.home) && pc(mtab.home)!=='?', 'v342 지도 탭 머리와 홈 요약의 비율이 같음', JSON.stringify(mtab));
+      ok(/^예상 집값 85~100% 단지 \d+곳/.test(mtab.lead), 'v342 목록 머리줄 「예상 집값 85~100% 단지 N곳」', mtab.lead);
+      const over=await page.evaluate(()=>{const k=DEAL.over;DEAL.over=true;paintDeals(DEAL.lastPrice);const t=document.getElementById('dealLead').innerText;DEAL.over=k;paintDeals(DEAL.lastPrice);return t;});
+      ok(/^예상 집값 85~110% 단지 \d+곳/.test(over), 'v342 「조금 넘는 집도」를 켜면 85~110%', over);
+      ok(!errors.length, 'v342 JavaScript 오류 없음', errors.join(' | '));
+      await page.evaluate(()=>window.yk208Navigate('home'));
     }
     // v330 — 지역 시트: 서울 자치구 3곳을 같은 목록에서. 누른 뒤 칸 자리·스크롤이 그대로.
     {
