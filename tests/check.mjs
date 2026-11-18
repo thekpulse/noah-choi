@@ -549,6 +549,9 @@ ok(/if\(t\.classList\.contains\('is-mine'\)\)\{[^]*?leave\(true\);[^]*?yk208Navi
   ok(s348.length>0 && /getElementById\('resultScopeNote'\)/.test(s348) && !/dealScopeNote/.test(s348.replace(/\/\*[^]*?\*\//g,'')) && /if\(redundant\(\) && !note\.hidden\) note\.hidden = true/.test(s348), 'v348 홈 안내만 감춤 · 실거래 탭 안내는 그대로 · 되풀이 없음');
 }
 
+// 40) v349 — 실거래 목록 머리 「단지 N곳 중 M곳」 → 「단지 N곳」(아래 「단지 더 보기 · K곳 남음」과 같은 사실). 더 보기 문구는 그대로.
+ok(/lead\.textContent = `예상 집값 \$\{Math\.round\(DEAL\.band\*100\)\}~\$\{Math\.round\(\(DEAL\.over \? DEAL\.overBand : 1\)\*100\)\}% 단지 \$\{total\}곳`;/.test(html) && !/` 중 \$\{shown\}곳`/.test(html) && /more\.textContent='단지 더 보기 · '\+\(rows\.length-shownRows\.length\)\+'곳 남음'/.test(html), 'v349 목록 머리는 범위 안 단지 수만 · 남은 수는 「단지 더 보기」가 말함');
+
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
