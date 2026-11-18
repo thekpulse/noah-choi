@@ -540,6 +540,15 @@ ok(!html.includes('실거래 정보를 불러오지 못했습니다. 아래에�
   ok(iF>0 && iF<iR && iR<iM && iM<iP, 'v346 마크업 순서 — 예산 → 25개 구 → 실거래 비교 → 월 상환액');
 }
 
+// 38) v347 — 내 매수 지역 칸은 둘러보기 없이(아이폰 캡처 「성동구 둘러보는 중 · 성동구로 돌아가기」).
+ok(/if\(t\.classList\.contains\('is-mine'\)\)\{[^]*?leave\(true\);[^]*?yk208Navigate\('map'\)/.test(html) && /#browse345 \.reach328-nb\{white-space:nowrap\}/.test(html), 'v347 내 지역 칸은 평소 실거래로 · 둘러보기 머리 범위 줄바꿈 막음');
+
+// 39) v348 — 홈에서 같은 말 두 번 빼기(「인근 지역 포함」 요약 + 「넓혔어요」 안내). 실거래 탭 안내(#dealScopeNote)는 손대지 않음.
+{
+  const s348=html.slice(html.indexOf('<script id="v348-scope">'),html.indexOf('</script>',html.indexOf('<script id="v348-scope">')));
+  ok(s348.length>0 && /getElementById\('resultScopeNote'\)/.test(s348) && !/dealScopeNote/.test(s348.replace(/\/\*[^]*?\*\//g,'')) && /if\(redundant\(\) && !note\.hidden\) note\.hidden = true/.test(s348), 'v348 홈 안내만 감춤 · 실거래 탭 안내는 그대로 · 되풀이 없음');
+}
+
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -662,6 +671,17 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       await page.evaluate(()=>window.__ykBrowse345&&window.__ykBrowse345.enter('11320')); await page.waitForFunction(()=>window.YK_BROWSE==='11320',null,{timeout:8000}).catch(()=>{});
       await page.evaluate(()=>window.yk208Navigate('home')); await page.waitForFunction(()=>!window.YK_BROWSE && DEAL.status!=='loading',null,{timeout:8000}).catch(()=>{});
       ok(await page.evaluate(()=>!!window.__ykBrowse345 && !/11320/.test([...new Set((DEAL.items||[]).map(x=>x.lawd))].join()) && document.getElementById('browse345').hidden), 'v345 실거래 탭을 떠나면 둘러보기 끝 — 홈 실거래 비교는 내 지역 그대로');
+      // v347 — 내 매수 지역 칸(●)을 누르면 둘러보기 머리 없이 평소 실거래로 · 다시 조회 안 함. 둘러보기 머리의 범위는 한 덩어리.
+      const v347m=await page.evaluate(()=>{const t=document.querySelector('#reach328Map .reach328-tile.is-mine');return t?t.dataset.reach:null;});
+      reach328Calls.length=0;
+      if(v347m){ await page.locator('#reach328Map [data-reach="'+v347m+'"]').click(); await page.waitForFunction(()=>!document.getElementById('viewDeals').hidden && DEAL.status!=='loading',null,{timeout:8000}).catch(()=>{}); }
+      const v347a=await page.evaluate(()=>({browse:window.YK_BROWSE,bar:!document.getElementById('browse345')||document.getElementById('browse345').hidden,deals:!document.getElementById('viewDeals').hidden}));
+      ok(!!v347m && v347a.browse===null && v347a.bar && v347a.deals && reach328Calls.length===0, 'v347 내 매수 지역 칸 — 둘러보기 머리 없이 평소 실거래 · 다시 조회 0번', JSON.stringify([v347m,v347a,reach328Calls]));
+      await page.evaluate(()=>window.yk208Navigate('home'));
+      await page.evaluate(()=>window.__ykBrowse345&&window.__ykBrowse345.enter('11320')); await page.waitForFunction(()=>window.YK_BROWSE==='11320',null,{timeout:8000}).catch(()=>{});
+      const v347b=await page.evaluate(()=>[...document.querySelectorAll('#browse345 .reach328-nb')].map(e=>e.textContent));
+      ok(v347b.some(t=>/^\d+%~100%$/.test(t)) && v347b.some(t=>/^\(.+ ~ .+\)$/.test(t)), 'v347 둘러보기 머리 — 「85%~100%」 · 「(금액 ~ 금액)」 한 덩어리', JSON.stringify(v347b));
+      await page.evaluate(()=>window.yk208Navigate('home')); await page.waitForFunction(()=>!window.YK_BROWSE,null,{timeout:8000}).catch(()=>{});
       const rr=await page.evaluate(()=>{renderReport(LASTVIEW);const b=document.getElementById('rReach328');return {hidden:b.hidden,after:b.previousElementSibling&&b.previousElementSibling.id,cells:[...b.querySelectorAll('.rr328-t')].map(t=>t.querySelector('span').textContent+':'+t.querySelector('b').textContent+':'+t.className.replace('rr328-t ','')).join(),tiles:[...document.querySelectorAll('#reach328Map .reach328-tile')].map(t=>t.querySelector('span').textContent+':'+t.querySelector('b').textContent+':'+(t.className.match(/\b(l[0-4]|is-fail)\b/)||[''])[0]).join(),head:b.querySelector('.rr328-h').textContent,over:[...b.querySelectorAll('.rr328-t')].filter(t=>t.scrollWidth>t.clientWidth+1).length};});
       ok(!rr.hidden && rr.after==='rDeals' && rr.cells===rr.tiles && rr.cells.split(',').length===25 && /:–:is-fail/.test(rr.cells) && /85%~100% 거래 건수/.test(rr.head) && rr.over===0, 'v332 조회 뒤 — 저장 이미지 격자 25칸 = 화면 격자(숫자·색 단계·실패 칸)', JSON.stringify(rr).slice(0,300));
       const v337b=await page.evaluate(()=>({rows:document.querySelectorAll('#reach328List .reach328-row').length,label:document.getElementById('reach328More').textContent,exp:document.getElementById('reach328More').getAttribute('aria-expanded')}));
@@ -869,6 +889,18 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(await page.locator('#loanCutToggle').isVisible() && g.wrapped && g.loan===amt(g.bsLoan) && g.cash===amt(g.bsCash), 'v343 대출을 줄여도 금액·단위 감쌈 그대로', JSON.stringify(g));
       await page.evaluate(()=>{Object.assign(S,{lockedPrice:null,loanCut:0});showResult(false);});
       ok(!errors.length, 'v343 JavaScript 오류 없음', errors.join(' | '));
+      // v348 — 홈 실거래 비교: 요약 줄이 「인근 지역 포함」을 말하면 아래 「넓혔어요」 안내는 감춤 · 요약이 없을 때(조회 일부 실패)는 그대로.
+      const v348=await page.evaluate(async()=>{const note=document.getElementById('resultScopeNote'),ctx=document.getElementById('heroContext');
+        const keep={st:DEAL.status,wide:DEAL.wide,cmp:DEAL.compareCodes,items:DEAL.items,html:ctx.innerHTML,v:ctx.dataset.v342,hid:note.hidden};
+        const tick=()=>new Promise(r=>setTimeout(r,30));
+        DEAL.status='ready';DEAL.wide=true;DEAL.compareCodes=[];DEAL.items=Object.assign([],{queryIssues:[]});
+        ctx.dataset.v342='1/2';ctx.innerHTML='<span class="hc-t">거래의 <b>50%</b>가 내 예상 집값 이하 · <span class="hc-nw">인근 지역 포함</span> · <span class="hc-nw">최근 3개월</span></span>';
+        note.hidden=false;await tick();const a=note.hidden;
+        DEAL.items=Object.assign([],{queryIssues:[{lawd:'11200',ymd:202610}]});note.hidden=false;await tick();const b=note.hidden;
+        DEAL.items=Object.assign([],{queryIssues:[]});DEAL.compareCodes=['11215'];note.hidden=false;await tick();const c=note.hidden;
+        Object.assign(DEAL,{status:keep.st,wide:keep.wide,compareCodes:keep.cmp,items:keep.items});ctx.innerHTML=keep.html;if(keep.v)ctx.dataset.v342=keep.v;else delete ctx.dataset.v342;note.hidden=keep.hid;
+        return {a,b,c};});
+      ok(v348.a===true && v348.b===false && v348.c===false, 'v348 「넓혔어요」 안내 — 요약 줄과 겹칠 때만 홈에서 감춤(조회 일부 실패 · 비교 지역일 때는 그대로)', JSON.stringify(v348));
     }
     // v330 — 지역 시트: 서울 자치구 3곳을 같은 목록에서. 누른 뒤 칸 자리·스크롤이 그대로.
     {
