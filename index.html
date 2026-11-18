@@ -9353,7 +9353,32 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
     if (status) status.textContent = '지도를 열 수 없어요';
     document.dispatchEvent(new CustomEvent('ykmap:fail'));
   };
-  loadSdk();
+  /* v350 — 지도 SDK(약 100KB gzip · 운영 측정 2026-11-19)는 실거래 화면이 열릴 때만 받음(오너 「실거래로 갈 때만(권장)」).
+     홈만 보는 방문은 받지 않음. 25개 구 칸 · 「실거래 목록 보기」 · 하단 「지도」를 누르는 순간(pointerdown)부터 미리 받기 시작.
+     하단 「지도」로 왔는데 아직 준비 전이면 목록을 먼저 보이고, 준비되는 대로 지도로 바꿈(그사이 사용자가 「목록」을 누르면 바꾸지 않음). */
+  let sdkAsked = false, wantMap = false;
+  const loadOnce = () => { if (sdkAsked || !key) return; sdkAsked = true; loadSdk(); };
+  window.__ykMapLoad = loadOnce;
+  window.__ykMapWant = () => {
+    if (!key || window.__ykMapFailed) return false;
+    loadOnce(); wantMap = true; return true;
+  };
+  const dealsView = byId('viewDeals');
+  if (dealsView) {
+    const kick = () => { if (!dealsView.hidden) loadOnce(); else wantMap = false; };
+    new MutationObserver(kick).observe(dealsView, { attributes:true, attributeFilter:['hidden'] });
+    kick();
+  }
+  listTab.addEventListener('click', () => { wantMap = false; });
+  document.addEventListener('ykmap:ready', () => {
+    if (wantMap && dealsView && !dealsView.hidden && mode !== 'map') mapTab.click();
+    wantMap = false;
+  });
+  document.addEventListener('ykmap:fail', () => { wantMap = false; });
+  document.addEventListener('pointerdown', (e) => {
+    const t = e.target && e.target.closest && e.target.closest('#reach328Map button[data-reach], #marketOpen, #heroDeals, [data-v208-tab="map"]');
+    if (t) loadOnce();
+  }, { passive:true, capture:true });
 })();
 
 </script>
@@ -11559,6 +11584,7 @@ function navigate(tab,fromHistory){
     originalSet('deals');sheet.hidden=true;
     const map=el('dealMapTab'),bar=el('dealViewBar');
     if(map&&bar&&!bar.hidden)map.click();
+    else if(window.__ykMapWant&&window.__ykMapWant())announce('지도를 불러오고 있어요.');   /* v350 — SDK를 이제 받는 중: 준비되면 지도로 바뀜 */
     else announce('현재는 실거래 목록으로 확인할 수 있어요.');
    }else if(tab==='compare'){
     originalSet('compare');sheet.hidden=false;cmpRender();cmpQueueAlignment();
