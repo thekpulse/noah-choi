@@ -14898,6 +14898,25 @@ html body.yk208 #app#app #viewNext>.easy-next-card>.nx-lead{padding-left:0!impor
   sum342();
 })();
 </script>
+<script id="v348-scope">
+/* v348 — 홈 「내 예산과 실거래 비교」에서 같은 말 두 번 빼기: 요약 줄이 「… · 인근 지역 포함 · …」을 말할 때는
+   아래 「맞는 거래가 적어 인근 지역까지 넓혔어요.」를 홈에서만 감춤(실거래 탭 #dealScopeNote 는 그대로).
+   요약 줄이 안 뜨는 경우(조회 일부 실패 · 거래 0건 · 빈 결과)에는 안내 문장을 그대로 둠. */
+(function(){
+  var note = document.getElementById('resultScopeNote'), ctx = document.getElementById('heroContext');
+  if(!note || !ctx) return;
+  function redundant(){
+    if(typeof DEAL === 'undefined' || DEAL.status !== 'ready' || !DEAL.wide || (DEAL.compareCodes || []).length) return false;
+    if(((DEAL.items && DEAL.items.queryIssues) || []).length) return false;
+    return /인근 지역 포함/.test(ctx.textContent || '') && !!ctx.dataset.v342;
+  }
+  function sync(){ if(redundant() && !note.hidden) note.hidden = true; }
+  new MutationObserver(sync).observe(note, { attributes:true, attributeFilter:['hidden'] });
+  new MutationObserver(sync).observe(ctx, { childList:true, subtree:true, characterData:true });
+  document.addEventListener('deals:ready', function(){ setTimeout(sync, 0); });
+  sync();
+})();
+</script>
 <style id="v344-reach">
 /* v344 — 서울 25개 구 카드를 시안 C 모양으로(오너 2026-11-17 「c로 해볼까」 · 조회는 누를 때만 — 「누를 때만(권장)」).
    ① 누르기 전: 구 이름만 있는 회색 격자(미리보기, 읽기 도구에는 숨김)를 버튼 위에 보임. 격자를 눌러도 조회 버튼과 같음.
@@ -14979,6 +14998,7 @@ html body.yk208 #app #reach328 .reach345-row :is(button,summary):focus-visible{o
 #browse345 .b345-head span{font-size:13px;color:#53617C}
 #browse345 .b345-facts p{margin:6px 0 0;font-size:13px;line-height:1.6;color:#3D4A60;word-break:keep-all}
 #browse345 .b345-facts ul,#browse345 .b345-facts button{display:none}
+#browse345 .reach328-nb{white-space:nowrap}   /* v347 — 「(25억 … ~ 30억 …)」이 괄호 뒤에서 갈리지 않게(아이폰 캡처) */
 #browse345 .b345-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 #browse345 .b345-acts button{min-height:44px;padding:0 14px;border-radius:12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 #browse345 .b345-back{border:0;background:#1F5BFF;color:#fff}
@@ -15042,6 +15062,9 @@ body.browse345 #viewDeals .deal-regions{display:none!important}
     var name = sggName(code) || '';
     var facts = pick.cloneNode(true); facts.removeAttribute('id'); facts.removeAttribute('aria-live'); facts.className = 'b345-facts';
     var h3 = facts.querySelector('h3'); if(h3) h3.remove();
+    facts.querySelectorAll('p').forEach(function(p){   /* v347 — 「85%~100%」 · 「(금액 ~ 금액)」을 한 덩어리로(줄 중간에서 안 갈리게) */
+      p.innerHTML = p.innerHTML.replace(/(\d+%~100%)/g, '<span class="reach328-nb">$1</span>').replace(/\(([^()<]+ ~ [^()<]+)\)/g, '<span class="reach328-nb">($1)</span>');
+    });
     var mine = typeof sggName === 'function' && S.sgg ? sggName(S.sgg) : '';
     bar.innerHTML = '<p class="b345-head"><b>' + esc(name) + ' 둘러보는 중</b><span>예산은 ' + esc(mine ? mine + ' 기준' : '지금 조건') + ' 그대로</span></p>'
       + facts.outerHTML
@@ -15070,6 +15093,10 @@ body.browse345 #viewDeals .deal-regions{display:none!important}
     var t = e.target.closest ? e.target.closest('button[data-reach]') : null;
     if(!t || t.disabled || t.classList.contains('is-wait') || !document.getElementById('reach328Go').hidden) return;
     var code = t.getAttribute('data-reach');
+    if(t.classList.contains('is-mine')){   /* v347 — 내 매수 지역 칸: 둘러보기 머리 없이 평소 실거래로(오너 아이폰 2026-11-18 「성동구 둘러보는 중 · 성동구로 돌아가기」) */
+      setTimeout(function(){ leave(true); window.__ykDealFrom = 'reach'; if(typeof window.yk208Navigate === 'function') window.yk208Navigate('map'); try{ window.scrollTo(0, 0); }catch(e){} }, 0);
+      return;
+    }
     setTimeout(function(){ enter(code); }, 0);
   });
   bar.addEventListener('click', function(e){
