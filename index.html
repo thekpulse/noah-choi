@@ -4091,8 +4091,9 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
   
   <!-- v327 — 첫 화면 반복 문구(작은 제목·그림 도장·캡션) 삭제, 부제를 실제 기능 문장으로(오너 2026-11-12 A안). -->
+  <!-- v352 — 첫 화면을 한 장으로(오너 2026-11-19 「첫 페이지부터 장황」): 두 번째 제목·설명, 기능 소개 2칸 삭제. 큰 제목 하나 · 문장 하나 · 시작 버튼 하나. -->
   <section id="welcome232" class="welcome232" role="main" aria-labelledby="welcomeTitle232" hidden>
- <div class="welcome232-heading"><h1 id="welcomeTitle232" tabindex="-1">내 예산 속,<br>우리 집을 찾아요.</h1><p class="welcome232-sub">예상 집값을 그 지역 실거래가와<br>나란히 보여 줘요.</p></div>
+ <div class="welcome232-heading"><h1 id="welcomeTitle232" tabindex="-1">내 예산 속,<br>우리 집을 찾아요.</h1><p class="welcome232-sub">현금과 소득을 입력하면<br>예상 집값과 그 지역 실거래가를 함께 보여 줘요.</p></div>
  <div class="welcome232-start">
   <div class="welcome232-scene" aria-hidden="true">
    <svg viewBox="0 0 360 196" fill="none"><path d="M0 165H360M39 0V196M129 0V196M219 0V196M309 0V196" stroke="#D9E3FB"/><path d="M0 80H360" stroke="#D9E3FB"/><path d="M0 182L360 98" stroke="white" stroke-width="18"/><rect x="38" y="93" width="61" height="62" rx="4" fill="#D2DDFC"/><path d="M32 95L69 67L106 95" stroke="#A5B9EF" stroke-width="7" stroke-linejoin="round"/><path d="M54 110H64V122H54ZM75 110H85V122H75Z" fill="white"/><path d="M63 136H76V155H63Z" fill="#A5B9EF"/>
@@ -4100,9 +4101,8 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
    <path d="M132 111L180 70L228 111V174H132V111Z" fill="#2458FF"/><path d="M124 114L180 65L236 114" stroke="#153AAB" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><rect x="151" y="119" width="19" height="20" rx="2" fill="#E8EEFF"/><rect x="189" y="119" width="19" height="20" rx="2" fill="#E8EEFF"/><path d="M172 151H190V174H172V151Z" fill="#E8EEFF"/><circle cx="180" cy="26" r="18" fill="white" stroke="#B8C9F6"/><path d="M172 26L178 32L189 20" stroke="#2458FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
    <path d="M321 162V142" stroke="#839ACD" stroke-width="3"/><circle cx="321" cy="136" r="12" fill="#BACCEE"/></svg>
   </div>
-  <div class="welcome232-startbody"><h2>우리 집 예산, 어디까지일까요?</h2><p>현금과 소득을 입력하면<br>예상 집값과 월 상환액을 함께 볼 수 있어요.</p><button type="button" id="welcomeStart232">내 집 예산 알아보기 <span aria-hidden="true">→</span></button><small>가입 없이 시작해요 · 입력 금액은 서버로 보내지 않아요</small></div>
+  <div class="welcome232-startbody"><button type="button" id="welcomeStart232">내 집 예산 알아보기 <span aria-hidden="true">→</span></button><small>가입 없이 시작해요 · 입력 금액은 서버로 보내지 않아요</small></div>
  </div>
- <div class="welcome232-next"><h2>예산을 알면, 집 찾기가 달라져요</h2><div class="welcome232-features"><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16M15 5v16"/></svg></span><h3>동네를 살펴보고</h3><p>내 예산과 실거래가를<br>지도에서 함께 확인해요.</p></div><div><span class="welcome232-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="7" height="14" rx="2"/><rect x="14" y="3" width="7" height="18" rx="2"/><path d="M6 12h1m-1 4h1m10-8h1m-1 4h1"/></svg></span><h3>마음에 든 집을 나란히</h3><p>단지를 담아 비교하고,<br>예산 차이를 살펴봐요.</p></div></div></div>
  <nav class="v305-reads v315-one" aria-label="내 집 마련 자금 글"><a href="/articles"><strong>내 집 마련 자금 글</strong><span>대출 한도 · 세금 · 규제지역 해설</span></a></nav>
  <p class="welcome232-legal">참고용 계산 결과 · 대출 주선·알선·중개 아님</p>
 </section>
@@ -15175,6 +15175,167 @@ html body.yk208 #app #viewAnswer #easyBalance .rlab .n i.u{font-style:normal;fon
     new MutationObserver(function(){ wrap(el); }).observe(el, {childList:true, characterData:true, subtree:true});
   });
   window.__ykWrap343 = wrap;
+})();
+</script>
+<style id="v352-first-screen">
+/* v352 — 첫 화면 한 장. 기능 소개 2칸(welcome232-next)을 뺀 자리에 넓은 화면에서는 글 링크를 제목 아래로 올림. */
+@media(min-width:960px){html body.yk208 #app #welcome232>.v305-reads.v315-one{grid-column:1;grid-row:2;align-self:end;margin-top:24px}}
+</style>
+<style id="v353-steps">
+/* v353 — 첫 입력을 2단계로(오너 2026-11-19): 1단계 지역과 주택 → 「다음」 → 2단계 사용할 자금 → 계산하기.
+   결과를 한 번 본 뒤의 「내 조건」(고치기)은 지금처럼 한 화면. */
+html body.yk208 #app #crows[data-stage353="1"]>.s353-b{display:none!important}
+html body.yk208 #app #crows[data-stage353="2"]>.s353-a:not(.v232-step){display:none!important}
+html body.yk208 #app #crows:not([data-stage353="2"])>#stepSum353{display:none!important}
+html body.yk208[data-stage353="1"] #app #ctaBtn,html body.yk208[data-stage353="1"] #app #ctaTodo{display:none!important}
+html body.yk208 #app #stepNext353[hidden]{display:none!important}
+/* v353 — 25개 구 칸 글자 대비: 조회 전 미리보기(v344)·조회 중(v328) 칸 글자 #8A96AA는 배경 대비 2.7~3.0:1로 기준(4.5:1) 미달.
+   v353 검사를 넣은 뒤 홈 접근성 검사에서 드러남(이전 검사 순서에서는 판정 보류로 지나간 것으로 보임). 기존 색 단계 --yk-muted(#607089)로 → 4.6 / 5.0:1. */
+html body.yk208 #app #reach328 .reach344-preview .reach328-tile,html body.yk208 #app #reach328 .reach328-tile.is-wait{color:var(--yk-muted)}
+html body.yk208 #app #crows>#stepSum353{width:100%;border:1px solid #C8D2E2!important;border-radius:18px!important;background:#fff}
+html body.yk208 #app #crows>#stepSum353 .k{display:inline-flex!important;align-items:center!important;gap:10px!important;min-width:0}
+html body.yk208 #app #crows>#stepSum353 .k::before{content:"";flex:none;width:30px;height:30px;border-radius:9px;background:#EDF2FF center/18px 18px no-repeat;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E")}
+html body.yk208 #app #crows>#stepSum353 .v{flex:none}
+</style>
+<script id="v353-steps">
+/* v353 — 첫 입력 2단계 · 입력하면 다음 칸으로.
+   · 1단계(지역·주택)가 다 차면 「다음」, 2단계에서는 1단계 요약 줄을 누르면 돌아감.
+   · 단계는 결과를 아직 안 봤을 때만(처음부터 다시 하면 다시 단계). 결과를 본 뒤 「내 조건」은 한 화면 그대로.
+   · 자동으로 넘기는 때: 주택 보유 생애최초/무주택을 고르면 시트 닫힘(1주택 이상은 주택 수를 더 골라야 해서 「적용」 그대로)
+     → 1단계가 다 차면 2단계로 · 현금 칸 키보드 「다음」→ 소득(기존) · 소득 칸 「다음」→ 기존 대출 시트(비어 있을 때)
+     · 기존 대출 시트를 적용/없음으로 닫으면 계산하기 버튼으로. ✕로 닫으면 잇지 않음(v309와 같은 규칙).
+   · 숫자 칸은 시간으로 넘기지 않음(입력 도중 넘어가 금액이 틀어지지 않게). 계산은 사용자가 누를 때만. */
+(function(){
+  var crows=document.getElementById('crows'), cta=document.getElementById('ctaBtn'), result=document.getElementById('result'), sheet=document.getElementById('qSheet');
+  if(!crows||!cta||!result||!sheet||typeof renderAnswered!=='function'||typeof syncCta!=='function') return;
+  var shown=!result.hidden, stage=0, advance=null;
+  new MutationObserver(function(){ if(!result.hidden) shown=true; }).observe(result,{attributes:true,attributeFilter:['hidden']});
+  function done1(){ return !!S.sgg && !!S.houseStatus; }
+  function stepMode(){
+    if(!S.sgg && !S.houseStatus && !S.cash && !S.income) shown=false;   /* 처음부터 다시 */
+    return !shown;
+  }
+  var nextBtn=document.createElement('button');
+  nextBtn.type='button'; nextBtn.className='cta'; nextBtn.id='stepNext353'; nextBtn.textContent='다음'; nextBtn.hidden=true;
+  cta.parentNode.insertBefore(nextBtn, cta);
+  function sumText(){ return (typeof regionLabel==='function'?regionLabel():'') + ' · ' + (typeof houseLabel==='function'?houseLabel():''); }
+  function apply(){
+    if(!stepMode()) stage=0;
+    else if(stage===0) stage=done1()?2:1;
+    else if(stage===2 && !done1()) stage=1;
+    var part=1;
+    Array.prototype.forEach.call(crows.children, function(el){
+      if(el.id==='stepSum353') return;
+      if(el.matches('h2.v232-step') && /사용할 자금/.test(el.textContent)) part=2;
+      el.classList.toggle('s353-a', part===1); el.classList.toggle('s353-b', part===2);
+    });
+    var sum=document.getElementById('stepSum353');
+    if(stage===2){
+      if(!sum){
+        sum=document.createElement('button'); sum.type='button'; sum.className='crow'; sum.id='stepSum353';
+        sum.innerHTML='<span class="k"><span class="s353-v"></span></span><span class="v">변경<i class="chev" aria-hidden="true"></i></span>';
+        sum.onclick=function(){ stage=1; apply(); window.scrollTo(0,0); var f=crows.querySelector('[data-mode="region"]'); if(f) f.focus({preventScroll:true}); };
+        var h1=crows.querySelector('h2.v232-step'); if(h1) h1.after(sum); else crows.prepend(sum);
+      }
+      sum.querySelector('.s353-v').textContent=sumText();
+    }
+    crows.dataset.stage353=String(stage);
+    document.body.dataset.stage353=String(stage);
+    nextBtn.hidden=stage!==1; nextBtn.disabled=!done1();
+  }
+  function toStage2(){
+    stage=2; apply(); window.scrollTo(0,0);
+    var c=document.getElementById('main-cash'); if(c) c.focus({preventScroll:true});
+  }
+  function toCta(){ if(cta.disabled) return; cta.scrollIntoView({block:'center'}); cta.focus({preventScroll:true}); }
+  nextBtn.onclick=function(){ if(done1()) toStage2(); };
+  var origRender=renderAnswered; renderAnswered=function(){ var r=origRender.apply(this,arguments); try{ apply(); }catch(e){} return r; };
+  var origSync=syncCta; syncCta=function(){ var r=origSync.apply(this,arguments); try{ apply(); }catch(e){} return r; };
+
+  /* 시트: 생애최초/무주택은 고르는 순간 닫힘 · 적용/없음으로 닫힌 것만 다음으로 이음 */
+  sheet.addEventListener('click', function(e){
+    var mode=typeof QMODE!=='undefined'?QMODE:null;
+    if(e.target.closest('#qClose') || e.target.closest('#debtNone')) advance=mode;
+    var hb=e.target.closest('[data-house]');
+    if(hb && mode==='house' && (S.houseStatus==='first'||S.houseStatus==='none') && typeof ready==='function' && ready()){
+      advance='house'; closeSheet('q');
+    }
+  });
+  sheet.addEventListener('keydown', function(e){
+    if(e.key!=='Enter' || e.isComposing || e.target.id!=='inDebt') return;
+    var b=document.getElementById('qClose'); if(b && !b.disabled){ e.preventDefault(); b.click(); }
+  });
+  new MutationObserver(function(){
+    if(!sheet.hidden) return;
+    var m=advance; advance=null; if(!m) return;
+    setTimeout(function(){
+      if(typeof anySheetOpen==='function' && anySheetOpen()) return;   /* v309 지역→주택 잇기가 먼저 */
+      if(stage===1 && (m==='house'||m==='region') && done1()) toStage2();
+      else if(m==='debt') toCta();
+    }, 300);
+  }).observe(sheet,{attributes:true,attributeFilter:['hidden']});
+
+  /* 숫자 칸: 키보드 「다음」/Enter 로만 넘김.
+     v256은 Enter에서 키보드를 닫고 다음 칸을 화면에 보이게만 했음(포커스는 그대로 빠짐) — 오너 요청(입력하면 다음 칸으로)에 맞춰
+     v256보다 먼저(document 캡처) 받아 다음 칸에 바로 포커스. 현금 → 소득은 같은 누름 안에서 옮겨 휴대폰 키보드가 닫히지 않게. */
+  document.addEventListener('keydown', function(e){
+    if(e.key!=='Enter' || e.isComposing || !crows.contains(e.target)) return;
+    var id=e.target.id; if(id!=='main-cash' && id!=='main-income') return;
+    if(document.getElementById(id.replace('main-','')+'-error')?.textContent) return;   /* 999억 넘는 오류가 떠 있으면 v256 그대로 */
+    e.preventDefault(); e.stopImmediatePropagation();
+    var inc=document.getElementById('main-income');
+    if(id==='main-cash' && !S.noLoan && inc && inc.getClientRects().length){ inc.focus(); return; }
+    e.target.blur();
+    setTimeout(function(){
+      if(id==='main-income' && S.debtMonthly==null){ var d=crows.querySelector('[data-mode="debt"]'); if(d) d.click(); }
+      else toCta();
+    }, 0);
+  }, true);
+  apply();
+  window.__yk353={stage:function(){return stage;}};
+})();
+</script>
+<style id="v354-split">
+/* v354 — 결과 홈 나누기(오너 2026-11-19 「정신이 없다」 → 권장안 승인):
+   홈 = 내 돈(예산 · 월 상환액 · 저장/공유 · 더 알아보기) + 실거래 요약 한 줄. 「서울 25개 구 실거래」는 「실거래」 탭(이전 이름 「지도」) 맨 위로.
+   카드 모양은 홈에 있을 때와 같게(v340: 안쪽 16px · 제목 16px/700 · 테두리 20px). */
+html body.yk208 #app #viewDeals>#reach328{margin:0 0 16px;padding:16px;background:#fff;border:1px solid #D6DFEC;border-radius:20px;color:var(--yk-ink);min-width:0}
+html body.yk208 #app #viewDeals>#reach328 h2{font-size:16px!important;font-weight:700!important;line-height:1.3!important;letter-spacing:0!important}
+html body.yk208 #app#app #viewDeals>#reach328 .section-symbol{display:inline-flex!important;align-items:center;justify-content:center;flex:none;width:26px!important;height:26px!important;border-radius:10px!important;background:#EDF2FF!important;color:#2458FF!important}
+html body.yk208 #app#app #viewDeals>#reach328 .section-symbol svg{width:16px!important;height:16px!important}
+/* 홈 「내 예산과 실거래 비교」 → 요약 한 줄 + 「실거래 보기」. 대표 거래 3건(#heroDeals)은 실거래 탭 목록과 같은 내용이라 홈에서 감춤.
+   제목은 낭독용으로 남김. 조회 실패 · 부분 조회 · 넓힌 지역 안내 같은 상태 문장은 그대로 보임(아래 줄로). */
+html body.yk208 #app #viewAnswer>#easyMarket:not([hidden]){display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;column-gap:12px!important;row-gap:8px!important}
+html body.yk208 #app #viewAnswer>#easyMarket>*{flex:1 1 100%;min-width:0}
+html body.yk208 #app #viewAnswer>#easyMarket>#easyMarketTitle{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+html body.yk208 #app #viewAnswer>#easyMarket #heroDeals{display:none!important}
+html body.yk208 #app #viewAnswer>#easyMarket>#heroContext{flex:1 1 0!important;order:-1!important;min-width:0!important;height:auto!important;min-height:0!important;overflow:visible!important;white-space:normal!important;margin:0!important;padding:0!important;font-size:14px!important;line-height:1.5!important}
+html body.yk208 #app #viewAnswer>#easyMarket>#marketOpen{flex:0 0 auto!important;order:-1!important;align-self:center!important;width:auto!important;min-height:44px!important;height:44px!important;margin:0!important;padding:0 14px!important;white-space:nowrap}
+</style>
+<script id="v354-split">
+/* v354 — 결과 홈 나누기. 마크업 · 기존 함수는 그대로 두고 여기서 옮기고 잇기만 함(되돌리려면 이 덩어리 둘을 지우면 됨).
+   · 「서울 25개 구 실거래」(#reach328)를 실거래 탭 머리 아래로 옮김. 조회는 지금처럼 누를 때만(v328) — 옮겨도 조회 횟수는 그대로.
+   · 하단 탭 「지도」 → 「실거래」(탭 안 「목록/지도」 전환 버튼과 같은 이름이 겹쳤음).
+   · 구 칸을 누르면 v345가 둘러보기로 바꾸고 맨 위로 올림 → 카드가 이제 그 위에 있으므로, 바뀐 실거래 카드가 보이도록 그 자리로 내림. */
+(function(){
+  var deals=document.getElementById('viewDeals'), reach=document.getElementById('reach328'), card=document.getElementById('dealCard');
+  if(!deals || !reach) return;
+  var head=deals.querySelector(':scope>.v283-page-head');
+  if(head) head.after(reach); else deals.prepend(reach);
+  var tab=document.querySelector('[data-v208-tab="map"] span'); if(tab) tab.textContent='실거래';
+  var mo=document.getElementById('marketOpen');
+  if(mo && mo.firstChild && mo.firstChild.nodeType===3) mo.firstChild.nodeValue='실거래 보기 ';
+  var map=document.getElementById('reach328Map');
+  if(map && card) map.addEventListener('click', function(e){
+    var t=e.target.closest ? e.target.closest('button[data-reach]') : null;
+    var go=document.getElementById('reach328Go');
+    if(!t || t.disabled || t.classList.contains('is-wait') || (go && !go.hidden)) return;
+    setTimeout(function(){   /* v345 처리(setTimeout 0 · 맨 위로) 뒤 */
+      if(deals.hidden) return;
+      var bar=document.querySelector('.appbar'), top=card.getBoundingClientRect().top + window.scrollY - ((bar && bar.getBoundingClientRect().bottom) || 0) - 12;
+      window.scrollTo(0, Math.max(0, top));
+    }, 60);
+  });
 })();
 </script>
 </body>
