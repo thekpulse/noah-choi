@@ -1243,13 +1243,24 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         await q.evaluate(()=>{Object.assign(S,{cash:300000,income:20000,sgg:'11440',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
         await q.waitForTimeout(300); await q.evaluate(()=>window.yk208Navigate('conditions')); await q.waitForTimeout(300);
         await q.locator('#main-income').tap(); await q.waitForTimeout(500);
-        const a=await q.evaluate(()=>{const bar=document.getElementById('kbNext355');bar.style.transform='translateY(-165px)';window.scrollBy(0,-20);return true;});
+        const a=await q.evaluate(()=>{const bar=document.getElementById('kbNext355');bar.style.transform='translateY(-165px)';bar.style.top='100px';window.scrollBy(0,-20);return true;});
         await q.waitForTimeout(250);
         const b=await q.evaluate(()=>{const bar=document.getElementById('kbNext355'),nav=document.getElementById('v208Nav'),pad=document.getElementById('kbPad370');
           return {bar:!bar.hidden,tf:bar.style.transform,barBottom:Math.round(bar.getBoundingClientRect().bottom),ih:innerHeight,nav:nav?getComputedStyle(nav).display:'none',pad:pad?parseFloat(pad.style.height):-1};});
         await q.evaluate(()=>document.activeElement.blur()); await q.waitForTimeout(250);
         const c=await q.evaluate(()=>{const p=document.getElementById('kbPad370');return {nav:getComputedStyle(document.getElementById('v208Nav')).display,pad:p?parseFloat(p.style.height):-1};});
         ok(b.bar && b.tf==='' && Math.abs(b.barBottom-b.ih)<=1 && b.nav==='none' && b.pad>=360 && c.nav!=='none' && c.pad===0, 'v370 「다음」 줄 — 화면을 움직이면 자리 다시 셈(옛 자리 165px 위 → 화면 아래) · 떠 있는 동안 탭 막대 감춤 · 아래 여유 칸(닫으면 0)', JSON.stringify({b,c}));
+        // v371 — 줄은 보이는 영역(visualViewport) 아래 끝 기준으로 놓음(innerHeight에 기대지 않음): 가짜 보이는 영역(위 120 · 높이 300)으로 잼
+        await q.locator('#main-income').tap(); await q.waitForTimeout(300);
+        const v371=await q.evaluate(()=>{const bar=document.getElementById('kbNext355'),real=window.visualViewport;const fake={offsetTop:120,height:300,addEventListener(){},removeEventListener(){}};
+          /* 아이폰처럼 innerHeight(700)가 고정 요소 기준 높이(600)와 다른 경우 — 옛 방식(bottom:0 + innerHeight로 끌어올림)은 100px 어긋남 */
+          const ihD=Object.getOwnPropertyDescriptor(window,'innerHeight')||Object.getOwnPropertyDescriptor(Window.prototype,'innerHeight'),vvD=Object.getOwnPropertyDescriptor(window,'visualViewport')||Object.getOwnPropertyDescriptor(Window.prototype,'visualViewport');
+          Object.defineProperty(window,'visualViewport',{configurable:true,get:()=>fake});Object.defineProperty(window,'innerHeight',{configurable:true,get:()=>700});
+          window.__yk355.place();const r=bar.getBoundingClientRect();
+          Object.defineProperty(window,'innerHeight',ihD);Object.defineProperty(window,'visualViewport',vvD);
+          const tf=bar.style.transform;bar.style.top='';bar.style.transform='';window.__yk355.place();return {bottom:Math.round(r.bottom),tf,ih:innerHeight};});
+        ok(v371.bottom===420 && v371.tf==='' && v371.ih===600, 'v371 「다음」 줄 아래 끝 = 보이는 영역 아래 끝(위 120 + 높이 300 = 420) · innerHeight가 달라도(아이폰) 그대로', JSON.stringify(v371));
+        await q.evaluate(()=>document.activeElement.blur()); await q.waitForTimeout(200);
         const fits=[];
         for(const w of [393,320]){
           await q.setViewportSize({width:w,height:600}); await q.waitForTimeout(150);
