@@ -718,6 +718,14 @@ ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 �
      && /SIL Open Font License, Version 1\.1/.test(ofl) && /Reserved Font Name Pretendard/.test(ofl),
      'v374 「YK Minus」 — 계산기 · 안내 페이지 15개 같은 @font-face(U+2212만) · 글꼴 순서 Pretendard 앞 · woff2 12KB 미만 · OFL 문서', bad374.join(','));
 }
+// 64) v375 — 「다음」 줄은 키보드가 있을 때만(방금 그 칸 묶음 · 줄을 누른 초점 또는 보이는 영역이 150px 넘게 짧을 때)
+{
+  const s375 = (html.match(/<script id="v375-kb-gate">[\s\S]*?<\/script>/) || [])[0] || '';
+  ok(/addEventListener\('pointerdown', function\(e\)\{ lastT=Date\.now\(\); lastEl=e\.target; \}, true\)/.test(s375) && /Date\.now\(\)-lastT > 1000/.test(s375) && /> 150/.test(s375)
+     && /closest\('\.inline-money'\)/.test(s375) && /visualViewport\.addEventListener\('resize'/.test(s375) && /matchMedia\('\(pointer: coarse\)'\)/.test(s375) && /__yk355\.place\(\)/.test(s375)
+     && html.indexOf('<script id="v375-kb-gate">') > html.indexOf("bar.id='kbNext355'"),
+     'v375 규칙 — 누른 초점(1초 · 칸 묶음 · 줄) 또는 키보드(보이는 영역 150px 넘게 짧음)일 때만 「다음」 줄 · 터치 화면만 · v355 뒤에 붙음');
+}
 
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
@@ -1585,6 +1593,46 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(Object.values(res374).every(v=>/^(.*,)?YK Minus(,.*)?$/.test(v) && !/Inter|DejaVu|Noto|Liberation/.test(v.replace(/Pretendard Variable/g,''))) && lazy374,
          'v374 「−」를 YK Minus 조각이 그림 — 안내 페이지 4개 · 계산기(시험 글자) · 「−」 없는 결과 화면에서는 조각을 안 받음',JSON.stringify({res374,lazy374,fontReq374}));
       await p374.close();
+    }
+    // v375 — 「다음」 줄은 키보드가 있을 때만: 아이폰 캡처(2026-11-21)와 같은 길(주택 보유 → 생애최초 → 0.3초 뒤 코드 초점)에서 줄이 감춰지는지 ·
+    //        그 칸을 누르면 / 이름표를 누르면 / 키보드가 올라오면(보이는 영역 흉내) 뜨는지 · 마우스 화면은 그대로 안 뜨는지
+    {
+      const c375=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+      const q=await c375.newPage(); const e375=[]; q.on('pageerror',e=>e375.push(e.message));
+      await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,items:[],total:0}});
+        const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+      await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+      const st375=()=>q.evaluate(()=>{const bar=document.getElementById('kbNext355'),r=bar.getBoundingClientRect();return {focus:document.activeElement.id,bar:!bar.hidden,label:document.getElementById('kbNextBtn355').textContent,bottom:Math.round(r.bottom),vvBottom:Math.round(visualViewport.offsetTop+visualViewport.height)};});
+      await q.locator('#welcomeStart232').tap();
+      await q.evaluate(()=>{S.sgg='11440';S.sido='서울특별시';S.group='seoul';renderAnswered();syncCta();}); await q.waitForTimeout(200);
+      await q.locator('#crows [data-mode="house"]').tap(); await q.waitForTimeout(400);
+      await q.locator('[data-house="first"]').tap(); await q.waitForTimeout(900);
+      const a=await st375();                                    // 코드 초점 · 키보드 없음 → 줄 감춤
+      await q.locator('#main-cash').tap(); await q.waitForTimeout(150);
+      const b=await st375();                                    // 사용자가 칸을 누름 → 줄
+      await q.evaluate(()=>document.activeElement.blur()); await q.waitForTimeout(1100);
+      await q.evaluate(()=>document.getElementById('main-cash').focus()); await q.waitForTimeout(100);
+      const c=await st375();                                    // 누름 없이 코드 초점 → 감춤
+      const d=await q.evaluate(()=>{const real=window.visualViewport,vvD=Object.getOwnPropertyDescriptor(window,'visualViewport')||Object.getOwnPropertyDescriptor(Window.prototype,'visualViewport');
+        const fake={offsetTop:0,offsetLeft:0,width:innerWidth,height:innerHeight-320,scale:1,addEventListener(){},removeEventListener(){}};
+        Object.defineProperty(window,'visualViewport',{configurable:true,get:()=>fake}); real.dispatchEvent(new Event('resize'));
+        const bar=document.getElementById('kbNext355'),r=bar.getBoundingClientRect(),out={bar:!bar.hidden,top:Math.round(r.top),want:Math.round(innerHeight-320-r.height)};
+        Object.defineProperty(window,'visualViewport',vvD); return out;});   // 키보드가 올라옴(안드로이드 등) → 줄 · 보이는 영역 아래 끝
+      await q.evaluate(()=>document.activeElement.blur()); await q.waitForTimeout(150);
+      await q.locator('label[for="main-income"]').tap(); await q.waitForTimeout(150);
+      const e=await st375();                                    // 이름표를 누름 → 줄
+      ok(a.focus==='main-cash' && !a.bar && b.bar && b.label==='다음' && Math.abs(b.bottom-b.vvBottom)<=1 && c.focus==='main-cash' && !c.bar && d.bar && Math.abs(d.top-d.want)<=1 && e.focus==='main-income' && e.bar && !e375.length,
+         'v375 「다음」 줄 — 생애최초 뒤 코드 초점엔 감춤 · 칸 누름 / 이름표 누름 / 키보드 올라옴에 뜸(자리는 보이는 영역 아래 끝)',JSON.stringify({a,b,c,d,e,e375}));
+      await c375.close();
+      const c375d=await browser.newContext({viewport:{width:1264,height:900}});const qd=await c375d.newPage();
+      await qd.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,items:[],total:0}});
+        const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+      await qd.goto('http://yeongkkeul.test/'); await qd.evaluate(()=>document.fonts.ready);
+      await qd.locator('#welcomeStart232').click(); await qd.evaluate(()=>{S.sgg='11440';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();});
+      await qd.locator('#stepNext353').click(); await qd.waitForTimeout(200); await qd.locator('#main-cash').click(); await qd.waitForTimeout(100); await qd.locator('#main-cash').click(); await qd.waitForTimeout(100);
+      const dsk=await qd.evaluate(()=>({focus:document.activeElement.id,bar:!document.getElementById('kbNext355').hidden}));
+      ok(dsk.focus==='main-cash' && !dsk.bar,'v375 마우스 화면(1264px)은 칸을 눌러도 「다음」 줄 없음(v355 그대로)',JSON.stringify(dsk));
+      await c375d.close();
     }
     ok(!errors.length,'v321 브라우저 JavaScript 실행 오류 없음',errors.join('\n'));
   }finally{await browser.close();}
