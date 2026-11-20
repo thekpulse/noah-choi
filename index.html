@@ -15368,8 +15368,14 @@ html body.yk208 .kb355>#kbNextBtn355{display:block;width:100%;max-width:560px;ma
     btn.disabled = !(S[cur.dataset.money] > 0) || !!document.getElementById(cur.dataset.money+'-error')?.textContent;
   }
   function place(){
-    var vv=window.visualViewport, off=vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
-    bar.style.transform = off ? 'translateY(' + (-off) + 'px)' : '';
+    /* v371 — 「화면 아래(bottom:0) + 키보드만큼 끌어올림」은 아이폰의 innerHeight · 고정 요소 기준 높이가 서로 다를 때 어긋남 →
+       보이는 영역(visualViewport) 아래 끝에서 줄 높이만큼 위(top)에 바로 놓음. 고정 요소의 top:0은 어느 브라우저나 같은 기준. */
+    var vv=window.visualViewport;
+    bar.style.transform='';
+    if(!vv){ bar.style.top=''; bar.style.bottom=''; return; }
+    var h=bar.offsetHeight || 0;
+    bar.style.bottom='auto';
+    bar.style.top=Math.round(vv.offsetTop + vv.height - h) + 'px';
   }
   function hide(){ bar.hidden=true; cur=null; }
   function toCta(){ if(cta.disabled) return; cta.scrollIntoView({block:'center'}); cta.focus({preventScroll:true}); }
