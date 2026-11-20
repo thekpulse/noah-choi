@@ -16104,5 +16104,46 @@ html body #qSheet .debt-none.is-on::after{content:'선택됨'!important;padding-
 @font-face{font-family:'YK Minus';font-style:normal;font-display:swap;font-weight:45 920;src:url(fonts/pretendard/YKMinus.woff2) format('woff2-variations'),url(fonts/pretendard/YKMinus.woff2) format('woff2');unicode-range:U+2212}
 body,button,input,select{font-family:'YK Minus','Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Segoe UI',system-ui,sans-serif}
 </style>
+<script id="v375-kb-gate">
+/* v375 — 「다음」 줄은 키보드가 있을 때만(오너 아이폰 2026-11-21 08:13 캡처 · 권장안 승인).
+   생애최초/무주택을 고르면 시트가 닫히고 0.3초 뒤 현금 칸에 코드로 초점을 줌(v353 toStage2). 아이폰 Safari는 누름 밖에서 준 초점엔 키보드를 안 띄워
+   칸 테두리와 v355 「다음」 줄(꺼진 버튼)만 화면 아래에 떠서 소득 칸을 가리던 것.
+   → 줄을 띄우는 조건: ① 그 칸 묶음(.inline-money: 이름표 · 칸 · 카드) 또는 「다음」 줄을 방금(1초 안) 누른 뒤의 초점 — 아이폰이 키보드를 여는 경우
+                       ② 보이는 영역(visualViewport)이 창보다 150px 넘게 짧음 = 키보드가 실제로 올라옴 — 코드 초점에도 키보드를 여는 기기(안드로이드 등)
+     코드 초점이면 줄을 감춰 두고, 사용자가 그 칸을 누르거나(아이폰은 이때 키보드) 키보드가 올라오면 그때 띄움.
+   v355의 초점 처리 · 「다음」/「완료」 이동 · v367 칸 올리기 · v371 줄 자리는 그대로(감추기만 v355 줄의 hidden으로). */
+(function(){
+  var bar=document.getElementById('kbNext355'), crows=document.getElementById('crows');
+  if(!bar || !crows) return;
+  var lastT=0, lastEl=null, coarse=window.matchMedia ? window.matchMedia('(pointer: coarse)') : null;
+  function isMoney(el){ return !!el && (el.id==='main-cash' || el.id==='main-income') && crows.contains(el) && !!coarse && coarse.matches; }   /* 마우스 화면은 v355처럼 줄 없음 */
+  function kbUp(){
+    var vv=window.visualViewport; if(!vv) return true;   /* 잴 수 없는 브라우저는 예전처럼 */
+    return (window.innerHeight - vv.height * (vv.scale || 1)) > 150;
+  }
+  function touched(el){
+    if(!lastEl || Date.now()-lastT > 1000) return false;
+    var block=el.closest('.inline-money') || el;
+    return block.contains(lastEl) || bar.contains(lastEl);
+  }
+  function show(){ if(!bar.hidden) return; bar.hidden=false; if(window.__yk355 && window.__yk355.place) window.__yk355.place(); }
+  document.addEventListener('pointerdown', function(e){ lastT=Date.now(); lastEl=e.target; }, true);
+  /* v355가 먼저 띄운 뒤(같은 focusin · 먼저 붙은 쪽이 먼저 돎) 조건이 안 맞으면 감춤 */
+  crows.addEventListener('focusin', function(e){
+    if(bar.hidden || !isMoney(e.target)) return;
+    if(!touched(e.target) && !kbUp()) bar.hidden=true;
+  });
+  /* 감춰 둔 칸을 사용자가 누르면(초점은 이미 있어 focusin이 다시 안 옴) 띄움 */
+  crows.addEventListener('click', function(e){
+    var el=document.activeElement; if(!isMoney(el) || !bar.hidden) return;
+    var block=el.closest('.inline-money') || el;
+    if(block.contains(e.target)) show();
+  });
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', function(){
+    if(bar.hidden && isMoney(document.activeElement) && kbUp()) show();
+  });
+  window.__yk375={kbUp:kbUp};
+})();
+</script>
 </body>
 </html>
