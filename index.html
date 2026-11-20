@@ -15395,7 +15395,10 @@ html body.yk208 .kb355>#kbNextBtn355{display:block;width:100%;max-width:560px;ma
     }, 0);
   });
   if(window.visualViewport){ window.visualViewport.addEventListener('resize', place); window.visualViewport.addEventListener('scroll', place); }
-  window.__yk355={bar:bar};
+  /* v370 — 화면(창)이 움직이면 버튼 줄 자리도 다시 셈: 소득 칸으로 옮긴 뒤 화면을 올리면 키보드는 그대로라 visualViewport 이벤트가 안 와서
+     옛 자리값이 남아 줄이 화면 가운데에 떠 있었음(오너 아이폰 캡처 2026-11-20). */
+  window.addEventListener('scroll', place, {passive:true});
+  window.__yk355={bar:bar, place:place};
 })();
 </script>
 <style id="v357-deal-seg">
@@ -15932,23 +15935,41 @@ html body.yk208 #app#app #dealDistribution .rt366 th small{margin-left:6px;font-
     if(!cur || bar.hidden || document.activeElement!==cur) return;
     var vv=window.visualViewport, top=vv ? vv.offsetTop : 0, h=vv ? vv.height : window.innerHeight;
     var head=document.querySelector('.appbar'), headH=head ? head.getBoundingClientRect().height : 0;
-    var barH=bar.getBoundingClientRect().height;
+    if(window.__yk355 && window.__yk355.place) window.__yk355.place();   /* v370 — 줄 자리부터 맞춘 뒤 잼 */
+    var br=bar.getBoundingClientRect(), barH=br.height;
     var r=block(cur).getBoundingClientRect();
-    var visTop=top + headH + 8, visBottom=top + h - barH - 12;
+    var visTop=top + headH + 8, visBottom=Math.min(top + h - barH, br.top) - 12;
     var dy=0;
     if(r.bottom > visBottom) dy=r.bottom - visBottom;
     if(r.top - dy < visTop) dy=r.top - visTop;          /* 칸이 화면보다 크면 위쪽(칸 이름)을 우선 */
     if(Math.abs(dy) > 2) window.scrollBy(0, dy);
   }
   function soon(){ clearTimeout(t1); t1=setTimeout(reveal, 60); }
+  /* v370 — 아이폰에서 「다음」으로 소득 칸에 옮기면(키보드는 그대로 → 크기 변화 없음) 아이폰이 자기 방식으로 칸을 늦게 끌어올려
+     우리 맞춤(350ms)을 덮음(오너 2026-11-20 「소득 입력칸도 안 내려가져서 깨지고」). →
+     ① 포커스 뒤 1.2초 동안은 화면 움직임(visualViewport scroll)이 멈출 때마다 한 번 더 맞춤(그 뒤엔 사용자가 움직인 화면을 건드리지 않음)
+     ② 700 · 1100ms에도 한 번씩 ③ 「다음」 줄이 떠 있는 동안 문서 끝에 빈 칸(키보드 + 줄 높이, 최소 360px)을 둬 맨 아래 칸도 올릴 여유를 만듦. */
+  var since=0, t2=0, pad=document.createElement('div'); pad.id='kbPad370'; pad.setAttribute('aria-hidden','true'); pad.style.cssText='height:0;pointer-events:none';
+  document.body.appendChild(pad);
+  function padSync(){
+    if(bar.hidden || !cur){ pad.style.height='0'; return; }
+    var vv=window.visualViewport, kb=vv ? Math.max(0, window.innerHeight - vv.height) : 0;
+    pad.style.height=Math.max(360, Math.round(kb + bar.getBoundingClientRect().height + 24)) + 'px';
+  }
+  function settle(){ if(!cur || Date.now()-since > 1200) return; clearTimeout(t2); t2=setTimeout(reveal, 120); }
   crows.addEventListener('focusin', function(e){
     var el=e.target; if(!el || (el.id!=='main-cash' && el.id!=='main-income')) return;
-    cur=el; requestAnimationFrame(function(){ requestAnimationFrame(reveal); }); setTimeout(reveal, 350);
+    cur=el; since=Date.now();
+    requestAnimationFrame(function(){ padSync(); requestAnimationFrame(reveal); });
+    setTimeout(reveal, 350); setTimeout(reveal, 700); setTimeout(reveal, 1100);
   });
-  document.addEventListener('focusout', function(){ setTimeout(function(){ if(document.activeElement!==cur) cur=null; }, 0); });
+  document.addEventListener('focusout', function(){ setTimeout(function(){ if(document.activeElement!==cur){ cur=null; padSync(); } }, 0); });
+  new MutationObserver(padSync).observe(bar,{attributes:true,attributeFilter:['hidden']});
+  if(window.visualViewport){ window.visualViewport.addEventListener('scroll', settle); window.visualViewport.addEventListener('resize', padSync); }
+  window.addEventListener('scroll', settle, {passive:true});
   if(window.visualViewport) window.visualViewport.addEventListener('resize', soon);
   window.addEventListener('resize', soon);
-  window.__yk367={reveal:reveal};
+  window.__yk367={reveal:reveal, pad:pad};
 })();
 </script>
 <style id="v369-smooth">
@@ -16017,5 +16038,27 @@ html body.yk208 #app#app .funnel #crows>.inline-money>.inline-error{grid-column:
 html body.yk208 #app#app #crows[data-stage353="2"]>.s353-a.crow{display:flex!important}
 html body.yk208 #app#app #crows>#stepSum353{display:none!important}
 </style>
+<style id="v370-money-field">
+/* v370 — 한 줄 숫자 칸(v369)에서 아이폰이 마지막 숫자를 자름(오너 아이폰 캡처 2026-11-20: 「300,000」→「300,00」 · 「20,000」→「20,00C」).
+   크롬보다 아이폰 입력칸 안쪽 폭이 약 18px 좁아, 136px 칸에 「300,000」(19px)이 안 들어감 →
+   ① 칸 136 → 160px(360px 이하 118 → 136px · 이름은 두 줄로 꺾일 수 있음) ② 7자리 이상(「1,000,000」 = 100억)은 글자 16px(iOS 확대 방지 하한).
+   ③ 「다음」 줄이 떠 있는 동안 아래 탭 막대 감춤 — 키보드 위에 탭 막대가 함께 떠 칸을 또 가렸음. */
+html body.yk208 #app#app .funnel #crows>.inline-money{grid-template-columns:minmax(0,1fr) 160px!important}
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-money-field input.long370{font-size:var(--t5)!important}
+@media(max-width:360px){
+  html body.yk208 #app#app .funnel #crows>.inline-money{grid-template-columns:minmax(0,1fr) 136px!important}
+}
+html body.yk208:has(#kbNext355:not([hidden])) #v208Nav{display:none!important}
+</style>
+<script id="v370-money-field">
+(function(){
+  var crows=document.getElementById('crows'); if(!crows) return;
+  function fit(el){ if(!el || (el.id!=='main-cash' && el.id!=='main-income')) return; el.classList.toggle('long370', (el.value||'').replace(/\D/g,'').length >= 7); }   /* 숫자 7자리 이상(「1,000,000」 = 100억) */
+  crows.addEventListener('input', function(e){ fit(e.target); });
+  crows.addEventListener('focusin', function(e){ fit(e.target); });
+  new MutationObserver(function(){ fit(document.getElementById('main-cash')); fit(document.getElementById('main-income')); }).observe(crows,{childList:true});
+  fit(document.getElementById('main-cash')); fit(document.getElementById('main-income'));
+})();
+</script>
 </body>
 </html>
