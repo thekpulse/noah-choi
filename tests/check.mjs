@@ -590,12 +590,8 @@ ok(!/<script[^>]+html2canvas[^>]*><\/script>/.test(html) && /return load\('\/ven
      'v355 숫자 칸 「다음」 버튼 — 터치 화면만 · 포커스 유지 · 키보드 따라 올라감 · 입력 중 자동 이동 없음');
 }
 
-// 47) v356 — 홈 머리에 월 상환액 한 줄: 월 상환액 카드에 그려진 값을 옮김(새 계산 없음).
-{
-  const s356 = (html.match(/<script id="v356-hero-monthly">[\s\S]*?<\/script>/) || [])[0] || '';
-  ok(/getElementById\('tileMonthly'\)/.test(s356) && /getElementById\('tileBurden'\)/.test(s356) && !/monthlyPaymentCalc|simRate|LASTVIEW|POLICY/.test(s356),
-     'v356 머리 월 상환액 — 카드 값을 옮김 · 계산 함수 · 정책값 안 씀');
-}
+// 47) v369 — 홈 머리 「월 상환액 N · 세전 소득의 N%」 줄(v356) 뺌: 바로 아래 ③ 카드와 같은 숫자 두 번(오너 2026-11-20 「어수선」 → 같은 숫자는 한 곳).
+ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 머리 월 상환액 줄 없음(③ 카드에만)');
 
 // 48) v357 — 실거래 탭 [내 지역 | 서울 25개 구]: 「서울 25개 구」를 누를 때만 조회(조회 버튼을 대신 누름 · 새 조회 경로 없음).
 {
@@ -669,6 +665,20 @@ ok(!/<script[^>]+html2canvas[^>]*><\/script>/.test(html) && /return load\('\/ven
   const s366 = (html.match(/<script id="v366-deal-head">[\s\S]*?<\/script>/) || [])[0] || '';
   ok(/dealBudgetFor\(x\.lawd\)/.test(s366) && /getElementById\('dealBudget'\)/.test(s366) && /if\(!okAll \|\| !rows\.length\) return;/.test(s366) && !/solveMaxPrice|POLICY|LASTVIEW/.test(s366),
      'v366 실거래 머리 표 — 앱이 쓰는 값만 · 값이 없으면 원래 문장');
+}
+// 58) v367 — 키보드 「다음」 줄에 숫자 칸이 가리지 않게: 키보드(visualViewport) 높이 · 「다음」 줄 높이 · 상단 바 높이를 재서 칸 묶음 전체를 보이게.
+{
+  const s367 = (html.match(/<script id="v367-kb-reveal">[\s\S]*?<\/script>/) || [])[0] || '';
+  ok(/visualViewport/.test(s367) && /getElementById\('kbNext355'\)/.test(s367) && /closest\('\.inline-money'\)/.test(s367) && /barH/.test(s367) && /main-income/.test(s367) && !/scrollIntoView\(\)/.test(s367),
+     'v367 숫자 칸 묶음(이름 · 칸 · 읽기 · 도움말)을 키보드 + 「다음」 줄 위로 올림(visualViewport 기준)');
+}
+// 59) v369 — 모양 줄이기: 카드 머리 한 규칙 · 실거래 탭 점 그림 감춤(홈 ④로) · 입력 2단계 요약 줄 대신 「내 조건」과 같은 두 줄 · 숫자 칸 한 줄.
+{
+  const c369 = (html.match(/<style id="v369-smooth">[\s\S]*?<\/style>/) || [])[0] || '';
+  ok(/#dealDistribution>\.dd-strip/.test(c369) && /#stepSum353\{display:none!important\}/.test(c369) && /\.s353-a\.crow\{display:flex!important\}/.test(c369)
+     && /\.inline-money\{grid-template-columns:minmax\(0,1fr\) 136px!important/.test(c369) && /\.f-step,#payTile>\.ans-k,#easyMarket>\.m358,#more341>h2/.test(c369)
+     && !/font-size:(15|18)px|\.5px/.test(c369),
+     'v369 규칙 — 카드 머리 한 모양 · 실거래 탭 점 그림 감춤 · 입력 요약 줄 대신 두 줄 · 숫자 칸 한 줄 · 스케일 밖 글자 없음');
 }
 
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
@@ -1120,7 +1130,7 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(b.stage===1 && b.sheet && b.qmode==='house', 'v353 지역 선택 완료 → 주택 보유 시트(v309 그대로)', JSON.stringify(b));
       await page.locator('#houseSeg [data-house="none"]').click(); await page.waitForTimeout(800);
       const c=await st();
-      ok(c.stage===2 && !c.sheet && c.cash && !c.region && c.cta && c.focus==='main-cash' && /서울 마포구 · 무주택/.test(c.sum), 'v353 무주택 누름 → 시트 닫힘 → 2단계 · 현금 칸 포커스 · 1단계 요약 한 줄', JSON.stringify(c));
+      ok(c.stage===2 && !c.sheet && c.cash && c.region && c.cta && c.focus==='main-cash' && await page.evaluate(()=>!document.getElementById('stepSum353').getClientRects().length), 'v353·v369 무주택 누름 → 시트 닫힘 → 2단계 · 현금 칸 포커스 · 지역 · 주택은 「내 조건」과 같은 두 줄(요약 한 줄 대신)', JSON.stringify(c));
       await page.keyboard.type('20000'); await page.keyboard.press('Enter'); await page.waitForTimeout(200);
       const d=await st();
       ok(d.focus==='main-income' && await page.evaluate(()=>S.cash===20000), 'v353 현금 칸 「다음」 → 소득 칸 포커스', JSON.stringify(d));
@@ -1134,11 +1144,15 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         const v=await page.evaluate(async()=> (await axe.run(document.getElementById('funnel'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
         ok(!v.length,'v353 2단계 입력 화면 접근성',JSON.stringify(v));
       }
-      await page.locator('#stepSum353').click(); await page.waitForTimeout(200);
-      const g=await st();
-      await page.locator('#stepNext353').click(); await page.waitForTimeout(200);
-      const h=await st();
-      ok(g.stage===1 && g.region && !g.nextDis && h.stage===2 && h.cash, 'v353 요약 줄 → 1단계 · 「다음」 → 2단계(값 그대로)', JSON.stringify([g.stage,h.stage]));
+      // v369 — 2단계 숫자 칸 = 한 줄(이름 왼쪽 · 칸 오른쪽 · 금액 읽기 이름 아래 · 도움말 전체 폭) · 지역 줄과 같은 줄 구성
+      for(const w of [390,320]){
+        await page.setViewportSize({width:w,height:844}); await page.waitForTimeout(150);
+        const i369=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect();const m=document.getElementById('main-cash').closest('.inline-money'),lb=R(m.querySelector('label')),fd=R(m.querySelector('.inline-money-field')),ec=m.querySelector('.inline-echo'),hp=R(m.querySelector('.inline-help')),mr=R(m),inp=document.getElementById('main-cash');
+          const rg=R(document.querySelector('#crows [data-mode="region"]'));
+          return {sameRow:fd.top<lb.bottom&&lb.top<fd.bottom,right:fd.left>=lb.left+100,echoUnder:!ec.textContent.trim()||(R(ec).top>=lb.bottom-2&&R(ec).right<=fd.left),helpWide:hp.width>=mr.width-40,fit:inp.scrollWidth<=inp.clientWidth,fs:parseFloat(getComputedStyle(inp).fontSize),fh:Math.round(fd.height),rgW:Math.round(rg.width),mW:Math.round(mr.width)};});
+        ok(i369.sameRow && i369.right && i369.echoUnder && i369.helpWide && i369.fit && i369.fs>=16 && i369.fh===44 && Math.abs(i369.rgW-i369.mW)<=1, `v369 ${w}px 2단계 현금 칸 한 줄(이름 ─ 칸) · 금액 읽기 이름 아래 · 도움말 전체 폭 · 「20,000」 안 잘림 · 글자 16px 이상`, JSON.stringify(i369));
+      }
+      await page.setViewportSize({width:390,height:844}); await page.waitForTimeout(150);
       reach328On=true;mode='success';await seed();
       await page.evaluate(()=>window.yk208Navigate('conditions')); await page.waitForTimeout(300);
       const k=await st();
@@ -1148,8 +1162,8 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       for(const width of [320,390,1264]){
         await page.setViewportSize({width,height:844}); await page.waitForTimeout(150);
         const h354=await page.evaluate(()=>{const m=document.getElementById('easyMarket'),c=document.getElementById('heroContext').getBoundingClientRect(),o=document.getElementById('marketOpen').getBoundingClientRect();
-          return {tab:document.querySelector('[data-v208-tab="map"]').innerText.trim(),h:Math.round(m.getBoundingClientRect().height),same:o.top<c.bottom&&c.top<o.bottom,right:o.left>=c.right,txt:c.height>0,doc:document.documentElement.scrollHeight,reach:!!document.getElementById('reach328').getClientRects().length,over:document.documentElement.scrollWidth>innerWidth+1};});
-        ok(h354.tab==='실거래' && h354.h<=(width<360?300:290) && h354.same && h354.right && h354.txt && !h354.reach && !h354.over && (width>=960 || h354.doc<=1850), `v354·v358·v363 ${width}px 홈 — 탭 「실거래」 · 실거래 비교(「4」 + 미니 분포 + 요약 옆 버튼) · 25개 구 카드 없음`, JSON.stringify(h354));
+          return {tab:document.querySelector('[data-v208-tab="map"]').innerText.trim(),h:Math.round(m.getBoundingClientRect().height),same:o.top<c.bottom&&c.top<o.bottom,right:o.left>=c.right,below:o.top>=c.bottom-1&&o.width>=m.getBoundingClientRect().width-60,   /* v369 — 374px 이하는 버튼이 문장 아래 전체 폭 */ txt:c.height>0,doc:document.documentElement.scrollHeight,reach:!!document.getElementById('reach328').getClientRects().length,over:document.documentElement.scrollWidth>innerWidth+1};});
+        ok(h354.tab==='실거래' && h354.h<=(width<360?320:290) && (width<375 ? h354.below : (h354.same && h354.right)) && h354.txt && !h354.reach && !h354.over && (width>=960 || h354.doc<=1850), `v354·v358·v363 ${width}px 홈 — 탭 「실거래」 · 실거래 비교(「4」 + 미니 분포 + 요약 옆 버튼) · 25개 구 카드 없음`, JSON.stringify(h354));
       }
       await page.setViewportSize({width:390,height:844});
       await page.locator('#marketOpen').click(); await page.waitForTimeout(300);
@@ -1189,6 +1203,26 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(e.label==='완료' && f.focus==='ctaBtn' && !f.bar && await p.evaluate(()=>document.getElementById('result').hidden), 'v355 값이 다 차면 「완료」→ 계산하기 버튼(계산은 누를 때만)', JSON.stringify([e,f]));
       ok(!err355.length, 'v355 터치 화면 JavaScript 오류 없음', err355.join(' | '));
       await ctx355.close();
+      // v367 — 아이폰 흉내(키보드가 올라와 화면이 짧음): 「다음」→ 소득 칸, 아이폰처럼 칸 아래 끝만 키보드 위로 올린 뒤 → 칸 묶음이 「다음」 줄에 안 가림
+      for(const [w,h] of [[390,470],[320,420]]){
+        const c367=await browser.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true});
+        const q=await c367.newPage();
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));
+          if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.locator('#welcomeStart232').tap();
+        await q.evaluate(()=>{S.sgg='11440';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();});
+        await q.locator('#stepNext353').tap(); await q.waitForTimeout(200);
+        await q.locator('#main-cash').tap(); await q.waitForTimeout(450); await q.keyboard.type('20000'); await q.waitForTimeout(100);
+        await q.locator('#kbNextBtn355').tap(); await q.waitForTimeout(80);
+        await q.evaluate(()=>{const i=document.activeElement.getBoundingClientRect();window.scrollBy(0,i.bottom-innerHeight+6);if(window.visualViewport)visualViewport.dispatchEvent(new Event('resize'));});
+        await q.waitForTimeout(400);
+        const k367=await q.evaluate(()=>{const el=document.activeElement,b=el.closest('.inline-money')||el,r=b.getBoundingClientRect(),bar=document.getElementById('kbNext355'),br=bar.getBoundingClientRect(),hd=document.querySelector('.appbar').getBoundingClientRect();return {id:el.id,bar:!bar.hidden,covered:Math.max(0,Math.round(r.bottom-br.top)),underHead:Math.max(0,Math.round(hd.bottom-r.top))};});
+        ok(k367.id==='main-income' && k367.bar && k367.covered===0 && k367.underHead===0, `v367 ${w}×${h} 「다음」→ 소득 칸 묶음이 「다음」 줄 · 상단 바에 안 가림(v366 약 110px 가림)`, JSON.stringify(k367));
+        await c367.close();
+      }
       await page.evaluate(()=>window.yk208Navigate('conditions')); await page.waitForTimeout(200);
       const m355=await page.evaluate(()=>{const c=document.getElementById('main-cash');c.focus();return {vis:!!c.getClientRects().length,focus:document.activeElement===c,exists:!!document.getElementById('kbNext355'),hidden:document.getElementById('kbNext355').hidden};});
       ok(m355.vis && m355.focus && m355.exists && m355.hidden, 'v355 마우스 화면에서는 「다음」 버튼 안 띄움(Enter 그대로)', JSON.stringify(m355));
@@ -1199,9 +1233,11 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       reach328On=true; reach328Fail=''; reach328Missing=false; mode='success';
       await page.setViewportSize({width:390,height:844});
       await page.reload(); await page.evaluate(()=>document.fonts.ready); await seed();
-      const h356=await page.evaluate(()=>{const l=document.getElementById('heroMonthly356'),r=l.getBoundingClientRect(),nav=document.querySelector('button[data-v208-tab="home"]');
-        const t=s=>(s||'').replace(/\s+/g,'');return {hid:l.hidden,txt:l.textContent,m:t(document.getElementById('tileMonthly').textContent),b:t(document.getElementById('tileBurden').textContent),bottom:Math.round(r.bottom),navTop:Math.round(nav.getBoundingClientRect().top)};});
-      ok(!h356.hid && h356.txt.replace(/\s+/g,'').includes('월상환액'+h356.m) && h356.txt.replace(/\s+/g,'').includes(h356.b) && h356.bottom<h356.navTop, 'v356 예상 집값 아래 「월 상환액 N · 세전 소득의 N%」 = 월 상환액 카드 값 · 첫 화면 안', JSON.stringify(h356));
+      // v369 — 카드 머리 한 모양(① ② ③ ④ · 더 알아보기 = 16px 굵게 같은 색) · 번호 24px · 머리 월 상환액 줄 없음 · 카드 사이 연결선 없음 · 합계 테두리 없음
+      const h369=await page.evaluate(()=>{const q=['#flow358 .f-step','#payTile>.ans-k','#easyMarket>.m358','#more341>h2'];const st=[...document.querySelectorAll(q.join(','))].filter(e=>e.getClientRects().length).map(e=>{const c=getComputedStyle(e);return c.fontSize+'/'+c.fontWeight+'/'+c.color;});
+        const b=[...document.querySelectorAll('#flow358 .f-step b,#viewAnswer .n358')].filter(e=>e.getClientRects().length).map(e=>Math.round(e.getBoundingClientRect().width));
+        return {n:st.length,kinds:[...new Set(st)],badges:[...new Set(b)],hm:!!document.getElementById('heroMonthly356'),line:getComputedStyle(document.getElementById('payTile'),'::before').content,join:getComputedStyle(document.querySelector('#flow358 .f-join span')).borderTopWidth};});
+      ok(h369.n===5 && h369.kinds.length===1 && /^16px\/700\//.test(h369.kinds[0]) && h369.badges.length===1 && h369.badges[0]===24 && !h369.hm && (h369.line==='none'||h369.line==='normal') && h369.join==='0px', 'v369 홈 카드 머리 한 모양(5곳 같은 글자 · 번호 24px) · 머리 월 상환액 줄 없음 · 연결선 · 합계 테두리 없음', JSON.stringify(h369));
       // v358 — 자금 흐름 그림 = 원래 표시값(세 조건) · 글자 13px 이상 · 부대비용 → 시트
       const f358=async()=>page.evaluate(()=>{const f=document.getElementById('flow358'),t=id=>(document.getElementById(id).textContent||'').replace(/\s+/g,''),v=q=>(f.querySelector(q+' .f-v').childNodes[0]?.textContent||'').replace(/\s+/g,'');
         const sizes=[...f.querySelectorAll('*')].filter(e=>e.childNodes.length&&[...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())&&e.getClientRects().length).map(e=>parseFloat(getComputedStyle(e).fontSize));
@@ -1216,8 +1252,7 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       ok(await page.evaluate(()=>!document.getElementById('whySheet').hidden), 'v358 「부대비용 ›」 → 비용 조정 시트(원래 버튼)');
       await page.evaluate(()=>closeSheet()); await page.waitForTimeout(400);
       await page.evaluate(()=>{S.noLoan=true;S.lockedPrice=null;showResult(false);}); await page.waitForTimeout(300);
-      const n356=await page.evaluate(()=>({hid:document.getElementById('heroMonthly356').hidden,tile:document.getElementById('payTile').hidden}));
-      ok(n356.hid && n356.tile, 'v356 대출 안 받기 — 월 상환액 줄 없음(카드도 없음)', JSON.stringify(n356));
+      ok(await page.evaluate(()=>document.getElementById('payTile').hidden), 'v356·v369 대출 안 받기 — 월 상환액 카드 없음');
       const fc=await f358();
       ok(fc.loanHidden && fc.cash && fc.total && fc.price && fc.cost, 'v358 대출 안 받기 — 대출 조각 없음 · 나머지 값은 원래 표시값', JSON.stringify(fc));
       await page.evaluate(()=>{S.noLoan=false;S.lockedPrice=null;}); await seed();
@@ -1358,10 +1393,24 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         const keep=DEAL.items; DEAL.items=(keep||[]).concat([{lawd:'41281',amountMan:30000,name:'검사단지',areaM2:84,y:2026,m:10,d:1}]);
         const a=document.createElement('p');a.className='dd-note dd-scope';a.textContent='고양시 덕양구는 대출 규칙이 달라 그 지역 기준 예상 집값으로 나눴어요.';
         const b=document.createElement('p');b.className='dd-note dd-scope';b.textContent='맞는 거래가 적어 인근 지역까지 넓혔어요.';box.append(b,a);window.__yk366.fix();
-        const t=box.querySelector('.rt366'),rows=t?[...t.querySelectorAll('tr')].map(r=>[r.querySelector('th').firstChild.textContent.trim(),r.querySelector('td').textContent.trim()]):[];
+        const t=(a.nextElementSibling&&a.nextElementSibling.classList.contains('rt366'))?a.nextElementSibling:null,rows=t?[...t.querySelectorAll('tr')].map(r=>[r.querySelector('th').firstChild.textContent.trim(),r.querySelector('td').textContent.trim()]):[];
         const r={rows,own:(document.getElementById('dealBudget')||{}).textContent,dy:formatWon(dealBudgetFor('41281')*10000),ruleHidden:getComputedStyle(a).position==='absolute'&&a.getBoundingClientRect().width<=1,wideHidden:getComputedStyle(b).position==='absolute'&&b.getBoundingClientRect().width<=1,cap:t?getComputedStyle(t.querySelector('.rt-cap')).display:''};
         if(t)t.remove();a.remove();b.remove();DEAL.items=keep;return r;});
-      ok(t366.rows&&t366.rows.length===2&&t366.rows[0][1]===String(t366.own).trim()&&t366.rows[1][0]==='고양시 덕양구'&&t366.rows[1][1]===t366.dy&&t366.ruleHidden&&t366.wideHidden&&t366.cap!=='none', 'v366 실거래 머리 — 지역별 기준 예상 집값 표(내 지역 = 화면 값 · 덕양구 = dealBudgetFor) · 원래 문장은 낭독용 · 「넓혔어요」 접음', JSON.stringify(t366));
+      ok(t366.rows&&t366.rows.length>=2&&t366.rows[0][1]===String(t366.own).trim()&&t366.rows.some(r=>r[0]==='고양시 덕양구'&&r[1]===t366.dy)&&t366.rows.filter(r=>r[0]==='고양시 덕양구').length===1&&t366.ruleHidden&&t366.wideHidden&&t366.cap!=='none', 'v366 실거래 머리 — 지역별 기준 예상 집값 표(내 지역 = 화면 값 · 덕양구 = dealBudgetFor) · 원래 문장은 낭독용 · 「넓혔어요」 접음', JSON.stringify(t366));
+      // v369 — 실거래 탭: 점 그림 감춤(홈 ④에만) · 밑줄 탭 · 목록 줄(위치 · 면적 · 거래 활발 한 줄 전체 폭 · 차이 칩 셋째 줄 · 꺾쇠만) — 검사 자료엔 목록 줄이 없어 같은 마크업 한 줄을 잠깐 넣어 잼
+      for(const w of [390,320]){
+        await page.setViewportSize({width:w,height:844}); await page.waitForTimeout(150);
+        const d369=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect();const strip=document.querySelector('#viewDeals #dealDistribution .dd-strip');
+          const list=document.getElementById('dealList'),wrap=document.createElement('div');wrap.className='dealwrap';
+          wrap.innerHTML='<button type="button" class="deal" data-deal="0" aria-expanded="false"><span class="nm">검사단지</span><span class="amt">4억 1,156만원</span><span class="deal-meta"><span class="deal-place">고양시 덕양구 합성동</span><span class="deal-area">전용 59㎡ · <b>24평</b></span><span class="hotrow"><span class="hot">거래 활발</span></span></span><span class="budget-gap"><span class="sr-only">고양시 덕양구 기준 </span>예상 집값보다 <span class="budget-delta is-under"><b class="budget-basis" aria-hidden="true">덕양구 기준</b> 3,912만원 낮음</span></span><span class="deal-expand">거래 상세 <span class="caret" aria-hidden="true"></span></span></button>';
+          list.prepend(wrap);const d=wrap.firstChild,dr=R(d),me=R(d.querySelector('.deal-meta')),gp=R(d.querySelector('.budget-delta')),ex=d.querySelector('.deal-expand'),xr=R(ex),hot=getComputedStyle(d.querySelector('.hot')),am=R(d.querySelector('.amt'));
+          const seg=document.querySelector('#seg357 [aria-pressed="true"]');
+          const r={strip:strip?!!strip.getClientRects().length:null,metaWide:me.width>=dr.width-4,gapRow3:gp.top>=me.bottom-1,exRight:xr.right>=dr.right-2&&xr.top>=me.bottom-1,exFont:getComputedStyle(ex).fontSize,exLabel:ex.textContent.includes('거래 상세'),hotBg:hot.backgroundColor,amtRow1:am.bottom<=me.top+1,
+            segBg:getComputedStyle(document.getElementById('seg357')).backgroundColor,segBar:seg?getComputedStyle(seg,'::after').backgroundColor:''};
+          wrap.remove();return r;});
+        ok(d369.strip!==true && d369.metaWide && d369.gapRow3 && d369.exRight && d369.exFont==='0px' && d369.exLabel && /rgba\(0, 0, 0, 0\)|transparent/.test(d369.hotBg) && d369.amtRow1 && /rgba\(0, 0, 0, 0\)/.test(d369.segBg) && d369.segBar==='rgb(36, 88, 255)', `v369 ${w}px 실거래 탭 — 점 그림 없음 · 밑줄 탭 · 목록 줄 3단(위치 · 면적 전체 폭 · 차이 칩 · 꺾쇠만, 낭독은 「거래 상세」)`, JSON.stringify(d369));
+      }
+      await page.setViewportSize({width:390,height:844});
       await page.evaluate(()=>window.yk208Navigate('home'));
       await page.evaluate(()=>window.yk208Navigate('home'));
       reach328On=false; await page.evaluate(()=>window.yk208Navigate('home'));
