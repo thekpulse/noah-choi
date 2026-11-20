@@ -15398,37 +15398,6 @@ html body.yk208 .kb355>#kbNextBtn355{display:block;width:100%;max-width:560px;ma
   window.__yk355={bar:bar};
 })();
 </script>
-<style id="v356-hero-monthly">
-/* v356 — 홈 첫 화면에 두 숫자(오너 2026-11-19 권장안 승인 · v326 「예산 → 실거래 → 월 상환액」 카드 순서는 그대로 두고 머리에 한 줄만 더함):
-   예상 집값 바로 아래 「월 상환액 22만원 · 세전 소득의 4%」. 숫자는 월 상환액 카드(#tileMonthly · #tileBurden)에 그려진 값을 그대로 옮김 — 새로 계산하지 않음. */
-html body.yk208 #app #fundingOverview .hm356{margin:8px 0 0;font-size:14px;line-height:1.5;color:#EDF2FF;font-weight:400}
-html body.yk208 #app #fundingOverview .hm356 b{color:#fff;font-weight:700}
-html body.yk208 #app #fundingOverview .hm356[hidden]{display:none!important}
-</style>
-<script id="v356-hero-monthly">
-(function(){
-  var head=document.querySelector('#fundingOverview .rhead'), price=head && head.querySelector('.price-answer');
-  var mEl=document.getElementById('tileMonthly'), bEl=document.getElementById('tileBurden'), tile=document.getElementById('payTile');
-  if(!head || !price || !mEl || !bEl || !tile) return;
-  var line=document.createElement('p'); line.className='hm356'; line.id='heroMonthly356'; line.hidden=true;
-  price.after(line);
-  function txt(el){ return (el.textContent||'').replace(/\s+/g,' ').trim().replace(/(\d) (만원|억|원|%)/g,'$1$2'); }
-  function sync(){
-    var m=txt(mEl), b=txt(bEl), lab=txt(document.getElementById('burdenLabel'));
-    if(tile.hidden || !m || !/\d/.test(m)){ line.hidden=true; line.textContent=''; return; }
-    line.innerHTML='';
-    line.append('월 상환액 ');
-    var mb=document.createElement('b'); mb.textContent=m; line.append(mb);
-    if(/\d/.test(b)){ line.append(' · ' + (lab || '소득 대비') + ' '); var bb=document.createElement('b'); bb.textContent=b; line.append(bb); }
-    line.hidden=false;
-  }
-  var mo=new MutationObserver(sync);
-  [mEl,bEl].forEach(function(el){ mo.observe(el,{childList:true,subtree:true,characterData:true}); });
-  mo.observe(tile,{attributes:true,attributeFilter:['hidden']});
-  sync();
-  window.__yk356={sync:sync};
-})();
-</script>
 <style id="v357-deal-seg">
 /* v357 — 실거래 탭 위 [내 지역 | 서울 25개 구] 전환(오너 2026-11-19 「25개 구는 누르면 조회되는지 모르면 안 해 볼 것」 → 권장안 승인).
    「내 지역」(처음 · 탭에 들어올 때마다): 지금의 실거래 그대로, 25개 구 카드는 감춤.
@@ -15949,5 +15918,104 @@ html body.yk208 #app#app #dealDistribution .rt366 th small{margin-left:6px;font-
   window.__yk366={fix:fix};
 })();
 </script>
+<script id="v367-kb-reveal">
+/* v367 — 숫자 칸이 「다음」 버튼 줄에 가려지던 것(오너 아이폰 2026-11-20 「현금 · 연 소득 입력할 때 덜 내려가서 칸이 좀 잘리는 느낌」).
+   아이폰은 포커스된 입력칸이 키보드 위로 보일 만큼만 올리는데, 키보드 바로 위에 v355 「다음」 버튼 줄(약 64px)이 또 떠 있어
+   칸 아래쪽(금액 읽기 「2억원」 · 도움말)이 가려짐 → 칸 묶음 전체(이름 · 입력칸 · 읽기 · 도움말)가 버튼 줄 위, 앱 머리 아래에 오도록 화면을 맞춤.
+   키보드가 다 올라온 뒤(visualViewport 크기 변화)와 포커스 직후에 한 번씩. 버튼 줄이 없을 때(마우스 화면)는 손대지 않음. */
+(function(){
+  var bar=document.getElementById('kbNext355'), crows=document.getElementById('crows');
+  if(!bar || !crows) return;
+  var cur=null, t1=0;
+  function block(el){ return el.closest('.inline-money') || el; }
+  function reveal(){
+    if(!cur || bar.hidden || document.activeElement!==cur) return;
+    var vv=window.visualViewport, top=vv ? vv.offsetTop : 0, h=vv ? vv.height : window.innerHeight;
+    var head=document.querySelector('.appbar'), headH=head ? head.getBoundingClientRect().height : 0;
+    var barH=bar.getBoundingClientRect().height;
+    var r=block(cur).getBoundingClientRect();
+    var visTop=top + headH + 8, visBottom=top + h - barH - 12;
+    var dy=0;
+    if(r.bottom > visBottom) dy=r.bottom - visBottom;
+    if(r.top - dy < visTop) dy=r.top - visTop;          /* 칸이 화면보다 크면 위쪽(칸 이름)을 우선 */
+    if(Math.abs(dy) > 2) window.scrollBy(0, dy);
+  }
+  function soon(){ clearTimeout(t1); t1=setTimeout(reveal, 60); }
+  crows.addEventListener('focusin', function(e){
+    var el=e.target; if(!el || (el.id!=='main-cash' && el.id!=='main-income')) return;
+    cur=el; requestAnimationFrame(function(){ requestAnimationFrame(reveal); }); setTimeout(reveal, 350);
+  });
+  document.addEventListener('focusout', function(){ setTimeout(function(){ if(document.activeElement!==cur) cur=null; }, 0); });
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', soon);
+  window.addEventListener('resize', soon);
+  window.__yk367={reveal:reveal};
+})();
+</script>
+<style id="v369-smooth">
+/* v369 — 「대체로 정돈됐는데 아직 어수선 · 매끄러운 느낌은 아냐」(오너 2026-11-20) → 모양 가짓수 줄이기 한 판(1~4 + 입력칸 기준).
+   정보는 빼지 않고 같은 일을 하는 것은 같은 모양으로. 글자·모서리·높이는 :root 스케일(--t3 · --t5 · --t6 · --t7 · --r-m · --rh-*).
+   ① 카드 머리 한 모양: 번호 동그라미 24px + 16px 굵게 진한 글자(① 돈이 오는 곳 · ② 쓰는 곳 · ③ 월 상환액 · ④ 실거래와 비교 · 더 알아보기). */
+html body.yk208 #app#app #viewAnswer :is(.flow358 .f-step,#payTile>.ans-k,#easyMarket>.m358,#more341>h2){display:flex!important;align-items:center!important;gap:8px!important;margin:0 0 12px!important;font-size:var(--t5)!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;color:var(--yk-ink)!important}
+html body.yk208 #app#app #viewAnswer :is(.flow358 .f-step b,.n358){width:24px!important;height:24px!important;flex:none!important;border-radius:999px!important;background:#EDF2FF!important;color:#1848D6!important;font-size:var(--t7)!important;font-weight:700!important;font-style:normal!important}
+/* ③ 카드 머리 아래 숫자 줄과 간격을 ①②와 같게 */
+html body.yk208 #app#app #viewAnswer #payTile>.ans-k{margin-bottom:12px!important}
+/* 카드 사이 연결선(v358) 뺌 — 번호가 순서를 말함 */
+html body.yk208 #app#app #viewAnswer>#payTile::before,html body.yk208 #app#app #viewAnswer>#easyMarket::before{display:none!important;content:none!important}
+/* 합계: 알약 테두리 없이 선 사이 글자만 */
+html body.yk208 #app#app .flow358 .f-join span{border:0!important;padding:0 12px!important;margin:0!important;background:transparent!important}
+
+/* ④ 실거래 탭: 맨 위 점 그림은 홈 ④로 옮겨(오너 「4에 점도표 넣고 실거래에는 빼는 게」) 여기선 감춤. 비율 문장 · 지역별 표 · 「분포 자세히」(막대 · 접힘)는 그대로.
+   점 설명 문장(「점은 표시 구간의 최근 60건」)도 그림과 같이 감춤 — 같은 건수는 「분포 자세히」에 있음. */
+html body.yk208 #app#app #viewDeals #dealDistribution>.dd-strip,html body.yk208 #app#app #viewDeals #dealDistribution>.dd-scope-note{display:none!important}
+
+/* ④ 실거래 탭 맨 위 [내 지역 | 서울 25개 구]: 아래 정렬 버튼 줄과 같은 회색 칸 모양이라 층이 안 보였음 → 밑줄 탭(페이지 전환) */
+html body.yk208 #app#app #viewDeals>.seg357{gap:0!important;padding:0!important;background:transparent!important;border-radius:0!important;box-shadow:inset 0 -1px 0 var(--yk-line)!important}
+html body.yk208 #app#app #viewDeals>.seg357>button{position:relative;min-height:var(--rh-2)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body.yk208 #app#app #viewDeals>.seg357>button[aria-pressed="true"]{color:var(--yk-ink)!important;font-weight:700!important}
+html body.yk208 #app#app #viewDeals>.seg357>button[aria-pressed="true"]::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:#2458FF}
+
+/* ④ 실거래 목록 한 줄: 「거래 활발」 칩 → 면적 뒤 글자 · 「거래 상세 ⌄」 글자 → 오른쪽 꺾쇠만(줄 전체가 원래 버튼 · 낭독은 그대로 「거래 상세」) */
+/* 줄 구성: ① 이름 ─ 거래가 ② 위치 · 면적 · 거래 활발(전체 폭, 넘치면 자연스럽게 다음 줄) ③ 차이 칩 ─ 꺾쇠.
+   전에는 둘째 줄 오른쪽 칩(「덕양구 기준 3,912만원 낮음」)이 넓어 위치 · 면적이 좁은 왼쪽 칸에서 세 줄로 꺾였음. 320px 배치(v2xx)도 같은 구성으로. */
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.nm{grid-column:1!important;grid-row:1!important;align-self:center!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.amt{grid-column:2!important;grid-row:1!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.deal-meta{grid-column:1 / -1!important;grid-row:2!important;display:block!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.budget-gap{grid-column:1 / -1!important;grid-row:3!important;justify-self:start!important;margin:2px 0 0!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.deal-expand{grid-column:2!important;grid-row:3!important;align-self:center!important;justify-self:end!important;display:flex!important;margin:0!important;font-size:0!important;line-height:0!important;color:#7C8BA6!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal[aria-expanded="true"]>.deal-expand{color:#1848D6!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.deal-expand .caret{width:8px!important;height:8px!important;flex:0 0 8px!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.deal-meta>:is(.deal-place,.deal-area){display:inline!important;margin:0!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.deal-meta>.deal-area::before{content:" · "}
+html body.yk208 #app#app #viewDeals .deal-meta .hotrow{display:inline!important;flex-basis:auto!important;margin:0!important;white-space:nowrap}
+html body.yk208 #app#app #viewDeals .deal-meta .hotrow .hot{display:inline!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;color:#53617C!important;font-size:var(--t6)!important;font-weight:400!important}
+html body.yk208 #app#app #viewDeals .deal-meta .hotrow::before{content:" · ";color:#53617C}
+
+/* ④ 좁은 화면(374px 이하): 점 그림이 들어온 뒤 요약 문장이 버튼 옆 좁은 칸에서 네 줄로 꺾였음 → 문장 전체 폭 · 버튼은 그 아래 전체 폭 */
+@media(max-width:374px){
+  html body.yk208 #app#app #viewAnswer>#easyMarket>#heroContext{flex:1 1 100%!important;max-width:none!important}
+  html body.yk208 #app#app #viewAnswer>#easyMarket>#marketOpen{flex:1 1 100%!important;width:100%!important;justify-content:center!important;margin:var(--sp-3) 0 0!important}
+}
+
+/* 입력칸 기준 하나로(오너 「두 줄로 입력칸이 되어 있기도 하고 기준이 제각각」):
+   매수 지역 · 주택 보유 · 기존 대출은 「이름 ─ 값」 한 줄인데 현금 · 연 소득만 이름 아래 칸(두 줄) → 같은 한 줄(이름 왼쪽 · 칸 오른쪽). 도움말 · 금액 읽기는 그 아래 한 줄.
+   칸 높이 = --rh-2(44px) · 칸 글자 19px(--t3, iOS 확대 방지 16px 이상). 첫 입력 2단계 · 「내 조건」 같은 규칙. */
+html body.yk208 #app#app .funnel #crows>.inline-money{grid-template-columns:minmax(0,1fr) 136px!important;column-gap:12px!important;row-gap:0!important;align-items:center!important;padding-top:var(--sp-3)!important;padding-bottom:var(--sp-3)!important}
+html body.yk208 #app#app .funnel #crows>.inline-money>label{grid-column:1!important;grid-row:1!important;min-width:0}
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-money-field{grid-column:2!important;grid-row:1 / 3!important;align-self:center!important;margin:0!important;height:var(--rh-2)!important;min-height:0!important}
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-money-field input{font-size:var(--t3)!important;min-width:0}
+/* 금액 읽기(「2억원」)는 이름 바로 아래(아이콘 폭만큼 들여) — 칸 옆에서 바로 읽힘. 비어 있으면 줄 없음 */
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-echo{grid-column:1!important;grid-row:2!important;justify-self:start!important;margin:2px 0 0 40px!important;text-align:left!important}
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-echo:empty{display:none!important}
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-help{grid-column:1 / -1!important;grid-row:3!important;margin-top:var(--sp-2)!important}
+html body.yk208 #app#app .funnel #crows>.inline-money>.inline-error{grid-column:1 / -1!important;grid-row:4!important}
+@media(max-width:360px){
+  html body.yk208 #app#app .funnel #crows>.inline-money{grid-template-columns:minmax(0,1fr) 118px!important;column-gap:10px!important}
+  html body.yk208 #app#app .funnel #crows>.inline-money>.inline-money-field{padding-left:8px!important;padding-right:10px!important;gap:4px!important}
+  html body.yk208 #app#app .funnel #crows>.inline-money>.inline-money-field input{font-size:var(--t4)!important;padding:0!important}
+}
+/* 첫 입력 2단계에서도 「매수 지역 · 주택 보유」 두 줄을 「내 조건」과 같은 모양으로(요약 한 줄 대신) */
+html body.yk208 #app#app #crows[data-stage353="2"]>.s353-a.crow{display:flex!important}
+html body.yk208 #app#app #crows>#stepSum353{display:none!important}
+</style>
 </body>
 </html>
