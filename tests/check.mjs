@@ -612,6 +612,65 @@ ok(!/<script[^>]+html2canvas[^>]*><\/script>/.test(html) && /return load\('\/ven
      'v358 자금 흐름 — 화면 값만 옮김 · 계산 함수 · 정책값 없음 · 부대비용은 원래 버튼으로');
 }
 
+// 50) v359 — 글자 · 여백: :root 스케일 변수만 씀(15px · 18px 같은 스케일 밖 값 없음) · 320px 도움말 10px 규칙을 덮음.
+{
+  const c359 = (html.match(/<style id="v359-type">[\s\S]*?<\/style>/) || [])[0] || '';
+  const raw = (c359.replace(/\/\*[\s\S]*?\*\//g,'').match(/font-size:\s*(\d+)px/g) || []).map(x=>+x.match(/\d+/)[0]);
+  ok(c359.length>0 && /--t6/.test(c359) && raw.every(n=>n===16) && /@media\(max-width:360px\)\{[^}]*inline-help\{font-size:var\(--t7\)!important\}/.test(c359),
+     'v359 글자 — 스케일 변수만(SVG 막대 숫자 16 단위 하나만 예외 — 화면 약 13.6px) · 320px 도움말도 13px', JSON.stringify(raw));
+}
+
+// 51) v360 — 카드 속 카드 한 겹(비교표 · 거래 상세 「거래가 흐름」) · 비교 글자 13px 이상 · 비교 금액 한 줄(v259 두 줄 규칙을 풂).
+{
+  const c360 = (html.match(/<style id="v360-one-layer">[\s\S]*?<\/style>/) || [])[0] || '';
+  ok(/\.v253-compare-scroll>table\{border:0!important/.test(c360) && /\.dealbox \.trend,[^{]*\{border:0!important;border-top:1px solid var\(--yk-line\)!important;border-radius:0!important/.test(c360)
+     && /\[data-cols\] tr\.cmp-hero td>\.cmp-money234 \.cmp-money-part234\{display:inline-block!important\}/.test(c360) && /:is\(#viewCompare,#viewDeals\) :is\(\.tr-legend span/.test(c360),
+     'v360 한 겹 — 비교표 · 거래가 흐름 테두리 하나 · 비교 금액 한 줄 · 거래가 흐름 그래프 글자(비교 · 거래 상세 공통)');
+}
+
+// 52) v361 — 넓은 화면(960px 이상)만: 홈 「더 알아보기」 오른쪽 칸 · 실거래 목록 2열 · 전환 버튼 최대 폭. 매수 지역 시트 여백은 v330 때문에 그대로.
+{
+  const c361 = (html.match(/<style id="v361-wide-balance">[\s\S]*?<\/style>/) || [])[0] || '';
+  ok(/@media\(min-width:960px\)\{/.test(c361) && /#viewAnswer>#viewNext\{grid-column:2!important;grid-row:4!important/.test(c361) && /#dealList\{display:grid!important;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(c361) && !/#qSheet#qSheet/.test(c361.replace(/\/\*[\s\S]*?\*\//g,'')),
+     'v361 넓은 화면 균형 — 960px 이상만 · 매수 지역 시트 여백 그대로');
+}
+
+// 53) v362 — 그림은 화면 숫자로 식이 맞을 때만(대출 한도 · 현금 여유) · 숫자를 새로 계산하지 않음.
+{
+  const s362 = (html.match(/<script id="v362-figures">[\s\S]*?<\/script>/) || [])[0] || '';
+  ok(/B-R!==A\) return;/.test(s362) && /sum!==total\) return;/.test(s362) && !/calcCosts|dealAfford\(|monthlyPaymentCalc|POLICY|LASTVIEW/.test(s362),
+     'v362 그림 — 식이 맞을 때만 그림 · 계산 함수 · 정책값 안 씀');
+}
+
+// 54) v363 — 홈 ④ 미니 분포는 실거래 분포를 복제(새 그림 · 새 계산 없음).
+{
+  const s363 = (html.match(/<script id="v363-mini-dist">[\s\S]*?<\/script>/) || [])[0] || '';
+  ok(/strip\.cloneNode\(true\)/.test(s363) && /aria-hidden','true'/.test(s363) && !/distributionModel|calcCosts|POLICY|LASTVIEW|<circle/.test(s363),
+     'v363 미니 분포 — 실거래 분포 복제 · 꾸밈(낭독 제외) · 새 계산 없음');
+}
+
+// 55) v364 — 360px 이하에서만 25개 구 지도 위치를 풀어 5열.
+{
+  const c364 = (html.match(/<style id="v364-reach-narrow">[\s\S]*?<\/style>/) || [])[0] || '';
+  ok(/@media\(max-width:360px\)\{/.test(c364) && /repeat\(5,minmax\(0,1fr\)\)!important/.test(c364) && /grid-column:auto!important;grid-row:auto!important/.test(c364),
+     'v364 25개 구 — 360px 이하만 5열(지도 위치 풂)');
+}
+
+// 56) v365 — 시트: 매수 지역 버튼 줄 바깥 폭 = 시트 여백(18px) · 「기준/비교」 꼬리표는 칸 위 배지(칸 크기 그대로) · 부대비용 금액 상자 누르면 입력칸.
+{
+  const c365 = (html.match(/<style id="v365-sheets">[\s\S]*?<\/style>/) || [])[0] || '';
+  const s365 = (html.match(/<script id="v365-sheets">[\s\S]*?<\/script>/) || [])[0] || '';
+  ok(/:has\(#regionSearchInput\) \.sheet-actions\{margin-left:-18px!important;margin-right:-18px!important\}/.test(c365) && /\.tag330\{position:absolute;top:-9px/.test(c365) && /closest\('\.costrow \.amt'\)/.test(s365),
+     'v365 시트 — 매수 지역 버튼 줄 · 꼬리표 배지 · 부대비용 금액 상자');
+}
+
+// 57) v366 — 실거래 머리 표: 앱이 쓰는 값만(dealBudgetFor · #dealBudget) · 값이 하나라도 없으면 원래 문장.
+{
+  const s366 = (html.match(/<script id="v366-deal-head">[\s\S]*?<\/script>/) || [])[0] || '';
+  ok(/dealBudgetFor\(x\.lawd\)/.test(s366) && /getElementById\('dealBudget'\)/.test(s366) && /if\(!okAll \|\| !rows\.length\) return;/.test(s366) && !/solveMaxPrice|POLICY|LASTVIEW/.test(s366),
+     'v366 실거래 머리 표 — 앱이 쓰는 값만 · 값이 없으면 원래 문장');
+}
+
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -1090,7 +1149,7 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         await page.setViewportSize({width,height:844}); await page.waitForTimeout(150);
         const h354=await page.evaluate(()=>{const m=document.getElementById('easyMarket'),c=document.getElementById('heroContext').getBoundingClientRect(),o=document.getElementById('marketOpen').getBoundingClientRect();
           return {tab:document.querySelector('[data-v208-tab="map"]').innerText.trim(),h:Math.round(m.getBoundingClientRect().height),same:o.top<c.bottom&&c.top<o.bottom,right:o.left>=c.right,txt:c.height>0,doc:document.documentElement.scrollHeight,reach:!!document.getElementById('reach328').getClientRects().length,over:document.documentElement.scrollWidth>innerWidth+1};});
-        ok(h354.tab==='실거래' && h354.h<=(width<360?160:120) && h354.same && h354.right && h354.txt && !h354.reach && !h354.over && (width>=960 || h354.doc<=1700), `v354·v358 ${width}px 홈 — 탭 「실거래」 · 실거래 비교(「4 실거래와 비교」 + 요약 옆 버튼) · 25개 구 카드 없음`, JSON.stringify(h354));
+        ok(h354.tab==='실거래' && h354.h<=(width<360?300:290) && h354.same && h354.right && h354.txt && !h354.reach && !h354.over && (width>=960 || h354.doc<=1850), `v354·v358·v363 ${width}px 홈 — 탭 「실거래」 · 실거래 비교(「4」 + 미니 분포 + 요약 옆 버튼) · 25개 구 카드 없음`, JSON.stringify(h354));
       }
       await page.setViewportSize({width:390,height:844});
       await page.locator('#marketOpen').click(); await page.waitForTimeout(300);
@@ -1185,6 +1244,126 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       await page.evaluate(()=>window.yk208Navigate('map')); await page.waitForTimeout(200);
       const s4=await page.evaluate(()=>({seg:!document.getElementById('seg357').hidden,reachHidden:document.getElementById('reach328').hidden,mode:window.__yk357.mode()}));
       ok(!s4.seg && s4.reachHidden && s4.mode==='mine', 'v357 서울·수도권이 아니면(부산) 전환 버튼 없음(25개 구 카드 기준 v328 그대로)', JSON.stringify(s4));
+      reach328On=false; await page.evaluate(()=>window.yk208Navigate('home'));
+      await page.reload(); await page.evaluate(()=>document.fonts.ready); mode='success'; await seed();
+    }
+    // v359 — 390px 주요 화면에 보이는 글자 13px 이상 · 입력 칸 이름 16px · 줄 높이 56px
+    {
+      reach328On=true; reach328Fail=''; mode='success';
+      await page.setViewportSize({width:390,height:844});
+      await page.reload(); await page.evaluate(()=>document.fonts.ready);
+      const minFs=(root)=>page.evaluate((root)=>{const R=document.querySelector(root);const w=document.createTreeWalker(R,NodeFilter.SHOW_TEXT);let n,min=99,at='';
+        while(n=w.nextNode()){const t=n.textContent.trim();if(!t)continue;const el=n.parentElement;if(!el.getClientRects().length||el.closest('.sr-only'))continue;const r=el.getBoundingClientRect();if(r.width<2||r.height<2)continue;
+          const c=getComputedStyle(el);if(c.clip==='rect(0px, 0px, 0px, 0px)')continue;let fs=parseFloat(c.fontSize);if(fs===0)continue;
+          if(el.closest('svg')){const svg=el.closest('svg'),vb=svg.viewBox&&svg.viewBox.baseVal;if(vb&&vb.width)fs=fs*svg.getBoundingClientRect().width/vb.width;}
+          if(fs<min){min=fs;at=t.slice(0,16);}}
+        return {min:Math.round(min*10)/10,at};},root);
+      const res={};
+      await page.evaluate(()=>{restart();});
+      await page.evaluate(()=>{const w=document.getElementById('welcome232');w.hidden=false;document.body.classList.add('welcome232-on');});
+      res.first=await minFs('#welcome232');
+      await page.locator('#welcomeStart232').click(); await page.waitForTimeout(200);
+      res.input1=await minFs('#app');
+      const row=await page.evaluate(()=>{const c=document.querySelector('#crows [data-mode="region"]');return {h:Math.round(c.getBoundingClientRect().height),k:parseFloat(getComputedStyle(c.querySelector('.k')).fontSize)};});
+      await page.evaluate(()=>{S.sgg='11440';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();}); await page.locator('#stepNext353').click(); await page.waitForTimeout(200);
+      res.input2=await minFs('#app');
+      const lab=await page.evaluate(()=>parseFloat(getComputedStyle(document.querySelector('#crows .inline-money>label')).fontSize));
+      await seed(); res.home=await minFs('#app');
+      await page.evaluate(()=>window.yk208Navigate('map')); await page.waitForTimeout(300); res.dealsMine=await minFs('#app');
+      await page.locator('#seg357 [data-seg357="reach"]').click(); await page.waitForFunction(()=>document.getElementById('reach328Go').hidden,null,{timeout:10000}).catch(()=>{}); res.dealsReach=await minFs('#app');
+      await page.evaluate(()=>window.yk208Navigate('compare')); await page.waitForTimeout(300); res.compare=await minFs('#app');
+      await page.evaluate(()=>window.yk208Navigate('conditions')); await page.waitForTimeout(300); res.cond=await minFs('#app');
+      // v364 — 25개 구 칸: 320px 5열(칸 44px 이상 · 구 이름 13px) / 390px 지도 위치 그대로
+      await page.evaluate(()=>window.yk208Navigate('map')); await page.evaluate(()=>window.__yk357.show('reach',{query:false}));
+      const t364=async()=>page.evaluate(()=>{const ts=[...document.querySelectorAll('#reach328Map .reach328-tile')].filter(e=>e.getClientRects().length);const ws=ts.map(e=>e.getBoundingClientRect().width);
+        const inl=ts.filter(e=>e.style.gridColumn).slice(0,6).every(e=>getComputedStyle(e).gridColumnStart===String(e.style.gridColumn).split('/')[0].trim());
+        return {n:ts.length,min:Math.round(Math.min(...ws)),cols:getComputedStyle(document.getElementById('reach328Map')).gridTemplateColumns.trim().split(/\s+/).length,name:ts[0]?parseFloat(getComputedStyle(ts[0].querySelector('span')).fontSize):0,inl};});
+      await page.setViewportSize({width:320,height:700}); await page.waitForTimeout(250);
+      const n364=await t364();
+      await page.setViewportSize({width:390,height:844}); await page.waitForTimeout(250);
+      const w364=await t364();
+      ok(n364.n===25 && n364.cols===5 && n364.min>=44 && n364.name>=13 && w364.n===25 && w364.cols===6 && w364.inl, 'v364 25개 구 — 320px 5열(칸 44px 이상 · 이름 13px) · 390px 지도 위치 그대로', JSON.stringify({n364,w364}));
+      await page.evaluate(()=>window.yk208Navigate('home'));
+      // v365 — 320px 매수 지역 시트: 가로 넘침 없음 · 「기준」 칸 이름 안 잘림 · 꼬리표 13px / 부대비용 금액 상자 빈 곳 누르면 입력칸
+      await page.setViewportSize({width:320,height:700});
+      await page.evaluate(()=>window.yk208Navigate('conditions')); await page.waitForTimeout(250);
+      await page.locator('#crows [data-mode="region"]').click(); await page.waitForTimeout(400);
+      await page.getByRole('button',{name:'서울',exact:true}).first().click(); await page.locator('.pick330 [data-pick="11440"]').click(); await page.waitForTimeout(250);
+      const r365=await page.evaluate(()=>{const sh=document.getElementById('qSheet'),c=document.querySelector('.pick330 .chip.is-base330'),t=c&&c.querySelector('.tag330');const name=c?[...c.childNodes].filter(n=>n.nodeType===3||!n.classList.contains('tag330')):[];
+        return {over:sh.scrollWidth>sh.clientWidth+1,chipTrunc:c?c.scrollWidth>c.clientWidth+1:null,tag:t?parseFloat(getComputedStyle(t).fontSize):0,act:Math.round(document.querySelector('#qSheet .sheet-actions').getBoundingClientRect().right)<=innerWidth};});
+      await page.evaluate(()=>closeSheet('q')); await page.waitForTimeout(400);
+      await page.setViewportSize({width:390,height:844}); await page.evaluate(()=>window.yk208Navigate('home')); await page.waitForTimeout(200);
+      await page.locator('#flow358 .f-cost').click(); await page.waitForTimeout(500);
+      const box=await page.evaluate(()=>{const a=document.querySelector('#whySheet .costrow .amt');const inp=a.querySelector('input');const r=a.getBoundingClientRect(),ri=inp.getBoundingClientRect();return {x:Math.round(r.left+4),y:Math.round(r.top+4),inside:!(r.left+4>=ri.left&&r.left+4<=ri.right&&r.top+4>=ri.top&&r.top+4<=ri.bottom),id:inp.id,dis:inp.disabled,small:parseFloat(getComputedStyle(document.querySelector('#whySheet .costrow .nm small')).fontSize)};});
+      await page.mouse.click(box.x,box.y); await page.waitForTimeout(150);
+      const foc=await page.evaluate(()=>document.activeElement&&document.activeElement.id);
+      await page.evaluate(()=>closeSheet('why')); await page.waitForTimeout(400);
+      ok(!r365.over && r365.chipTrunc===false && r365.tag>=13 && r365.act && box.inside && !box.dis && foc===box.id && box.small>=13, 'v365 320px 매수 지역 — 가로 넘침 없음 · 「기준」 칸 이름 안 잘림 · 꼬리표 13px / 부대비용 금액 상자 빈 곳 → 입력칸 · 보조 글자 13px', JSON.stringify({r365,box,foc}));
+      ok(Object.values(res).every(r=>r.min>=13), 'v359 390px 첫 화면 · 입력 1·2단계 · 홈 · 실거래(내 지역 · 25개 구) · 비교 · 내 조건 — 보이는 글자 13px 이상(SVG는 화면 크기로 환산)', JSON.stringify(res));
+      ok(row.h>=56 && row.k>=16 && lab>=16, 'v359 입력 — 줄 높이 56px 이상 · 칸 이름 16px', JSON.stringify({row,lab}));
+      // v360 — 비교(3곳 담음) 글자 13px 이상 · 금액 한 줄 · 표 테두리 한 겹 · 거래 상세 「거래가 흐름」 한 겹 · 네이버 링크 낭독 이름
+      /* 테스트 실거래 금액은 예상 집값 범위 밖이라 목록 줄이 없음 → 앱의 담기 형식(cmpSnap · cmpStore)으로 3곳을 넣음 */
+      await page.evaluate(()=>{const seen=new Set(),list=[];for(const x of (DEAL.items||[])){if(!(Number(x.amountMan)>0))continue;const s=cmpSnap(x);if(seen.has(s.k))continue;seen.add(s.k);list.push(s);if(list.length===3)break;}cmpStore(list);if(typeof cmpSync==='function')cmpSync();});
+      /* 거래 상세 「거래가 흐름」: 같은 구조(.dealbox > .trend)를 실거래 화면에 놓고 규칙만 잼 */
+      const tr360=await page.evaluate(()=>{const host=document.getElementById('dealList')||document.getElementById('viewDeals');const box=document.createElement('div');box.className='dealbox';box.innerHTML='<div class="trend"><button type="button" class="trend-open">거래가 흐름</button></div>';host.appendChild(box);
+        const c=getComputedStyle(box.querySelector('.trend')),r={l:c.borderLeftWidth,r:c.borderRightWidth,top:c.borderTopWidth,rad:c.borderTopLeftRadius};box.remove();return r;});
+      await page.evaluate(()=>window.yk208Navigate('compare')); await page.waitForTimeout(500);
+      res.compare3=await minFs('#app');
+      const c360=await page.evaluate(()=>{const n=cmpLoad().length,tb=document.querySelector('#viewCompare .v253-compare-scroll>table'),m=document.querySelector('#viewCompare tr.cmp-hero td>.cmp-money234'),ps=m?[getComputedStyle(m).flexDirection,getComputedStyle(m).flexWrap]:[];
+        const a=document.querySelector('#viewCompare a.cmp-naver');return {n,tbBorder:tb?getComputedStyle(tb).borderTopWidth:'?',oneLine:ps[0]==='row'&&ps[1]==='wrap',naver:a?{txt:a.textContent.trim(),aria:a.getAttribute('aria-label'),href:!!a.getAttribute('href')}:null};});
+      ok(c360.n===3 && res.compare3.min>=13 && c360.oneLine && c360.tbBorder==='0px' && c360.naver && /네이버에서 찾기/.test(c360.naver.aria) && c360.naver.href && tr360 && tr360.l==='0px' && tr360.r==='0px' && tr360.rad==='0px' && tr360.top!=='0px',
+         'v360 비교 3곳 — 글자 13px 이상 · 금액 가로 한 줄 배치(안 들어가면 꺾임 · v259 두 줄 고정 풂) · 표 테두리 한 겹 · 네이버 링크 낭독 이름 그대로 / 거래 상세 「거래가 흐름」은 위 구분선만', JSON.stringify({c360,min:res.compare3,tr360}));
+      await page.evaluate(()=>{try{localStorage.removeItem(CMP_KEY);}catch(e){}});
+      // v361 — 넓은 화면 균형: 홈 좌우 칸 끝 맞춤(「저장 · 공유 + 더 알아보기」는 오른쪽 칸) · 실거래 목록 2열 · 전환 버튼 최대 폭 / 390px는 그대로
+      const lay361=async()=>page.evaluate(()=>{const R=id=>document.getElementById(id).getBoundingClientRect();window.yk208Navigate('home');const f=R('fundingOverview'),n=document.querySelector('#viewNext>.card').getBoundingClientRect(),m=R('easyMarket');   /* v363 — 넓은 화면에서 #viewNext를 풀어(display:contents) 저장 · 공유 줄을 잼 */
+        window.yk208Navigate('map');const dl=getComputedStyle(document.getElementById('dealList')),so=parseFloat(getComputedStyle(document.querySelector('#viewDeals .deal-tools .sortseg')).maxWidth)||9999,sg=document.getElementById('seg357').getBoundingClientRect().width;window.yk208Navigate('home');
+        return {fb:Math.round(f.bottom),nb:Math.round(n.bottom),nx:Math.round(n.left),fr:Math.round(f.right),nTop:Math.round(n.top),mb:Math.round(m.bottom),nw:Math.round(n.width),vw:innerWidth,cols:dl.display==='grid'?(/minmax/.test(dl.gridTemplateColumns)?dl.gridTemplateColumns.match(/minmax/g).length:dl.gridTemplateColumns.trim().split(/\s+/).length):1,so:Math.round(so),sg:Math.round(sg)};});
+      await page.setViewportSize({width:1264,height:900}); await page.waitForTimeout(300);
+      const w361=await lay361();
+      await page.setViewportSize({width:390,height:844}); await page.waitForTimeout(300);
+      const m361=await lay361();
+      ok(w361.nx>w361.fr && w361.nTop>=w361.mb && Math.abs(w361.nb-w361.fb)<=200 && w361.cols===2 && w361.so<=560 && w361.sg<=480, 'v361·v363 1264px — 「저장 · 공유」 오른쪽 칸 ④ 아래 · 좌우 칸 끝 차이 200px 이하(점검 전 약 300px) · 실거래 목록 2열 · 전환 버튼 최대 폭', JSON.stringify(w361));
+      ok(m361.cols===1 && m361.nw>=m361.vw-48 && m361.nTop>=m361.fb, 'v361 390px — 한 줄 배치 그대로(목록 1열 · 더 알아보기 전체 폭 · 예산 카드 아래)', JSON.stringify(m361));
+      // v362 — 대출 한도 식 그림(화면 숫자로 식이 맞을 때만) · 거래 상세 현금 여유 표(합계가 맞을 때만) · ※ 안내 접기
+      const eq362=async(c)=>page.evaluate(c=>{Object.assign(S,{mciCovered:false,loanCap:null,noLoan:false},c,{lockedPrice:null});showResult(false);
+        const t=e=>e?(e.textContent||'').replace(/\s+/g,''):'',eq=document.getElementById('eq362'),room=document.getElementById('roomTip'),after=document.getElementById('limitAfterRoom'),bind=document.querySelector('#limits .limitrow.bind .v');
+        return {eq:!!eq,b:eq?t(eq.querySelectorAll('b')[0]):'',r:eq?t(eq.querySelectorAll('b')[1]):'',a:eq?t(eq.querySelectorAll('b')[2]):'',bind:t(bind),room:t(room),after:t(after&&after.querySelector('strong')),roomShown:room&&getComputedStyle(room).display!=='none'&&!room.hidden,afterShown:after&&getComputedStyle(after).display!=='none'&&!after.hidden};},c);
+      const e1=await eq362({cash:20000,income:7000,sgg:'11440',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0});
+      const e2=await eq362({cash:15000,income:15000,sgg:'11680',sido:'서울특별시',group:'seoul',houseStatus:'first',debtMonthly:0});
+      ok(e1.eq && e1.b===e1.bind && e1.room.includes(e1.r) && e1.a===e1.after && !e1.roomShown && !e1.afterShown, 'v362 대출 한도 식 — 적용 기준 − 방공제 = 한도(세 숫자 = 화면 값 · 같은 뜻의 글 줄은 접힘)', JSON.stringify(e1));
+      ok(!e2.eq && e2.roomShown && e2.afterShown, 'v362 화면 숫자로 식이 안 맞으면(1만원 반올림 차이) 그림 없이 원래 글 그대로', JSON.stringify(e2));
+      await page.evaluate(()=>window.yk208Navigate('map')); await page.waitForTimeout(200);
+      const wf362=await page.evaluate(async()=>{const host=document.getElementById('viewDeals');const mk=(gap,parts)=>{const d=document.createElement('div');d.className='deal-afford';d.innerHTML='<p class="da-gap">예상 대출 포함 · '+gap+'</p><p class="da-why">'+parts+'</p>';host.appendChild(d);return d;};
+        const a=mk('현금 2,154만원 여유','<span>집값 3,912만원 낮음</span> + <span>부대비용 61만원 줄어듦</span> − <span>대출 1,819만원 줄어듦</span>');
+        const b=mk('현금 2,155만원 여유','<span>집값 3,912만원 낮음</span> + <span>부대비용 61만원 줄어듦</span> − <span>대출 1,819만원 줄어듦</span>');
+        await new Promise(r=>setTimeout(r,80));
+        const ra={drawn:!!a.querySelector('.wf362'),why:getComputedStyle(a.querySelector('.da-why')).display,sum:(a.querySelector('.wf-sum')||{}).textContent,rows:a.querySelectorAll('.wf362 .wf-row').length},rb={drawn:!!b.querySelector('.wf362'),why:getComputedStyle(b.querySelector('.da-why')).display};a.remove();b.remove();
+        const d=document.querySelector('#viewDeals details.dn362');return {ra,rb,notes:!!d&&!!d.querySelector('#dealNote')&&!!d.querySelector('#dealFoot'),order:d?getComputedStyle(d).order:''};});
+      ok(wf362.ra.drawn && wf362.ra.rows===3 && wf362.ra.why==='none' && /2,154만원/.test(wf362.ra.sum) && !wf362.rb.drawn && wf362.rb.why!=='none', 'v362 현금 여유 표 — 부호 붙여 더한 값이 합계와 같을 때만(1만원 틀리면 원래 글)', JSON.stringify(wf362));
+      ok(wf362.notes && wf362.order!=='' && wf362.order!=='0', 'v362 실거래 ※ 안내 → 「목록 기준」 접기(목록 아래 자리 그대로)', JSON.stringify(wf362));
+      // v363 — 홈 ④ 미니 분포 = 실거래 탭 분포(같은 점 수) · 넓은 화면 「더 알아보기」 아래 전체 폭
+      await page.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11440',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+      await page.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:8000}).catch(()=>{}); await page.waitForTimeout(400);
+      await page.evaluate(()=>window.yk208Navigate('home')); await page.waitForTimeout(200);
+      const mi363=await page.evaluate(()=>{const m=document.getElementById('mini363'),src=document.querySelector('#dealDistribution .dd-strip');const cnt=e=>e?e.querySelectorAll('svg *:not(title)').length:-1;
+        return {has:!!m,hidden:m?m.hidden:null,src:!!src,a:cnt(m),b:cnt(src),aria:m?m.getAttribute('aria-hidden'):'',h:m?Math.round(m.getBoundingClientRect().height):0,mark:m?(m.querySelector('.dd-mark')||{}).textContent:'',srcMark:src?(src.querySelector('.dd-mark')||{}).textContent:''};});
+      ok(mi363.has && (mi363.src ? (!mi363.hidden && mi363.a===mi363.b && mi363.a>0 && mi363.mark===mi363.srcMark && mi363.h>40) : mi363.hidden) && mi363.aria==='true', 'v363 홈 ④ 미니 분포 — 실거래 탭 분포와 같은 점 · 같은 「내 예상 집값」 표시(꾸밈 · 낭독 제외)', JSON.stringify(mi363));
+      await page.setViewportSize({width:1264,height:900}); await page.waitForTimeout(300);
+      const w363=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect();const share=R(document.querySelector('#viewNext>.card')),more=R(document.getElementById('more341')),mk=R(document.getElementById('easyMarket')),fo=R(document.getElementById('fundingOverview'));return {gap:Math.round(share.top-mk.bottom),moreW:Math.round(more.width),moreTop:Math.round(more.top),fb:Math.round(fo.bottom),vw:innerWidth};});
+      await page.setViewportSize({width:390,height:844}); await page.waitForTimeout(200);
+      ok(w363.gap>=0 && w363.gap<=24 && w363.moreW>=900 && w363.moreTop>=w363.fb, 'v363 1264px — 저장 · 공유 줄은 ④ 바로 아래(24px 이하) · 더 알아보기는 아래 전체 폭', JSON.stringify(w363));
+      // v366 — 실거래 머리: 「대출 규칙이 달라…」 → 지역별 기준 예상 집값 표(내 지역 = 화면 값 · 다른 지역 = dealBudgetFor) · 「넓혔어요」 접음
+      await page.evaluate(()=>window.yk208Navigate('map')); await page.waitForTimeout(200);
+      const t366=await page.evaluate(()=>{const box=document.getElementById('dealDistribution');if(!box)return {nobox:true};
+        const keep=DEAL.items; DEAL.items=(keep||[]).concat([{lawd:'41281',amountMan:30000,name:'검사단지',areaM2:84,y:2026,m:10,d:1}]);
+        const a=document.createElement('p');a.className='dd-note dd-scope';a.textContent='고양시 덕양구는 대출 규칙이 달라 그 지역 기준 예상 집값으로 나눴어요.';
+        const b=document.createElement('p');b.className='dd-note dd-scope';b.textContent='맞는 거래가 적어 인근 지역까지 넓혔어요.';box.append(b,a);window.__yk366.fix();
+        const t=box.querySelector('.rt366'),rows=t?[...t.querySelectorAll('tr')].map(r=>[r.querySelector('th').firstChild.textContent.trim(),r.querySelector('td').textContent.trim()]):[];
+        const r={rows,own:(document.getElementById('dealBudget')||{}).textContent,dy:formatWon(dealBudgetFor('41281')*10000),ruleHidden:getComputedStyle(a).position==='absolute'&&a.getBoundingClientRect().width<=1,wideHidden:getComputedStyle(b).position==='absolute'&&b.getBoundingClientRect().width<=1,cap:t?getComputedStyle(t.querySelector('.rt-cap')).display:''};
+        if(t)t.remove();a.remove();b.remove();DEAL.items=keep;return r;});
+      ok(t366.rows&&t366.rows.length===2&&t366.rows[0][1]===String(t366.own).trim()&&t366.rows[1][0]==='고양시 덕양구'&&t366.rows[1][1]===t366.dy&&t366.ruleHidden&&t366.wideHidden&&t366.cap!=='none', 'v366 실거래 머리 — 지역별 기준 예상 집값 표(내 지역 = 화면 값 · 덕양구 = dealBudgetFor) · 원래 문장은 낭독용 · 「넓혔어요」 접음', JSON.stringify(t366));
+      await page.evaluate(()=>window.yk208Navigate('home'));
+      await page.evaluate(()=>window.yk208Navigate('home'));
       reach328On=false; await page.evaluate(()=>window.yk208Navigate('home'));
       await page.reload(); await page.evaluate(()=>document.fonts.ready); mode='success'; await seed();
     }
