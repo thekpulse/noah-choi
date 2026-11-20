@@ -16066,5 +16066,43 @@ html body.yk208:has(#kbNext355:not([hidden])) #v208Nav{display:none!important}
   fit(document.getElementById('main-cash')); fit(document.getElementById('main-income'));
 })();
 </script>
+<style id="v372-more-rows">
+/* v372 — 「더 알아보기」 안 줄 모양 맞추기(v369 「같은 일을 하는 것은 같은 모양으로」의 이어짐 · 문구 · 링크 · 순서 · 줄 높이는 그대로).
+   ① 오른쪽 표시 한 벌: 모든 줄 끝 같은 칸(오른쪽 2px · 16px 상자)에 같은 선 굵기(2px) · 같은 색(#5F6B7D)의 그림.
+      › 다른 글로 이동 · ⌄ 펼침(그대로) · ↗ 외부 사이트(글꼴 글자 「↗」 → 그림 — 기기마다 다르게 그려지던 것) · ↻ 처음부터 다시(표시 없던 줄).
+      「처음부터 다시 계산하기」 글자색은 그대로 보조색 — 누르면 입력값이 모두 지워지는 줄이라 이동 줄과 구분.
+   ② 펼친 내용 왼쪽 시작 한 곳: 외부 링크 두 줄도 안내 문단처럼 줄 글자와 같은 왼쪽(12px 들여쓰기 · 줄마다 선 뺌). 줄 높이 44px 그대로.
+   ③ 펼친 아래 여백 한 값: 마지막 글자 아래 → 구분선까지 두 접기가 같게. */
+html body.yk208 #app#app #more341#more341 .external-links>a.mini{padding:0!important;border-top:0!important}
+html body.yk208 #app#app #more341#more341 .external-links>a.mini>.arw{flex:none!important;width:16px!important;height:16px!important;margin:0 2px 0 12px!important;padding:0!important;font-size:0!important;line-height:0!important;color:transparent!important;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6B7D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18 18 6M8 6h10v10'/%3E%3C/svg%3E") center/16px 16px no-repeat!important}
+html body.yk208 #app#app #more341#more341#more341 #restartBtn::after{content:''!important;right:2px!important;width:16px!important;height:16px!important;border:0!important;transform:translateY(-50%)!important;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6B7D' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12a8 8 0 1 1-2.34-5.66L20 8.5'/%3E%3Cpath d='M20 3.5v5h-5'/%3E%3C/svg%3E") center/16px 16px no-repeat!important}
+html body.yk208 #app#app #more341#more341 .external-links[open]{padding-bottom:var(--sp-1)!important}
+html body.yk208 #app#app #more341#more341 .result-notes321[open]{padding-top:0!important;padding-bottom:var(--sp-4)!important}
+html body.yk208 #app#app #more341#more341 .result-notes321[open]>summary+*{margin-top:var(--sp-2)!important}
+html body.yk208 #app#app #more341#more341 .result-notes321>p:last-of-type{margin-bottom:0!important}
+</style>
+<script id="v372-more-rows">
+/* v372 — 외부 링크 끝 「↗」 글자는 그림으로 바꿨으므로 읽기 도구에서도 감춤(링크 이름 「… 열기」는 그대로 읽힘). */
+(function(){
+  document.querySelectorAll('#more341 .external-links>a.mini>.arw').forEach(function(e){ e.setAttribute('aria-hidden', 'true'); });
+})();
+</script>
+<style id="v373-check">
+/* v373 — 「✓」(U+2713)를 그림으로. Pretendard 글자 범위 밖이라 기기 글꼴로 그려지던 유일한 글자(계산기 화면 기준 · 2026-11-21 전수).
+   ① 실거래 「지역 변경」 칩 · 입력 시트 지역 칩: ::before 가 flex 항목이 되며 「✓ 」 끝 빈칸이 지워져 「✓마포구」로 붙던 것 → 14px 그림 + 오른쪽 4px.
+      색은 칩 글자색(currentColor · mask)을 그대로 따름.
+   ② 「기존 대출 없음」 꼬리표 「✓ 선택됨」 → 「선택됨」 + 왼쪽 12px 그림(꼬리표 글자색 #1848D6). 꼬리표 크기 · 모서리 · 색은 그대로.
+   선 굵기는 v372 줄 끝 표시와 같은 계열(16px 기준 약 2px). */
+html body #viewDeals .deal-region-chips .chip.is-on::before,html body #qSheet .input-region-grid .chip.is-on::before{content:''!important;display:inline-block!important;flex:none!important;width:14px!important;height:14px!important;margin:0 4px 0 0!important;vertical-align:-2px;background-color:currentColor!important;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/14px 14px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/14px 14px no-repeat}
+html body #qSheet .debt-none.is-on::after{content:'선택됨'!important;padding-left:21px!important;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231848D6' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") 7px center/12px 12px no-repeat,#DCE6FF!important}
+</style>
+<style id="v374-minus">
+/* v374 — 빼기 기호 「−」(U+2212)를 Pretendard 모양으로. 공식 조각 92개에 이 글자만 없어 기기 글꼴로 그려지던 것.
+   원본 Pretendard 1.3.9(지금 조각과 같은 판)에서 「−」 한 글자만 잘라 낸 5KB 조각(굵기 축 그대로). OFL 1.1 예약 이름 「Pretendard」를 피해 이름을 「YK Minus」로 바꿈.
+   저작권 · 사용 허락 문구는 글꼴 안(name 0·13·14)과 fonts/pretendard/YKMinus-OFL.txt에. 이 글자가 화면에 있을 때만 받음(unicode-range).
+   글꼴 순서에서 Pretendard 바로 앞에 둠 — 「−」 말고는 아무 글자도 이 글꼴로 안 감. */
+@font-face{font-family:'YK Minus';font-style:normal;font-display:swap;font-weight:45 920;src:url(fonts/pretendard/YKMinus.woff2) format('woff2-variations'),url(fonts/pretendard/YKMinus.woff2) format('woff2');unicode-range:U+2212}
+body,button,input,select{font-family:'YK Minus','Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Segoe UI',system-ui,sans-serif}
+</style>
 </body>
 </html>
