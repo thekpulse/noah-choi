@@ -680,6 +680,14 @@ ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 �
      && !/font-size:(15|18)px|\.5px/.test(c369),
      'v369 규칙 — 카드 머리 한 모양 · 실거래 탭 점 그림 감춤 · 입력 요약 줄 대신 두 줄 · 숫자 칸 한 줄 · 스케일 밖 글자 없음');
 }
+// 60) v370 — 「다음」 줄 자리를 창 스크롤에도 다시 셈 · 맞춤 전에 줄 자리부터 · 숫자 칸 폭 · 7자리 글자 · 탭 막대 감춤
+{
+  const s355 = (html.match(/<script id="v355-kbnext">[\s\S]*?<\/script>/) || [])[0] || '';
+  const s367 = (html.match(/<script id="v367-kb-reveal">[\s\S]*?<\/script>/) || [])[0] || '';
+  const c370 = (html.match(/<style id="v370-money-field">[\s\S]*?<\/style>/) || [])[0] || '';
+  ok(/window\.addEventListener\('scroll', place/.test(s355) && /__yk355\.place\(\)/.test(s367) && /kbPad370/.test(s367) && /160px!important/.test(c370) && /#kbNext355:not\(\[hidden\]\)\) #v208Nav\{display:none!important\}/.test(c370),
+     'v370 「다음」 줄 자리 다시 셈(창 스크롤) · 숫자 칸 160px · 탭 막대 감춤 · 아래 여유 칸');
+}
 
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
@@ -1222,6 +1230,38 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         const k367=await q.evaluate(()=>{const el=document.activeElement,b=el.closest('.inline-money')||el,r=b.getBoundingClientRect(),bar=document.getElementById('kbNext355'),br=bar.getBoundingClientRect(),hd=document.querySelector('.appbar').getBoundingClientRect();return {id:el.id,bar:!bar.hidden,covered:Math.max(0,Math.round(r.bottom-br.top)),underHead:Math.max(0,Math.round(hd.bottom-r.top))};});
         ok(k367.id==='main-income' && k367.bar && k367.covered===0 && k367.underHead===0, `v367 ${w}×${h} 「다음」→ 소득 칸 묶음이 「다음」 줄 · 상단 바에 안 가림(v366 약 110px 가림)`, JSON.stringify(k367));
         await c367.close();
+      }
+      // v370 — 아이폰 캡처(2026-11-20): 「다음」 줄이 화면 가운데에 남음 · 마지막 숫자 잘림 · 키보드 위 탭 막대
+      {
+        const c370=await browser.newContext({viewport:{width:393,height:600},isMobile:true,hasTouch:true});
+        const q=await c370.newPage(); const e370=[]; q.on('pageerror',e=>e370.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));
+          if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.evaluate(()=>{Object.assign(S,{cash:300000,income:20000,sgg:'11440',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForTimeout(300); await q.evaluate(()=>window.yk208Navigate('conditions')); await q.waitForTimeout(300);
+        await q.locator('#main-income').tap(); await q.waitForTimeout(500);
+        const a=await q.evaluate(()=>{const bar=document.getElementById('kbNext355');bar.style.transform='translateY(-165px)';window.scrollBy(0,-20);return true;});
+        await q.waitForTimeout(250);
+        const b=await q.evaluate(()=>{const bar=document.getElementById('kbNext355'),nav=document.getElementById('v208Nav'),pad=document.getElementById('kbPad370');
+          return {bar:!bar.hidden,tf:bar.style.transform,barBottom:Math.round(bar.getBoundingClientRect().bottom),ih:innerHeight,nav:nav?getComputedStyle(nav).display:'none',pad:pad?parseFloat(pad.style.height):-1};});
+        await q.evaluate(()=>document.activeElement.blur()); await q.waitForTimeout(250);
+        const c=await q.evaluate(()=>{const p=document.getElementById('kbPad370');return {nav:getComputedStyle(document.getElementById('v208Nav')).display,pad:p?parseFloat(p.style.height):-1};});
+        ok(b.bar && b.tf==='' && Math.abs(b.barBottom-b.ih)<=1 && b.nav==='none' && b.pad>=360 && c.nav!=='none' && c.pad===0, 'v370 「다음」 줄 — 화면을 움직이면 자리 다시 셈(옛 자리 165px 위 → 화면 아래) · 떠 있는 동안 탭 막대 감춤 · 아래 여유 칸(닫으면 0)', JSON.stringify({b,c}));
+        const fits=[];
+        for(const w of [393,320]){
+          await q.setViewportSize({width:w,height:600}); await q.waitForTimeout(150);
+          for(const v of ['300000','1000000']){
+            await q.locator('#main-cash').tap(); await q.fill('#main-cash',v); await q.waitForTimeout(120);
+            fits.push(await q.evaluate(([w,v])=>{const i=document.getElementById('main-cash'),c=getComputedStyle(i),cv=document.createElement('canvas').getContext('2d');cv.font=`${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+              const tw=cv.measureText(i.value).width+(i.value.length-1)*(parseFloat(c.letterSpacing)||0);return {w,v:i.value,fs:parseFloat(c.fontSize),slack:Math.round(i.clientWidth-tw)};},[w,v]));
+          }
+        }
+        ok(fits.every(f=>f.slack>=14 && f.fs>=16) && fits.filter(f=>f.v==='1,000,000').every(f=>f.fs===16), 'v370 숫자 칸 — 「300,000」 · 「1,000,000」이 393 · 320px 칸 안에 14px 이상 여유(아이폰 안쪽 폭이 약 18px 좁음) · 7자리부터 16px', JSON.stringify(fits));
+        ok(!e370.length, 'v370 JavaScript 오류 없음', e370.join(' | '));
+        await c370.close();
       }
       await page.evaluate(()=>window.yk208Navigate('conditions')); await page.waitForTimeout(200);
       const m355=await page.evaluate(()=>{const c=document.getElementById('main-cash');c.focus();return {vis:!!c.getClientRects().length,focus:document.activeElement===c,exists:!!document.getElementById('kbNext355'),hidden:document.getElementById('kbNext355').hidden};});
