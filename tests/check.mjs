@@ -726,6 +726,15 @@ ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 �
      && html.indexOf('<script id="v375-kb-gate">') > html.indexOf("bar.id='kbNext355'"),
      'v375 규칙 — 누른 초점(1초 · 칸 묶음 · 줄) 또는 키보드(보이는 영역 150px 넘게 짧음)일 때만 「다음」 줄 · 터치 화면만 · v355 뒤에 붙음');
 }
+// 65) v376 — 거래 분포 점: 규칙이 다른 인근 지역 점은 테두리만(감싸서 잇기 · 엔진 밖 · 점 개수가 다르면 손대지 않음)
+{
+  const s376 = (html.match(/<script id="v376-other-dots">[\s\S]*?<\/script>/) || [])[0] || '';
+  const c376 = (html.match(/<style id="v376-other-dots">[\s\S]*?<\/style>/) || [])[0] || '';
+  ok(/distributionDots=function\(\)/.test(s376) && /renderDealDistribution=function\(\)/.test(s376) && /!sameRules\(lawd\)/.test(s376) && /cs\.length!==last\.length\) return/.test(s376)
+     && /setAttribute\('r', '3'\)/.test(s376) && /setAttribute\('stroke-width', '2'\)/.test(s376) && /그 지역 예상 집값 기준으로 색을 칠했어요/.test(s376)
+     && /font-size:var\(--t7\)/.test(c376) && !/\.5px/.test(c376) && html.indexOf('<script id="v376-other-dots">') > html.indexOf('function renderDealDistribution('),
+     'v376 규칙 — distributionDots · renderDealDistribution 감싸기 · 규칙 다른 지역(sameRules) 점만 테두리 · 개수 다르면 그대로 · 설명 문구 · 스케일 글자');
+}
 
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
@@ -1633,6 +1642,29 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       const dsk=await qd.evaluate(()=>({focus:document.activeElement.id,bar:!document.getElementById('kbNext355').hidden}));
       ok(dsk.focus==='main-cash' && !dsk.bar,'v375 마우스 화면(1264px)은 칸을 눌러도 「다음」 줄 없음(v355 그대로)',JSON.stringify(dsk));
       await c375d.close();
+    }
+    // v376 — 결과 화면 ④ 작은 그래프: 규칙이 다른 인근 지역(고양시 덕양구) 점은 테두리만 · 채운 파란 점은 「내 예상 집값」 선 왼쪽에만 · 설명 한 줄(320 · 390 · 1264)
+    {
+      const item376=(lawd,i,amt)=>({name:'검증'+lawd+'-'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:amt,buildYear:2015,floor:5,y:2026,m:11,d:1+i});
+      for(const width of [320,390,1264]){
+        const c376=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c376.newPage();const e376=[];q.on('pageerror',e=>e376.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){const lawd=u.searchParams.get('lawd');const amts=lawd==='41281'?[33000,32000,34000,15000]:[15000,16000,30000,31000,29000];return route.fulfill({json:{ok:true,items:amts.map((a,i)=>item376(lawd,i,a)),total:amts.length}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11440',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await q.waitForTimeout(500);
+        const m376=await q.evaluate(()=>{const root=document.getElementById('mini363'),svg=root&&root.querySelector('.dd-strip svg');if(!svg)return {svg:false};
+          const line=[...svg.querySelectorAll('line')].find(l=>l.getAttribute('stroke')==='#2458FF'),lx=+line.getAttribute('x1'),cs=[...svg.querySelectorAll('circle')];
+          const other=cs.filter(c=>c.hasAttribute('data-other376')),note=root.querySelector('.dd-other376');
+          return {svg:true,n:cs.length,blueRight:cs.filter(c=>c.getAttribute('fill')==='#2458FF'&&+c.getAttribute('cx')>lx).length,other:other.length,
+            otherOk:other.every(c=>c.getAttribute('r')==='3'&&c.getAttribute('fill')==='#fff'&&c.getAttribute('stroke-width')==='2'),otherBlue:other.filter(c=>c.getAttribute('stroke')==='#2458FF').length,
+            note:note?note.textContent:'',noteVis:!!(note&&note.getClientRects().length),overflow:document.documentElement.scrollWidth>innerWidth};});
+        ok(m376.svg && m376.n>0 && m376.blueRight===0 && m376.other>=3 && m376.otherOk && m376.otherBlue>=3 && /고양시 덕양구/.test(m376.note) && /그 지역 예상 집값 기준/.test(m376.note) && m376.noteVis && !m376.overflow && !e376.length,
+           `v376 ${width}px ④ 작은 그래프 — 덕양구 점은 테두리(r3 · 선2 · 흰 속) · 채운 파란 점은 선 왼쪽에만 · 설명 한 줄`,JSON.stringify({m376,e376}));
+        await c376.close();
+      }
     }
     ok(!errors.length,'v321 브라우저 JavaScript 실행 오류 없음',errors.join('\n'));
   }finally{await browser.close();}
