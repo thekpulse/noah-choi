@@ -16145,5 +16145,63 @@ body,button,input,select{font-family:'YK Minus','Pretendard Variable','Pretendar
   window.__yk375={kbUp:kbUp};
 })();
 </script>
+<style id="v376-other-dots">
+/* v376 — 거래 분포 점: 대출 규칙이 다른 인근 지역 점은 테두리만(오너 2026-11-21 점검 문서 「지금 고칠 것」 권장안 승인).
+   결과 화면 ④ 작은 그래프(v363 복제)와 실거래 탭 분포가 같은 그림. 테두리 점 r 3 + 선 2 = 바깥 반지름 4(채운 점과 같은 크기). */
+html body .dd-strip .dd-other376{margin:var(--sp-2) 0 0;font-size:var(--t7);line-height:1.5;color:#516077;word-break:keep-all}
+html body .dd-strip .dd-other376 i{display:inline-block;box-sizing:border-box;width:8px;height:8px;margin-right:var(--sp-1);border:2px solid #8792A8;border-radius:50%;background:#fff}
+</style>
+<script id="v376-other-dots">
+/* v376 — 「내 예상 집값」 선보다 비싼 쪽에 파란 점이 찍히던 것(인근의 규칙이 다른 지역 거래는 그 지역 예산으로 색칠 — dealFits → dealBudgetFor(lawd)).
+   ① distributionDots를 감싸 점마다 그 거래의 지역이 내 지역과 규칙이 다른지(sameRules) 적어 둠 — 원래 함수가 점 하나에 dealFits를 한 번씩, 점 순서대로 부르는 것을 기록.
+   ② renderDealDistribution을 감싸 그린 직후 그 점만 흰 속 + 테두리(색은 그 지역 기준 판정 그대로: 이하 파랑 · 초과 회색), 그런 점이 있으면 띠 아래 한 줄.
+   점 개수가 기록과 다르면 아무것도 안 바꿈(엇갈려 칠하지 않음). 계산 · 건수 · 문구 「거래의 N%」는 그대로. */
+(function(){
+  if(typeof distributionDots!=='function' || typeof renderDealDistribution!=='function') return;
+  var last=null;
+  var origDots=distributionDots;
+  distributionDots=function(){
+    var seen=[], fitsOrig=(typeof dealFits==='function') ? dealFits : null, out;
+    if(fitsOrig) dealFits=function(row){ seen.push(row); return fitsOrig.apply(this, arguments); };
+    try{ out=origDots.apply(this, arguments); } finally { if(fitsOrig) dealFits=fitsOrig; }
+    last=null;
+    if(out && out.points && seen.length===out.points.length){
+      out.points.forEach(function(p, i){ var lawd=seen[i] && seen[i].lawd; p.lawd=lawd || ''; p.other=!!lawd && typeof sameRules==='function' && !sameRules(lawd); });
+      last=out.points;
+    }
+    return out;
+  };
+  function mark(){
+    var box=document.getElementById('dealDistribution'), strip=box && box.querySelector('.dd-strip');
+    if(!strip) return;
+    var old=strip.querySelector('.dd-other376'); if(old) old.remove();
+    var svg=strip.querySelector('svg'), cs=svg ? svg.querySelectorAll('circle') : [];
+    if(!last || cs.length!==last.length) return;
+    var names=[];
+    last.forEach(function(p, i){
+      if(!p.other) return;
+      var c=cs[i];
+      c.setAttribute('r', '3'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', p.fit ? '#2458FF' : '#8792A8'); c.setAttribute('stroke-width', '2'); c.setAttribute('data-other376', '1');
+      var nm=(typeof sggName==='function') ? sggName(p.lawd) : '';
+      if(nm && names.indexOf(nm)<0) names.push(nm);
+    });
+    if(!names.length) return;
+    var note=document.createElement('p'); note.className='dd-other376';
+    var dot=document.createElement('i'); dot.setAttribute('aria-hidden', 'true');
+    note.appendChild(dot);
+    note.appendChild(document.createTextNode('테두리 점은 대출 규칙이 다른 ' + names.join(' · ') + ' 거래예요. 그 지역 예상 집값 기준으로 색을 칠했어요.'));
+    strip.appendChild(note);
+  }
+  var origRender=renderDealDistribution;
+  renderDealDistribution=function(){
+    last=null;
+    var r=origRender.apply(this, arguments);
+    try{ mark(); }catch(e){}
+    return r;
+  };
+  window.__yk376={mark:mark, last:function(){ return last; }};
+  try{ mark(); }catch(e){}
+})();
+</script>
 </body>
 </html>
