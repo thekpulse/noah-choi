@@ -16203,5 +16203,232 @@ html body .dd-strip .dd-other376 i{display:inline-block;box-sizing:border-box;wi
   try{ mark(); }catch(e){}
 })();
 </script>
+<style id="v377-type-scale">
+/* v377 — 글자 크기 · 굵기를 :root 스케일 안으로(2026-11-21 UX·디자인 점검 문서 「다듬을 것」 · 진행 순서 v377).
+   v254 · v261이 정한 15 · 18 · 22px, 굵기 650 · 550(지금 :root 스케일보다 앞선 값)을 덮음 — 그 규칙보다 한 단계 센 선택자(#app#app).
+   크기: 실거래 목록 단지 이름 15→16(--t5) · 금액 18→19(--t3) · 「거래의 N%가 …」 15→16(--t5), 숫자 22→26(--t2 · 400px 이하 24)
+         비교 탭 빈 화면 제목 21→19(--t3) · 설명 15→14(--t6) · 「단지 찾아보기」 15→16(--t5)
+   굵기: 650→600(--w-key) — 입력 줄 값 · 「실거래 보기」 · 목록 단지 이름 / 금액은 700
+         550→500(--w-sub) — 아래 탭 이름 · 지역 칩 · 필터 칩 · 「예상 집값 10% 초과까지」 · 고른 칩은 600(--w-key)으로 다른 칩과 구분
+   시트 안 15px(「기존 대출 없음」 · 지역 목록 · 「만원」)은 v370 · v371 금액 칸 옆이라 이번엔 그대로(README 「다음 후보」). */
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.nm,html body.yk208 #app#app #viewDeals .deal .nm{font-size:var(--t5)!important;font-weight:var(--w-key)!important}
+html body.yk208 #app#app #viewDeals #dealList .dealwrap>.deal>.amt,html body.yk208 #app#app #viewDeals .deal .amt{font-size:var(--t3)!important;font-weight:700!important}
+html body.yk208 #app#app #viewDeals #dealDistribution .dd-insight{font-size:var(--t5)!important}
+html body.yk208 #app#app #viewDeals #dealDistribution .dd-insight b{font-size:var(--t2)!important}
+html body.yk208 #app#app #viewDeals #dealDistribution .dd-insight i{font-size:var(--t5)!important}
+html body.yk208 #app#app #cmpBody h2{font-size:var(--t3)!important}
+html body.yk208 #app#app #cmpBody p{font-size:var(--t6)!important}
+html body.yk208 #app#app #cmpBody .v208-primary{font-size:var(--t5)!important}
+html body.yk208 #app#app .funnel #crows>.crow .v{font-weight:var(--w-key)!important}
+html body.yk208 #app#app #viewAnswer #marketOpen{font-weight:var(--w-key)!important}
+html body.yk208 #v208Nav#v208Nav span{font-weight:var(--w-sub)!important}
+html body.yk208 #app#app #viewDeals .chip:not(.is-on),html body.yk208 #app#app #viewDeals .deal-filter-fold>summary,html body.yk208 #app#app #viewDeals #dealOver .lbl,html body.yk208 #app#app #viewDeals #dealOver .nw{font-weight:var(--w-sub)!important}
+html body.yk208 #app#app #viewDeals .chip.is-on{font-weight:var(--w-key)!important}
+</style>
+<style id="v378-corners-blue">
+/* v378 — 모서리를 스케일(--r-s 10 · --r-m 14 · --r-l 20 · --r-xl 26 · 알약)로, 주 파랑 하나(2026-11-21 UX·디자인 점검 문서 · 진행 순서 v378).
+   v208 · v232 · v241~v261 · v285 · v353이 정한 12 · 13 · 16 · 18 · 19 · 6px을 덮음 — 그 규칙보다 한 단계 센 선택자(#app#app).
+   13 → 14(--r-m): 첫 화면 「내 집 예산 알아보기」 · 계산하기/결과 보기 · 아래 탭 버튼
+   18 → 20(--r-l): 입력 묶음(지역+주택 · 현금~기존 대출 — 한 둘레 카드라 v250 · v254처럼 위/아래 모서리만) · 입력 요약 · 실거래 지역 카드 · 비교 빈 화면 그림 상자
+   19 → 20(--r-l): 아래 탭 막대 · 16 → 20(--r-l): 실거래 목록 상자
+   12 → 10(--r-s): 금액 칸 · 「실거래 보기」 · 지도 상태 알림 / 12 → 14(--r-m): 「단지 찾아보기」(51px 주 버튼 — 계산하기와 같은 단)
+   6 → 10(--r-s): 입력 진행 꼬리표 「0 / 5 입력」
+   그대로: 「주택담보대출 안 받기」 체크 상자 7px(22px 상자 — 10이면 원처럼 보여 단일 선택과 헷갈림) · 공유 이미지 안 작은 꼬리표(화면 밖 그림)
+   주 파랑: 입력 「다음」 · 시트 「적용」(#qClose) · 비교 탭 「단지 찾아보기」(.v208-primary) 버튼(`body .cta:not(:disabled)` 공통 규칙 · v208-shell의 #1F5BFF)과 공유 이미지 머리를 #2458FF로 — 다른 주 버튼과 같은 값. 누를 때 #1848D6는 그대로. */
+html body.yk208 #app#app #welcomeStart232{border-radius:var(--r-m)!important}
+html body.yk208 #app#app .funnel #dock #ctaBtn,html body.yk208 #app#app .funnel #ctaBtn{border-radius:var(--r-m)!important}
+html body.yk208 #app#app #v208Nav{border-radius:var(--r-l)!important}
+html body.yk208 #app#app #v208Nav button{border-radius:var(--r-m)!important}
+html body.yk208 #app#app .funnel #crows>.crow[data-mode="region"]{border-radius:var(--r-l) var(--r-l) 0 0!important}
+html body.yk208 #app#app .funnel #crows>.crow[data-mode="house"]{border-radius:0 0 var(--r-l) var(--r-l)!important}
+html body.yk208 #app#app .funnel #crows>.inline-money:has(#main-cash){border-radius:var(--r-l) var(--r-l) 0 0!important}
+html body.yk208 #app#app .funnel #crows>.crow[data-mode="debt"]{border-radius:0 0 var(--r-l) var(--r-l)!important}
+html body.yk208 #app#app .funnel #crows>.main-no-loan:has(#mainNoLoan:checked){border-radius:0 0 var(--r-l) var(--r-l)!important}
+html body.yk208 #app#app .funnel #crows>.inline-money:has(#main-income):last-child{border-radius:0 0 var(--r-l) var(--r-l)!important}
+html body.yk208 #app#app #crows>#stepSum353{border-radius:var(--r-l)!important}
+html body.yk208 #app#app #viewDeals #dealCard>.deal-regions{border-radius:var(--r-l)!important}
+html body.yk208 #app#app #viewDeals #dealList{border-radius:var(--r-l)!important}
+html body.yk208 #app#app .v208-empty-mark{border-radius:var(--r-l)!important}
+html body.yk208 #app#app .funnel #crows .inline-money-field{border-radius:var(--r-s)!important}
+html body.yk208 #app#app #viewAnswer #marketOpen{border-radius:var(--r-s)!important}
+html body.yk208 #v208Status#v208Status{border-radius:var(--r-s)!important}
+html body.yk208 #app#app .v208-primary{border-radius:var(--r-m)!important}
+html body.yk208 #app#app .ep233-heading strong{border-radius:var(--r-s)!important}
+html body.yk208 #app#app #stepNext353:not(:disabled):not(:hover),html body.yk208 #qSheet#qSheet #qClose:not(:disabled):not(:hover),html body.yk208 #app#app .v208-primary:not(:disabled):not(:hover){background:#2458FF}
+html body.yk208 #app#app .v208-primary{border-color:#2458FF}
+html body #reportCard#reportCard .report-top{background:#2458FF!important}
+</style>
+<style id="v379-lines">
+/* v379 — 회색 선 13종을 2종으로(2026-11-21 UX·디자인 점검 문서 「다듬을 것」 · 진행 순서 v379).
+   선 #D6DFEC — 카드 둘레 · 안쪽 구분선 · 앱 바/안내 메뉴 선 · 테두리 버튼(이미지 저장 · 결과 공유 · 더 보기 · 필터 · 분포 「지역 변경」) · 채운 금액 칸(포커스 아닐 때)
+     옛 값: #C8D2E2 · #C1CCDD · #E1E5EB · #CDD4DE · #D7DFEB · #E1E7F0 · #DCE2EC · #CBD5E4 · #DFE5EE · #E6ECF4 · #DDE4EE (결과 카드 · 실거래 목록은 이미 #D6DFEC)
+   입력 · 선택지 #A4AFC3 — 시트의 흰 금액 칸 · 지역 칩 · 선택지 단추(이미 이 값) + 실거래 필터 칩 · 「전용/평」 단추 (옛 #CDD4DE — 같은 카드의 지역 칩과 같은 일)
+   입력 칸은 테두리로 칸을 알아보므로 가장 진한 기존 값을 기준으로 둠(옅게 하면 흰 바탕과 대비가 떨어짐).
+   그대로: 포커스 파랑 · 선택/눌림/펼침 색 · 누를 때 색(:not(...)로 비켜 감) · 비교 빈 화면 점선 칸 #BBC3CF · 파랑 계열 꼬리표 #D6E0F3 · 꺾쇠 · 범례 점 · 어두운 알림.
+   투명하게 둔 변은 건드리지 않음 — 회색이 칠해진 변만(모든 변이 회색인 요소는 border-color, 한 변만인 요소는 그 변만). 비교 탭 「단지 찾아보기」 테두리는 바탕과 같은 #2458FF(v378이 못 이긴 규칙). 조건 화면 미리보기 면 #1F5BFF → #2458FF(v378 누락).
+   색 선언은 #D6DFEC · #A4AFC3 · #2458FF 셋만 씀. */
+html body #cmpReportCard#cmpReportCard,
+html body.yk208 #qSheet#qSheet,
+html body.yk208 #app#app #v208Nav,
+html body.yk208 #app#app .v208-empty,
+html body.yk208 #app#app .funnel #crows>.crow,
+html body.yk208 #app#app .funnel #crows>.inline-money,
+html body.yk208 #app#app .funnel #crows>.main-no-loan,
+html body.yk208 #app#app .funnel #crows .inline-money-field:not(:focus-within),
+html body.yk208 #app#app #viewDeals #dealList,
+html body.yk208 #app#app #viewDeals #dealRegions,
+html body.yk208 #app#app #viewDeals .deal-budget,
+html body.yk208 #app#app #viewDeals #dealFilterBtn,
+html body.yk208 #app#app #viewDeals #dealMore,
+html body.yk208 #app#app #viewAnswer #easyMarket,
+html body.yk208 #app#app #viewAnswer #fundingOverview,
+html body.yk208 #app#app #viewAnswer #payTile,
+html body.yk208 #app#app #more341,
+html body.yk208 #app#app #outCopy,
+html body.yk208 #app#app #outSave,
+html body.yk208 #qSheet#qSheet .subtoggle,
+html body #welcome232#welcome232 .welcome232-start,
+html body #welcome232#welcome232 a{border-color:#D6DFEC!important}
+html body.yk208 #app#app .appbar,
+html body.yk208 .appbar,
+html body.yk208 #app#app #viewDeals .deal-filter-fold,
+html body.yk208 #app#app #viewDeals #dealList .dealwrap,
+html body.yk208 #app#app #more341#more341#more341 #relatedRead,
+html body.yk208 #app#app #more341#more341#more341 .external-links,
+html body.yk208 #app#app #more341#more341#more341 .result-notes321,
+html body.yk208 #qSheet#qSheet .q-sheet-header{border-bottom-color:#D6DFEC!important}
+html body.yk208 #app#app .guide-nav,
+html body.yk208 .guide-nav,
+html body.yk208 #app#app #viewDeals #dealDistribution .dd-method,
+html body.yk208 #app#app #viewDeals #dealDistribution .dd-group,
+html body.yk208 #app#app #viewDeals #dealDistribution th,
+html body.yk208 #app#app #viewDeals #dealDistribution td,
+html body.yk208 #app#app #viewAnswer #reasonCard,
+html body.yk208 #app#app #viewAnswer #rateToggle,
+html body.yk208 #qSheet#qSheet #debtPartsToggle,
+html body.yk208 #qSheet#qSheet .sheet-actions{border-top-color:#D6DFEC!important}
+html body.yk208 #app#app #viewDeals #dealChips .chip:not(.is-on):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover),
+html body.yk208 #app#app #viewDeals #dealChips button:not(.is-on):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover),
+html body.yk208 #app#app #viewDeals #dealUnitFilter .unit-options button:not(.is-on):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover){border-color:#A4AFC3!important}
+/* 「지역 변경」은 고르는 칸이 아니라 여는 버튼 — 다른 테두리 버튼과 같은 선 */
+html body.yk208 #app#app #viewDeals #dealDistribution .dd-region:not(:hover){border-color:#D6DFEC!important}
+html body.yk208 #app#app #cmpBody .v208-primary{border-color:#2458FF!important}
+
+/* v378에서 빠진 파란 면 하나: 조건 화면 미리보기(#1F5BFF는 누름 색으로만 남김) */
+html body.yk208 #app#app #condPreview#condPreview{background-color:#2458FF!important}
+</style>
+<style id="v380-bars">
+/* v380 — 그래프 둘(2026-11-21 UX·디자인 점검 문서 「그래프·표·도형」 · 진행 순서 v380).
+   ① 결과 화면 ④ 「실거래와 비교」 작은 그래프: 점 → 12칸 막대. 점은 최근 60건만 찍고 한 가격대에 6층이 넘으면 겹쳐 그렸음(위쪽이 뭉개짐 ·
+      「거래의 1%」인데 파란 점이 많아 보이는 일). 막대는 그래프 범위(예상 집값 약 50~150%) 안 거래를 모두 셈 — 「분포 자세히」의 12칸 막대와 같은 칸 · 같은 건수.
+      칸 안 쌓는 순서(아래→위): 내 지역 기준 이하(파랑) · 초과(회색) · 규칙이 다른 인근 지역 이하(흰 속 + 파랑 테두리) · 초과(흰 속 + 회색 테두리) — v376 색 뜻 그대로.
+      막대 높이는 그 칸 건수 ÷ 가장 많은 칸 건수. 건수가 있는 칸 조각은 적어도 2px(테두리 조각 6px — 속이 보이는 최소)로 그려 보이게 함.
+      칸마다 센 건수가 distributionModel의 이하/초과 건수와 다르면 아무것도 바꾸지 않음(점 그대로).
+   ② ③ 월 상환액 「세전 소득의 N%」 옆 작은 원(v288): 4%처럼 작은 값은 거의 빈 원이라 불러오는 중 표시처럼 보임 → 숨기고 숫자만. 숫자 · 계산은 그대로. */
+html body.yk208 #app#app #payTile .v288-ring{display:none!important}
+html body .dd-strip .dd-other380 i{border-radius:2px!important}
+</style>
+<script id="v380-bars">
+(function(){
+  if(typeof renderDealDistribution!=='function' || typeof distributionModel!=='function') return;
+  var NS='http://www.w3.org/2000/svg';
+  function el(tag, attrs){ var e=document.createElementNS(NS, tag); for(var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  function draw(priceMan){
+    var box=document.getElementById('dealDistribution'), strip=box && box.querySelector('.dd-strip'), svg=strip && strip.querySelector('svg');
+    if(!svg || svg.hasAttribute('data-v380')) return;
+    var budget=(typeof LASTVIEW==='object' && LASTVIEW && LASTVIEW.price>0) ? Math.floor(LASTVIEW.price/10000) : priceMan;
+    var pass=(typeof DEAL.pass==='function') ? DEAL.pass : null;
+    var model=distributionModel(DEAL.items||[], budget, pass);
+    if(!model.bins) return;
+    var vb=String(svg.getAttribute('viewBox')||'').trim().split(/\s+/).map(Number), W=vb[2];
+    var lines=[].slice.call(svg.querySelectorAll('line')), baseLine=lines.find(function(l){ return l.getAttribute('y1')===l.getAttribute('y2') && l.getAttribute('x1')==='12'; });
+    var marker=lines.find(function(l){ return l.getAttribute('stroke')==='#2458FF'; });
+    if(!(W>24) || !baseLine || !marker) return;
+    var base=Number(baseLine.getAttribute('y1')), SPAN=W-24;
+    var fits=function(x){ return typeof dealFits==='function' ? dealFits(x, budget) : x.amountMan<=budget; };
+    var other=function(x){ return !!x.lawd && typeof sameRules==='function' && !sameRules(x.lawd); };
+    var cat=model.bins.map(function(){ return {mu:0, mo:0, ou:0, oo:0}; }), names=[];
+    (DEAL.items||[]).filter(function(x){ return Number.isFinite(x.amountMan) && x.amountMan>0 && (!pass || pass(x)) && x.amountMan>=model.lo && x.amountMan<=model.hi; }).forEach(function(x){
+      var i=Math.min(11, Math.floor((x.amountMan-model.lo)/(model.hi-model.lo)*12)), f=fits(x), o=other(x);
+      cat[i][(o?'o':'m')+(f?'u':'o')]++;
+      if(o && typeof sggName==='function'){ var nm=sggName(x.lawd); if(nm && names.indexOf(nm)<0) names.push(nm); }
+    });
+    for(var i=0;i<12;i++){ if(cat[i].mu+cat[i].ou!==model.bins[i].under || cat[i].mo+cat[i].oo!==model.bins[i].over) return; }   /* 셈이 다르면 그대로 */
+    [].slice.call(svg.querySelectorAll('circle')).forEach(function(c){ c.remove(); });
+    var g=el('g', {'class':'bars380'}), maxH=base-4, binW=SPAN/12, peak=model.peak;
+    cat.forEach(function(c, i){
+      var x=12+i*binW+1.5, w=binW-3, y=base, total=c.mu+c.mo+c.ou+c.oo;
+      if(!total) return;
+      var grp=el('g', {}), t=el('title', {}); t.textContent=Math.round(model.lo+(model.hi-model.lo)*i/12)+'~'+Math.round(model.lo+(model.hi-model.lo)*(i+1)/12)+'만원 · '+total+'건'; grp.appendChild(t);
+      [['mu','#2458FF',0],['mo','#8792A8',0],['ou','#2458FF',1],['oo','#8792A8',1]].forEach(function(s){
+        var n=c[s[0]]; if(!n) return;
+        var h=Math.max(s[2]?6:2, n/peak*maxH);
+        if(s[2]) grp.appendChild(el('rect', {x:(x+1).toFixed(1), y:(y-h+1).toFixed(1), width:Math.max(1, w-2).toFixed(1), height:(h-2).toFixed(1), rx:'2', fill:'#fff', stroke:s[1], 'stroke-width':'2', 'data-seg380':s[0]}));
+        else grp.appendChild(el('rect', {x:x.toFixed(1), y:(y-h).toFixed(1), width:w.toFixed(1), height:h.toFixed(1), rx:'2', fill:s[1], 'data-seg380':s[0]}));
+        y-=h+1;
+      });
+      g.appendChild(grp);
+    });
+    svg.insertBefore(g, marker);
+    svg.setAttribute('data-v380', '1');
+    var lab=svg.getAttribute('aria-label');
+    if(lab) svg.setAttribute('aria-label', lab.replace(/ · 점 하나가.*$/, '')+' · 막대 하나가 가격대 하나이고 높이는 거래 수예요(그래프 안 '+model.shown+'건).');
+    var old=strip.querySelector('.dd-other376'); if(old) old.remove();
+    if(names.length){
+      var note=document.createElement('p'); note.className='dd-other376 dd-other380';
+      var ic=document.createElement('i'); ic.setAttribute('aria-hidden', 'true'); note.appendChild(ic);
+      note.appendChild(document.createTextNode('테두리 막대는 대출 규칙이 다른 '+names.join(' · ')+' 거래예요. 그 지역 예상 집값 기준으로 색을 칠했어요.'));
+      strip.appendChild(note);
+    }
+    var sn=box.querySelector('.dd-scope-note');
+    if(sn) sn.innerHTML='전체 '+model.n+'건 중 예상 집값 이하 '+model.under+'건<br>막대는 그래프 범위 안 '+model.shown+'건을 가격대 12칸으로 나눈 것이에요.';
+    box.querySelectorAll('.dd-method .dd-note').forEach(function(p){ if(/위 띠는/.test(p.textContent)) p.textContent='막대 위 숫자는 그 가격대의 거래 건수예요.'; });
+  }
+  var orig=renderDealDistribution;
+  renderDealDistribution=function(priceMan){
+    var r=orig.apply(this, arguments);
+    try{ draw(priceMan); }catch(e){}
+    return r;
+  };
+  window.__yk380={draw:draw};
+  try{ draw(); }catch(e){}
+})();
+</script>
+<style id="v381-tidy">
+/* v381 — 작은 정리 넷(2026-11-21 UX·디자인 점검 문서 「그래프·표·도형」 · 진행 순서 v381).
+   ① 「주택 보유 이력」 시트: 생애최초 · 무주택은 누르는 순간 닫히는데(v355) 꺼진 「적용」 줄이 처음부터 보였음
+      → 「1주택 이상」을 고른 동안만 「적용」 줄을 보임(몇 채인지 · 처분 조건을 고른 뒤 누르는 버튼). 다른 시트는 그대로.
+   ② 320 · 360px 「이미지 저장」: 폭 때문에 그림만 뗐던 것(옆 「결과 공유」는 그림 있음) → 둘 다 그림. 좌우 여백 18 → 12px로 자리를 냄
+      (320px: 글자 약 80 + 사이 6 + 그림 20 + 여백 24 = 130 ≤ 버튼 134).
+   ③ 버튼 안 꺾쇠: 「실거래 보기」의 그림 꺾쇠 선 1.5px(0.5px 단위 — 스케일 밖) → 2px(글자 끝 빈칸 그대로 · 잉크 사이 4px). 45° 돌린 7px 상자는 가운데부터 선이 시작하므로, 빈칸 없는 곳은 상자 왼쪽 여백 1px = 잉크 사이 약 4~4.5px.
+      ② 쓰는 곳 「부대비용 ○만원 ›」의 글꼴 꺾쇠 「›」 · 「담아 둔 집」 「비교표 보기 ›」 → 「더 알아보기」와 같은 그림 꺾쇠(7px · 2px 선)로.
+   ④ 「어느 지역을 살펴볼까요?」 세 지역 그림: 서울 · 경기·인천은 큰 원 도식, 그 외 지역만 작은 원 + 핀이라 크기 · 모양이 갈렸음
+      → 한 도식(둥근 네모 = 전국 · 큰 원 = 수도권 · 작은 원 = 서울)에서 해당 부분만 진하게 칠한 한 벌. 선 1.8 · 24px는 v295 주택 그림과 같음. */
+html body.yk208 #qSheet#qSheet.house-noapply381 .sheet-actions{display:none!important}
+html body.yk208 #qSheet#qSheet.house-noapply381{padding-bottom:calc(var(--sp-5) + env(safe-area-inset-bottom))!important}
+@media (max-width:360px){
+  html body #viewAnswer#viewAnswer .minigrid #outSave,html body #viewAnswer#viewAnswer .minigrid #outCopy{padding:0 12px!important}
+  html body #viewAnswer#viewAnswer .minigrid #outSave .arw{display:flex!important}
+}
+html body.yk208 #app#app #viewAnswer #marketOpen .chev-r{width:7px!important;height:7px!important;margin:0 3px 0 0!important;border-right:2px solid currentColor!important;border-bottom:2px solid currentColor!important}
+html body.yk208 #app#app .flow358 button.f-cost .f-v::after{content:""!important;display:inline-block!important;width:7px;height:7px;margin:0 3px 2px 1px;border-right:2px solid #5F6B7D;border-bottom:2px solid #5F6B7D;transform:rotate(-45deg);vertical-align:middle}
+html body.yk208 #app#app #savedHomesOpen233{gap:0!important}
+html body.yk208 #app#app #savedHomesOpen233>span[aria-hidden="true"]{display:inline-block!important;width:7px;height:7px;margin:0 3px 0 0;font-size:0!important;line-height:0;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg)}
+html body.yk208 #qSheet#qSheet .zonegrid .zonecard[data-group="seoul"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.9' y='2.9' width='18.2' height='18.2' rx='4.5' stroke-opacity='.3'/%3E%3Ccircle cx='12' cy='12' r='7' stroke-opacity='.3'/%3E%3Ccircle cx='12' cy='12' r='2.8' fill='%232458FF' fill-opacity='.25'/%3E%3C/svg%3E")!important}
+html body.yk208 #qSheet#qSheet .zonegrid .zonecard[data-group="metro"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath fill-rule='evenodd' fill='%232458FF' fill-opacity='.2' stroke='none' d='M5 12a7 7 0 1 0 14 0a7 7 0 1 0-14 0zM9.2 12a2.8 2.8 0 1 0 5.6 0a2.8 2.8 0 1 0-5.6 0z'/%3E%3Crect x='2.9' y='2.9' width='18.2' height='18.2' rx='4.5' stroke-opacity='.3'/%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='2.8'/%3E%3C/svg%3E")!important}
+html body.yk208 #qSheet#qSheet .zonegrid .zonecard[data-group="other"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232458FF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath fill-rule='evenodd' fill='%232458FF' fill-opacity='.2' stroke='none' d='M7.4 2.9h9.2a4.5 4.5 0 0 1 4.5 4.5v9.2a4.5 4.5 0 0 1-4.5 4.5H7.4a4.5 4.5 0 0 1-4.5-4.5V7.4a4.5 4.5 0 0 1 4.5-4.5zM5 12a7 7 0 1 0 14 0a7 7 0 1 0-14 0z'/%3E%3Crect x='2.9' y='2.9' width='18.2' height='18.2' rx='4.5'/%3E%3Ccircle cx='12' cy='12' r='7' stroke-opacity='.3'/%3E%3Ccircle cx='12' cy='12' r='2.8' stroke-opacity='.3'/%3E%3C/svg%3E")!important}
+</style>
+<script id="v381-tidy">
+(function(){
+  /* ① 주택 보유 시트 — 「1주택 이상」이 아닐 때 「적용」 줄 숨김(시트 위에 표식만 둠) */
+  var sheet=document.getElementById('qSheet');
+  function mark(){ if(!sheet) return; var m=(typeof QMODE!=='undefined')?QMODE:null; sheet.classList.toggle('house-noapply381', m==='house' && S.houseStatus!=='multi'); }
+  ['syncQSheet','renderQuestion'].forEach(function(n){
+    var f=window[n]; if(typeof f!=='function') return;
+    window[n]=function(){ var r=f.apply(this, arguments); try{ mark(); }catch(e){} return r; };
+  });
+  try{ mark(); }catch(e){}
+})();
+</script>
 </body>
 </html>
