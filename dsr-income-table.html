@@ -80,6 +80,26 @@ header nav a[aria-current="page"]{color:#2458FF!important;font-weight:700}
 @font-face{font-family:'YK Minus';font-style:normal;font-display:swap;font-weight:45 920;src:url(fonts/pretendard/YKMinus.woff2) format('woff2-variations'),url(fonts/pretendard/YKMinus.woff2) format('woff2');unicode-range:U+2212}
 html body{font-family:'YK Minus','Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Segoe UI',system-ui,sans-serif}
 </style>
+<style id="v382-income-table">
+/* v382 — 「1. 연 소득별 한도와 월 상환액」 표(2026-11-21 UX·디자인 점검 문서 「그래프·표·도형」 · 진행 순서 v382).
+   390px에서 소득 10단계 × 4줄로 세로로 펼쳐져 40줄이던 것 → 3열(연 소득 · 수도권 · 지방) 10줄 + 「한도 / 월 상환액」 전환.
+   전환은 라디오 단추 + CSS(자바스크립트 없음). 숫자 · 문구는 그대로(칸 순서만 묶음), 숫자는 고정폭(tabular-nums).
+   글자 14px(좁은 화면 ≤380px 13px) — 계산기 스케일(--t6 · --t7) 안. 자리가 모자라면 「1억 5,000만원」처럼 긴 연 소득만 띄어쓰기에서 두 줄로(가로 넘침 대신). */
+.t382{position:relative}
+.t382-r{position:absolute;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.t382-seg{display:flex;gap:4px;padding:4px;margin:12px 0 4px;background:#EEF2F8;border-radius:14px}
+.t382-seg label{flex:1 1 0;display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:10px;font-size:14px;font-weight:500;color:#516077;cursor:pointer}
+#t382-lim:checked~.t382-seg label[for="t382-lim"],#t382-pay:checked~.t382-seg label[for="t382-pay"]{background:#fff;color:#192332;font-weight:600;box-shadow:0 1px 2px rgba(25,35,50,.12)}
+#t382-lim:focus-visible~.t382-seg label[for="t382-lim"],#t382-pay:focus-visible~.t382-seg label[for="t382-pay"]{outline:2px solid #2458FF;outline-offset:2px}
+.t382 .t382-cap{caption-side:top;text-align:left;font-size:13px;color:#5f6b7d;padding:6px 0 2px}
+.t382 .t382-table th[scope="row"]{background:none;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.t382 .t382-table thead th.num{white-space:normal}
+.t382 .c-pay{display:none}
+#t382-pay:checked~.scroll .c-pay{display:table-cell}
+#t382-pay:checked~.scroll .t382-cap .c-pay{display:inline}
+#t382-pay:checked~.scroll .c-lim{display:none}
+@media(max-width:380px){.t382 .t382-table{font-size:13px}.t382 .t382-table th,.t382 .t382-table td{padding-inline:2px}.t382 .t382-table th[scope="row"],.t382 .t382-table thead th:first-child{white-space:normal;min-width:0;overflow-wrap:normal;word-break:keep-all}}
+</style>
 </head>
 <body><header><a class="site-brand" href="/" aria-label="영끌계산기 계산기로 가기"><span class="site-mark" aria-hidden="true"></span><strong>영끌계산기</strong></a><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide">계산 방법</a><a href="/articles">글 목록</a><a href="/about">소개·문의</a></nav></header><main>
 
@@ -98,18 +118,22 @@ html body{font-family:'YK Minus','Pretendard Variable',-apple-system,BlinkMacSys
 <p>한도는 1억원 이상은 100만원, 1억원 미만은 10만원 아래를 버려 적었고, 월 상환액은 연 5.4%로 계산해 만원 단위로 올려 적었습니다.</p></section>
 
 <section id="table"><h2>1. 연 소득별 한도와 월 상환액</h2>
-<div class="scroll"><table class="stack compact"><thead><tr><th>연 소득</th><th class="num">수도권 한도</th><th class="num">월 상환액</th><th class="num">지방 한도</th><th class="num">월 상환액</th></tr></thead><tbody>
-<tr><td>3,000만원</td><td class="num" data-label="수도권 한도">1억 3,100만원</td><td class="num" data-label="수도권 월 상환액">74만원</td><td class="num" data-label="지방 한도">1억 6,400만원</td><td class="num" data-label="지방 월 상환액">93만원</td></tr>
-<tr><td>4,000만원</td><td class="num" data-label="수도권 한도">1억 7,500만원</td><td class="num" data-label="수도권 월 상환액">99만원</td><td class="num" data-label="지방 한도">2억 1,800만원</td><td class="num" data-label="지방 월 상환액">123만원</td></tr>
-<tr><td>5,000만원</td><td class="num" data-label="수도권 한도">2억 1,800만원</td><td class="num" data-label="수도권 월 상환액">123만원</td><td class="num" data-label="지방 한도">2억 7,300만원</td><td class="num" data-label="지방 월 상환액">154만원</td></tr>
-<tr><td>6,000만원</td><td class="num" data-label="수도권 한도">2억 6,200만원</td><td class="num" data-label="수도권 월 상환액">148만원</td><td class="num" data-label="지방 한도">3억 2,800만원</td><td class="num" data-label="지방 월 상환액">185만원</td></tr>
-<tr><td>7,000만원</td><td class="num" data-label="수도권 한도">3억 600만원</td><td class="num" data-label="수도권 월 상환액">172만원</td><td class="num" data-label="지방 한도">3억 8,200만원</td><td class="num" data-label="지방 월 상환액">216만원</td></tr>
-<tr><td>8,000만원</td><td class="num" data-label="수도권 한도">3억 5,000만원</td><td class="num" data-label="수도권 월 상환액">197만원</td><td class="num" data-label="지방 한도">4억 3,700만원</td><td class="num" data-label="지방 월 상환액">246만원</td></tr>
-<tr><td>9,000만원</td><td class="num" data-label="수도권 한도">3억 9,300만원</td><td class="num" data-label="수도권 월 상환액">222만원</td><td class="num" data-label="지방 한도">4억 9,200만원</td><td class="num" data-label="지방 월 상환액">277만원</td></tr>
-<tr><td>1억원</td><td class="num" data-label="수도권 한도">4억 3,700만원</td><td class="num" data-label="수도권 월 상환액">246만원</td><td class="num" data-label="지방 한도">5억 4,700만원</td><td class="num" data-label="지방 월 상환액">308만원</td></tr>
-<tr><td>1억 2,000만원</td><td class="num" data-label="수도권 한도">5억 2,500만원</td><td class="num" data-label="수도권 월 상환액">295만원</td><td class="num" data-label="지방 한도">6억 5,600만원</td><td class="num" data-label="지방 월 상환액">369만원</td></tr>
-<tr><td>1억 5,000만원</td><td class="num" data-label="수도권 한도">6억 5,600만원</td><td class="num" data-label="수도권 월 상환액">369만원</td><td class="num" data-label="지방 한도">8억 2,000만원</td><td class="num" data-label="지방 월 상환액">461만원</td></tr>
+<div class="t382">
+<input class="t382-r" type="radio" name="t382" id="t382-lim" checked><input class="t382-r" type="radio" name="t382" id="t382-pay">
+<div class="t382-seg"><label for="t382-lim">한도</label><label for="t382-pay">월 상환액</label></div>
+<div class="scroll"><table class="compact t382-table"><caption class="t382-cap"><span class="c-lim">소득 기준(DSR) 한도</span><span class="c-pay">한도만큼 빌렸을 때 월 상환액(연 5.4% · 30년)</span></caption><thead><tr><th scope="col">연 소득</th><th scope="col" class="num c-lim">수도권 한도</th><th scope="col" class="num c-pay">수도권 월 상환액</th><th scope="col" class="num c-lim">지방 한도</th><th scope="col" class="num c-pay">지방 월 상환액</th></tr></thead><tbody>
+<tr><th scope="row">3,000만원</th><td class="num c-lim">1억 3,100만원</td><td class="num c-pay">74만원</td><td class="num c-lim">1억 6,400만원</td><td class="num c-pay">93만원</td></tr>
+<tr><th scope="row">4,000만원</th><td class="num c-lim">1억 7,500만원</td><td class="num c-pay">99만원</td><td class="num c-lim">2억 1,800만원</td><td class="num c-pay">123만원</td></tr>
+<tr><th scope="row">5,000만원</th><td class="num c-lim">2억 1,800만원</td><td class="num c-pay">123만원</td><td class="num c-lim">2억 7,300만원</td><td class="num c-pay">154만원</td></tr>
+<tr><th scope="row">6,000만원</th><td class="num c-lim">2억 6,200만원</td><td class="num c-pay">148만원</td><td class="num c-lim">3억 2,800만원</td><td class="num c-pay">185만원</td></tr>
+<tr><th scope="row">7,000만원</th><td class="num c-lim">3억 600만원</td><td class="num c-pay">172만원</td><td class="num c-lim">3억 8,200만원</td><td class="num c-pay">216만원</td></tr>
+<tr><th scope="row">8,000만원</th><td class="num c-lim">3억 5,000만원</td><td class="num c-pay">197만원</td><td class="num c-lim">4억 3,700만원</td><td class="num c-pay">246만원</td></tr>
+<tr><th scope="row">9,000만원</th><td class="num c-lim">3억 9,300만원</td><td class="num c-pay">222만원</td><td class="num c-lim">4억 9,200만원</td><td class="num c-pay">277만원</td></tr>
+<tr><th scope="row">1억원</th><td class="num c-lim">4억 3,700만원</td><td class="num c-pay">246만원</td><td class="num c-lim">5억 4,700만원</td><td class="num c-pay">308만원</td></tr>
+<tr><th scope="row">1억 2,000만원</th><td class="num c-lim">5억 2,500만원</td><td class="num c-pay">295만원</td><td class="num c-lim">6억 5,600만원</td><td class="num c-pay">369만원</td></tr>
+<tr><th scope="row">1억 5,000만원</th><td class="num c-lim">6억 5,600만원</td><td class="num c-pay">369만원</td><td class="num c-lim">8억 2,000만원</td><td class="num c-pay">461만원</td></tr>
 </tbody></table></div>
+</div>
 <p>「지방」은 수도권 밖의 규제지역이 아닌 곳입니다. 연 소득 6,000만원이면 수도권 한도는 2억 6,200만원, 지방 한도는 3억 2,800만원로 약 6,600만원 차이가 납니다. 소득이 같아도 스트레스 금리 차이만큼 한도가 달라집니다.</p>
 <p class="src">출처: 금융위원회 「3단계 스트레스 DSR 시행방안」(2025.7.1 시행) · 관계부처 합동 「10·15 주택시장 안정화 대책」(수도권·규제지역 주택담보대출 스트레스 금리 1.5%→3.0%).</p></section>
 
