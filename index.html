@@ -75,7 +75,7 @@
   --sh:none;
   --sh-lift:none;
 
-  --d1:64px; --t1:30px; --t2:26px; --t3:19px; --t4:17px; --t5:16px; --t6:14px; --t7:13px; --t8:12px;
+  --d1:64px; --t0:36px; --t1:30px; --t2:26px; --t3:19px; --t4:17px; --t5:16px; --t6:14px; --t7:13px; --t8:12px;
   --t-card:15px;
   --bar:48px;
   --glyph:23px;
@@ -4136,7 +4136,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
   <h1 class="sr-only">영끌계산기 계산 결과</h1>
     
         
-    <div class="rview" id="viewAnswer"><header class="v232-result-heading"><h2>내 집 마련 예산</h2><p>입력한 조건으로 집값과 매달 갚을 돈을 살펴보세요.</p></header>
+    <div class="rview" id="viewAnswer"><header class="v232-result-heading"><h2>내 집 마련 예산</h2><p>입력한 조건으로 계산한 집값과 매달 갚을 돈입니다.</p></header>
 <section class="budget-overview" id="fundingOverview" aria-label="주택 구입 예산"><header class="rhead">
 <div class="easy-money-row price-answer"><span>살 수 있는 집값 <small class="estimate-tag">예상</small></span><strong id="easyPrice">—</strong><em class="easy-row-pct" id="easyPricePct"></em></div>
       
@@ -4189,7 +4189,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
         </div>
       </div>
       <div class="cash-remainder"><span id="cashRemainderLabel">비용을 낸 뒤 남는 현금</span><strong id="cashRemainder">—</strong></div>
-      <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 남겨 두고 입력하세요.</p>
+      <p class="easy-explain" id="cashRemainderNote">입력한 현금을 전액 사용하는 계산입니다. 생활비와 비상금은 따로 빼지 않습니다.</p>
       
       <button class="disc disc-head" id="loanCutToggle" aria-expanded="false" aria-controls="loanCutBox" hidden>
         <span class="k">대출을 줄여 보기</span><span class="v" id="loanCutV"></span><span class="caret" aria-hidden="true"></span></button>
@@ -4300,7 +4300,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
     
 
     <div class="rview" id="viewDeals" hidden>
-<header class="v232-result-heading v283-page-head"><h2>실거래</h2><p>내 예상 집값과 최근 거래를 함께 살펴보세요.</p></header>
+<header class="v232-result-heading v283-page-head"><h2>실거래</h2><p>내 예상 집값과 최근 거래를 함께 보여 줘요.</p></header>
 <div class="card" id="dealCard" hidden>
       
       
@@ -4335,7 +4335,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
         </div>
       </div>
       <div class="deal-map-panel" id="dealMapPanel" hidden>
-        <div class="cmp-map-toolbar"><p>단지를 눌러 거래가와 필요 자금을 확인하세요.</p><button type="button" class="cmp-map-open" data-cmp-open aria-haspopup="dialog" disabled>비교표 보기 · 0</button></div><div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
+        <div class="cmp-map-toolbar"><p>단지를 누르면 거래가와 필요 자금이 나와요.</p><button type="button" class="cmp-map-open" data-cmp-open aria-haspopup="dialog" disabled>비교표 보기 · 0</button></div><div class="yk-map-stage"><div class="yk-layer" id="dealMapLayer" role="group" aria-label="지도에 표시할 것"><button type="button" data-layer="deal" aria-pressed="true">단지</button><button type="button" data-layer="area" aria-pressed="false">동네 시세</button></div>
         <div class="deal-map" id="dealMap" aria-label="실거래 단지 지도"></div>
         <div class="deal-map-detail" id="dealMapDetail" hidden></div></div>
         <div class="yk-range" id="dealMapRange" role="group" aria-label="지도에 표시할 가격 범위"><span>예상 집값</span><button type="button" data-range="10" aria-pressed="false">±10%</button><button type="button" data-range="20" aria-pressed="true">±20%</button><button type="button" data-range="30" aria-pressed="false">±30%</button><button type="button" data-range="custom" aria-pressed="false" aria-expanded="false" aria-controls="dealMapRangeStep">직접</button><button type="button" class="yk-range-back" data-back aria-label="±10·20·30% 고르기로 돌아가기" hidden>‹</button><span class="yk-range-step" id="dealMapRangeStep" role="group" aria-label="직접 정한 가격 범위" hidden><button type="button" data-step="-10" aria-label="가격 범위 10% 줄이기">−</button><output id="dealMapRangeVal" aria-live="polite">±40%</output><button type="button" data-step="10" aria-label="가격 범위 10% 늘리기">+</button></span></div>
@@ -4420,7 +4420,7 @@ html body.yk208 #app .funnel #crows > label.main-no-loan {
 
 
 
-<div class="sheet-back" id="cmpBack" hidden></div><div class="sheet" id="cmpSheet" role="dialog" aria-modal="true" aria-labelledby="cmpTitle" hidden><header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="cmpTitle">단지 비교</h2><p class="v283-page-sub">담은 단지를 지금 조건으로 나란히 살펴보세요.</p><button type="button" class="why-dismiss" id="cmpClose" aria-label="닫기"></button></header><div id="cmpBody"></div></div><div class="sheet-back" id="whyBack" hidden></div>
+<div class="sheet-back" id="cmpBack" hidden></div><div class="sheet" id="cmpSheet" role="dialog" aria-modal="true" aria-labelledby="cmpTitle" hidden><header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="cmpTitle">단지 비교</h2><p class="v283-page-sub">담은 단지를 지금 조건으로 나란히 보여 줘요.</p><button type="button" class="why-dismiss" id="cmpClose" aria-label="닫기"></button></header><div id="cmpBody"></div></div><div class="sheet-back" id="whyBack" hidden></div>
 <div class="sheet" id="whySheet" role="dialog" aria-modal="true" aria-labelledby="whyTitle" hidden>
   <header class="q-sheet-header why-sheet-header"><h2 class="sheet-title" id="whyTitle">계산 상세</h2><button type="button" class="why-dismiss" aria-label="닫기" onclick="closeSheet()"></button></header>
   <p id="costAdjustmentNote">비용을 바꿔도 집값은 그대로고, 필요한 현금만 달라져요.</p><div class="cost-impact" aria-live="polite">
@@ -5669,15 +5669,15 @@ function renderQuestion(){
   let h='';
   if(st.id==='cash'){
     h = eye + `<h2 class="q-title">모아둔 현금</h2>
-      ${singleMoneyCard(S.cash, '모아둔 현금', '주택담보대출을 제외하고 지금 쓸 수 있는 돈을 입력하세요.')}
+      ${singleMoneyCard(S.cash, '모아둔 현금', '주택담보대출을 제외하고 지금 쓸 수 있는 돈입니다.')}
       <label class="subtoggle"><input type="checkbox" id="noLoanBox" ${S.noLoan?'checked':''}>주택담보대출 안 받기</label>`;
   }
   if(st.id==='income'){
     h = eye + `<h2 class="q-title">연 소득</h2>
-      ${singleMoneyCard(S.income, '연 소득', '세전 금액입니다. 부부 합산이면 두 사람의 소득을 더하세요.')}
+      ${singleMoneyCard(S.income, '연 소득', '세전 금액입니다. 부부 합산이면 두 사람의 소득을 더한 금액입니다.')}
       <button class="debtlink" id="debtLink">${S.debtOpen ? '기존 대출 닫기' : '기존 대출 입력 ›'}</button>
       <div class="debtbox ${S.debtOpen?'open':''}">
-        <p class="preset-help">신용·자동차·학자금 대출의 매달 갚을 돈을 합산하세요.</p>
+        <p class="preset-help">신용·자동차·학자금 대출의 매달 갚을 돈을 합한 금액입니다.</p>
         <div class="preset-grid debt-presets">
           ${[0,30,50,100,150].map(v=>`<button class="preset${(S.debtMonthly||0)===v?' is-on':''}" data-debt-preset="${v}">${v?`월 ${v}만원`:'없어요'}</button>`).join('')}
           <button class="preset direct" data-open-debt="true">그 이상</button>
@@ -5707,7 +5707,7 @@ function renderQuestion(){
       `;
   }
   if(st.id==='region'){
-    h = eye + `<h2 class="q-title">어느 지역을 살펴볼까요?</h2><p class="region-intro">계산할 지역 1곳을 고르세요.</p>
+    h = eye + `<h2 class="q-title">어느 지역을 살펴볼까요?</h2><p class="region-intro">기준 지역 1곳으로 계산합니다.</p>
       <section class="region-search" aria-label="지역 이름으로 찾기">
         <label for="regionSearchInput" id="regionSearchLabel">지역 검색</label>
         <div class="region-search-field"><svg class="region-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="regionSearchInput" type="search" placeholder="구·시·군 이름 · 예: 성동, 분당" autocomplete="off" spellcheck="false" maxlength="60" aria-controls="regionSearchResults" aria-describedby="regionSearchStatus"><button id="regionSearchClear" type="button" hidden aria-label="지역 검색어 지우기">지우기</button></div>
@@ -5755,7 +5755,7 @@ function renderQuestion(){
         <div class="debt-bullet" id="debtBullet" role="group" aria-labelledby="debtBulletHead">
           <p class="debt-bullet-head" id="debtBulletHead">이자만 내는 신용대출 · 마이너스통장</p>
           <div class="costrow"><div class="nm">대출 잔액<small>마이너스통장은 한도</small></div><div class="amt"><input id="inDebtBulletBal" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.bulletBal?comma(S.debtParts.bulletBal):''}" aria-label="이자만 내는 대출 잔액(만원), 마이너스통장은 한도"><u>만원</u></div></div>
-          <div class="costrow"><div class="nm">매달 내는 이자<small>모르면 비워 두세요</small></div><div class="amt"><input id="inDebtBulletInt" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.bulletInt?comma(S.debtParts.bulletInt):''}" aria-label="이자만 내는 대출 매달 내는 이자(만원), 모르면 비워 두세요"><u>만원</u></div></div>
+          <div class="costrow"><div class="nm">매달 내는 이자<small>비우면 추정 금리로 계산</small></div><div class="amt"><input id="inDebtBulletInt" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${S.debtParts.bulletInt?comma(S.debtParts.bulletInt):''}" aria-label="이자만 내는 대출 매달 내는 이자(만원), 비우면 추정 금리로 계산"><u>만원</u></div></div>
           <p class="debt-bullet-echo" id="debtBulletEcho" aria-live="polite"></p>
         </div>
       </div></div>`;
@@ -6025,7 +6025,7 @@ function bind(){
     const paintBullet = () => { const e=$('debtBulletEcho'); if(!e) return; const b=debtBulletParts(S.debtParts);
       e.textContent = b.bal
         ? '은행은 원금도 ' + DEBT_BULLET.years + '년에 나눠 갚는 것으로 보고 계산해요. 원금 월 ' + formatWon(b.principal*10000) + ' + 이자 월 ' + formatWon(b.int*10000) + (b.estimated ? '(연 ' + DEBT_BULLET.estRatePct.toFixed(1) + '%로 추정)' : '') + ' = 월 ' + formatWon(b.monthly*10000) + '을 위에 더했어요.'
-        : (b.int ? '대출 잔액도 넣어 주세요. 은행은 원금도 갚는 것으로 보고 계산해요.' : ''); };
+        : (b.int ? '은행은 원금도 갚는 것으로 보고 계산해요. 대출 잔액이 있어야 원금이 계산돼요.' : ''); };
     const clearParts = () => { S.debtParts={credit:null,etc:null};
       if(cr) cr.value=''; if(et) et.value=''; if(bb) bb.value=''; if(bi) bi.value=''; paintBullet(); };
     if(dbt){
@@ -6207,9 +6207,9 @@ function bindRegionSearch(){
     clear.hidden=!input.value;results.hidden=!active||!rows.length;
     results.replaceChildren();
     const sidoName=S.sgg?(SIDO_SHORT[sidoOfCode(S.sgg)]||sidoOfCode(S.sgg)):'';
-    status.textContent=!active?'':!rows.length?'찾는 지역이 없어요. 구·시·군 이름을 다시 입력해 주세요.'
+    status.textContent=!active?'':!rows.length?'찾는 지역이 없어요. 구·시·군 이름으로 찾을 수 있어요.'
       :S.sgg?rows.length+'개 지역 · 비교는 '+sidoName+' 안에서 2곳까지'
-      :rows.length+'개 지역 · 계산할 지역을 선택하세요.';
+      :rows.length+'개 지역';
     rows.forEach(row=>{
       if(row.kind==='base'){
         const b=document.createElement('button');b.type='button';b.className='rs-pick';
@@ -6376,7 +6376,7 @@ function syncCta(){
     if(left){
       const missing=[[!!S.sgg,'매수 지역'],[!!S.houseStatus,'주택 보유 여부'],[!!S.cash,'집에 쓸 현금']]
         .concat(S.noLoan?[]:[[!!S.income,'연 소득'],[S.debtMonthly!=null,'기존 대출 여부']]).filter(x=>!x[0]);
-      const todoActions={'매수 지역':'매수 지역을 선택해 주세요.','주택 보유 여부':'주택 보유 여부를 선택해 주세요.','집에 쓸 현금':'집에 쓸 현금을 입력해 주세요.','연 소득':'연 소득을 입력해 주세요.','기존 대출 여부':'기존 대출 여부를 선택해 주세요.'}; t.textContent=todoActions[missing[0][1]]||missing[0][1]+'을 확인해 주세요.';
+      const todoActions={'매수 지역':'매수 지역을 고르지 않았어요.','주택 보유 여부':'주택 보유 여부를 고르지 않았어요.','집에 쓸 현금':'집에 쓸 현금이 비어 있어요.','연 소득':'연 소득이 비어 있어요.','기존 대출 여부':'기존 대출 여부를 고르지 않았어요.'}; t.textContent=todoActions[missing[0][1]]||'입력하지 않은 항목: '+missing[0][1];
     }
   })();
   b.textContent = S.fromResult ? '결과 보기' : '계산하기';
@@ -7082,7 +7082,7 @@ function refreshPkg(){
 
   $('itKicker').textContent = S.interior === 0 ? '인테리어 비용을 포함하지 않습니다.' : on
     ? (custom ? '입력한 인테리어 비용을 포함했습니다.' : `${py}평 기준 인테리어 비용을 포함했습니다.`)
-    : (custom ? '인테리어 총액을 입력해 주세요.' : '평형을 선택하면 예상 비용을 계산합니다.');
+    : (custom ? '직접 입력한 인테리어 총액으로 계산합니다.' : '평형을 선택하면 예상 비용을 계산합니다.');
 
   /* 설명은 **부드럽게 교체**합니다. 툭 바뀌면 바뀐 것을 못 봅니다. */
   const meta = INTERIOR.find(o => o.v === S.interior);
@@ -7573,8 +7573,8 @@ function paintDeals(priceMan){
       ? '조회된 자료에서 <b>이 조건에 맞는 거래가 없어요.</b>'
       : '조회된 자료에서 <b>이 가격대 거래가 없어요.</b>'}</p>`;
     foot.textContent = narrowed
-      ? '선택한 필터를 해제하거나 지역·예산을 바꿔 보세요.'
-      : '매수 지역이나 예산을 바꿔 보세요.';
+      ? '필터를 풀거나 지역·예산을 바꾸면 다시 찾아요.'
+      : '매수 지역이나 예산을 바꾸면 다시 찾아요.';
     return;
   }
   const hotKey = x => (x.name||'') + '|' + (x.dong||'') + '|' + (x.lawd||'');
@@ -7675,7 +7675,7 @@ function renderDeals(price){
     if(!items.length){
       $('dealLead').textContent = dealScopeLabel() + ` · 최근 ${DEAL.months}개월 · 0곳`;
       $('dealList').innerHTML = '<p class="deal-msg">최근 3개월 동안 조회된 거래가 없어요.</p>';
-      $('dealFoot').textContent = '다른 지역을 선택해 확인해 보세요.';
+      $('dealFoot').textContent = '다른 지역을 고르면 다시 찾아요.';
       return;
     }
     paintDeals(priceMan);
@@ -7869,7 +7869,7 @@ function showExportPreview(dataUrl, opener){
   if(!box){
     box = document.createElement('div'); box.id = 'exportPreview'; box.className = 'export-preview';
     box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', '결과 이미지');
-    box.innerHTML = '<img alt="영끌계산기 결과 이미지"><p>이미지를 길게 누르면 사진에 저장할 수 있습니다.<small>앱 안 브라우저에서 저장이 안 되면 메뉴(⋯)에서 외부 브라우저로 열어 주세요.</small></p><button type="button">닫기</button>';
+    box.innerHTML = '<img alt="영끌계산기 결과 이미지"><p>이미지를 길게 누르면 사진에 저장할 수 있습니다.<small>앱 안 브라우저에서는 저장이 안 될 수 있어요. 메뉴(⋯)에서 외부 브라우저로 열면 저장할 수 있어요.</small></p><button type="button">닫기</button>';
     box.querySelector('button').onclick = closeExportPreview;
     box.addEventListener('click', e => { if(e.target === box) closeExportPreview(); });
     document.body.appendChild(box);
@@ -7912,7 +7912,7 @@ async function saveImage(){
     a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),60000);
     exportStatus('이미지를 내려받았어요.');track('report_save',{method:'download'});
-  }catch(e){console.error(e);exportStatus('이미지를 만들지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.');}
+  }catch(e){console.error(e);exportStatus('이미지를 만들지 못했어요. 다시 누르면 한 번 더 만들어요.');}
   finally{exportBusy=false;buttons.forEach(b=>{b.disabled=false;b.removeAttribute('aria-busy');});}
 }
 
@@ -8500,7 +8500,7 @@ function paintSharedIn(o){
   const mix = document.createElement('p'); mix.className = 'si-mix';
   mix.textContent = o.noLoan || !(o.l > 0) ? '현금 ' + won(o.u) + (o.noLoan ? ' · 주택담보대출 안 받음' : '') : '현금 ' + won(o.u) + ' + 주택담보대출 ' + won(o.l);
   const hint = document.createElement('p'); hint.className = 'si-hint';
-  hint.textContent = o.noLoan ? '같은 지역·주택 보유·현금을 채워 뒀어요. 내 현금으로 바꿔 계산해 보세요.' : '같은 지역·주택 보유·현금을 채워 뒀어요. 연 소득을 넣으면 내 결과가 나와요.';
+  hint.textContent = o.noLoan ? '같은 지역·주택 보유·현금을 채워 뒀어요. 현금을 바꾸면 내 결과가 나와요.' : '같은 지역·주택 보유·현금을 채워 뒀어요. 연 소득을 넣으면 내 결과가 나와요.';
   box.append(head, where, price, mix, hint);
   lead.after(box);
   const cta = document.getElementById('ctaBtn'); if(cta) cta.addEventListener('click', () => { if(box.isConnected) box.remove(); }, { once: true });
@@ -9494,7 +9494,7 @@ window.addEventListener('hashchange', () => { if(/^#r=\d{5}&/.test(location.hash
       byId('easyMarketLead').textContent = typeof regionLabel === 'function' ? regionLabel() + ' · 최근 3개월' : '최근 3개월';
       byId('easyMarketNote').textContent = status === 'error'
         ? '실거래 목록에서 다시 불러올 수 있어요.'   /* v319 — 부제(「실거래를 불러오지 못했어요」)와 같은 말 두 번 · 합니다체 · 지시형이던 것 */
-        : status === 'empty' ? '조회된 거래가 없어요. 다른 지역을 선택해 보세요.'
+        : status === 'empty' ? '조회된 거래가 없어요. 다른 지역을 고르면 다시 찾아요.'
         : '최근 거래 가격을 불러오고 있어요.';
       chart.hidden = true;
       byId('plotLab').hidden = true;
@@ -11529,7 +11529,7 @@ function sync(){
  for(const b of nav.querySelectorAll('button')){const on=b.dataset.v208Tab===active;if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}
  const n=typeof cmpLoad==='function'?cmpLoad().length:0,c=el('v208Count');note.hidden=n>0;c.textContent=String(n);c.hidden=!n;
  nav.querySelector('[data-v208-tab="compare"]').setAttribute('aria-label','비교'+(n?' · '+n+'곳':''));
- intro.innerHTML=has?'내 조건':introHTML;sub.textContent=has?'조건을 바꾸고 예상 집값을 다시 확인하세요.':subText;
+ intro.innerHTML=has?'내 조건':introHTML;sub.textContent=has?'조건을 바꾸면 예상 집값을 다시 계산해요.':subText;
  if(has){el('rdock').hidden=true;app.classList.remove('has-rdock');}
  if(!result.hidden){
   el('barLabel').textContent='영끌계산기';   /* v283 — 탭마다 같은 머리(로고 + 이름). 탭 이름은 화면 안 제목이 맡습니다 */
@@ -11542,7 +11542,7 @@ function record(tab,replace){
 }
 function emptyState(){
  const body=el('cmpBody');if(cmpLoad().length||body.querySelector('.v208-empty'))return;
- body.innerHTML='<div class="v208-empty"><span class="v208-empty-mark" aria-hidden="true">'+icons.compare.replace(/^/,'<svg viewBox="0 0 24 24">')+'</svg></span><h2>어떤 집을 비교해 볼까요?</h2><div class="hc-empty-slots" aria-hidden="true"><span>1</span><span>2</span><span>3</span></div><p>지도나 목록에서 마음에 드는 단지를<br>최대 3곳까지 담아 보세요.<br>필요한 현금과 월 상환액을 나란히 비교해요.</p><button type="button" class="v208-primary" data-v208-go="map">단지 찾아보기</button></div>';
+ body.innerHTML='<div class="v208-empty"><span class="v208-empty-mark" aria-hidden="true">'+icons.compare.replace(/^/,'<svg viewBox="0 0 24 24">')+'</svg></span><h2>어떤 집을 비교해 볼까요?</h2><div class="hc-empty-slots" aria-hidden="true"><span>1</span><span>2</span><span>3</span></div><p>지도나 목록에서 마음에 드는 단지를<br>최대 3곳까지 담을 수 있어요.<br>필요한 현금과 월 상환액을 나란히 비교해요.</p><button type="button" class="v208-primary" data-v208-go="map">단지 찾아보기</button></div>';
 }
 const originalSet=setRView,originalBar=paintRBar,originalRender=render,originalShow=showResult,originalRestart=restart,originalCmpRender=cmpRender;
 paintRBar=function(){originalBar();sync();};
@@ -11577,11 +11577,11 @@ function navigate(tab,fromHistory){
    if(!result.hidden)el('toCondBtn').click();
   }else{
    if(result.hidden){
-    if(!allReady()){announce('입력이 필요한 항목을 확인해 주세요.');el('ctaTodo').scrollIntoView({block:'center'});return;}
+    if(!allReady()){announce('입력하지 않은 항목이 있어요.');el('ctaTodo').scrollIntoView({block:'center'});return;}
     next();
    }
    if(tab==='map'){
-    if(!dealsAlive()){announce('실거래를 준비하고 있어요. 잠시 후 다시 눌러 주세요.');return;}
+    if(!dealsAlive()){announce('실거래를 불러오는 중이에요.');return;}
     originalSet('deals');sheet.hidden=true;
     const map=el('dealMapTab'),bar=el('dealViewBar');
     if(map&&bar&&!bar.hidden)map.click();
@@ -11884,7 +11884,7 @@ function trendBodyHtml(snap, state, months){
     + series.rows.slice().reverse().map(function(r){
         return '<tr><th scope="row">' + trendYm(r.ymd) + '</th><td>' + (r.ok ? r.deals.length + '건' : '조회 실패') + '</td><td>' + (r.median != null ? trendWon(r.median) : '—') + '</td></tr>'; }).join('')
     + '</tbody></table></details>';
-  return head + trendHeadlineHtml(series, sel) + trendChartHtml(series, budget, sel) + legend + '<p class="tr-hint">차트를 끌어 월별 가격을 확인하세요.</p>'
+  return head + trendHeadlineHtml(series, sel) + trendChartHtml(series, budget, sel) + legend + '<p class="tr-hint">차트를 끌면 월별 가격이 나와요.</p>'
     + trendMonthHtml(series, sel) + '<details class="tr-period"><summary>기간 전체 변화</summary>'+sum+fact+'</details>' + trendNotes(series, span) + table;
 }
 function trendNotes(series, span){
@@ -12260,7 +12260,7 @@ async function saveCompare(btn){
     a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
     exportStatus('이미지를 내려받았어요.'); track('compare_save', { method:'download' });
-  }catch(e){ console.error(e); exportStatus('이미지를 만들지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.'); }
+  }catch(e){ console.error(e); exportStatus('이미지를 만들지 못했어요. 다시 누르면 한 번 더 만들어요.'); }
   finally{ exportBusy = false; btn.disabled = false; btn.removeAttribute('aria-busy'); }
 }
 bar.addEventListener('click', function(e){ var b = e.target.closest('[data-cs-save]'); if(b) saveCompare(b); });
@@ -13175,7 +13175,7 @@ html body.yk208 #app #viewCompare #cmpBody>.v253-compare-scroll table{
    wrapper.append(table);
    let note=body.querySelector('.v253-compare-note');
    if(!note){note=document.createElement('p');note.className='v253-compare-note';}
-   note.textContent='표를 좌우로 밀어 '+count+'곳의 금액을 비교하세요.';
+   note.textContent='표를 좌우로 밀면 '+count+'곳을 모두 볼 수 있어요.';
    wrapper.before(note);
    const update=()=>{
      const overflow=wrapper.scrollWidth>wrapper.clientWidth+3;
@@ -16474,5 +16474,160 @@ html:not(#yk384) body #costBox summary::after,html:not(#yk384) body #dealDistrib
 /* 1.5px로 적은 테두리 꺾쇠(화면 배율 1에서는 1px로 그려짐) → 2px: 입력 줄 「선택 ›」 · 펼침 꺾쇠(.caret) · 실거래 필터/지역 · 결과 화면 꺾쇠 */
 html:not(#yk384) body :is(.crows .crow .v .chev,#rateToggle .caret,.disc .caret,.caret,#viewDeals .deal-filter-fold>summary .chev,#viewDeals .region-edit .chev,#heroContext .chev,#easyCostOpen .easy-row-arrow),html:not(#yk384) body :is(.hero-deals .hd-list li[data-key] .hd-amt,#heroDeals .hd-list li[data-key],#whySheet .cost-basis summary,#dealDistribution .dd-method summary)::after{border-width:2px!important}
 </style>
+<style id="v385-display">
+/* v385 — 「표시」 단계 --t0(36px · 모든 폭 같음)를 스케일 맨 위에 더함(v383 README 「정하실 것」 권장안 · 오너 2026-11-25).
+   스케일: --t0 36 · --t1 30(≤400 28) · --t2 26(≤400 24) · --t3 19 · --t4 17 · --t5 16 · --t6 14 · --t7 13 · --t8 12. 화면에 보이는 글자 중 --t1보다 큰 것은 --t0 하나.
+   큰 숫자 → --t0: 결과 집값(화면 폭 따라 34~46) · 금액 입력칸 36(그대로 · 변수로) · ③ 월 상환액 32. 집값 뒤 「만원」 24(넓은 화면 24) → --t2.
+   큰 제목: 넓은 화면(≥960) 첫 화면 제목 46 · 입력 화면 제목 42 → --t0. 그보다 좁은 화면: 첫 화면 제목 30~40 → --t1 · 입력 화면 제목 26~28 → --t2(「내 조건」 등 다른 탭 제목과 같은 단 · 320px에서 한 줄 — --t1 28이면 「살 / 수 있는」으로 끊김).
+   손대지 않은 것: 공유 이미지 카드(#reportCard — 화면에 안 보임) · 굵기 · 행간 · 자간 · 색. 선택자는 원래 규칙 + html:not(#yk385)로 한 단계 세게. */
+html:not(#yk385) body.yk208 #app #viewAnswer #fundingOverview #easyPrice{font-size:var(--t0)!important}
+html:not(#yk385) body #viewAnswer .rhead #easyPrice .money-unit{font-size:var(--t2)!important}
+html:not(#yk385) body.yk208 #app #viewAnswer #payTile #tileMonthly{font-size:var(--t0)!important}
+html:not(#yk385) body .single-money-field input{font-size:var(--t0)!important}
+html:not(#yk385) body.yk208 #app #welcomeTitle232{font-size:var(--t1)!important}
+html:not(#yk385) body.yk208 #app[data-v208-tab="entry"] .funnel .cond-lead{font-size:var(--t2)!important}
+@media(min-width:960px){html:not(#yk385) body.yk208 #app #welcomeTitle232,html:not(#yk385) body.yk208 #app[data-v208-tab="entry"] .funnel .cond-lead{font-size:var(--t0)!important}}
+</style>
+<style id="v385-hover-blue">
+/* v385 — 주 버튼에 마우스를 올린 상태의 옛 파랑 #1F5BFF → 짙은 파랑 --v-blue-deep(#1848D6).
+   v378이 「다음」 · 시트 「적용」 · 「단지 찾아보기」를 :not(:hover)로 #2458FF로 바꿨는데, 올린 상태는 공통 규칙(body .cta:not(:disabled) #1F5BFF)이 .cta:hover(짙은 파랑)를 이기고 있었음.
+   v378 주석의 「누를 때 #1848D6는 그대로」대로 맞춤. v385에서 320px 입력 제목이 커져 「다음」이 포인터 아래로 오며 v378 검사에 드러남. */
+html body.yk208 #app#app #stepNext353:not(:disabled):hover,html body.yk208 #qSheet#qSheet #qClose:not(:disabled):hover,html body.yk208 #app#app .v208-primary:not(:disabled):hover{background:var(--v-blue-deep)}
+</style>
+<style id="v386-cost-text">
+/* v386 — 부대비용 시트 덜어내기(2026-11-21 점검 문서 · v383 README 「다음 후보」 · 오너 2026-11-25).
+   중개보수 · 법무사 · 이사 · 가전 4줄의 금액 상자(98×60 · 테두리 + 면)를 위 「취득세 · 지방교육세 258만원」 줄과 같은 글자로. 누르면 편집(입력칸은 그대로 — v365 스크립트로 금액 어디를 눌러도 입력칸).
+   편집할 수 있는 금액에만 밑줄 1px #A4AFC3(v379 입력/선택지 선) · 편집 중 #2458FF 2px · 꺼진 항목은 밑줄 없음(입력칸 disabled 그대로).
+   금액 글자: 입력 19 → --t5(16 · iOS 확대 방지 16 이상) 굵기 600 · 「만원」 13 → 숫자와 같은 크기 · 색. 취득세 · 인테리어 금액 14 → --t5로 같은 열(오른쪽 끝)에 맞춤.
+   줄 높이 85 → 61(스위치 44 + 위아래 여백 12 → 8(--sp-2) · 최소 56 --rh-4) · 금액 칸 높이 32(--sp-6 — 밑줄이 글자 바로 아래) · 누르는 높이는 투명한 ::after로 44(--tap) 유지. 기존 대출 시트의 나눠 입력 칸(#debtParts)은 손대지 않음. 계산 · 문구 · 스위치는 그대로. */
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow{min-height:var(--rh-4)!important;padding-top:var(--sp-2)!important;padding-bottom:var(--sp-2)!important;align-items:center!important}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt{position:relative;justify-self:end;width:auto!important;min-width:0!important;height:var(--sp-6)!important;min-height:0!important;padding:0!important;gap:0!important;background:none!important;border:0!important;border-bottom:1px solid #A4AFC3!important;border-radius:0!important;box-shadow:none!important}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt::after{content:'';position:absolute;left:0;right:0;top:calc((var(--tap) - var(--sp-6)) / -2);bottom:calc((var(--tap) - var(--sp-6)) / -2)}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt:focus-within{border-bottom-color:#2458FF!important;box-shadow:0 1px 0 #2458FF!important}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt:has(input:disabled){border-bottom-color:transparent!important}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt input{width:6ch!important;min-width:0!important;height:100%!important;min-height:0!important;padding:0!important;font-size:var(--t5)!important;font-weight:600!important;color:#192332!important;text-align:right!important;font-variant-numeric:tabular-nums}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt input:disabled{color:#8490A1!important;-webkit-text-fill-color:#8490A1;opacity:1}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt u{font-size:var(--t5)!important;font-weight:600!important;color:#192332!important;text-decoration:none!important}
+html:not(#yk386) body.yk208 #whySheet #costBox .costrow .amt:has(input:disabled) u{color:#8490A1!important}
+html:not(#yk386) body.yk208 #whySheet #costItems .line{padding-right:0!important}
+html:not(#yk386) body.yk208 #whySheet #costItems .line>.v{font-size:var(--t5)!important;font-weight:600!important;color:#192332!important;font-variant-numeric:tabular-nums}
+</style>
+<style id="v387-debt-parts">
+/* v387 — 기존 대출 시트 「대출별로 나눠 입력」 4칸(신용대출 · 기타 대출 · 이자만 내는 대출 잔액 · 매달 내는 이자) 덜어내기 — v386 부대비용과 같은 방식(v386 README 「다음 후보」).
+   금액 상자(112×48 · 테두리 + 면) → 글자 + 밑줄 1px #A4AFC3 · 편집 중 #2458FF 2px. 숫자 19 · 「만원」 14 → 둘 다 --t5(16) 600.
+   빈칸(자리 표시 「0」)일 때는 「만원」도 자리 표시와 같은 회색 #8490A1 · 값이 있으면 #192332.
+   금액 칸 높이 32(--sp-6) · 투명한 ::after로 누르는 높이 44(--tap) · 줄 높이 72 → 59(이름 두 줄 기준). 위의 합계 칸(#inDebt)과 「기존 대출 없음」은 그대로. 입력 · 합산 동작 그대로.
+   편집 중 표시는 밑줄(1px 회색 → 2px 파랑) 하나 — 이 칸에만 남아 있던 포커스 테두리 둘(#qSheet 입력 파란 2px · 옛 .amt:focus-within 검은 2px)이 금액을 덮어 끔(v386 부대비용과 같음). */
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow{min-height:var(--rh-4)!important;padding-top:var(--sp-2)!important;padding-bottom:var(--sp-2)!important;align-items:center!important}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt{position:relative;justify-self:end;width:auto!important;min-width:0!important;height:var(--sp-6)!important;min-height:0!important;padding:0!important;gap:0!important;background:none!important;border:0!important;border-bottom:1px solid #A4AFC3!important;border-radius:0!important;box-shadow:none!important;cursor:text}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt::after{content:'';position:absolute;left:0;right:0;top:calc((var(--tap) - var(--sp-6)) / -2);bottom:calc((var(--tap) - var(--sp-6)) / -2)}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt:focus-within{border-bottom-color:#2458FF!important;box-shadow:0 1px 0 #2458FF!important;outline:none!important}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt input:focus,html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt input:focus-visible{outline:none!important}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt input{width:6ch!important;min-width:0!important;height:100%!important;min-height:0!important;padding:0!important;font-size:var(--t5)!important;font-weight:600!important;color:#192332!important;text-align:right!important;font-variant-numeric:tabular-nums}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt input::placeholder{color:#8490A1!important;opacity:1}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt u{font-size:var(--t5)!important;font-weight:600!important;color:#192332!important;text-decoration:none!important}
+html:not(#yk387) body.yk208 #qSheet #debtParts .costrow .amt:has(input:placeholder-shown) u{color:#8490A1!important}
+</style>
+<script id="v387-debt-parts">
+/* v387 — 나눠 입력 금액의 「만원」 · 밑줄 아래(누르는 영역)를 눌러도 입력칸으로(v365 부대비용과 같은 동작 · 시트 내용은 다시 그려지므로 문서에 위임). */
+(function(){
+  document.addEventListener('click', function(e){
+    var amt=e.target.closest && e.target.closest('#debtParts .costrow .amt'); if(!amt || e.target.tagName==='INPUT') return;
+    var inp=amt.querySelector('input'); if(!inp || inp.disabled || inp.readOnly) return;
+    inp.focus(); try{ var n=inp.value.length; inp.setSelectionRange(n,n); }catch(err){}
+  });
+})();
+</script>
+<style id="v388-scale-rest">
+/* v388 — 스케일 밖 남은 글자 정리(v385 README 「다음 후보」). 320 · 390 · 768 · 1264px · 첫 화면 · 입력 · 시트 5개 · 결과 4탭(펼침 모두) · 부대비용 전수 측정 후 남은 것만.
+   ① 탭 제목 「내 집 마련 예산」 · 「실거래」 · 「단지 비교」 · 「내 조건」 24 고정 → --t2(≤400 24 그대로 · 그 위 26). 401px 이상에서 24는 스케일 밖이었음.
+   ② 실거래 탭 「예상 집값」 금액(#dealBudget) 24 → --t2 · 조건 탭 미리보기 금액(.cp-v) 26 고정 → --t2(≤400 24).
+   ③ 머리줄 「영끌계산기」(#homeBtn · #barLabel) 18 → --t3(19 — 앞선 .appbar .wordmark 값과 같음).
+   공유 이미지 카드(#reportCard)는 화면에 안 보이는 그림용이라 그대로. 굵기 · 행간 · 자간 · 색은 그대로. */
+html:not(#yk388) body.yk208 #app #viewAnswer .v232-result-heading h2,html:not(#yk388) body.yk208 #app .v283-page-head h2,html:not(#yk388) body.yk208 #app #cmpSheet.cmp-page > .why-sheet-header #cmpTitle,html:not(#yk388) body.yk208 #app[data-v208-tab="conditions"] .funnel .cond-lead{font-size:var(--t2)!important}
+html:not(#yk388) body #app #viewDeals .deal-budget strong#dealBudget,html:not(#yk388) body #condPreview .cp-v{font-size:var(--t2)!important}
+html:not(#yk388) body.yk208 #app .appbar #homeBtn,html:not(#yk388) body.yk208 #app .appbar #barLabel{font-size:var(--t3)!important}
+</style>
+<style id="v389-chev">
+/* v389 — 홈 ④ 「실거래 보기」 꺾쇠가 글자에 붙어 보이던 것(아이폰 캡처 2026-11-25). 버튼이 flex라 「실거래 보기 」 끝 띄어쓰기가 사라짐 → 꺾쇠 앞 간격 --sp-1(4px).
+   같은 판에서 화면 문구의 지시형(「~하세요 · ~보세요 · ~주세요 · ~고르세요 · ~두세요」 33곳)을 사실형으로 바꿈(지침 「말투」 · v292 선례) — 문구는 제자리에서 바꿈. */
+html:not(#yk389) body.yk208 #app #marketOpen{gap:var(--sp-1)!important}
+</style>
+<style id="v390-surface">
+/* v390 — 계산기 화면 「선 대신 면」(오너 2026-11-25 「한글파일에서 만든 느낌 · 투박하다」 → 둘 다 · 바로 적용).
+   원인: 카드 · 입력칸 · 칩 · 보조 단추 · 꼬리표 · 시트 머리/바닥 · 하단 탭까지 거의 모든 요소에 1px 선 → 서식 문서처럼 보임. 큰 글자 자간 -.05em으로 글자가 뭉침.
+   ① 면: 페이지 배경(html · body · #app) #F6F8FC → #F1F4F8(흰 카드와 1.09:1 — 선 없이 구분). 앱 머리 배경도 같은 색 · 아래 선 없앰.
+   ② 카드 · 시트: 테두리 없음 · 그림자 없음(평평한 면). 입력 묶음 안 나눔선은 원래 있던 자리만 옅은 안쪽 선(#EEF1F5 · 그림자)으로.
+   ③ 입력칸(금액 · 검색): 테두리 → 옅은 회색 면 #F1F4F8 · 포커스는 칸 전체에 파랑 2px 안쪽 테두리 하나(그림자 — 크기 그대로) · 안쪽 입력칸의 포커스 테두리는 끔(겹쳐 두 겹으로 보였음).
+   ④ 칩 · 선택지 · 보조 단추: 테두리 없음 · 카드/시트 안은 #F1F4F8 면 · 페이지 위(이미지 저장 · 결과 공유)는 흰 면 · 고른 상태 #EDF2FF + 파랑 글자 · 기준 지역(파랑 면)은 그대로.
+   ⑤ 하단 탭: 테두리 → 떠 있는 그림자. 꼬리표(입력 수 · 참고용) 테두리 없음.
+   ⑥ 큰 글자 자간: 첫 화면 제목 · 화면 제목 · 결과 집값 · 월 상환액 → --ls-ttl(-.03em · 스케일 안).
+   선택자는 아이디를 두 번 써서(#app#app · #qSheet#qSheet) v379 선 블록(#app#app)보다 한 단계 세게. 공유 이미지 카드(#reportCard)는 그대로. 계산 · 문구 · 크기 · 모서리 그대로. */
+html:not(#yk390){background:#F1F4F8!important}
+html:not(#yk390) body.yk208,html:not(#yk390) body.yk208 #app#app.app{background:#F1F4F8!important}
+html:not(#yk390) body.yk208 #app#app .appbar{background:rgba(241,244,248,.96)!important;border-bottom-color:transparent!important;box-shadow:none!important}
+/* ② 카드 · 시트 */
+html:not(#yk390) body.yk208 #app#app .welcome232-start,html:not(#yk390) body.yk208 #app#app #welcome232 .v305-reads>a,
+html:not(#yk390) body.yk208 #app#app #crows>.crow,html:not(#yk390) body.yk208 #app#app #crows>.inline-money,html:not(#yk390) body.yk208 #app#app #crows>.main-no-loan,
+html:not(#yk390) body.yk208 #app#app #fundingOverview,html:not(#yk390) body.yk208 #app#app #payTile,html:not(#yk390) body.yk208 #app#app #easyMarket,html:not(#yk390) body.yk208 #app#app #more341,
+html:not(#yk390) body.yk208 #app#app .deal-budget,html:not(#yk390) body.yk208 #app#app #dealList,html:not(#yk390) body.yk208 #app#app .v208-empty,
+html:not(#yk390) body.yk208 #qSheet#qSheet,html:not(#yk390) body.yk208 #whySheet#whySheet{border-color:transparent!important;box-shadow:none!important}
+html:not(#yk390) body.yk208 #app#app #crows>.s353-a+.s353-a,html:not(#yk390) body.yk208 #app#app #crows>.main-no-loan.s353-b{box-shadow:inset 0 1px 0 #EEF1F5!important}
+html:not(#yk390) body.yk208 #qSheet#qSheet .q-sheet-header,html:not(#yk390) body.yk208 #whySheet#whySheet .q-sheet-header,html:not(#yk390) body.yk208 #qSheet#qSheet .sheet-actions,html:not(#yk390) body.yk208 #whySheet#whySheet .sheet-actions{border-color:transparent!important}
+/* ③ 입력칸 */
+html:not(#yk390) body.yk208 #app#app #crows .inline-money-field,html:not(#yk390) body.yk208 #qSheet#qSheet .moneycard,html:not(#yk390) body.yk208 #qSheet#qSheet .region-search-field{border-color:transparent!important;background:#F1F4F8!important;box-shadow:none!important}
+html:not(#yk390) body.yk208 #app#app #crows .inline-money-field input,html:not(#yk390) body.yk208 #qSheet#qSheet .moneycard input,html:not(#yk390) body.yk208 #qSheet#qSheet .region-search-field input{outline:none!important;border-color:transparent!important;box-shadow:none!important;background:transparent!important}
+html:not(#yk390) body.yk208 #app#app #crows .inline-money-field:focus-within,html:not(#yk390) body.yk208 #qSheet#qSheet .moneycard:focus-within,html:not(#yk390) body.yk208 #qSheet#qSheet .region-search-field:focus-within{box-shadow:inset 0 0 0 2px #2458FF!important;background:#FFFFFF!important}
+/* ④ 칩 · 선택지 · 보조 단추 */
+html:not(#yk390) body.yk208 #qSheet#qSheet .chip,html:not(#yk390) body.yk208 #qSheet#qSheet .zonecard,html:not(#yk390) body.yk208 #qSheet#qSheet #houseSeg>button,html:not(#yk390) body.yk208 #qSheet#qSheet #debtNone,html:not(#yk390) body.yk208 #qSheet#qSheet .subtoggle,
+html:not(#yk390) body.yk208 #app#app #viewDeals#viewDeals .dd-region,html:not(#yk390) body.yk208 #app#app #dealFilterBtn,html:not(#yk390) body.yk208 #app#app #dealMore,html:not(#yk390) body.yk208 #app#app #viewDeals .chip{border-color:transparent!important;background-color:#F1F4F8!important;box-shadow:none!important}
+html:not(#yk390) body.yk208 #app#app #outSave,html:not(#yk390) body.yk208 #app#app #outCopy{border-color:transparent!important;background-color:#FFFFFF!important;box-shadow:none!important}
+html:not(#yk390) body.yk208 #qSheet#qSheet .chip.is-on,html:not(#yk390) body.yk208 #qSheet#qSheet .zonecard.is-on,html:not(#yk390) body.yk208 #qSheet#qSheet #houseSeg>button.is-on,html:not(#yk390) body.yk208 #qSheet#qSheet .chip[aria-pressed="true"],
+html:not(#yk390) body.yk208 #app#app #viewDeals .chip.is-on,html:not(#yk390) body.yk208 #app#app #viewDeals .chip[aria-pressed="true"]{background-color:#EDF2FF!important;color:#2458FF!important}
+html:not(#yk390) body.yk208 #qSheet#qSheet .chip.is-base330{background-color:#2458FF!important;color:#FFFFFF!important}
+/* ⑤ 하단 탭 · 꼬리표 */
+html:not(#yk390) body.yk208 #v208Nav#v208Nav{border-color:transparent!important;box-shadow:0 1px 3px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.10)!important}
+html:not(#yk390) body.yk208 #app#app #entryCount233,html:not(#yk390) body.yk208 #app#app .estimate-tag{border-color:transparent!important}
+html:not(#yk390) body.yk208 #app#app .estimate-tag{background:rgba(255,255,255,.18)!important}
+/* ⑥ 큰 글자 자간 */
+html:not(#yk390) body.yk208 #app#app #welcomeTitle232,html:not(#yk390) body.yk208 #app#app .cond-lead,html:not(#yk390) body.yk208 #app#app .v232-result-heading h2,html:not(#yk390) body.yk208 #app#app #cmpTitle,
+html:not(#yk390) body.yk208 #app#app #easyPrice .money-part,html:not(#yk390) body.yk208 #app#app #tileMonthly{letter-spacing:var(--ls-ttl)!important}
+</style>
+<style id="v392-total-row">
+/* v392 — 결과 홈 카드 ①의 「── 합계 2억 3,883만원 ──」(양옆 선 · 가운데 정렬 구분줄 — 문서 서식 모양)을 「합계 ··· 금액」 한 행으로.
+   양옆 선(::before · ::after) 없음 · 위에 옅은 안쪽 나눔선(#EEF1F5 · v390 입력 묶음과 같음) · 「합계」 --t6 회색 왼쪽 · 금액 --t5 굵게 오른쪽(위 「현금 · 주택담보대출」 금액 열과 같은 끝).
+   ② 「쓰는 곳」 앞 간격 14 → 28(--sp-6 32에서 위 선 여백만큼) — ①과 ②가 한 덩어리로 붙어 보이던 것. 숫자 · 문구 · 막대 그대로. */
+html:not(#yk392) body.yk208 #app#app .flow358 .f-join{display:block!important;margin:16px 0 28px!important;padding-top:12px!important;box-shadow:inset 0 1px 0 #EEF1F5!important;text-align:left!important}
+html:not(#yk392) body.yk208 #app#app .flow358 .f-join::before,html:not(#yk392) body.yk208 #app#app .flow358 .f-join::after{content:none!important;display:none!important}
+html:not(#yk392) body.yk208 #app#app .flow358 .f-join>span{display:flex!important;justify-content:space-between!important;align-items:baseline!important;width:100%!important;font-size:var(--t6)!important;color:#516077!important;padding:0!important;background:none!important}
+html:not(#yk392) body.yk208 #app#app .flow358 .f-join .f-total{font-size:var(--t5)!important;font-weight:700!important;color:#192332!important;font-variant-numeric:tabular-nums}
+</style>
+<style id="v393-less-deco">
+/* v393 — 꾸밈 덜기(v391 · v392 README 「다음 후보」 · 오너 「계속」 — 디자인은 바로 적용 원칙).
+   ① 입력 행 아이콘: 옅은 파랑 사각형(30×30 · #EDF2FF · 모서리 9) 바탕을 빼고 그림(18px · v384 선 1.8px)만. 상자도 18px로 줄여 아이콘이 행 왼쪽 끝(카드 안쪽 여백)에 붙음 · 아이콘–글자 간격 10 그대로.
+      대상: 지역 · 주택 · 기존 대출 행(span.k) · 현금 · 소득 행(label) · 「주택담보대출 안 받기」(.nl-t).
+   ② 결과 카드 머리 번호(① ② ③ ④): 옅은 파랑 원 바탕을 빼고 파란 숫자만(--t5 16 · 700 · #2458FF — 카드 머리 글자와 같은 크기). 번호 칸 폭 24 그대로(v369 잠금) · 숫자는 칸 왼쪽(아래 막대 · 범례 왼쪽 끝과 같은 선).
+   훑어보기 단서(아이콘 모양 · 번호 순서)는 남기고 면 덩어리만 뺌. 문구 · 계산 그대로. */
+html:not(#yk393) body.yk208 #app#app #crows span.k::before,html:not(#yk393) body.yk208 #app#app #crows label::before,html:not(#yk393) body.yk208 #app#app #crows#crows #noLoanT#noLoanT.nl-t::before{background-color:transparent!important;width:18px!important;height:18px!important;min-width:18px!important;border-radius:0!important;background-size:18px 18px!important;background-position:center!important}
+html:not(#yk393) body.yk208 #app#app #flow358 .f-step b,html:not(#yk393) body.yk208 #app#app #viewAnswer .n358{background:transparent!important;color:#2458FF!important;font-size:var(--t5)!important;font-weight:700!important;justify-content:flex-start!important;text-align:left!important}
+</style>
+<script id="v390-reach-scroll">
+/* v390 — 실거래 탭 「서울 25개 구」에서 구를 누르면 v354가 60ms 뒤 실거래 카드 자리로 한 번 내림. 그 순간 목록이 덜 그려져 문서가 짧으면 23px에서 멈추고 다시 맞추지 않았음(느린 기기 · 검사 동시 실행 때 v354 검사 실패로 드러남).
+   → 목록이 다 그려졌다는 신호(deals:ready) 뒤와 400ms 뒤에 카드가 머리 아래 40px 안에 없으면 같은 식으로 한 번 더 맞춤(3초 안에서만 · 이미 맞으면 움직이지 않음). */
+(function(){
+  var map=document.getElementById('reach328Map'), card=document.getElementById('dealCard'), deals=document.getElementById('viewDeals');
+  if(!map || !card || !deals) return;
+  map.addEventListener('click', function(e){
+    var t=e.target.closest ? e.target.closest('button[data-reach]') : null, go=document.getElementById('reach328Go');
+    if(!t || t.disabled || t.classList.contains('is-wait') || (go && !go.hidden)) return;
+    var until=Date.now()+3000;
+    var again=function(){ if(deals.hidden || Date.now()>until) return;
+      var bar=document.querySelector('.appbar'), b=(bar && bar.getBoundingClientRect().bottom) || 0, ct=card.getBoundingClientRect().top;
+      if(ct>=b && ct<=b+40) return; window.scrollTo(0, Math.max(0, ct + window.scrollY - b - 12)); };
+    var h=function(){ document.removeEventListener('deals:ready', h); setTimeout(again, 0); };
+    document.addEventListener('deals:ready', h); setTimeout(again, 400); setTimeout(function(){ document.removeEventListener('deals:ready', h); }, 3000);
+  });
+})();
+</script>
 </body>
 </html>

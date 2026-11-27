@@ -100,6 +100,54 @@ html body{font-family:'YK Minus','Pretendard Variable',-apple-system,BlinkMacSys
 #t382-pay:checked~.scroll .c-lim{display:none}
 @media(max-width:380px){.t382 .t382-table{font-size:13px}.t382 .t382-table th,.t382 .t382-table td{padding-inline:2px}.t382 .t382-table th[scope="row"],.t382 .t382-table thead th:first-child{white-space:normal;min-width:0;overflow-wrap:normal;word-break:keep-all}}
 </style>
+<style id="v391-article">
+/* v391 — 안내 페이지 15개 「문서 느낌」 걷어내기(오너 2026-11-25 「한글파일에서 만든 느낌 · 투박하다」 → 안내 페이지까지 · 바로 적용).
+   원인: 본문 14px · 소제목마다 테두리 카드(모서리 18) · 목차 칩 · 예시 상자 · 머리 아래 · 표 머리 칸 · 글 목록 카드까지 1px 선 · 제목 자간 -.045em.
+   ① 바탕: 흰 종이 한 장(#FFFFFF) — 소제목 카드 테두리 · 면 · 안쪽 여백을 빼고 간격(48px)으로 나눔. 머리 아래 선 없음. 읽는 폭 680px.
+   ② 글자: 계산기와 같은 스케일(--t0~--t8 · ≤400 값). 본문 14 → --t5(16) · 행간 1.75 · 첫 문단(.lead) --t4 · 제목 h1 --t1(넓은 화면 --t0) · h2 --t2 · h3 --t4 · 제목 자간 --ls-ttl(-.03em).
+   ③ 강조 상자(.notice · .example · .formula · 개인정보 첫 안내(.lede) · 글 목록 첫 안내 · 글 목록 카드): 테두리 → 옅은 면(#F1F4F8 · 파랑 계열은 #F3F6FF) · 모서리 16.
+   ⑤ 줄바꿈: 개인정보 페이지에 빠져 있던 낱말 단위 줄바꿈(keep-all)을 모든 페이지에 — 「서비/스」처럼 낱말 중간에서 끊기던 것.
+   ④ 목차 칩: 테두리 → 면 #F1F4F8. 표: 머리 칸 면 없음 · 회색 글자 · 줄 선 #EEF1F5. 펼침(details) 위 선 #EEF1F5.
+   문구 · 숫자 · 표 내용 · 도표 · 링크 주소는 그대로. 계산기(index.html)와 같은 글꼴(v304 Pretendard). */
+:root{--t0:36px;--t1:30px;--t2:26px;--t3:19px;--t4:17px;--t5:16px;--t6:14px;--t7:13px;--t8:12px;--ls-ttl:-.03em}
+@media(max-width:400px){:root{--t1:28px;--t2:24px}}
+html,html body,html body .app,html body .app .appbar{background:#FFFFFF!important}
+html body{word-break:keep-all!important;overflow-wrap:anywhere!important}
+html body header{border-bottom:0!important}
+html body header,html body main,html body footer{width:min(100% - 40px,680px)!important;max-width:none!important}
+html body .app main{width:auto!important}
+/* ① 소제목 카드 → 종이 위 구획 */
+html body main section,html body .app section{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:48px 0 0!important}
+html body main section:first-of-type{margin-top:36px!important}
+/* ② 글자 */
+html body main h1,html body .app h1{font-size:var(--t1)!important;line-height:1.35!important;letter-spacing:var(--ls-ttl)!important;font-weight:700!important;color:#192332!important;max-width:none!important}
+@media(min-width:960px){html body main h1,html body .app h1{font-size:var(--t0)!important}}
+html body main h2,html body .app h2{font-size:var(--t2)!important;line-height:1.4!important;letter-spacing:var(--ls-ttl)!important;font-weight:700!important;color:#192332!important;margin:0 0 16px!important}
+html body main h3,html body .app h3{font-size:var(--t4)!important;line-height:1.5!important;letter-spacing:var(--ls-ttl)!important;font-weight:700!important;color:#192332!important;margin:28px 0 8px!important}
+html body main p,html body main li,html body .app p,html body .app li{font-size:var(--t5)!important;line-height:1.75!important;color:#4E5B6E!important}
+html body main .lead,html body .app .lede{font-size:var(--t4)!important;line-height:1.7!important;color:#4E5B6E!important}
+html body main .eyebrow{font-size:var(--t7)!important;font-weight:700!important;color:#2458FF!important;letter-spacing:0!important}
+html body main .src,html body main .caption,html body main .note,html body main .meta,html body .app .note,html body .app .asof,html body main figcaption{font-size:var(--t7)!important;line-height:1.6!important;color:#6B7789!important}
+html body main b,html body main strong{color:#192332}
+html body main li+li{margin-top:8px!important}
+/* ③ 강조 상자 */
+html body main .notice{border:0!important;border-left:0!important;background:#F1F4F8!important;border-radius:16px!important;padding:16px 18px!important;margin:16px 0!important}
+html body main .example,html body main .box{border:0!important;background:#F3F6FF!important;border-radius:16px!important;padding:20px!important}
+html body main .formula{border:0!important;background:#F3F6FF!important;border-radius:16px!important;color:#1848D6!important;padding:16px 18px!important}
+html body .app .lede{border:0!important;border-left:0!important;box-shadow:none!important;background:#F3F6FF!important;border-radius:16px!important;padding:18px 20px!important}
+html body main aside.start{border:0!important;background:#F3F6FF!important;border-radius:20px!important}
+html body main .list li{border:0!important;background:#F6F8FB!important;border-radius:16px!important}
+html body main .list li:hover{background:#EEF2F8!important}
+html body main .list li:focus-within{box-shadow:inset 0 0 0 2px #2458FF!important}
+/* ④ 목차 · 표 · 펼침 */
+html body main .contents a,html body main nav.jump a{border:0!important;background:#F1F4F8!important;color:#354258!important;font-size:var(--t6)!important}
+html body main .contents a:hover,html body main nav.jump a:hover{background:#E8EDF4!important}
+html body main th{background:transparent!important;color:#6B7789!important;font-weight:600!important;font-size:var(--t6)!important}
+html body main td,html body main th{border-color:#EEF1F5!important}
+html body main table{font-size:var(--t6)!important}
+html body main .row{border-bottom-color:#EEF1F5!important}
+html body main details,html body .app details{border-top-color:#EEF1F5!important}
+</style>
 </head>
 <body><header><a class="site-brand" href="/" aria-label="영끌계산기 계산기로 가기"><span class="site-mark" aria-hidden="true"></span><strong>영끌계산기</strong></a><nav aria-label="사이트 안내"><a href="/">계산기</a><a href="/guide">계산 방법</a><a href="/articles">글 목록</a><a href="/about">소개·문의</a></nav></header><main>
 
