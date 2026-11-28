@@ -32,8 +32,16 @@ const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 
 // 역할: 'text'(글자 · 아이콘 선) / 'surface'(면 · 선 · 채움)
 // 역할이 정해진 몇 색은 직접 정함(일반 규칙으로는 「구멍」처럼 보이는 것)
-const FIXED={ surface:{'E0E5EC':'2E333A'} };   // 꺼진 버튼 면 — 카드보다 조금 밝은 회색
+const FIXED={ surface:{
+  'E0E5EC':'2E333A',                                   // 꺼진 버튼 면 — 카드보다 조금 밝은 회색
+  // v404 — 결과 「돈의 흐름」 막대 · 점. 일반 규칙이면 옅은 회색이 거의 검정(#04070B)이 되어 카드에서 사라지고,
+  //        옅은 파랑(#B9CBFF)은 진한 파랑 면이 되어 막대 위아래 결이 뒤집힘 → 직접 정함
+  'B9CBFF':'B9CBFF', '8F9BB0':'8F9BB0',                // 대출 막대 윗결 · 집값 막대 윗결 — 밝은 색 그대로(어두운 카드 위에서 보임)
+  'D5DBE4':'667080', 'C8D0DB':'5C6573'                 // 부대비용 막대 · 점 — 카드(#2A2D33 언저리)보다 밝은 중간 회색
+} };
 export function mapColor(c, role){
+  if(role==='shadow'){ const {L,C}=toOk(c); if(C>=0.05) return c;   // 색 있는 테(포커스 링 #2458FF · 파란 버튼 그림자)는 그대로 — 흐리게 하면 다크에서 포커스가 안 보임
+    return L<0.5 ? {r:0,g:0,b:0,a:Math.min(1,c.a*1.8)} : {...c,a:+(c.a*0.35).toFixed(3)}; }   // v404 — 그림자는 검게(밝은 면이 되면 빛 번짐처럼 보임) · 흰 광택은 옅게
   const key=hex2(c.r)+hex2(c.g)+hex2(c.b); const fx=FIXED[role==='text'?'text':'surface']||{};
   if(fx[key]){ const o=hexTo('#'+fx[key]); return {...o,a:c.a}; }
   const {L,C,h}=toOk(c); let L2=L, C2=C, h2=h;
@@ -79,6 +87,7 @@ const COLOR_PROPS=/^(color|background|background-color|background-image|border|b
 function roleOf(prop, sel){
   prop=prop.toLowerCase();
   if(TEXT_PROPS.has(prop)) return 'text';
+  if(prop==='box-shadow'||prop==='text-shadow') return 'shadow';
   if(prop==='fill'||prop==='stroke'){ return /(^|[\s>+~(,])(text|tspan)\b[^\s>+~]*$/.test(sel.trim()) ? 'text' : 'surface'; }
   if(prop.startsWith('--')){ if(/(line|stroke|bg|surface|fill|paper|plot|card|disabled|soft|tint|border|selected)/.test(prop)) return 'surface';
     if(/(ink|sub|muted|faint|on-|text|label|espresso)/.test(prop)) return 'text'; return 'surface'; }
@@ -124,6 +133,7 @@ function twin(items){ let out='';
       // 순서 보존: 색 속성 선언은 값이 안 바뀌어도(브랜드 파랑 · transparent · var() · none) 모두 쌍둥이를 만든다 — 하나라도 빠지면
       //   그 규칙만 (0,2,0) 덜 올라가서 다른 쌍둥이에게 진다(예: 스위치 켜짐 파랑이 꺼짐 회색 쌍둥이에 짐). 사용자 변수는 색 · var()가 든 것만.
       if(prop.startsWith('--') && !COLOR_RE.test(val) && !/var\(/.test(val)){ COLOR_RE.lastIndex=0; continue; } COLOR_RE.lastIndex=0;
+      if(prop.startsWith('--ic-')){ ds.push(prop+':'+val+(imp?'!important':'')); continue; }   // v404 — 입체 아이콘 그림은 다크에서도 그대로
       const vm=val.match(/^var\((--[\w-]+)(?:\s*,[^)]*)?\)$/);
       const nv = (vm && VARS[vm[1]] && !prop.startsWith('--')) ? mapValue(VARS[vm[1]], roleOf(prop,it.sel)) : mapValue(val, roleOf(prop,it.sel));
       ds.push(prop+':'+nv+(imp?'!important':'')); }
