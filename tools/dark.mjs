@@ -125,6 +125,8 @@ function collectVars(items){ for(const it of items){ if(it.type==='at'){ collect
     if(!/(^|,)\s*(:root|html)(?![\w-])/.test(it.sel)) continue;
     for(const d of splitTop(it.decls,';')){ const p=d.indexOf(':'); if(p<0)continue; const k=d.slice(0,p).trim(); if(!k.startsWith('--'))continue;
       const v=d.slice(p+1).replace(/!important/i,'').trim(); if(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\))$/.test(v)) VARS[k]=v; } } }
+// v406 — 다크에서도 색을 그대로 두는 선택자(파란 그러데이션 카드 안 그림 — 결과 머리 카드처럼 다크에서 바뀌지 않는 면 위)
+const KEEP_SEL=/\.welcome232-scene\b/;
 function twin(items){ let out='';
   for(const it of items){
     if(it.type==='at'){ const inner=twin(it.children); if(inner) out+=it.prelude+'{'+inner+'}'; continue; }
@@ -134,6 +136,7 @@ function twin(items){ let out='';
       //   그 규칙만 (0,2,0) 덜 올라가서 다른 쌍둥이에게 진다(예: 스위치 켜짐 파랑이 꺼짐 회색 쌍둥이에 짐). 사용자 변수는 색 · var()가 든 것만.
       if(prop.startsWith('--') && !COLOR_RE.test(val) && !/var\(/.test(val)){ COLOR_RE.lastIndex=0; continue; } COLOR_RE.lastIndex=0;
       if(prop.startsWith('--ic-')){ ds.push(prop+':'+val+(imp?'!important':'')); continue; }   // v404 — 입체 아이콘 그림은 다크에서도 그대로
+      if(KEEP_SEL.test(it.sel)){ ds.push(prop+':'+val+(imp?'!important':'')); continue; }   // v406 — 파란 카드 위 그림(첫 화면 서울 타일)은 다크에서도 같은 색(파란 카드 자체가 다크에서 그대로)
       const vm=val.match(/^var\((--[\w-]+)(?:\s*,[^)]*)?\)$/);
       const nv = (vm && VARS[vm[1]] && !prop.startsWith('--')) ? mapValue(VARS[vm[1]], roleOf(prop,it.sel)) : mapValue(val, roleOf(prop,it.sel));
       ds.push(prop+':'+nv+(imp?'!important':'')); }
