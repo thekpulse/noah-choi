@@ -925,6 +925,91 @@ ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 �
      && /#flow358 \.f-step b,[^{]*#viewAnswer \.n358\{background:transparent!important;color:#2458FF!important;font-size:var\(--t5\)!important;font-weight:700!important;justify-content:flex-start!important;text-align:left!important\}/.test(c393),
      'v393 규칙 — 입력 행 아이콘 바탕 없음(18px) · 결과 카드 번호 원 없음(파란 숫자 16 · 칸 왼쪽)');
 }
+// 83) v394 — 오너 지적: 「기준」 꼬리표 테두리 · 금액 칸 숫자 세로 가운데 · 「15억원」 안내 줄 · 넓은 화면 머리 선(border-image) · 실거래 지도 카드 선
+{
+  const c394 = ((html.match(/<style id="v394-owner-fix">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/\.chip\.is-base330 \.tag330\{box-shadow:inset 0 0 0 1px #2458FF,0 0 0 2px #FFFFFF!important\}/.test(c394)
+     && /#crows \.inline-money-field input\{height:100%!important/.test(c394) && /\.inline-money \.inline-echo\{margin-left:28px!important\}/.test(c394)
+     && /#app#app \.appbar\{border-image:none!important\}/.test(c394)
+     && /#dealMapRange button\{border-color:transparent!important;background:#F1F4F8!important/.test(c394) && /#dealMapLayer button\[aria-pressed="true"\]\{box-shadow:none!important/.test(c394),
+     'v394 규칙 — 기준 꼬리표 테두리 · 금액 칸 높이 · 안내 28 · 머리 border-image 없음 · 지도 카드 칩 면');
+}
+// 84) v395 — 첫 화면 · 입력 화면 통일(오너 2026-11-27 시안 승인 → 「통일성」): 서울 25개 구 흰 타일 그림 · 시작 버튼 화살표 없음 · 칸 머리 번호 1 · 2 · 아이콘 없음 · 이름 위 값 아래
+{
+  const c395 = ((html.match(/<style id="v395-entry-unify">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const scene = (html.match(/<div class="welcome232-scene"[\s\S]*?<\/svg>/) || [''])[0];
+  ok(c395.length > 0 && (scene.match(/<rect [^>]*width="40" height="40"/g) || []).length === 25 && (scene.match(/<text\b/g) || []).length === 1 && /내 예산<\/text>/.test(scene) && !/(종로|강남|동작|마포)/.test(scene)
+     && html.includes('<button type="button" id="welcomeStart232">내 집 예산 알아보기</button>')
+     && html.includes('<span aria-hidden="true">1</span>지역과 주택') && html.includes('<span aria-hidden="true">2</span>사용할 자금')
+     && /#crows span\.k::before,[^{]*\{content:none!important;display:none!important\}/.test(c395)
+     && /#crows>\.crow:not\(#stepSum353\)\{position:relative!important;display:flex!important;flex-direction:column!important/.test(c395)
+     && /#crows \.inline-money-field input\{[^}]*font-size:var\(--t1\)!important/.test(c395) && !/\.5px/.test(c395),
+     'v395 규칙 — 서울 25칸 그림(구 이름 없음 · 「내 예산」 하나) · 시작 버튼 화살표 없음 · 칸 머리 번호 1·2 · 입력 아이콘 없음 · 이름 위 값 아래 · 금액 --t1');
+}
+// 85) v396 — 실거래 탭 「보기 고르기」 단추 통일: 고름 = 파랑 글자 700 하나 · 붙은 단추 틀 #E4E8F1 하나 · 글자 14 · 모서리 스케일 · 필터 흰 면 · 분포 접기 줄 = 결과 접기 줄
+{
+  const c396 = ((html.match(/<style id="v396-pick-unify">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/#seg357 button\[aria-pressed="true"\]\{color:#2458FF!important;font-weight:700!important\}/.test(c396)
+     && /:is\(#sortSeg,\.sortseg,\.deal-switch\)\{background:#E4E8F1!important/.test(c396)
+     && /button:is\(\.is-on,\[aria-pressed="true"\],\[aria-selected="true"\]\)\{background:#FFFFFF!important;color:#2458FF!important;font-weight:700!important\}/.test(c396)
+     && /#dealMapRange button\{border-radius:var\(--r-s\)!important\}/.test(c396) && /#dealFilterBtn\{[^}]*background-color:#FFFFFF!important/.test(c396) && !/\.5px/.test(c396),
+     'v396 규칙 — 고름 파랑 700 · 붙은 단추 틀 하나 · 고른 붙은 단추 흰 면 · ±칩 모서리 --r-s · 필터 흰 면');
+}
+// 86) v397 — 버튼 통일: 주 버튼(17 · 700 · 54 · --r-m · #2458FF) · 작은 파란 버튼(14 · 600 · 44 · --r-m) · 보조 버튼(먹색 · 14 · 600 · --r-m) · 꺼짐 회색 하나
+{
+  const c397 = ((html.match(/<style id="v397-button-unify">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/#welcomeStart232,[^{]*#dock \.cta,[^{]*#qClose\{min-height:var\(--h-cta\)!important;height:auto!important;border-radius:var\(--r-m\)!important;font-size:var\(--t4\)!important;font-weight:700!important/.test(c397)
+     && /#dock \.cta:disabled,[^{]*#qClose:disabled\{background:#E0E5EC!important/.test(c397)
+     && /:is\(#marketOpen,\.v208-primary\)\{min-height:44px!important;[^}]*border-radius:var\(--r-m\)!important;font-size:var\(--t6\)!important/.test(c397)
+     && /:is\(#outSave,#outCopy\)\{border-radius:var\(--r-m\)!important;font-size:var\(--t6\)!important;font-weight:600!important;color:var\(--yk-ink\)!important\}/.test(c397) && !/\.5px/.test(c397),
+     'v397 규칙 — 주 버튼 17·700·54·r-m · 꺼짐 회색 · 작은 파란 버튼 14·44·r-m · 보조 버튼 먹색 r-m');
+}
+// 87) v398 — 비교 빈 화면 「1 · 2 · 3」 칸 점선 → 면
+{
+  const c398 = ((html.match(/<style id="v398-empty-slots">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/#cmpBody \.hc-empty-slots span\{border:0!important;background:#F1F4F8!important/.test(c398), 'v398 규칙 — 비교 빈 칸 선 없음 · 면 #F1F4F8');
+}
+// 88) v399 — 넓은 화면(1025 이상) 탭 막대를 머리줄 오른쪽 가로 탭으로 · 휴대폰 고른 탭 글자 #2458FF
+{
+  const c399 = ((html.match(/<style id="v399-pc-nav">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/@media \(min-width:1025px\)\{/.test(c399) && /#v208Nav#v208Nav\{top:4px!important;bottom:auto!important;left:auto!important;right:calc\(50% - 492px\)!important/.test(c399)
+     && /#v208Nav#v208Nav button\[aria-current="page"\]\{color:#2458FF!important\}/.test(c399) && !/\.5px/.test(c399),
+     'v399 규칙 — 1025 이상 머리줄 오른쪽(50% - 492) · 고른 탭 #2458FF');
+}
+// 89) v400 — 「쓰는 곳」 막대: 집값 #465262 · 부대비용 #B9C2D0(남색 없음)
+{
+  const c400 = ((html.match(/<style id="v400-spend-bar">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/\.f-bar \.p\{background:#465262!important\}/.test(c400) && /\.f-bar \.x\{background:#B9C2D0!important\}/.test(c400) && /\.f-price \.f-k i\{background:#465262!important\}/.test(c400), 'v400 규칙 — 집값 막대 · 범례 #465262 · 부대비용 #B9C2D0');
+}
+// 90) v401 — 다크 모드: <style id="v401-dark">가 tools/dark.mjs 생성 결과와 바이트 단위로 같음(손으로 고치지 않음 · 색을 고치면 생성기를 다시 돌림) ·
+//   html2canvas 복제본에 yk-light(저장 이미지는 밝게) · theme-color 밝음/다크 · 다크 덩어리는 문서의 마지막 <style>
+{
+  let same=false, why='';
+  try{ const gen = await import((await import('node:url')).pathToFileURL(path.join(ROOT,'tools','dark.mjs')).href); same = gen.applyDark(html) === html; if(!same) why='생성 결과와 다름 — node tools/dark.mjs'; }catch(e){ why='tools/dark.mjs 없음/오류: '+e.message; }
+  const styles=[...html.matchAll(/<style([^>]*)>/g)].map(m=>m[1]);
+  ok(same && /id="v401-dark"/.test(styles[styles.length-1]||'') && /@media \(prefers-color-scheme:dark\)\{:root:not\(\.yk-light\)\{color-scheme:dark\}/.test(html)
+     && html.includes('<script id="v401-dark-capture">') && /doc\.documentElement\.classList\.add\('yk-light'\)/.test(html)
+     && html.includes('<meta name="theme-color" content="#F1F4F8" media="(prefers-color-scheme: light)">') && html.includes('<meta name="theme-color" content="#14181E" media="(prefers-color-scheme: dark)">'),
+     'v401 다크 — 덩어리 = tools/dark.mjs 생성 결과 · 마지막 <style> · 저장 복제본 yk-light · theme-color 둘', why);
+}
+// 91) v402 — 밝은 화면 글자 대비: 「거래 상세」 --yk-muted · 「참고용」 꼬리표 면 rgba(14,27,69,.22)
+{
+  const c402 = ((html.match(/<style id="v402-contrast">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok(/#dealList \.deal-expand\{color:var\(--yk-muted\)!important\}/.test(c402) && /\.estimate-tag\{background:rgba\(14,27,69,\.22\)!important\}/.test(c402), 'v402 규칙 — 거래 상세 보조 글자색 · 참고용 꼬리표 남색 면');
+}
+// 92) v403 — 안내 페이지 15개도 다크: tools/dark.mjs PAGES(계산기 + 안내 15) 전부가 생성 결과와 같음 · 다크 덩어리가 마지막 <style> · theme-color 다크 · 안내 페이지 15개가 PAGES에 다 있음
+{
+  let bad=[], miss=[];
+  try{ const gen = await import((await import('node:url')).pathToFileURL(path.join(ROOT,'tools','dark.mjs')).href);
+    const guides=['about','articles','budget-examples','buying-costs','couple-income','dsr-income-table','existing-debt','guide','loan-limit','price-band-cap','privacy','rate-type','regulated-area','room-deduction','switch-home'].map(g=>g+'.html');
+    miss=guides.filter(g=>!gen.PAGES.includes(g));
+    for(const name of gen.PAGES){ const h=fs.readFileSync(path.join(ROOT,name),'utf8'); const st=[...h.matchAll(/<style([^>]*)>/g)].map(m=>m[1]);
+      if(gen.applyDark(h)!==h || !/id="v401-dark"/.test(st[st.length-1]||'') || !h.includes('<meta name="theme-color" content="#14181E" media="(prefers-color-scheme: dark)">')) bad.push(name); }
+  }catch(e){ bad=['오류: '+e.message]; }
+  ok(!bad.length && !miss.length, 'v403 다크 — 계산기 + 안내 페이지 15개 다크 덩어리 = 생성 결과 · 마지막 <style> · theme-color 다크', JSON.stringify({bad,miss}));
+  const g=fs.readFileSync(path.join(ROOT,'guide.html'),'utf8');
+  ok(/<style id="v403-caption">[\s\S]*html body main \.example figcaption\{color:#607089!important\}/.test(g), 'v403 계산 방법 글 예시 상자 그림 설명 #607089(대비 4.5 이상)');
+}
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -1416,8 +1501,9 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         await page.setViewportSize({width:w,height:844}); await page.waitForTimeout(150);
         const i369=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect();const m=document.getElementById('main-cash').closest('.inline-money'),lb=R(m.querySelector('label')),fd=R(m.querySelector('.inline-money-field')),ec=m.querySelector('.inline-echo'),hp=R(m.querySelector('.inline-help')),mr=R(m),inp=document.getElementById('main-cash');
           const rg=R(document.querySelector('#crows [data-mode="region"]'));
-          return {sameRow:fd.top<lb.bottom&&lb.top<fd.bottom,right:fd.left>=lb.left+100,echoUnder:!ec.textContent.trim()||(R(ec).top>=lb.bottom-2&&R(ec).right<=fd.left),helpWide:hp.width>=mr.width-40,fit:inp.scrollWidth<=inp.clientWidth,fs:parseFloat(getComputedStyle(inp).fontSize),fh:Math.round(fd.height),rgW:Math.round(rg.width),mW:Math.round(mr.width)};});
-        ok(i369.sameRow && i369.right && i369.echoUnder && i369.helpWide && i369.fit && i369.fs>=16 && i369.fh===44 && Math.abs(i369.rgW-i369.mW)<=1, `v369 ${w}px 2단계 현금 칸 한 줄(이름 ─ 칸) · 금액 읽기 이름 아래 · 도움말 전체 폭 · 「20,000」 안 잘림 · 글자 16px 이상`, JSON.stringify(i369));
+          return {above:lb.bottom<=fd.top+1,wide:fd.width>=mr.width-48,helpField:hp.width>=fd.width-1,echoUnder:!ec.textContent.trim()||R(ec).top>=fd.bottom-2,helpWide:hp.width>=mr.width-40,fit:inp.scrollWidth<=inp.clientWidth,fs:parseFloat(getComputedStyle(inp).fontSize),fh:Math.round(fd.height),rgW:Math.round(rg.width),mW:Math.round(mr.width)};});
+        /* v395 — v369 「한 줄(이름 ─ 칸)」을 옮김: 오너 2026-11-27 시안 승인(이름 위 · 값 아래 한 가지 모양). 목적(안 잘림 · 16px 이상 · 누르기 높이 · 칸 폭 같음)은 그대로. */
+        ok(i369.above && i369.wide && i369.echoUnder && i369.helpField && i369.fit && i369.fs>=16 && i369.fh>=44 && Math.abs(i369.rgW-i369.mW)<=1, `v369·v395 ${w}px 2단계 현금 칸 — 이름 위 · 칸 전체 폭 · 금액 읽기 칸 아래 · 도움말 = 칸 폭 · 「20,000」 안 잘림 · 글자 16px 이상 · 칸 높이 44 이상`, JSON.stringify(i369));
       }
       await page.setViewportSize({width:390,height:844}); await page.waitForTimeout(150);
       reach328On=true;mode='success';await seed();
@@ -1529,7 +1615,8 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
               const tw=cv.measureText(i.value).width+(i.value.length-1)*(parseFloat(c.letterSpacing)||0);return {w,v:i.value,fs:parseFloat(c.fontSize),slack:Math.round(i.clientWidth-tw)};},[w,v]));
           }
         }
-        ok(fits.every(f=>f.slack>=14 && f.fs>=16) && fits.filter(f=>f.v==='1,000,000').every(f=>f.fs===16), 'v370 숫자 칸 — 「300,000」 · 「1,000,000」이 393 · 320px 칸 안에 14px 이상 여유(아이폰 안쪽 폭이 약 18px 좁음) · 7자리부터 16px', JSON.stringify(fits));
+        /* v395 — 칸이 전체 폭이 되어 7자리도 큰 글자(--t1)로 들어감 → 「7자리부터 16px」 대신 아이폰 차이(약 18px)보다 큰 여유 20px 이상을 잠금. */
+        ok(fits.every(f=>f.slack>=20 && f.fs>=16), 'v370·v395 숫자 칸 — 「300,000」 · 「1,000,000」이 393 · 320px 칸 안에 20px 이상 여유(아이폰 안쪽 폭이 약 18px 좁음) · 16px 이상', JSON.stringify(fits));
         ok(!e370.length, 'v370 JavaScript 오류 없음', e370.join(' | '));
         await c370.close();
       }
@@ -1878,8 +1965,8 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
           return {nm:px('#dealList .dealwrap>.deal>.nm'),amt:px('#dealList .dealwrap>.deal>.amt'),ins:px('#dealDistribution .dd-insight'),insB:px('#dealDistribution .dd-insight b'),t2,overflow:document.documentElement.scrollWidth>innerWidth};});
         await q.evaluate(()=>window.yk208Navigate('compare')); await q.waitForTimeout(400); bad.push(...await heavy());
         const c=await q.evaluate(()=>{const px=s=>{const e=document.querySelector(s);return e?getComputedStyle(e).fontSize:'none';};return {h2:px('#cmpBody h2'),p:px('#cmpBody p'),btn:px('#cmpBody .v208-primary')};});
-        ok(m.nm==='16px/600' && m.amt==='19px/700' && m.ins.startsWith('16px') && m.insB.startsWith(m.t2+'/') && c.h2==='19px' && c.p==='14px' && c.btn==='16px' && !bad.length && !m.overflow && !e377.length,
-           `v377 ${width}px 글자 스케일 — 목록 16/600 · 19/700 · 「거래의 N%」 16 + 숫자 --t2 · 비교 19/14/16 · 굵기 550 · 650 없음`,JSON.stringify({m,c,bad,e377}));
+        ok(m.nm==='16px/600' && m.amt==='19px/700' && m.ins.startsWith('16px') && m.insB.startsWith(m.t2+'/') && c.h2==='19px' && c.p==='14px' && c.btn==='14px' /* v397 — 작은 파란 버튼 14(「실거래 보기」와 같은 규칙)로 옮김 · 옛 16 */ && !bad.length && !m.overflow && !e377.length,
+           `v377 ${width}px 글자 스케일 — 목록 16/600 · 19/700 · 「거래의 N%」 16 + 숫자 --t2 · 비교 19/14/14(v397) · 굵기 550 · 650 없음`,JSON.stringify({m,c,bad,e377}));
         await c377.close();
       }
     }
@@ -2304,9 +2391,279 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
           const all=[...document.querySelectorAll('#flow358 .f-step b,#viewAnswer .n358')].filter(e=>e.getClientRects().length);
           const pay=document.querySelector('#payTile .n358'),tm=document.getElementById('tileMonthly');
           return {n:all.length,look:[...new Set(all.map(b=>{const c=getComputedStyle(b);return c.backgroundColor+'|'+c.fontSize+'|'+c.color;}))],flowL:[...f.querySelectorAll('.f-step b')].map(b=>Math.round(L(b)-bar)),payL:Math.round(L(pay)-tm.getBoundingClientRect().left)};});
-        ok(ic.length===6 && ic.every(x=>x==='rgba(0, 0, 0, 0)|18px x18px'.replace(' x','x')) && bd.n===4 && bd.look.length===1 && bd.look[0]==='rgba(0, 0, 0, 0)|16px|rgb(36, 88, 255)' && bd.flowL.every(v=>Math.abs(v)<=1) && Math.abs(bd.payL)<=2 && !e393.length,
-           `v393 ${width}px 꾸밈 덜기 — 입력 행 아이콘 6곳 바탕 없음 18px · 번호 4곳 원 없음 16px 파랑 · 숫자 왼쪽 끝 맞춤`, JSON.stringify({ic,bd,e393}));
+        /* v395 — 입력 행 아이콘은 없앰(결과 카드 머리처럼 · 오너 시안 승인 2026-11-27) → 6곳 18px 잠금을 「0곳」으로 옮김. */
+        ok(ic.length===0 && bd.n===4 && bd.look.length===1 && bd.look[0]==='rgba(0, 0, 0, 0)|16px|rgb(36, 88, 255)' && bd.flowL.every(v=>Math.abs(v)<=1) && Math.abs(bd.payL)<=2 && !e393.length,
+           `v393·v395 ${width}px 꾸밈 덜기 — 입력 행 아이콘 없음(v395) · 번호 4곳 원 없음 16px 파랑 · 숫자 왼쪽 끝 맞춤`, JSON.stringify({ic,bd,e393}));
         await c393.close();
+      }
+    }
+    // v394 — 오너 지적 실측(390 · 1264): 「기준 · 비교」 꼬리표 모두 안쪽 1px 테두리 · 금액 칸 숫자 줄 중심 = 칸 중심(±1) · 「15억원」 왼쪽 = 이름 글자 왼쪽(±1) · 머리 아래 그림 선 없음(넓은 화면) · 지도 카드 안 테두리 없음 · ±칩 면/고른 칩 #EDF2FF
+    {
+      for(const width of [390,1264]){
+        const c394=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c394.newPage();const e394=[];q.on('pageerror',e=>e394.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:3}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        const head=await q.evaluate(()=>getComputedStyle(document.querySelector('.appbar')).borderImageSource);
+        await q.locator('#welcomeStart232').click(); await q.mouse.move(1,1); await q.waitForTimeout(150);
+        await q.evaluate(()=>{S.sgg='11200';S.sido='서울특별시';S.group='seoul';S.houseStatus='first';renderAnswered();syncCta();}); await q.waitForTimeout(200); await q.locator('#stepNext353').click(); await q.mouse.move(1,1); await q.waitForTimeout(350);
+        const ins=q.locator('#crows .inline-money-field input'); await ins.nth(0).fill('150000'); await ins.nth(1).fill('30000'); await q.evaluate(()=>document.activeElement.blur()); await q.waitForTimeout(300);
+        const fl=await q.evaluate(()=>[...document.querySelectorAll('#crows .inline-money')].filter(r=>r.getClientRects().length).map(row=>{const f=row.querySelector('.inline-money-field'),i=f.querySelector('input'),fr=f.getBoundingClientRect(),ir=i.getBoundingClientRect();
+          const lab=row.querySelector('label');const t=[...lab.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());const rg=document.createRange();rg.selectNodeContents(t);const ec=row.querySelector('.inline-echo');
+          return {mid:Math.round((ir.top+ir.bottom)/2-(fr.top+fr.bottom)/2),echo:ec&&ec.getClientRects().length?Math.round(ec.getBoundingClientRect().left-rg.getBoundingClientRect().left):'none'};}));
+        await q.evaluate(()=>openQ(2,'region')); await q.waitForTimeout(350);
+        const z=q.locator('#qSheet button',{hasText:/^서울$/}).first(); if(await z.count()){await z.click();await q.waitForTimeout(250);}
+        for(const nm of ['성동구','광진구']){await q.locator('#qSheet .chip',{hasText:nm}).first().click();await q.waitForTimeout(150);}
+        const tags=await q.evaluate(()=>[...document.querySelectorAll('#qSheet .chip .tag330')].map(t=>t.textContent+'|'+(/inset/.test(getComputedStyle(t).boxShadow)?'line':'none')));
+        await q.evaluate(()=>{closeSheet('q');Object.assign(S,{cash:150000,income:30000,sgg:'11200',sido:'서울특별시',group:'seoul',houseStatus:'first',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await q.waitForTimeout(300);
+        await q.evaluate(()=>window.yk208Navigate('map')); await q.waitForTimeout(400); await q.evaluate(()=>{const p=document.getElementById('dealMapPanel');p.hidden=false;}); await q.waitForTimeout(150);
+        const mp=await q.evaluate(()=>{const root=document.getElementById('dealMapPanel');const L=[root,...root.querySelectorAll('*')].filter(e=>e.getClientRects().length&&e.id!=='v208Status').filter(e=>{const cs=getComputedStyle(e);return ['Top','Right','Bottom','Left'].some(sd=>parseFloat(cs['border'+sd+'Width'])>0&&cs['border'+sd+'Style']!=='none'&&!/rgba\(\d+, \d+, \d+, 0\)/.test(cs['border'+sd+'Color']))&&!e.matches('i,span.caret,.chev,.chev-r');}).map(e=>e.id||e.className||e.tagName);
+          const rb=[...document.querySelectorAll('#dealMapRange button')].map(b=>(b.getAttribute('aria-pressed')==='true'?'on:':'')+getComputedStyle(b).backgroundColor);return {L,rb};});
+        ok((width<1025||head==='none') && fl.length===2 && fl.every(x=>Math.abs(x.mid)<=1&&(x.echo==='none'||Math.abs(x.echo)<=1)) && tags.length>=2 && tags.every(t=>/\|line$/.test(t)) && !mp.L.length && mp.rb.every(c=>/^on:rgb\(237, 242, 255\)$|^rgb\(241, 244, 248\)$/.test(c)) && !e394.length,
+           `v394 ${width}px 오너 지적 — 기준/비교 꼬리표 테두리 · 금액 숫자 세로 가운데 · 「15억원」 줄 맞춤 · 머리 그림 선 없음 · 지도 카드 선 없음 · ±칩 면`, JSON.stringify({head,fl,tags,mp,e394}));
+        await c394.close();
+      }
+    }
+    // v395 — 첫 화면 · 입력 화면 통일 실측(320 · 390 · 1264): 그림 안 글자 13px 이상 · 시작 버튼 = 버튼 줄 전체 폭 /
+    //   입력: 부제 · 진행 글줄 화면에서 감춤(글줄은 남음) · 고르는 줄 이름(16) 위 값(19) 아래 · 아이콘 없음 · 꺾쇠 줄 오른쪽 20 · 칸 안쪽 20 /
+    //   칸 머리 이름 왼쪽 = 결과 카드 머리 이름 왼쪽(같은 32) · 금액 칸 면 #F1F4F8 · 숫자 왼쪽 맞춤 · 「내 조건」 탭도 같은 모양
+    {
+      for(const width of [320,390,1264]){
+        const c395=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c395.newPage();const e395=[];q.on('pageerror',e=>e395.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        const wel=await q.evaluate(()=>{const sv=document.querySelector('#welcome232 .welcome232-scene svg'),t=sv&&sv.querySelector('text');const k=sv?sv.getBoundingClientRect().width/sv.viewBox.baseVal.width:0;
+          const b=document.getElementById('welcomeStart232').getBoundingClientRect(),body=document.querySelector('#welcome232 .welcome232-startbody').getBoundingClientRect();
+          return {txt:t?Math.round(parseFloat(t.getAttribute('font-size'))*k*10)/10:0,full:Math.abs(b.width-body.width)<=1,arrow:!!document.querySelector('#welcomeStart232 span')};});
+        await q.locator('#welcomeStart232').click(); await q.mouse.move(1,1); await q.waitForTimeout(150);
+        const row=sel=>q.evaluate(sel=>[...document.querySelectorAll(sel)].filter(e=>e.getClientRects().length).map(r=>{const R=e=>e.getBoundingClientRect(),k=r.querySelector('.k'),v=r.querySelector('.v'),c=r.querySelector('.chev');const rg=document.createRange();rg.selectNodeContents(v.firstChild||v);
+          const ic=getComputedStyle(k,'::before');return {stack:R(k).bottom<=rg.getBoundingClientRect().top+1,kf:parseFloat(getComputedStyle(k).fontSize),vf:parseFloat(getComputedStyle(v).fontSize),icon:ic.content!=='none'&&ic.display!=='none',
+            chev:c?Math.round(R(r).right-R(c).right):-1,padL:Math.round(R(k).left-R(r).left)};}),sel);
+        const head1=await q.evaluate(()=>({sub:!!document.querySelector('#app[data-v208-tab="entry"] .entry-sub')?.getClientRects().length,count:(()=>{const e=document.getElementById('entryCount233'),h=e&&e.closest('.ep233-heading');return e?Math.round(h.getBoundingClientRect().width)+'|'+e.textContent.trim():'none';})(),
+          step:[...document.querySelectorAll('#crows>h2.v232-step')].filter(h=>h.getClientRects().length).map(h=>{const r=document.createRange();r.selectNodeContents(h.lastChild);return Math.round(r.getBoundingClientRect().left-h.getBoundingClientRect().left);})}));
+        const rows1=await row('#crows>.crow');
+        await q.evaluate(()=>{S.sgg='11440';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();}); await q.waitForTimeout(200); await q.locator('#stepNext353').click(); await q.mouse.move(1,1); await q.waitForTimeout(350);
+        await q.evaluate(()=>document.activeElement&&document.activeElement.blur()); await q.waitForTimeout(120);
+        const money=await q.evaluate(()=>[...document.querySelectorAll('#crows .inline-money')].filter(r=>r.getClientRects().length).map(r=>{const f=r.querySelector('.inline-money-field'),i=f.querySelector('input'),l=r.querySelector('label');
+          return {bg:getComputedStyle(f).backgroundColor,al:getComputedStyle(i).textAlign,lf:parseFloat(getComputedStyle(l).fontSize),padL:Math.round(l.getBoundingClientRect().left-r.getBoundingClientRect().left),icon:getComputedStyle(l,'::before').content!=='none'&&getComputedStyle(l,'::before').display!=='none'};}));
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11440',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);}); await q.waitForTimeout(500);
+        const res=await q.evaluate(()=>[...document.querySelectorAll('#flow358 .f-step,#payTile .ans-k')].filter(h=>h.getClientRects().length).map(h=>{const r=document.createRange();r.selectNodeContents(h.lastChild);return Math.round(r.getBoundingClientRect().left-h.getBoundingClientRect().left);}));
+        await q.evaluate(()=>window.yk208Navigate('conditions')); await q.waitForTimeout(400);
+        const rowsC=await row('#crows>.crow:not(#stepSum353)');
+        const rowOK=r=>r.stack&&r.kf===16&&r.vf===19&&!r.icon&&Math.abs(r.chev-20)<=2&&Math.abs(r.padL-20)<=1;   /* 칸 테 1px(투명 · v390) 포함 ±1 */
+        ok(wel.txt>=13 && wel.full && !wel.arrow && !head1.sub && /^1\|/.test(head1.count) && head1.step.length===1 && rows1.length===2 && rows1.every(rowOK) && rowsC.length>=3 && rowsC.every(rowOK)
+           && money.length===2 && money.every(m=>m.bg==='rgb(241, 244, 248)'&&m.al==='left'&&m.lf===16&&Math.abs(m.padL-20)<=1&&!m.icon) && res.length>=3 && head1.step.every(x=>res.every(y=>Math.abs(x-y)<=1)) && !e395.length,
+           `v395 ${width}px 첫 화면 · 입력 통일 — 그림 글자 13 이상 · 시작 버튼 전체 폭 · 부제 · 진행 글줄 감춤 · 이름 16 위 값 19 아래 · 아이콘 없음 · 꺾쇠 오른쪽 20 · 안쪽 20 · 칸 머리 이름 = 결과 머리 이름 자리 · 금액 칸 면 · 내 조건 같은 모양`,
+           JSON.stringify({wel,head1,rows1,rowsC,money,res,e395}));
+        await c395.close();
+      }
+    }
+    // v396 — 실거래 탭 고르기 단추 실측(320 · 390 · 1264 · 지도 보기 + 목록 보기): 고른 것 모두 rgb(36, 88, 255) · 700 / 안 고른 것 rgb(70, 82, 98) · 600 /
+    //   글자 14(쪽 탭 「내 지역 | 서울 25개 구」만 16) / 붙은 단추 틀 둘 다 rgb(228, 232, 241) / 모서리 10 · 14 · 999 · 0 밖 없음 / 필터 흰 면 · 높이 = 정렬 줄 / 분포 접기 줄 14 · 600 · 먹색
+    {
+      for(const width of [320,390,1264]){
+        const c396=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c396.newPage();const e396=[];q.on('pageerror',e=>e396.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2,3].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000,26000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:4}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await q.waitForTimeout(300);
+        await q.evaluate(()=>window.yk208Navigate('map')); await q.waitForTimeout(1200); await q.evaluate(()=>{const p=document.getElementById('dealMapPanel');if(p)p.hidden=false;}); await q.mouse.move(1,1); await q.waitForTimeout(200);
+        const scan=()=>q.evaluate(()=>{const out=[];for(const b of document.querySelectorAll('#seg357 button,#viewDeals #sortSeg button,#viewDeals .sortseg button,#viewDeals .deal-switch button,#dealMapRange button,#dealMapLayer button')){if(!b.getClientRects().length)continue;const c=getComputedStyle(b);
+            const on=b.classList.contains('is-on')||b.getAttribute('aria-pressed')==='true'||b.getAttribute('aria-selected')==='true';out.push({g:b.closest('#seg357')?'tab':'pick',on,col:c.color,fw:c.fontWeight,fs:c.fontSize,r:c.borderTopLeftRadius,t:b.textContent.trim().slice(0,6)});}
+          const tracks=[...document.querySelectorAll('#viewDeals .sortseg,#viewDeals .deal-switch')].filter(e=>e.getClientRects().length).map(e=>getComputedStyle(e).backgroundColor);
+          const f=document.getElementById('dealFilterBtn'),tools=f&&f.closest('.deal-tools');const fold=[...document.querySelectorAll('#v208DistributionToggle,#dealDistribution .dd-method>summary')].filter(e=>e.getClientRects().length).map(e=>{const c=getComputedStyle(e);return c.fontSize+'|'+c.fontWeight+'|'+c.color;});
+          return {out,tracks,filt:f&&f.getClientRects().length?getComputedStyle(f).backgroundColor+'|'+Math.round(f.getBoundingClientRect().height-tools.getBoundingClientRect().height):'none',fold};});
+        const a=await scan(); if(await q.locator('#dealListTab').isVisible())await q.locator('#dealListTab').click(); await q.waitForTimeout(400); const b=await scan();
+        const all=[...a.out,...b.out];const R=new Set(['0px','10px','14px','999px']);
+        const good=all.length>=10 && all.every(x=>(x.on?(x.col==='rgb(36, 88, 255)'&&x.fw==='700'):(x.col==='rgb(70, 82, 98)'&&x.fw==='600')) && x.fs===(x.g==='tab'?'16px':'14px') && R.has(x.r))
+          && all.some(x=>x.t.startsWith('±')) && [...a.tracks,...b.tracks].length>=2 && [...a.tracks,...b.tracks].every(t=>t==='rgb(228, 232, 241)')
+          && [a.filt,b.filt].every(v=>v==='rgb(255, 255, 255)|0') && [...a.fold,...b.fold].length>=1 && [...a.fold,...b.fold].every(v=>v==='14px|600|rgb(25, 35, 50)');
+        ok(good && !e396.length, `v396 ${width}px 실거래 고르기 단추 — 고름 파랑 700 · 안 고름 #465262 600 · 글자 14(쪽 탭 16) · 붙은 틀 한 색 · 모서리 스케일 · 필터 흰 면 같은 높이 · 분포 접기 줄 = 결과 접기 줄`,
+           JSON.stringify({a,b,e396}).slice(0,3000));
+        await c396.close();
+      }
+    }
+    // v397 — 버튼 실측(320 · 390 · 1264): 주 버튼 5곳(시작 · 다음 · 계산하기 · 결과 보기 · 시트 완료) 54 · 17/700 · 모서리 14 · 켜짐 #2458FF / 꺼짐 #E0E5EC 하나(다음 · 계산하기) /
+    //   작은 파란 버튼(실거래 보기 · 단지 찾아보기) 44 · 14/600 · 14 · #2458FF / 보조 버튼(이미지 저장 · 결과 공유 · 지역 변경 · 필터) 먹색 14/600 · 모서리 14
+    {
+      for(const width of [320,390,1264]){
+        const c397=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c397.newPage();const e397=[];q.on('pageerror',e=>e397.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2,3].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000,26000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:4}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        const look=async sel=>{await q.mouse.move(1,1);await q.waitForTimeout(250);return q.evaluate(sel=>{const e=document.querySelector(sel);if(!e||!e.getClientRects().length)return null;const c=getComputedStyle(e);return {bg:c.backgroundColor,col:c.color,f:c.fontSize+'/'+c.fontWeight,r:c.borderTopLeftRadius,h:Math.round(e.getBoundingClientRect().height),dis:!!e.disabled};},sel);};
+        const L={};
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready); L.start=await look('#welcomeStart232');
+        await q.locator('#welcomeStart232').click(); L.nextOff=await look('#stepNext353');
+        await q.evaluate(()=>{S.sgg='11590';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();}); L.nextOn=await look('#stepNext353');
+        await q.locator('#stepNext353').click(); await q.waitForTimeout(300); L.ctaOff=await look('#ctaBtn');
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await q.waitForTimeout(300);
+        L.market=await look('#marketOpen'); L.save=await look('#outSave'); L.copy=await look('#outCopy');
+        await q.evaluate(()=>window.yk208Navigate('map')); await q.waitForTimeout(800); L.region=await look('#viewDeals .dd-region'); L.filter=await look('#dealFilterBtn');
+        await q.evaluate(()=>window.yk208Navigate('compare')); await q.waitForTimeout(400); L.find=await look('#cmpBody .v208-primary');
+        await q.evaluate(()=>window.yk208Navigate('conditions')); await q.waitForTimeout(400); L.ctaOn=await look('#ctaBtn');
+        await q.evaluate(()=>window.yk208Navigate('home')); await q.waitForTimeout(300); await q.evaluate(()=>openQ(2,'region')); await q.waitForTimeout(400); L.sheet=await look('#qClose');
+        const B='rgb(36, 88, 255)',W='rgb(255, 255, 255)',main=x=>x&&x.h===54&&x.f==='17px/700'&&x.r==='14px',on=x=>main(x)&&!x.dis&&x.bg===B&&x.col===W,off=x=>main(x)&&x.dis&&x.bg==='rgb(224, 229, 236)';
+        const small=x=>x&&x.h===44&&x.f==='14px/600'&&x.r==='14px'&&x.bg===B&&x.col===W,sub=x=>x&&x.f==='14px/600'&&x.r==='14px'&&x.col==='rgb(25, 35, 50)';
+        ok(on(L.start)&&off(L.nextOff)&&on(L.nextOn)&&off(L.ctaOff)&&on(L.ctaOn)&&on(L.sheet)&&small(L.market)&&small(L.find)&&[L.save,L.copy,L.region,L.filter].every(sub)&&!e397.length,
+           `v397 ${width}px 버튼 — 주 버튼 54 · 17/700 · 14 · 켜짐 파랑 · 꺼짐 회색 하나 · 작은 파란 버튼 44 · 14/600 · 보조 버튼 먹색 14/600 · 모서리 14`, JSON.stringify({L,e397}));
+        await c397.close();
+      }
+    }
+    // v398 — 비교 빈 화면 실측(390 · 1264): 「1 · 2 · 3」 칸 3개 선 없음 · 면 rgb(241, 244, 248) · 비교 화면 전체에 점선(dashed) 0개
+    {
+      for(const width of [390,1264]){
+        const c398=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c398.newPage();const e398=[];q.on('pageerror',e=>e398.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);}); await q.waitForTimeout(500);
+        await q.evaluate(()=>window.yk208Navigate('compare')); await q.waitForTimeout(400);
+        const r=await q.evaluate(()=>{const sl=[...document.querySelectorAll('#cmpBody .hc-empty-slots span')].filter(e=>e.getClientRects().length).map(e=>{const c=getComputedStyle(e);return c.borderTopStyle+'|'+c.borderTopWidth+'|'+c.backgroundColor;});
+          const dashed=[...document.querySelectorAll('body *')].filter(e=>e.getClientRects().length&&['Top','Right','Bottom','Left'].some(sd=>getComputedStyle(e)['border'+sd+'Style']==='dashed'&&getComputedStyle(e)['border'+sd+'Width']!=='0px')).map(e=>e.id||String(e.className).split(' ')[0]);return {sl,dashed};});
+        ok(r.sl.length===3 && r.sl.every(x=>/^(none|solid)\|0px\|rgb\(241, 244, 248\)$/.test(x)) && !r.dashed.length && !e398.length, `v398 ${width}px 비교 빈 칸 — 선 없음 · 면 #F1F4F8 · 점선 0`, JSON.stringify({r,e398}));
+        await c398.close();
+      }
+    }
+    // v399 — 탭 막대 자리 실측: 1264 · 1440 → 머리줄 안(위 64px 안) · 오른쪽 끝 = 내용 오른쪽 끝(±1) · 그림자 · 면 없음 · 단추 44 가로(아이콘 왼쪽 · 이름 오른쪽) · 고른 탭 흰 면 + 파랑 700 · 로고와 안 겹침 · 스크롤해도 그 자리 /
+    //   1024 · 390 → 화면 아래 그대로(아래 끝 100px 안) · 고른 탭 글자 #2458FF
+    {
+      for(const width of [390,1024,1264,1440]){
+        const c399=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960});const q=await c399.newPage();const e399=[];q.on('pageerror',e=>e399.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);}); await q.waitForTimeout(500); await q.mouse.move(1,1);
+        const m=()=>q.evaluate(()=>{const n=document.getElementById('v208Nav'),r=n.getBoundingClientRect(),c=getComputedStyle(n),cur=n.querySelector('button[aria-current="page"]'),b=n.querySelector('button'),sv=b.querySelector('svg').getBoundingClientRect(),sp=b.querySelector('span').getBoundingClientRect();
+          const row=document.querySelector('.appbar .barrow1').getBoundingClientRect(),logo=document.querySelector('.appbar').getBoundingClientRect();
+          return {top:Math.round(r.top),bottom:Math.round(r.bottom),right:Math.round(r.right),rowR:Math.round(row.right),sh:c.boxShadow,bg:c.backgroundColor,bh:Math.round(b.getBoundingClientRect().height),side:sv.right<=sp.left+1,cur:getComputedStyle(cur).color+'|'+getComputedStyle(cur).backgroundColor+'|'+getComputedStyle(cur).fontWeight,left:Math.round(r.left),vh:innerHeight};});
+        const a=await m(); await q.evaluate(()=>scrollTo(0,600)); await q.waitForTimeout(250); const b=await m();
+        const wide=width>=1025;
+        const good=wide ? (a.top>=0&&a.bottom<=64&&Math.abs(a.right-a.rowR)<=1&&a.sh==='none'&&a.bg==='rgba(0, 0, 0, 0)'&&a.bh===44&&a.side&&a.cur==='rgb(36, 88, 255)|rgb(255, 255, 255)|700'&&a.left>=a.rowR-560&&b.top===a.top)
+                        : (a.bottom>=a.vh-100&&/^rgb\(36, 88, 255\)\|/.test(a.cur));
+        ok(good && !e399.length, `v399 ${width}px 탭 막대 — ${wide?'머리줄 오른쪽 가로 탭 · 내용 오른쪽 끝 · 그림자 없음 · 고른 탭 흰 면 파랑 · 스크롤 그대로':'화면 아래 그대로 · 고른 탭 글자 #2458FF'}`, JSON.stringify({a,b,e399}));
+        await c399.close();
+      }
+    }
+    // v400 — 「쓰는 곳」 막대 실측(390): 집값 막대 · 범례 rgb(70, 82, 98) · 부대비용 막대 · 범례 rgb(185, 194, 208) · 「오는 곳」 막대 색 그대로 · 화면에 남색 #1B3A8C 0곳
+    {
+      const c400=await browser.newContext({viewport:{width:390,height:900},isMobile:true,hasTouch:true});const q=await c400.newPage();
+      await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+        const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+      await q.goto('http://yeongkkeul.test/');
+      await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);}); await q.waitForTimeout(500);
+      const r=await q.evaluate(()=>{const bg=s=>{const e=document.querySelector(s);return e?getComputedStyle(e).backgroundColor:'none';};
+        const navy=[...document.querySelectorAll('#viewAnswer *')].filter(e=>e.getClientRects().length&&getComputedStyle(e).backgroundColor==='rgb(27, 58, 140)').length;
+        return {p:bg('#flow358 .f-bar .p'),x:bg('#flow358 .f-bar .x'),pk:bg('#flow358 .f-price .f-k i'),xk:bg('#flow358 .f-cost .f-k i'),c:bg('#flow358 .f-bar .c'),l:bg('#flow358 .f-bar .l'),navy};});
+      ok(r.p==='rgb(70, 82, 98)'&&r.pk===r.p&&r.x==='rgb(185, 194, 208)'&&r.xk===r.x&&r.c==='rgb(36, 88, 255)'&&r.l==='rgb(157, 180, 255)'&&r.navy===0, 'v400 390px 쓰는 곳 막대 — 집값 #465262 · 부대비용 #B9C2D0 · 범례 같은 색 · 오는 곳 파랑 그대로 · 남색 0', JSON.stringify(r));
+      await c400.close();
+    }
+    // v401 — 다크 모드 실측(320 · 390 · 1264 · colorScheme dark): 바탕 · 카드가 어두움(카드가 바탕보다 밝음) · 글자 대비 WCAG(4.5 / 큰 글자 3) 미달 0 —
+    //   첫 화면 · 입력 1·2단계 · 홈 · 실거래(지도 · 목록) · 비교 · 내 조건 · 지역 시트 · 부대비용 시트 /
+    //   스위치: 켬 막대 파랑 · 끈 막대 #3A3F47 · 손잡이 #F2F4F7 / <html class="yk-light">면 밝은 바탕으로 돌아옴 / html2canvas 감싸기가 복제본에 yk-light /
+    //   밝은 모드(390)에서는 다크 규칙이 안 걸림(바탕 #F1F4F8 · 카드 #FFF)
+    {
+      /* v403 안내 페이지 검사도 씀 — 블록 밖에서도 보이게 */ globalThis.SCAN401=`(()=>{const parse=s=>{const m=s.match(/rgba?\\(([^)]+)\\)/);if(!m)return null;const v=m[1].split(/[ ,\\/]+/).filter(Boolean).map(Number);return {r:v[0],g:v[1],b:v[2],a:v[3]===undefined?1:v[3]};};
+        const lum=c=>{const f=x=>{x/=255;return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4)};return 0.2126*f(c.r)+0.7152*f(c.g)+0.0722*f(c.b)};
+        const blend=(t,b)=>({r:t.r*t.a+b.r*(1-t.a),g:t.g*t.a+b.g*(1-t.a),b:t.b*t.a+b.b*(1-t.a),a:1});
+        function bgOf(el){const st=[];let e=el;while(e&&e.nodeType===1){const cs=getComputedStyle(e);if(cs.backgroundImage!=='none'&&!/^url/.test(cs.backgroundImage))return null;const c=parse(cs.backgroundColor);if(c&&c.a>0){st.push(c);if(c.a>=0.999)break;}e=e.parentElement;}
+          let c=parse(getComputedStyle(document.documentElement).backgroundColor);if(!c||c.a<1)c={r:255,g:255,b:255,a:1};for(let i=st.length-1;i>=0;i--)c=blend(st[i],c);return c;}
+        const out=[],seen=new Set(),w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+        while((n=w.nextNode())){const t=n.textContent.trim();if(!t)continue;const el=n.parentElement;if(!el||seen.has(el))continue;seen.add(el);
+          if(el.closest('svg,[aria-hidden="true"],#dealMap,.reach328-map,script,style,noscript,[hidden],button:disabled,.ep233-heading'))continue;
+          const pe=el.parentElement;if(pe&&pe.querySelector(':scope>input:disabled'))continue;   /* 꺼진 입력칸에 딸린 글자(부대비용 끈 줄의 「만원」)는 WCAG 예외 */
+          const r=el.getBoundingClientRect();if(r.width<2||r.height<2)continue;const cs=getComputedStyle(el);if(cs.visibility!=='visible'||+cs.opacity<0.5)continue;
+          const fg=parse(cs.color),bg=bgOf(el);if(!bg||!fg)continue;const f=fg.a<1?blend(fg,bg):fg;const L1=lum(f),L2=lum(bg);const ratio=(Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05);
+          const px=parseFloat(cs.fontSize),bold=+cs.fontWeight>=700;const need=(px>=24||(px>=18.66&&bold))?3:4.5;if(ratio<need)out.push((el.id||String(el.className).split(' ')[0]||el.tagName)+':'+t.slice(0,10)+':'+ratio.toFixed(2));}
+        return out;})()`;
+      const bad={};
+      for(const width of [320,390,1264]){
+        const c401=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:'dark'});const q=await c401.newPage();const e401=[];q.on('pageerror',e=>e401.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2,3,4,5].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000,26000,23000,21000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:6}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        const scan=async k=>{await q.mouse.move(1,1);await q.waitForTimeout(450);const r=await q.evaluate(SCAN401);if(r.length)bad[width+':'+k]=r;};
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready); await scan('첫');
+        const base=await q.evaluate(()=>({bg:getComputedStyle(document.body).backgroundColor}));
+        await q.locator('#welcomeStart232').click(); await scan('입력1');
+        await q.evaluate(()=>{S.sgg='11590';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();}); await q.locator('#stepNext353').click(); await scan('입력2');
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await scan('홈');
+        const card=await q.evaluate(()=>{const lum=s=>{const v=s.match(/[\d.]+/g).map(Number);const f=x=>{x/=255;return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4)};return 0.2126*f(v[0])+0.7152*f(v[1])+0.0722*f(v[2]);};
+          const b=getComputedStyle(document.body).backgroundColor,c=getComputedStyle(document.getElementById('payTile')).backgroundColor;return {b,c,lb:lum(b),lc:lum(c)};});
+        await q.evaluate(()=>window.yk208Navigate('map')); await q.waitForTimeout(900); await scan('실거래');
+        if(await q.locator('#dealListTab').isVisible().catch(()=>false)){ await q.locator('#dealListTab').click(); await scan('목록'); }
+        await q.evaluate(()=>window.yk208Navigate('compare')); await scan('비교');
+        await q.evaluate(()=>window.yk208Navigate('conditions')); await scan('내조건');
+        const sw1=await q.evaluate(()=>{const i=document.getElementById('mainNoLoan');if(!i)return null;const off=getComputedStyle(i).backgroundColor,knob=getComputedStyle(i,'::before').backgroundColor;i.click();const on=getComputedStyle(document.getElementById('mainNoLoan')).backgroundColor;document.getElementById('mainNoLoan').click();return {off,on,knob};});
+        await q.evaluate(()=>window.yk208Navigate('home')); await q.waitForTimeout(300); await q.evaluate(()=>openQ(2,'region')); await scan('지역시트');
+        await q.evaluate(()=>closeSheet('q')); await q.waitForTimeout(300); await q.locator('#flow358 .f-cost').click(); await scan('비용시트');
+        const sw2=await q.evaluate(()=>[...document.querySelectorAll('.sw')].filter(e=>e.getClientRects().length).map(e=>(e.classList.contains('on')?'on':'off')+'|'+getComputedStyle(e,'::before').backgroundColor+'|'+getComputedStyle(e,'::after').backgroundColor));
+        const light=await q.evaluate(()=>{document.documentElement.classList.add('yk-light');const b=getComputedStyle(document.body).backgroundColor;document.documentElement.classList.remove('yk-light');return b;});
+        const cap=await q.evaluate(async()=>{let seen=null;window.html2canvas=function(el,opts){const d=document.implementation.createHTMLDocument('x');if(opts&&typeof opts.onclone==='function')opts.onclone(d);seen=d.documentElement.className;return Promise.resolve(null);};await window.html2canvas(document.body,{});return seen;});
+        const good=card.lb<0.03&&card.lc>card.lb&&card.lc<0.06&&base.bg===card.b&&sw1&&sw1.on==='rgb(31, 91, 255)'&&sw1.off==='rgb(58, 63, 71)'&&sw1.knob==='rgb(242, 244, 247)'
+          &&sw2.length>=4&&sw2.every(x=>x.startsWith('on|rgb(31, 91, 255)|')||x.startsWith('off|rgb(58, 63, 71)|'))&&sw2.every(x=>x.endsWith('|rgb(242, 244, 247)'))&&light==='rgb(241, 244, 248)'&&cap==='yk-light'&&!e401.length;
+        ok(good && !Object.keys(bad).some(k=>k.startsWith(width+':')), `v401 ${width}px 다크 — 바탕 · 카드 어두움 · 글자 대비 미달 0(화면 9곳) · 스위치 켬 파랑 · 끔 #3A3F47 · 손잡이 흰색 · yk-light면 밝게 · 저장 복제본 yk-light`,
+           JSON.stringify({card,sw1,sw2,light,cap,bad,e401}).slice(0,3000));
+        await c401.close();
+      }
+      // v402 — 밝은 화면 글자 대비 미달 0(320 · 390 · 1264 · 같은 9곳) — v401 다크와 같은 훑기
+      const bad402={};
+      for(const width of [320,390,1264]){
+        const c402=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:'light'});const q=await c402.newPage();
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2,3,4,5].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000,26000,23000,21000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:6}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        const scan=async k=>{await q.mouse.move(1,1);await q.waitForTimeout(450);const r=await q.evaluate(SCAN401);if(r.length)bad402[width+':'+k]=r;};
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready); await scan('첫');
+        await q.locator('#welcomeStart232').click(); await scan('입력1');
+        await q.evaluate(()=>{S.sgg='11590';S.sido='서울특별시';S.group='seoul';S.houseStatus='none';renderAnswered();syncCta();}); await q.locator('#stepNext353').click(); await scan('입력2');
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await scan('홈');
+        await q.evaluate(()=>window.yk208Navigate('map')); await q.waitForTimeout(900); await scan('실거래');
+        if(await q.locator('#dealListTab').isVisible().catch(()=>false)){ await q.locator('#dealListTab').click(); await scan('목록'); }
+        await q.evaluate(()=>window.yk208Navigate('compare')); await scan('비교');
+        await q.evaluate(()=>window.yk208Navigate('conditions')); await scan('내조건');
+        await q.evaluate(()=>window.yk208Navigate('home')); await q.waitForTimeout(300); await q.evaluate(()=>openQ(2,'region')); await scan('지역시트');
+        await q.evaluate(()=>closeSheet('q')); await q.waitForTimeout(300); await q.locator('#flow358 .f-cost').click(); await scan('비용시트');
+        ok(!Object.keys(bad402).some(k=>k.startsWith(width+':')), `v402 ${width}px 밝은 화면 글자 대비 미달 0(화면 9곳)`, JSON.stringify(bad402).slice(0,2000));
+        await c402.close();
+      }
+      const c401l=await browser.newContext({viewport:{width:390,height:900},isMobile:true,hasTouch:true,colorScheme:'light'});const ql=await c401l.newPage();
+      await ql.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+        const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+      await ql.goto('http://yeongkkeul.test/'); await ql.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);}); await ql.waitForTimeout(400);
+      const lt=await ql.evaluate(()=>({b:getComputedStyle(document.body).backgroundColor,c:getComputedStyle(document.getElementById('payTile')).backgroundColor,ink:getComputedStyle(document.querySelector('.v232-result-heading h2')).color}));
+      ok(lt.b==='rgb(241, 244, 248)'&&lt.c==='rgb(255, 255, 255)'&&lt.ink==='rgb(25, 35, 50)', 'v401 390px 밝은 모드 — 다크 규칙 안 걸림(바탕 #F1F4F8 · 카드 #FFF · 제목 먹색)', JSON.stringify(lt));
+      await c401l.close();
+    }
+    // v403 — 안내 페이지 15개 실측(밝게 · 다크 × 390 · 1264): 글자 대비 미달 0 · 다크면 바탕이 어두움(밝기 0.05 미만) · 밝게면 바탕 밝음 · JS 오류 없음
+    {
+      const G403=['about','articles','budget-examples','buying-costs','couple-income','dsr-income-table','existing-debt','guide','loan-limit','price-band-cap','privacy','rate-type','regulated-area','room-deduction','switch-home'];
+      for(const scheme of ['light','dark']) for(const width of [390,1264]){
+        const c403=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:scheme});const q=await c403.newPage();const e403=[];q.on('pageerror',e=>e403.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='yeongkkeul.test')return route.abort();
+          let file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!fs.existsSync(file)&&fs.existsSync(file+'.html'))file+='.html';
+          if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        const bad={},bgs={};
+        for(const g of G403){ await q.goto('http://yeongkkeul.test/'+g); await q.evaluate(()=>document.fonts.ready); await q.waitForTimeout(120);
+          const r=await q.evaluate(SCAN401); if(r.length) bad[g]=r.slice(0,4);
+          bgs[g]=await q.evaluate(()=>{const v=getComputedStyle(document.body).backgroundColor;const c=v.match(/[\d.]+/g).map(Number);const a=c[3]===undefined?1:c[3];const h=a<0.5?getComputedStyle(document.documentElement).backgroundColor.match(/[\d.]+/g).map(Number):c;
+            const f=x=>{x/=255;return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4)};return +(0.2126*f(h[0])+0.7152*f(h[1])+0.0722*f(h[2])).toFixed(3);}); }
+        const bgOK=Object.values(bgs).every(L=>scheme==='dark'?L<0.05:L>0.8);
+        ok(!Object.keys(bad).length && bgOK && !e403.length, `v403 ${scheme==='dark'?'다크':'밝게'} ${width}px 안내 페이지 15개 — 글자 대비 미달 0 · 바탕 ${scheme==='dark'?'어두움':'밝음'}`, JSON.stringify({bad,bgs,e403}).slice(0,2500));
+        await c403.close();
       }
     }
     ok(!errors.length,'v321 브라우저 JavaScript 실행 오류 없음',errors.join('\n'));
