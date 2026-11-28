@@ -1010,6 +1010,16 @@ ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 �
   const g=fs.readFileSync(path.join(ROOT,'guide.html'),'utf8');
   ok(/<style id="v403-caption">[\s\S]*html body main \.example figcaption\{color:#607089!important\}/.test(g), 'v403 계산 방법 글 예시 상자 그림 설명 #607089(대비 4.5 이상)');
 }
+// 93) v404 — D2: 입체 아이콘 7개 :root --ic-* · 떠 있는 카드 · 파란 카드 그러데이션(바탕색 #2458FF 유지) · 칸 머리 아이콘 36 + 19 · 범례 → 목록 줄 · 쓰는 곳 막대 #7D8AA0/#C8D0DB · 「쓰는 곳」 비율은 엔진 pair()와 같은 규칙 · 다크 그림자 검게
+{
+  const c404 = ((html.match(/<style id="v404-d2">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const ics=['coin','bank','house','receipt','cal','pin','wallet'].every(k=>new RegExp('--ic-'+k+':url\\("data:image/svg\\+xml,').test(c404));
+  const gen=fs.readFileSync(path.join(ROOT,'tools','dark.mjs'),'utf8');
+  ok(ics && /background-color:#2458FF!important;background-image:radial-gradient\(/.test(c404) && /\.f-bar \.p\{background:linear-gradient\(180deg,#8F9BB0,#7D8AA0\)!important\}/.test(c404) && /\.f-price \.f-k i\{background:#7D8AA0!important\}/.test(c404)
+     && /var pn=\(P>0 && C>=0\) \? Math\.round\(P\/\(P\+C\)\*100\) : null;/.test(html) && /\(100-pn\)\+'%'/.test(html)
+     && /role==='shadow'/.test(gen) && /prop\.startsWith\('--ic-'\)/.test(gen) && !/\.5px/.test(c404),
+     'v404 규칙 — 입체 아이콘 7개 · 파란 카드 바탕색 유지 + 그러데이션 · 쓰는 곳 막대 · 비율(엔진 pair 규칙) · 생성기 그림자/아이콘 처리');
+}
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -1304,7 +1314,8 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
           t:['#easyMarket h2','#reach328 h2','#payTile .ans-k'].map(q=>{const c=getComputedStyle(document.querySelector(q));return c.fontSize+'/'+c.fontWeight}),
           pad:['easyMarket','reach328','payTile'].map(i=>getComputedStyle(document.getElementById(i)).paddingTop),gap:getComputedStyle(document.getElementById('viewAnswer')).rowGap,over:document.documentElement.scrollWidth>innerWidth+1}));
         ok(v.key && !v.map && v.no===0 && v.rows>0 && v.hdHidden, `v340·v354 ${width}px 홈 카드: 작은 지도·번호 없음 · 대표 거래 목록은 홈에서 감춤(실거래 탭에 같은 목록)`, JSON.stringify(v));
-        ok(v.t.every(x=>x==='16px/700') && v.pad.every(x=>x==='16px') && v.gap==='12px' && !v.over, `v340·v354 ${width}px 세 카드(홈 2 · 실거래 탭 25개 구 1) 제목 16px/700 · 안쪽 16px · 카드 사이 12px`, JSON.stringify(v));
+        /* v404 — 카드 제목 16 → 19(아이콘 36과 짝 · 오너 D2 승인) — 세 카드가 같은 크기라는 목적은 그대로 */
+        ok(v.t.every(x=>x==='19px/700') && v.pad.every(x=>x==='16px') && v.gap==='12px' && !v.over, `v340·v354·v404 ${width}px 세 카드(홈 2 · 실거래 탭 25개 구 1) 제목 19px/700 같음 · 안쪽 16px · 카드 사이 12px`, JSON.stringify(v));
       }
       await page.evaluate(()=>window.yk208Navigate('map'));
       await page.waitForFunction(()=>window.__ykMap&&window.__ykMap.isReady(),null,{timeout:15000});
@@ -1516,7 +1527,7 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         await page.setViewportSize({width,height:844}); await page.waitForTimeout(150);
         const h354=await page.evaluate(()=>{const m=document.getElementById('easyMarket'),c=document.getElementById('heroContext').getBoundingClientRect(),o=document.getElementById('marketOpen').getBoundingClientRect();
           return {tab:document.querySelector('[data-v208-tab="map"]').innerText.trim(),h:Math.round(m.getBoundingClientRect().height),same:o.top<c.bottom&&c.top<o.bottom,right:o.left>=c.right,below:o.top>=c.bottom-1&&o.width>=m.getBoundingClientRect().width-60,   /* v369 — 374px 이하는 버튼이 문장 아래 전체 폭 */ txt:c.height>0,doc:document.documentElement.scrollHeight,reach:!!document.getElementById('reach328').getClientRects().length,over:document.documentElement.scrollWidth>innerWidth+1};});
-        ok(h354.tab==='실거래' && h354.h<=(width<360?320:290) && (width<375 ? h354.below : (h354.same && h354.right)) && h354.txt && !h354.reach && !h354.over && (width>=960 || h354.doc<=1850), `v354·v358·v363 ${width}px 홈 — 탭 「실거래」 · 실거래 비교(「4」 + 미니 분포 + 요약 옆 버튼) · 25개 구 카드 없음`, JSON.stringify(h354));
+        ok(h354.tab==='실거래' && h354.h<=(width<360?320:290) && (width<375 ? h354.below : (h354.same && h354.right)) && h354.txt && !h354.reach && !h354.over && (width>=960 || h354.doc<=2150) /* v404 — D2 목록 줄 4개(현금 · 대출 · 집값 · 부대비용)로 홈이 약 180px 길어짐(390: 1795 → 1965 · 320: 1845 → 2098) — 오너가 시안 D2로 고름. 옛 한도 1850 */, `v354·v358·v363 ${width}px 홈 — 탭 「실거래」 · 실거래 비교(「4」 + 미니 분포 + 요약 옆 버튼) · 25개 구 카드 없음`, JSON.stringify(h354));
       }
       await page.setViewportSize({width:390,height:844});
       await page.locator('#marketOpen').click(); await page.waitForTimeout(300);
@@ -1634,7 +1645,9 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       const h369=await page.evaluate(()=>{const q=['#flow358 .f-step','#payTile>.ans-k','#easyMarket>.m358','#more341>h2'];const st=[...document.querySelectorAll(q.join(','))].filter(e=>e.getClientRects().length).map(e=>{const c=getComputedStyle(e);return c.fontSize+'/'+c.fontWeight+'/'+c.color;});
         const b=[...document.querySelectorAll('#flow358 .f-step b,#viewAnswer .n358')].filter(e=>e.getClientRects().length).map(e=>Math.round(e.getBoundingClientRect().width));
         return {n:st.length,kinds:[...new Set(st)],badges:[...new Set(b)],hm:!!document.getElementById('heroMonthly356'),line:getComputedStyle(document.getElementById('payTile'),'::before').content,join:getComputedStyle(document.querySelector('#flow358 .f-join span')).borderTopWidth};});
-      ok(h369.n===5 && h369.kinds.length===1 && /^16px\/700\//.test(h369.kinds[0]) && h369.badges.length===1 && h369.badges[0]===24 && !h369.hm && (h369.line==='none'||h369.line==='normal') && h369.join==='0px', 'v369 홈 카드 머리 한 모양(5곳 같은 글자 · 번호 24px) · 머리 월 상환액 줄 없음 · 연결선 · 합계 테두리 없음', JSON.stringify(h369));
+      /* v404 — 머리 글자 16 → 19 · 번호(24px) → 입체 아이콘 36(번호는 감춤) — 「한 모양」 목적 그대로 */
+      const ic369=await page.evaluate(()=>[...document.querySelectorAll('#flow358 .f-step,#payTile>.ans-k,#easyMarket>.m358')].filter(e=>e.getClientRects().length).map(e=>{const c=getComputedStyle(e,'::before');return c.width+'|'+(c.backgroundImage.startsWith('url(')?'ic':'-');}));
+      ok(h369.n===5 && h369.kinds.length===1 && /^19px\/700\//.test(h369.kinds[0]) && h369.badges.length===0 && ic369.length===4 && ic369.every(x=>x==='36px|ic') && !h369.hm && (h369.line==='none'||h369.line==='normal') && h369.join==='0px', 'v369·v404 홈 카드 머리 한 모양(5곳 19px 굵게 · 번호 대신 입체 아이콘 36) · 머리 월 상환액 줄 없음 · 연결선 · 합계 테두리 없음', JSON.stringify({h369,ic369}));
       // v358 — 자금 흐름 그림 = 원래 표시값(세 조건) · 글자 13px 이상 · 부대비용 → 시트
       const f358=async()=>page.evaluate(()=>{const f=document.getElementById('flow358'),t=id=>(document.getElementById(id).textContent||'').replace(/\s+/g,''),v=q=>(f.querySelector(q+' .f-v').childNodes[0]?.textContent||'').replace(/\s+/g,'');
         const sizes=[...f.querySelectorAll('*')].filter(e=>e.childNodes.length&&[...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())&&e.getClientRects().length).map(e=>parseFloat(getComputedStyle(e).fontSize));
@@ -2392,8 +2405,9 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
           const pay=document.querySelector('#payTile .n358'),tm=document.getElementById('tileMonthly');
           return {n:all.length,look:[...new Set(all.map(b=>{const c=getComputedStyle(b);return c.backgroundColor+'|'+c.fontSize+'|'+c.color;}))],flowL:[...f.querySelectorAll('.f-step b')].map(b=>Math.round(L(b)-bar)),payL:Math.round(L(pay)-tm.getBoundingClientRect().left)};});
         /* v395 — 입력 행 아이콘은 없앰(결과 카드 머리처럼 · 오너 시안 승인 2026-11-27) → 6곳 18px 잠금을 「0곳」으로 옮김. */
-        ok(ic.length===0 && bd.n===4 && bd.look.length===1 && bd.look[0]==='rgba(0, 0, 0, 0)|16px|rgb(36, 88, 255)' && bd.flowL.every(v=>Math.abs(v)<=1) && Math.abs(bd.payL)<=2 && !e393.length,
-           `v393·v395 ${width}px 꾸밈 덜기 — 입력 행 아이콘 없음(v395) · 번호 4곳 원 없음 16px 파랑 · 숫자 왼쪽 끝 맞춤`, JSON.stringify({ic,bd,e393}));
+        /* v404 — 결과 구획 번호를 아이콘으로 바꿔(D2) 번호 모양·번호 기준 왼쪽 맞춤 조건을 뺐다. 번호가 다시 보이면 실패. */
+        ok(ic.length===0 && bd.n===0 && !e393.length,
+           `v393·v395·v404 ${width}px 꾸밈 덜기 — 입력 행 아이콘 없음(v395) · 결과 구획 번호 숨김(v404 아이콘으로 대체)`, JSON.stringify({ic,bd,e393}));
         await c393.close();
       }
     }
@@ -2564,7 +2578,9 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
       const r=await q.evaluate(()=>{const bg=s=>{const e=document.querySelector(s);return e?getComputedStyle(e).backgroundColor:'none';};
         const navy=[...document.querySelectorAll('#viewAnswer *')].filter(e=>e.getClientRects().length&&getComputedStyle(e).backgroundColor==='rgb(27, 58, 140)').length;
         return {p:bg('#flow358 .f-bar .p'),x:bg('#flow358 .f-bar .x'),pk:bg('#flow358 .f-price .f-k i'),xk:bg('#flow358 .f-cost .f-k i'),c:bg('#flow358 .f-bar .c'),l:bg('#flow358 .f-bar .l'),navy};});
-      ok(r.p==='rgb(70, 82, 98)'&&r.pk===r.p&&r.x==='rgb(185, 194, 208)'&&r.xk===r.x&&r.c==='rgb(36, 88, 255)'&&r.l==='rgb(157, 180, 255)'&&r.navy===0, 'v400 390px 쓰는 곳 막대 — 집값 #465262 · 부대비용 #B9C2D0 · 범례 같은 색 · 오는 곳 파랑 그대로 · 남색 0', JSON.stringify(r));
+      /* v404 — 막대가 광택 그러데이션(background-image)이 되어 색은 그림에서 읽음 · 집값 #465262(거의 검정으로 보임 · 오너 「검은색 막대 수정」) → #7D8AA0 · 부대비용 → #C8D0DB · 점(범례)과 같은 색 */
+      const gi=await q.evaluate(()=>{const g=s=>{const e=document.querySelector(s);return e?getComputedStyle(e).backgroundImage:'';};return {p:g('#flow358 .f-bar .p'),x:g('#flow358 .f-bar .x'),c:g('#flow358 .f-bar .c'),l:g('#flow358 .f-bar .l')};});
+      ok(gi.p.includes('rgb(125, 138, 160)')&&r.pk==='rgb(125, 138, 160)'&&gi.x.includes('rgb(200, 208, 219)')&&r.xk==='rgb(200, 208, 219)'&&gi.c.includes('rgb(36, 88, 255)')&&gi.l.includes('rgb(147, 174, 255)')&&r.navy===0&&!/rgb\(70, 82, 98\)/.test(gi.p), 'v400·v404 390px 쓰는 곳 막대 — 집값 #7D8AA0 · 부대비용 #C8D0DB(점과 같은 색) · 오는 곳 파랑 · 남색 · 먹색 막대 없음', JSON.stringify({r,gi}));
       await c400.close();
     }
     // v401 — 다크 모드 실측(320 · 390 · 1264 · colorScheme dark): 바탕 · 카드가 어두움(카드가 바탕보다 밝음) · 글자 대비 WCAG(4.5 / 큰 글자 3) 미달 0 —
@@ -2664,6 +2680,38 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         const bgOK=Object.values(bgs).every(L=>scheme==='dark'?L<0.05:L>0.8);
         ok(!Object.keys(bad).length && bgOK && !e403.length, `v403 ${scheme==='dark'?'다크':'밝게'} ${width}px 안내 페이지 15개 — 글자 대비 미달 0 · 바탕 ${scheme==='dark'?'어두움':'밝음'}`, JSON.stringify({bad,bgs,e403}).slice(0,2500));
         await c403.close();
+      }
+    }
+    // v404 — D2 실측(320 · 390 · 1264 밝게 + 390 다크): 「쓰는 곳」 집값 · 부대비용 비율 = round(집값/(집값+부대비용)×100) · 합 100 /
+    //   범례 4줄: 아이콘 32(그림) + 점 8(막대와 같은 색) + 금액 오른쪽 · 칸 머리 아이콘 36 / 결과 4장 · 실거래 카드 그림자 있음 / 파란 카드 바탕색 #2458FF + 그러데이션 + 집 아이콘 / 다크면 그림자 검정
+    {
+      for(const [width,scheme] of [[320,'light'],[390,'light'],[1264,'light'],[390,'dark']]){
+        const c404=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:scheme});const q=await c404.newPage();const e404=[];q.on('pageerror',e=>e404.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2,3].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000,26000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:4}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/');
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await q.waitForTimeout(400);
+        const r=await q.evaluate(()=>{const man=t=>{t=String(t||'').replace(/,/g,'');let v=0,m=t.match(/(\d+(?:\.\d+)?)\s*억/),k=t.match(/(\d+)\s*만/);if(m)v+=parseFloat(m[1])*10000;if(k)v+=+k[1];return v;};
+          const val=s=>{const e=document.querySelector(s+' .f-v');return e?e.firstChild.textContent.trim():'';},pc=s=>{const e=document.querySelector(s+' .f-v em');return e?e.textContent.trim():'';};
+          const P=man(val('#flow358 .f-price')),C=man(val('#flow358 .f-cost')),n=Math.round(P/(P+C)*100);
+          const rows=['.f-cash','.f-loan','.f-price','.f-cost'].map(s=>{const k=document.querySelector('#flow358 '+s+' .f-k'),i=k.querySelector('i'),b=getComputedStyle(k,'::before');return {ic:b.width+'|'+b.backgroundImage.slice(0,4),dot:Math.round(i.getBoundingClientRect().width)+'|'+getComputedStyle(i).backgroundColor};});
+          const bars={'.f-cash':'rgb(36, 88, 255)','.f-loan':'rgb(157, 180, 255)','.f-price':'rgb(125, 138, 160)','.f-cost':'rgb(200, 208, 219)'};
+          const sh=['fundingOverview','payTile','easyMarket','more341'].map(id=>getComputedStyle(document.getElementById(id)).boxShadow);
+          const h=document.querySelector('#fundingOverview>.rhead'),hc=getComputedStyle(h),hb=getComputedStyle(h,'::before');
+          const heads=[...document.querySelectorAll('#flow358 .f-step,#payTile>.ans-k,#easyMarket>.m358')].map(e=>getComputedStyle(e,'::before').width);
+          return {pp:pc('#flow358 .f-price'),cp:pc('#flow358 .f-cost'),n,rows,dotOK:rows.every((x,k)=>x.dot==='8|'+Object.values(bars)[k]),icOK:rows.every(x=>x.ic==='32px|url('),sh,hero:hc.backgroundColor+'|'+hc.backgroundImage.slice(0,15)+'|'+hb.backgroundImage.slice(0,4)+'|'+hb.width,heads,card:getComputedStyle(document.getElementById('fundingOverview')).backgroundColor,xbar:getComputedStyle(document.querySelector('#flow358 .f-bar .x')).backgroundImage};});
+        const light=scheme==='light';
+        /* v404 — 다크에서 점 4개가 카드 바탕과 대비 1.8 이상(부대비용 점 #C8D0DB가 일반 규칙으로 #04070B가 되어 사라졌던 것) · 부대비용 막대 결 rgb(102,112,128)→rgb(92,101,115) */
+        const lum=t=>{const m=String(t).match(/[\d.]+/g)||[0,0,0];const f=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};return 0.2126*f(+m[0])+0.7152*f(+m[1])+0.0722*f(+m[2]);};
+        const cr=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);};
+        const darkOK=light || (r.rows.every(x=>cr(x.dot.split('|')[1],r.card)>=1.8) && r.rows[3].dot==='8|rgb(92, 101, 115)' && /rgb\(102, 112, 128\).*rgb\(92, 101, 115\)/.test(r.xbar));
+        const shOK=r.sh.every(s=>s!=='none' && (light ? /rgba\(16, 24, 40/.test(s) : /rgba\(0, 0, 0/.test(s) && !/rgba\(16, 24, 40/.test(s)));
+        const good=r.pp===r.n+'%' && r.cp===(100-r.n)+'%' && (light?r.dotOK:true) && r.icOK && shOK && r.hero.startsWith('rgb(36, 88, 255)|radial-gradient|url(|72px') && r.heads.length===4 && r.heads.every(x=>x==='36px') && darkOK && !e404.length;
+        ok(good, `v404 ${width}px ${light?'밝게':'다크'} D2 — 쓰는 곳 비율(합 100) · 목록 줄 아이콘 32 + 점(막대 색) · 칸 머리 아이콘 36 · 카드 그림자${light?'':' 검정 · 점 4개 카드와 대비 1.8+'} · 파란 카드 그러데이션 + 집`, JSON.stringify({r,e404}).slice(0,2500));
+        await c404.close();
       }
     }
     ok(!errors.length,'v321 브라우저 JavaScript 실행 오류 없음',errors.join('\n'));
