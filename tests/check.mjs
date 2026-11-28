@@ -1020,6 +1020,36 @@ ok(!/id="v356-hero-monthly"/.test(html) && !/heroMonthly356/.test(html), 'v369 �
      && /role==='shadow'/.test(gen) && /prop\.startsWith\('--ic-'\)/.test(gen) && !/\.5px/.test(c404),
      'v404 규칙 — 입체 아이콘 7개 · 파란 카드 바탕색 유지 + 그러데이션 · 쓰는 곳 막대 · 비율(엔진 pair 규칙) · 생성기 그림자/아이콘 처리');
 }
+// 95) v406 — 첫 화면 · 실거래 탭 D2 톤: 서울 25칸 그림을 파란 그러데이션 카드 안에(유리 칸 · 흰 「내 예산」 칸 · 동전/은행 아이콘) · 생성기는 그 그림 색을 다크에서도 그대로 · 자금 글 줄 책 아이콘 · 실거래 지역 머리 핀 · 25개 구 머리 입체 타일 · 지도 범례 둥근 점
+{
+  const c406 = ((html.match(/<style id="v406-welcome-deals">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const gen=fs.readFileSync(path.join(ROOT,'tools','dark.mjs'),'utf8');
+  ok(/--ic-grid:url\("data:image\/svg\+xml,/.test(c406) && /\.welcome232-scene\{[^}]*height:224px!important[^}]*radial-gradient\(/.test(c406) && /rect\[width="40"\]\[fill="#2458FF"\]\{fill:#FFFFFF!important/.test(c406)
+     && /var\(--ic-coin\)/.test(c406) && /var\(--ic-bank\)/.test(c406) && /#dealMapLegend i\{[^}]*border-radius:50%!important/.test(c406) && /const KEEP_SEL=\/\\\.welcome232-scene\\b\//.test(gen)
+     && !/\.5px/.test(c406) && html.indexOf('<style id="v406-welcome-deals">')<html.indexOf('<style id="v401-dark">'),
+     'v406 규칙 — 첫 화면 파란 카드 그림(높이 224 · 흰 「내 예산」 칸 · 동전/은행) · 생성기 KEEP_SEL · 25개 구 입체 타일 아이콘 · 지도 범례 둥근 점 · 다크 덩어리보다 앞');
+}
+// 96) v407 — 주택 보유 세 선택지 입체 아이콘 36 · 비교 빈 화면 입체 비교 아이콘 64 · 시트 금액 칸 숫자 왼쪽 맞춤(입력 화면과 같게)
+{
+  const c407 = ((html.match(/<style id="v407-sheets-compare">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const ics=['first','key','homes','compare'].every(k=>new RegExp('--ic-'+k+':url\\("data:image/svg\\+xml,').test(c407));
+  ok(ics && /\[data-house="first"\]::before\{background-image:var\(--ic-first\)/.test(c407) && /\[data-house="none"\]::before\{background-image:var\(--ic-key\)/.test(c407) && /\[data-house="multi"\]::before\{background-image:var\(--ic-homes\)/.test(c407)
+     && /\.v208-empty-mark\{[^}]*var\(--ic-compare\)/.test(c407) && /#qSheet :is\(\.single-money-field,\.mfield\) input\{text-align:left!important\}/.test(c407)
+     && !/\.5px/.test(c407) && html.indexOf('<style id="v407-sheets-compare">')<html.indexOf('<style id="v401-dark">'),
+     'v407 규칙 — 주택 보유 입체 아이콘 3개 · 비교 빈 화면 입체 아이콘 · 시트 금액 칸 왼쪽 맞춤 · 다크 덩어리보다 앞');
+}
+// 94) v405 — 목록 줄 비율을 금액 옆 괄호로(오너 「30억이면 (%)가 낫지 않아? 위아래다」) · 좁은 화면 한 줄 맞춤 · 결과 아래(이미지 저장 ~ 더 알아보기) D2 · 공유 미리보기 그림 새로
+{
+  const c405a = ((html.match(/<style id="v405-flow-inline">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const c405b = ((html.match(/<style id="v405-result-bottom">[\s\S]*?<\/style>/) || [])[0] || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const og = fs.readFileSync(path.join(ROOT,'og-image.png'));
+  const ogW = og.readUInt32BE(16), ogH = og.readUInt32BE(20), ogPng = og.slice(1,4).toString()==='PNG';
+  const ics=['book','doc','globe','shield','refresh'].every(k=>new RegExp('--ic-'+k+':url\\("data:image/svg\\+xml,').test(c405b));
+  ok(/\.f-v em\{display:inline!important/.test(c405a) && /em::before\{content:'\('\}/.test(c405a) && /em::after\{content:'\)'\}/.test(c405a) && /em:empty\{display:none!important\}/.test(c405a)
+     && /@media \(max-width:359px\)/.test(c405a) && ics && /#more341>h2::before\{[^}]*var\(--ic-book\)/.test(c405b) && /#restartBtn::after\{display:none!important\}/.test(c405b)
+     && ogPng && ogW===1200 && ogH===630 && og.length<200000 && !/\.5px/.test(c405a+c405b) && html.indexOf('<style id="v405-result-bottom">')<html.indexOf('<style id="v401-dark">'),
+     'v405 규칙 — 비율 괄호(빈 비율은 숨김) · 좁은 화면 한 줄 · 더 알아보기 아이콘 5개 · 공유 그림 1200×630 PNG 200KB 미만 · 다크 덩어리보다 앞', JSON.stringify({ogW,ogH,size:og.length}));
+}
 // YK_PLAYWRIGHT_PATH, YK_CHROMIUM_PATH 필수. YK_CHROMIUM_PACKAGE/ YK_AXE_PATH/ YK_QA_DIR 선택.
 if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
   const {pathToFileURL}=await import('node:url');
@@ -1104,13 +1134,13 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
     {
       mode='success';await page.setViewportSize({width:390,height:844});await page.evaluate(()=>DEAL.cache.clear());await seed();reach328On=true;
       await page.evaluate(()=>window.yk208Navigate('home'));
-      const nb354=await page.evaluate(()=>Math.round(document.querySelector('#easyMarket .section-symbol').getBoundingClientRect().width));   /* v354 — 25개 구 카드가 실거래 탭으로 옮김: 옮기기 전 옆 카드(실거래 비교, 제목은 낭독용으로 남음) 아이콘과 같은 크기 */
+      const nb354=await page.evaluate(()=>{const m=document.querySelector('#easyMarket .m358');return m?Math.round(parseFloat(getComputedStyle(m,'::before').width)):Math.round(document.querySelector('#easyMarket .section-symbol').getBoundingClientRect().width);});   /* v406 — 칸 머리 아이콘이 v404부터 ::before 입체 아이콘 36(옛 선 아이콘 26은 감춤) → 그 크기와 비교 */   /* v354 — 25개 구 카드가 실거래 탭으로 옮김: 옮기기 전 옆 카드(실거래 비교, 제목은 낭독용으로 남음) 아이콘과 같은 크기 */
       await page.evaluate(()=>window.yk208Navigate('map')); await page.evaluate(()=>window.__yk357&&window.__yk357.show('reach',{query:false}));   /* v354·v357 — 25개 구 카드는 실거래 탭 「서울 25개 구」(검사는 조회 전 상태도 보므로 자동 조회 없이) */
       const priceCalls=()=>reach328Calls.length;
       ok(await page.locator('#reach328').isVisible() && await page.locator('#reach328Go').isVisible() && !(await page.locator('#reach328Body').isVisible()), 'v328 조회 전 — 버튼만 표시');
       reach328Budget=await page.evaluate(()=>dealBudgetFor('11320'));
       ok(await page.evaluate(()=>{renderReport(LASTVIEW);const b=document.getElementById('rReach328');return !!b && b.hidden && !b.innerHTML;}), 'v332 조회 전 — 저장 이미지에 격자 없음(이전과 같은 이미지)');
-      const v337a=await page.evaluate((nb354)=>{const g=document.getElementById('reach328Go'),m=document.getElementById('marketOpen');const c=e=>getComputedStyle(e).backgroundColor;return {go:c(g),market:m&&m.offsetParent?c(m):null,sym:!!document.querySelector('#reach328Title .section-symbol svg'),symW:Math.round(document.querySelector('#reach328Title .section-symbol').getBoundingClientRect().width),nbW:nb354};},nb354); /* v340 — 고정 30px 대신 옆 카드 아이콘과 비교 */
+      const v337a=await page.evaluate((nb354)=>{const g=document.getElementById('reach328Go'),m=document.getElementById('marketOpen');const c=e=>getComputedStyle(e).backgroundColor;return {go:c(g),market:m&&m.offsetParent?c(m):null,sym:(()=>{const e=document.querySelector('#reach328Title .section-symbol');return !!e && (getComputedStyle(e).backgroundImage.startsWith('url(') || !!e.querySelector('svg'));})(),symW:Math.round(document.querySelector('#reach328Title .section-symbol').getBoundingClientRect().width),nbW:nb354};},nb354); /* v340 — 고정 30px 대신 옆 카드 아이콘과 비교 */
       ok(v337a.go==='rgb(255, 255, 255)' && v337a.go!==v337a.market && v337a.sym && v337a.symW>0 && v337a.symW===v337a.nbW, 'v337 조회 버튼은 흰 버튼(파란 큰 버튼과 겹치지 않음) · 카드 머리에 홈 카드와 같은 크기의 아이콘(v354 실거래 탭에서)', JSON.stringify(v337a));
       // v344 — 누르기 전: 구 이름만 있는 회색 격자(읽기 도구에는 숨김) · 진짜 격자와 같은 칸 배치 · 이 격자를 눌러도 조회는 버튼과 같음.
       const v344a=await page.evaluate(()=>{const p=document.getElementById('reach344Preview');const t=p?[...p.querySelectorAll('.reach328-tile')]:[];
@@ -1352,18 +1382,20 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
           const sec=document.getElementById('more341'), dets=[...sec.querySelectorAll('details')], was=dets.map(d=>d.open); dets.forEach(d=>d.open=true);
           const tb=el=>{const rg=document.createRange();rg.selectNodeContents(el);const rs=[...rg.getClientRects()].filter(x=>x.width>0);return {left:Math.min(...rs.map(x=>x.left)),top:Math.min(...rs.map(x=>x.top)),bottom:Math.max(...rs.map(x=>x.bottom))};};
           const rows=[...sec.querySelectorAll(':is(#relatedReadLink,.external-links>summary,.result-notes321>summary,#restartBtn)')];
-          const icon=rows.map(e=>{const a=getComputedStyle(e,'::after');return a.content==='none'?null:Math.round(parseFloat(a.right)+parseFloat(a.width)/2);});
+          /* v405 — 다시 계산 줄은 왼쪽 되돌이 아이콘(32)이 생겨 오른쪽 되돌이 표시를 감춤(같은 그림 두 번) → 앞 3줄만 같은 칸 · 다시 계산은 감춤 확인 */
+          const icon=rows.filter(e=>e.id!=='restartBtn').map(e=>{const a=getComputedStyle(e,'::after');return a.content==='none'||a.display==='none'?null:Math.round(parseFloat(a.right)+parseFloat(a.width)/2);});
+          const rsHid=getComputedStyle(document.getElementById('restartBtn'),'::after').display==='none' && getComputedStyle(document.getElementById('restartBtn'),'::before').width==='32px';
           const arw=[...sec.querySelectorAll('.external-links>a.mini>.arw')].map(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return {c:Math.round(p.right-(r.left+r.width/2)),glyph:getComputedStyle(e).fontSize!=='0px',img:getComputedStyle(e).backgroundImage!=='none',aria:e.getAttribute('aria-hidden')};});
           const sumL=Math.round(tb(sec.querySelector('.external-links>summary')).left);
           const inner=[...sec.querySelectorAll('.external-links>a.mini b,.result-notes321>p')].filter(e=>e.getClientRects().length).map(e=>Math.round(tb(e).left));
           const lines=[...sec.querySelectorAll('.external-links>a.mini')].map(e=>getComputedStyle(e).borderTopWidth);
           const gap=dets.map(d=>{const sm=d.querySelector('summary'),it=[...d.children].filter(c=>c!==sm&&c.getClientRects().length);return {first:Math.round(tb(it[0]).top-tb(sm).bottom),last:Math.round(d.getBoundingClientRect().bottom-tb(it[it.length-1]).bottom)};});
           dets.forEach((d,i)=>d.open=was[i]);
-          return {icon,arw,sumL,inner,lines,gap};});
-        ok(m372.icon.every(c=>c!==null && Math.abs(c-10)<=1) && m372.arw.length===2 && m372.arw.every(a=>Math.abs(a.c-10)<=1 && !a.glyph && a.img && a.aria==='true')
+          return {icon,rsHid,arw,sumL,inner,lines,gap};});
+        ok(m372.icon.length===3 && m372.icon.every(c=>c!==null && Math.abs(c-10)<=1) && m372.rsHid && m372.arw.length===2 && m372.arw.every(a=>Math.abs(a.c-10)<=1 && !a.glyph && a.img && a.aria==='true')
            && m372.inner.every(x=>Math.abs(x-m372.sumL)<=1) && m372.lines.every(w=>w==='0px')
            && Math.abs(m372.gap[0].first-m372.gap[1].first)<=2 && Math.abs(m372.gap[0].last-m372.gap[1].last)<=2,
-           `v372 ${width}px 「더 알아보기」 줄 끝 표시 같은 칸(다시 계산 포함 · ↗ 그림) · 펼친 내용 왼쪽 = 줄 글자 · 두 접기 간격 같음`, JSON.stringify(m372));
+           `v372·v405 ${width}px 「더 알아보기」 줄 끝 표시 같은 칸(다시 계산은 왼쪽 아이콘으로 · ↗ 그림) · 펼친 내용 왼쪽 = 줄 글자 · 두 접기 간격 같음`, JSON.stringify(m372));
       }
       await page.setViewportSize({width:390,height:844});
       ok(!errors.length, 'v341 JavaScript 오류 없음', errors.join(' | '));
@@ -2702,7 +2734,7 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
           const sh=['fundingOverview','payTile','easyMarket','more341'].map(id=>getComputedStyle(document.getElementById(id)).boxShadow);
           const h=document.querySelector('#fundingOverview>.rhead'),hc=getComputedStyle(h),hb=getComputedStyle(h,'::before');
           const heads=[...document.querySelectorAll('#flow358 .f-step,#payTile>.ans-k,#easyMarket>.m358')].map(e=>getComputedStyle(e,'::before').width);
-          return {pp:pc('#flow358 .f-price'),cp:pc('#flow358 .f-cost'),n,rows,dotOK:rows.every((x,k)=>x.dot==='8|'+Object.values(bars)[k]),icOK:rows.every(x=>x.ic==='32px|url('),sh,hero:hc.backgroundColor+'|'+hc.backgroundImage.slice(0,15)+'|'+hb.backgroundImage.slice(0,4)+'|'+hb.width,heads,card:getComputedStyle(document.getElementById('fundingOverview')).backgroundColor,xbar:getComputedStyle(document.querySelector('#flow358 .f-bar .x')).backgroundImage};});
+          return {pp:pc('#flow358 .f-price'),cp:pc('#flow358 .f-cost'),n,rows,dotOK:rows.every((x,k)=>x.dot===(innerWidth<360?'0|':'8|')+Object.values(bars)[k]) /* v405 — 좁은 화면(≤359px)은 금액 · 괄호 비율을 한 줄에 넣으려고 점을 감춤(색은 그대로) */,icOK:rows.every(x=>x.ic==='32px|url('),sh,hero:hc.backgroundColor+'|'+hc.backgroundImage.slice(0,15)+'|'+hb.backgroundImage.slice(0,4)+'|'+hb.width,heads,card:getComputedStyle(document.getElementById('fundingOverview')).backgroundColor,xbar:getComputedStyle(document.querySelector('#flow358 .f-bar .x')).backgroundImage};});
         const light=scheme==='light';
         /* v404 — 다크에서 점 4개가 카드 바탕과 대비 1.8 이상(부대비용 점 #C8D0DB가 일반 규칙으로 #04070B가 되어 사라졌던 것) · 부대비용 막대 결 rgb(102,112,128)→rgb(92,101,115) */
         const lum=t=>{const m=String(t).match(/[\d.]+/g)||[0,0,0];const f=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};return 0.2126*f(+m[0])+0.7152*f(+m[1])+0.0722*f(+m[2]);};
@@ -2712,6 +2744,91 @@ if(process.env.YK_PLAYWRIGHT_PATH && process.env.YK_CHROMIUM_PATH){
         const good=r.pp===r.n+'%' && r.cp===(100-r.n)+'%' && (light?r.dotOK:true) && r.icOK && shOK && r.hero.startsWith('rgb(36, 88, 255)|radial-gradient|url(|72px') && r.heads.length===4 && r.heads.every(x=>x==='36px') && darkOK && !e404.length;
         ok(good, `v404 ${width}px ${light?'밝게':'다크'} D2 — 쓰는 곳 비율(합 100) · 목록 줄 아이콘 32 + 점(막대 색) · 칸 머리 아이콘 36 · 카드 그림자${light?'':' 검정 · 점 4개 카드와 대비 1.8+'} · 파란 카드 그러데이션 + 집`, JSON.stringify({r,e404}).slice(0,2500));
         await c404.close();
+      }
+    }
+    // v405 — 실측: 현금 30억 · 2억 · 3천 × 320 · 390 · 1264 — 목록 4줄이 모두 한 줄(높이 50 이하 · 넘침 없음) · 비율이 금액 옆 「(95%)」 · 부대비용 0이면 괄호 없음 /
+    //   결과 아래: 이미지 저장 · 결과 공유 그림자 + 같은 글자색 · 더 알아보기 머리 아이콘 36 · 줄 아이콘 32 4개(그림) / 다크 390: 단추 그림자 검정
+    {
+      for(const [width,scheme] of [[320,'light'],[390,'light'],[1264,'light'],[390,'dark']]){
+        const c405=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:scheme});const q=await c405.newPage();const e405=[];q.on('pageerror',e=>e405.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/');
+        const cases=[];
+        for(const [cash,income] of [[300000,20000],[20000,7000],[3000,6000]]){
+          await q.evaluate(([cash,income])=>{Object.assign(S,{cash,income,sgg:'11200',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);},[cash,income]);
+          await q.waitForTimeout(300);
+          cases.push(await q.evaluate(()=>[...document.querySelectorAll('#flow358 .f-leg>*')].map(r=>{const em=r.querySelector('.f-v em');const b=getComputedStyle(em,'::before').content;const v=r.querySelector('.f-v'),k=r.querySelector('.f-k');
+            return {h:Math.round(r.getBoundingClientRect().height),one:Math.abs(v.getBoundingClientRect().top-k.getBoundingClientRect().top)<14,over:r.scrollWidth>r.clientWidth+1,em:em.textContent.trim(),inl:getComputedStyle(em).display,paren:b,hid:getComputedStyle(em).display==='none'};})));
+        }
+        const bot=await q.evaluate(()=>{const g=['outSave','outCopy'].map(id=>{const e=document.getElementById(id);return {sh:getComputedStyle(e).boxShadow,c:getComputedStyle(e.querySelector('b')).color};});
+          const h=getComputedStyle(document.querySelector('#more341>h2'),'::before');
+          const rows=[['#relatedReadLink','::before'],['#more341 .external-links>summary','::before'],['#more341 .result-notes321>summary','::before'],['#restartBtn','::before']].map(([s,pe])=>{const c=getComputedStyle(document.querySelector(s),pe);return c.width+'|'+c.backgroundImage.slice(0,4);});
+          return {g,h:h.width+'|'+h.backgroundImage.slice(0,4),rows};});
+        const light=scheme==='light';
+        const flowOK=cases.every(rs=>rs.length===4 && rs.every(x=>x.h<=50 && x.one && !x.over && (x.em==='' ? x.hid : (/^\d+%$/.test(x.em) && x.inl==='inline' && x.paren==='"("'))));
+        const botOK=bot.g.every(x=>x.sh!=='none' && (light ? /rgba\(16, 24, 40/.test(x.sh) : /rgba\(0, 0, 0/.test(x.sh))) && bot.g[0].c===bot.g[1].c && bot.h==='36px|url(' && bot.rows.every(x=>x==='32px|url(');
+        ok(flowOK && botOK && !e405.length, `v405 ${width}px ${light?'밝게':'다크'} — 목록 줄 한 줄 · 「금액 (비율%)」(현금 30억 · 2억 · 3천) · 결과 아래 단추 그림자 · 같은 글자색 · 더 알아보기 아이콘 36 + 줄 아이콘 32 ×4`, JSON.stringify({cases,bot,e405}).slice(0,2500));
+        await c405.close();
+      }
+    }
+    // v406 — 실측(320 · 390 · 1264 밝게 + 390 다크): 첫 화면 그림 카드 = 파란 바탕 + 그러데이션 · 「내 예산」 칸 흰색 · 나머지 24칸 유리(흰 16%, 다크에서도 같음) ·
+    //   동전/은행 아이콘이 카드 안이고 어느 칸과도 겹치지 않음 · 그림 글자 ≥ 13px · 자금 글 줄 책 아이콘 32 / 실거래 지역 머리 핀 36 · 25개 구 머리 입체 타일 36 · 지도 범례 점 8 둥글게
+    {
+      for(const [width,scheme] of [[320,'light'],[390,'light'],[1264,'light'],[390,'dark']]){
+        const c406=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:scheme});const q=await c406.newPage();const e406=[];q.on('pageerror',e=>e406.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname==='/api/apt-price'){return route.fulfill({json:{ok:true,items:[0,1,2,3].map(i=>({name:'검증단지'+i,dong:'검증동',jibun:String(i),areaM2:84,amountMan:[15000,22000,30000,26000][i],buildYear:2015,floor:5,y:2026,m:11,d:1+i})),total:4}});}
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        const w=await q.evaluate(()=>{const sc=document.querySelector('#welcome232 .welcome232-scene'),cs=getComputedStyle(sc),sv=sc.querySelector('svg'),R=sc.getBoundingClientRect();
+          const tiles=[...sv.querySelectorAll('rect[width="40"]')],fills=tiles.map(r=>getComputedStyle(r).fill);
+          const hi=tiles.filter(r=>r.getAttribute('fill')==='#2458FF').map(r=>getComputedStyle(r).fill);
+          const pse=['::before','::after'].map(pe=>{const c=getComputedStyle(sc,pe);const l=R.left+parseFloat(c.left),tp=R.top+parseFloat(c.top),wd=parseFloat(c.width),ht=parseFloat(c.height);return {img:c.backgroundImage.slice(0,4),box:[l,tp,l+wd,tp+ht]};});
+          const tb=tiles.map(r=>{const b=r.getBoundingClientRect();return [b.left,b.top,b.right,b.bottom];});
+          const hit=pse.some(p=>tb.some(b=>p.box[0]<b[2]-1&&p.box[2]>b[0]+1&&p.box[1]<b[3]-1&&p.box[3]>b[1]+1));
+          const inside=pse.every(p=>p.box[0]>=R.left-1&&p.box[2]<=R.right+1&&p.box[1]>=R.top-1&&p.box[3]<=R.bottom+1);
+          const t=sv.querySelector('text'),k=sv.getBoundingClientRect().width/sv.viewBox.baseVal.width;
+          const rd=getComputedStyle(document.querySelector('#welcome232 .v305-reads>a'),'::before');
+          return {bg:cs.backgroundColor+'|'+cs.backgroundImage.slice(0,15),glass:fills.filter(f=>f==='rgba(255, 255, 255, 0.16)').length,hi,pse:pse.map(p=>p.img),hit,inside,txt:Math.round(parseFloat(t.getAttribute('font-size'))*k*10)/10,h:Math.round(R.height),reads:rd.width+'|'+rd.backgroundImage.slice(0,4)};});
+        await q.locator('#welcomeStart232').click(); await q.waitForTimeout(150);
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,sgg:'11590',sido:'서울특별시',group:'seoul',houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);window.yk208Navigate('map');});
+        await q.waitForFunction(()=>DEAL.status!=='loading',null,{timeout:10000}).catch(()=>{}); await q.waitForTimeout(500);
+        const d=await q.evaluate(()=>{const sm=document.querySelector('#viewDeals .dd-head small'),c=sm?getComputedStyle(sm):null;
+          const lg=[...document.querySelectorAll('#dealMapLegend i')].map(i=>getComputedStyle(i).borderRadius+'|'+getComputedStyle(i).width);
+          window.__yk357&&window.__yk357.show('reach',{query:false});
+          const sy=document.querySelector('#reach328Title .section-symbol'),sc=sy?getComputedStyle(sy):null;
+          return {pin:c?c.backgroundImage.slice(0,4)+'|'+c.paddingLeft:'none',lg,sym:sc?sc.width+'|'+sc.backgroundImage.slice(0,4)+'|'+(sy.querySelector('svg')?getComputedStyle(sy.querySelector('svg')).display:'-'):'none'};});
+        const good=w.bg.startsWith('rgb(36, 88, 255)|radial-gradient') && w.glass===24 && w.hi.length===1 && w.hi[0]==='rgb(255, 255, 255)' && w.pse.every(x=>x==='url(') && !w.hit && w.inside && w.txt>=13 && w.h===224 && w.reads==='32px|url('
+          && d.pin==='url(|46px' && d.lg.length===3 && d.lg.every(x=>x==='50%|8px') && d.sym==='36px|url(|none' && !e406.length;
+        ok(good, `v406 ${width}px ${scheme==='light'?'밝게':'다크'} — 첫 화면 파란 그림 카드(유리 24칸 · 흰 「내 예산」 · 동전/은행 칸과 안 겹침 · 글자 13+) · 자금 글 책 32 · 실거래 핀 36 · 25개 구 타일 36 · 범례 둥근 점 8`, JSON.stringify({w,d,e406}).slice(0,2500));
+        await c406.close();
+      }
+    }
+    // v407 — 실측(320 · 390 · 1264 밝게 + 390 다크): 주택 보유 세 선택지 아이콘 36(그림 3가지 서로 다름) · 비교 빈 화면 표시 64 그림(선 아이콘 감춤) · 시트 금액 칸(현금 · 기존 대출) 숫자 왼쪽 = 입력 화면 금액 칸과 같은 맞춤
+    {
+      for(const [width,scheme] of [[320,'light'],[390,'light'],[1264,'light'],[390,'dark']]){
+        const c407=await browser.newContext({viewport:{width,height:900},isMobile:width<960,hasTouch:width<960,colorScheme:scheme});const q=await c407.newPage();const e407=[];q.on('pageerror',e=>e407.push(e.message));
+        await q.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname==='oapi.map.naver.com')return route.fulfill({contentType:'text/javascript',body:FAKE_NAVER_338});if(u.hostname!=='yeongkkeul.test')return route.abort();
+          if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:false,items:[],total:0}});
+          const file=path.resolve(ROOT,'.'+(u.pathname==='/'?'/index.html':u.pathname));if(!file.startsWith(ROOT+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});return route.fulfill({path:file});});
+        await q.goto('http://yeongkkeul.test/'); await q.evaluate(()=>document.fonts.ready);
+        await q.locator('#welcomeStart232').click(); await q.waitForTimeout(200);
+        const crowsAlign=await q.evaluate(()=>{const e=document.querySelector('#crows .inline-money-field input');return e?getComputedStyle(e).textAlign:'left';});
+        await q.evaluate(()=>{S.sgg='11590';S.sido='서울특별시';S.group='seoul';openQ(1,'house');}); await q.waitForTimeout(350);
+        const hs=await q.evaluate(()=>[...document.querySelectorAll('#qSheet #houseSeg [data-house]')].map(b=>{const c=getComputedStyle(b,'::before');return c.width+'|'+c.backgroundImage.slice(0,4)+'|'+c.backgroundImage.length+'|'+c.backgroundImage.slice(-80);}));
+        await q.evaluate(()=>closeSheet('q')); await q.waitForTimeout(350);
+        const al=[];
+        for(const [st,md] of [[0,'region'],[2,'debt']]){ await q.evaluate(([st,md])=>openQ(st,md),[st,md]); await q.waitForTimeout(350);
+          al.push(await q.evaluate(()=>{const e=document.querySelector('#qSheet :is(.single-money-field,.mfield) input');return e?getComputedStyle(e).textAlign:'none';}));
+          await q.evaluate(()=>closeSheet('q')); await q.waitForTimeout(350); }
+        await q.evaluate(()=>{Object.assign(S,{cash:20000,income:7000,houseStatus:'none',debtMonthly:0,lockedPrice:null});showResult(false);window.yk208Navigate('compare');}); await q.waitForTimeout(400);
+        const mk=await q.evaluate(()=>{const m=document.querySelector('#viewCompare .v208-empty-mark');if(!m)return 'none';const c=getComputedStyle(m),sv=m.querySelector('svg');return Math.round(m.getBoundingClientRect().width)+'|'+c.backgroundImage.slice(0,4)+'|'+(sv?getComputedStyle(sv).display:'-');});
+        const good=hs.length===3 && hs.every(x=>x.startsWith('36px|url(')) && new Set(hs).size===3 && al.length===2 && al.every(a=>a==='left'||a==='start') && (crowsAlign==='left'||crowsAlign==='start') && mk==='64|url(|none' && !e407.length;
+        ok(good, `v407 ${width}px ${scheme==='light'?'밝게':'다크'} — 주택 보유 입체 아이콘 36 ×3(모두 다름) · 시트 금액 칸 왼쪽 맞춤(입력 화면과 같음) · 비교 빈 화면 입체 아이콘 64`, JSON.stringify({hs:hs.map(x=>x.slice(0,20)),al,crowsAlign,mk,e407}));
+        await c407.close();
       }
     }
     ok(!errors.length,'v321 브라우저 JavaScript 실행 오류 없음',errors.join('\n'));
